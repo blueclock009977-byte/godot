@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://bqx7v3k2h5nmp"]
+[gd_scene load_steps=6 format=3 uid="uid://bqx7v3k2h5nmp"]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://carro1wscene" path="res://scenes/player/arrow.tscn" id="2_arrow"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(32, 64)
@@ -13,6 +14,7 @@ size = Vector2(30, 50)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_player")
+arrow_scene = ExtResource("2_arrow")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("RectangleShape2D_1")

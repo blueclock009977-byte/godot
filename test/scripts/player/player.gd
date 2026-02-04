@@ -11,6 +11,12 @@ var can_attack := true
 var is_attacking := false
 var facing_right := true
 
+# 弓攻撃パラメータ
+const MAX_ARROWS = 5
+const ARROW_RELOAD_TIME = 2.0
+var current_arrows := MAX_ARROWS
+@export var arrow_scene: PackedScene
+
 @onready var sword_hitbox: Area2D = $SwordHitbox
 
 func _physics_process(delta: float) -> void:
@@ -41,6 +47,10 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("attack_sword") and can_attack:
 		_sword_attack()
 
+	# 弓攻撃
+	if Input.is_action_just_pressed("attack_bow") and current_arrows > 0:
+		_bow_attack()
+
 	move_and_slide()
 
 func _sword_attack() -> void:
@@ -63,3 +73,17 @@ func _sword_attack() -> void:
 
 	await get_tree().create_timer(0.2).timeout
 	can_attack = true
+
+func _bow_attack() -> void:
+	current_arrows -= 1
+
+	var arrow = arrow_scene.instantiate()
+	arrow.global_position = global_position
+	arrow.direction = 1 if facing_right else -1
+	if not facing_right:
+		arrow.scale.x = -1
+	get_parent().add_child(arrow)
+
+	# 矢の回復
+	await get_tree().create_timer(ARROW_RELOAD_TIME).timeout
+	current_arrows = min(current_arrows + 1, MAX_ARROWS)
