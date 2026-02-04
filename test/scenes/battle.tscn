@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/boss/boss.tscn" id="2_boss"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(1280, 40)
+
+[node name="Battle" type="Node2D"]
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(640, 680)
+
+[node name="FloorShape" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="FloorSprite" type="ColorRect" parent="Floor"]
+offset_left = -640
+offset_top = -20
+offset_right = 640
+offset_bottom = 20
+color = Color(0.3, 0.3, 0.3)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(200, 600)
+
+[node name="Boss" parent="." instance=ExtResource("2_boss")]
+position = Vector2(1000, 600)
