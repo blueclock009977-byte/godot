@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://e7t4u9y1z3abc"]
 
 [ext_resource type="Script" path="res://scripts/player/arrow.gd" id="1_arrow"]
 
