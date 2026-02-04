@@ -1,10 +1,11 @@
 extends Area2D
 
 const SPEED = 600.0
-const DAMAGE = 5
+var damage := 5
 var direction := 1
 
 func _ready() -> void:
+	damage = PlayerDataManager.get_bow_damage()
 	print("[Arrow] Spawned at:", global_position, " direction:", direction)
 	# 画面外で消える
 	var timer = get_tree().create_timer(3.0)
@@ -18,6 +19,6 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	print("[Arrow] Hit body:", body.name)
 	if body.has_method("take_damage"):
-		print("[Arrow] Dealing", DAMAGE, "damage to", body.name)
-		body.take_damage(DAMAGE)
+		print("[Arrow] Dealing", damage, "damage to", body.name)
+		body.take_damage(damage)
 	queue_free()

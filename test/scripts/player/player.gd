@@ -8,33 +8,33 @@ signal dash_cooldown(time_left, total_time)
 signal roll_cooldown(time_left, total_time)
 
 # HPパラメータ
-const MAX_HP = 100
-var current_hp := MAX_HP
+var max_hp := 100
+var current_hp := max_hp
 
 # 移動パラメータ
 const SPEED = 300.0
-const JUMP_VELOCITY = -800.0
+var jump_velocity := -800.0
 const GRAVITY = 1200.0
 
 # 攻撃パラメータ
-const SWORD_DAMAGE = 25
-const SWORD_COOLDOWN = 0.4
+var sword_damage := 25
+var sword_cooldown_time := 0.4
 var can_attack := true
 var is_attacking := false
 var facing_right := true
 var sword_cooldown_timer := 0.0
 
 # ダッシュパラメータ
-const DASH_SPEED = 600.0
+var dash_speed := 600.0
 const DASH_DURATION = 0.15
-const DASH_COOLDOWN = 0.5
+var dash_cooldown_time := 0.5
 var can_dash := true
 var is_dashing := false
 var dash_cooldown_timer := 0.0
 
 # ローリングパラメータ
 const ROLL_SPEED = 400.0
-const ROLL_DURATION = 0.4
+var roll_duration_time := 0.4
 const ROLL_COOLDOWN = 0.8
 var can_roll := true
 var is_rolling := false
@@ -44,20 +44,32 @@ var roll_cooldown_timer := 0.0
 var is_invincible := false
 
 # 弓攻撃パラメータ
-const MAX_ARROWS = 5
+var max_arrows := 5
 const ARROW_RELOAD_TIME = 2.5
-var current_arrows := MAX_ARROWS
+var current_arrows := max_arrows
 @export var arrow_scene: PackedScene
 
 @onready var sword_hitbox: Area2D = $SwordHitbox
 
 func _ready() -> void:
 	add_to_group("player")
-	current_hp = MAX_HP
+	_apply_upgrades()
+	current_hp = max_hp
+	current_arrows = max_arrows
 	print("[Player] Ready - HP:", current_hp, " Arrows:", current_arrows)
 	print("[Player] Added to 'player' group")
 	print("[Player] SwordHitbox position:", sword_hitbox.position)
 	print("[Player] Controls: WASD/Arrow=Move, W/Up/L=Jump, J=Sword, K=Bow, Shift=Dash, Space=Roll")
+
+func _apply_upgrades() -> void:
+	max_hp = PlayerDataManager.get_max_hp()
+	sword_damage = PlayerDataManager.get_sword_damage()
+	sword_cooldown_time = PlayerDataManager.get_sword_cooldown()
+	dash_speed = PlayerDataManager.get_dash_speed()
+	dash_cooldown_time = PlayerDataManager.get_dash_cooldown()
+	roll_duration_time = PlayerDataManager.get_roll_duration()
+	jump_velocity = PlayerDataManager.get_jump_velocity()
+	max_arrows = PlayerDataManager.get_max_arrows()
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
@@ -85,7 +97,7 @@ func _physics_process(delta: float) -> void:
 
 	# ジャンプ
 	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
+		velocity.y = jump_velocity
 
 	# 左右移動
 	var direction := Input.get_axis("move_left", "move_right")
@@ -132,7 +144,7 @@ func _sword_attack() -> void:
 	print("[Player] SWORD ATTACK! facing_right:", facing_right)
 	is_attacking = true
 	can_attack = false
-	sword_cooldown_timer = SWORD_COOLDOWN
+	sword_cooldown_timer = sword_cooldown_time
 
 	# ヒットボックスの位置を向きに合わせる
 	sword_hitbox.position.x = 40 if facing_right else -40
@@ -161,8 +173,8 @@ func _sword_attack() -> void:
 	for body in overlapping:
 		print("[Player] Hit body:", body.name)
 		if body.has_method("take_damage"):
-			print("[Player] Dealing", SWORD_DAMAGE, "damage to", body.name)
-			body.take_damage(SWORD_DAMAGE)
+			print("[Player] Dealing", sword_damage, "damage to", body.name)
+			body.take_damage(sword_damage)
 
 	# 攻撃終了タイマー
 	await get_tree().create_timer(0.2).timeout
@@ -178,7 +190,7 @@ func _sword_attack() -> void:
 func _bow_attack() -> void:
 	print("[Player] BOW ATTACK! Arrows:", current_arrows, "->", current_arrows - 1)
 	current_arrows -= 1
-	arrow_changed.emit(current_arrows, MAX_ARROWS)
+	arrow_changed.emit(current_arrows, max_arrows)
 
 	if arrow_scene == null:
 		print("[Player] ERROR: arrow_scene is null!")
@@ -194,8 +206,8 @@ func _bow_attack() -> void:
 
 	# 矢の回復
 	await get_tree().create_timer(ARROW_RELOAD_TIME).timeout
-	current_arrows = min(current_arrows + 1, MAX_ARROWS)
-	arrow_changed.emit(current_arrows, MAX_ARROWS)
+	current_arrows = min(current_arrows + 1, max_arrows)
+	arrow_changed.emit(current_arrows, max_arrows)
 	print("[Player] Arrow reloaded. Arrows:", current_arrows)
 
 func _dash() -> void:
@@ -204,10 +216,10 @@ func _dash() -> void:
 	can_dash = false
 	is_invincible = true
 	modulate.a = 0.5
-	dash_cooldown_timer = DASH_DURATION + DASH_COOLDOWN
+	dash_cooldown_timer = DASH_DURATION + dash_cooldown_time
 
 	var dash_direction = 1 if facing_right else -1
-	velocity.x = DASH_SPEED * dash_direction
+	velocity.x = dash_speed * dash_direction
 	velocity.y = 0
 
 	await get_tree().create_timer(DASH_DURATION).timeout
@@ -216,7 +228,7 @@ func _dash() -> void:
 	modulate.a = 1.0
 	print("[Player] Dash ended")
 
-	await get_tree().create_timer(DASH_COOLDOWN).timeout
+	await get_tree().create_timer(dash_cooldown_time).timeout
 	can_dash = true
 	print("[Player] Dash ready")
 
@@ -226,12 +238,12 @@ func _roll() -> void:
 	can_roll = false
 	is_invincible = true
 	modulate.a = 0.5
-	roll_cooldown_timer = ROLL_DURATION + ROLL_COOLDOWN
+	roll_cooldown_timer = roll_duration_time + ROLL_COOLDOWN
 
 	var roll_direction = 1 if facing_right else -1
 	velocity.x = ROLL_SPEED * roll_direction
 
-	await get_tree().create_timer(ROLL_DURATION).timeout
+	await get_tree().create_timer(roll_duration_time).timeout
 	is_rolling = false
 	is_invincible = false
 	modulate.a = 1.0
@@ -250,9 +262,11 @@ func take_damage(amount: int) -> void:
 	# 最初に無敵フラグを立てる（再入防止）
 	is_invincible = true
 
-	current_hp -= amount
-	print("[Player] HP:", current_hp, "/", MAX_HP)
-	health_changed.emit(current_hp, MAX_HP)
+	var reduction = PlayerDataManager.get_damage_reduction()
+	var actual_damage = int(amount * (1.0 - reduction))
+	current_hp -= actual_damage
+	print("[Player] HP:", current_hp, "/", max_hp, " (damage reduced:", amount, "->", actual_damage, ")")
+	health_changed.emit(current_hp, max_hp)
 
 	if current_hp <= 0:
 		print("[Player] DIED!")

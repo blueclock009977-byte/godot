@@ -31,19 +31,19 @@ func _update_button_states() -> void:
 	for i in range(STAGE_COUNT):
 		var button := stage_buttons[i]
 		var stage_num := i + 1
+		var stage_data = StageManager.stage_data[i]
+		var reward = stage_data.get("reward_gold", 100)
 
 		if stage_num <= max_unlocked:
-			# アンロック済み（クリア済みまたは次のステージ）
 			button.disabled = false
+			button.text = "Stage " + str(stage_num) + "\n" + str(reward) + "G"
 			if stage_num < max_unlocked:
-				# クリア済み - 緑色
 				button.modulate = Color(0.5, 1.0, 0.5)
 			else:
-				# 現在挑戦可能 - 通常色
 				button.modulate = Color(1.0, 1.0, 1.0)
 		else:
-			# ロック中 - グレーアウト
 			button.disabled = true
+			button.text = "Stage " + str(stage_num) + "\n???"
 			button.modulate = Color(0.5, 0.5, 0.5)
 
 

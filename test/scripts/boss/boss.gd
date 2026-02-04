@@ -10,11 +10,27 @@ const GRAVITY = 800.0
 @export var charge_speed := 400.0
 @export var vulnerable_duration := 0.8
 @export var double_jump_enabled := false
+@export var triple_jump_enabled := false
+@export var combo_attack_enabled := false  # Stage 5+: 連続攻撃
+@export var rage_mode_enabled := false     # Stage 6+: 怒りモード
+@export var wall_bounce_enabled := false   # Stage 8+: 壁反射突進
 
 var current_hp := 0
-var can_double_jump := false
+var jump_count := 0
 var player: Node2D = null
 var _shake_tween: Tween = null
+
+# 怒りモード
+var is_enraged := false
+var rage_speed_multiplier := 1.5
+
+# 連続攻撃
+var combo_count := 0
+var max_combo := 3
+
+# 壁反射
+var bounce_count := 0
+var max_bounces := 2
 
 # 攻撃パターン
 enum State { IDLE, TELEGRAPH, ATTACK_CHARGE, ATTACK_JUMP, VULNERABLE, COOLDOWN }
@@ -77,9 +93,10 @@ func _choose_attack() -> void:
 func _start_charge_attack() -> void:
 	current_state = State.TELEGRAPH
 	pending_attack = State.ATTACK_CHARGE
-	state_timer = 0.3  # 攻撃予告
+	var telegraph_time = 0.3 / (rage_speed_multiplier if is_enraged else 1.0)
+	state_timer = telegraph_time  # 攻撃予告
 	# 予備動作のビジュアル（震え）
-	_shake(5.0, 0.3)
+	_shake(5.0 * (1.5 if is_enraged else 1.0), telegraph_time)
 
 func _state_telegraph() -> void:
 	if state_timer <= 0:
@@ -92,52 +109,77 @@ func _state_telegraph() -> void:
 			var direction = sign(player.global_position.x - global_position.x)
 			velocity.x = direction * 200
 			state_timer = 0.5
-			can_double_jump = true
+			jump_count = 1
 
 func _state_attack_charge() -> void:
 	if state_timer <= 0:
 		# 突進
 		var direction = sign(player.global_position.x - global_position.x)
-		velocity.x = direction * charge_speed
+		var actual_speed = charge_speed * (rage_speed_multiplier if is_enraged else 1.0)
+		velocity.x = direction * actual_speed
+		bounce_count = 0  # 壁反射カウントをリセット
 		current_state = State.VULNERABLE
 		state_timer = vulnerable_duration  # 攻撃後の隙
 
 func _start_jump_attack() -> void:
 	current_state = State.TELEGRAPH
 	pending_attack = State.ATTACK_JUMP
-	state_timer = 0.3  # 攻撃予告
+	var telegraph_time = 0.3 / (rage_speed_multiplier if is_enraged else 1.0)
+	state_timer = telegraph_time  # 攻撃予告
 	# 予備動作のビジュアル（震え）
-	_shake(3.0, 0.3)
+	_shake(3.0 * (1.5 if is_enraged else 1.0), telegraph_time)
 
 func _state_attack_jump() -> void:
-	# 二段ジャンプ処理
-	if double_jump_enabled and can_double_jump and not is_on_floor():
-		# 上昇から下降に切り替わった瞬間に二段ジャンプ
-		if velocity.y > 0:
-			velocity.y = -500  # やや弱いジャンプ
+	# 多段ジャンプ処理
+	if not is_on_floor() and velocity.y > 0:
+		var can_jump = false
+		if double_jump_enabled and jump_count < 2:
+			can_jump = true
+		elif triple_jump_enabled and jump_count < 3:
+			can_jump = true
+
+		if can_jump:
+			velocity.y = -500 + (jump_count * 50)  # 後のジャンプは少し弱く
 			if player:
 				var direction = sign(player.global_position.x - global_position.x)
 				velocity.x = direction * 200
-			can_double_jump = false
+			jump_count += 1
 
 	if is_on_floor():
-		can_double_jump = false
+		jump_count = 0
 		if state_timer <= 0:
 			current_state = State.COOLDOWN
 			state_timer = 1.5
 			velocity.x = 0
 
 func _state_vulnerable() -> void:
+	# 壁反射チェック
+	if wall_bounce_enabled and is_on_wall() and bounce_count < max_bounces:
+		velocity.x = -velocity.x  # 反転
+		bounce_count += 1
+		print("[Boss] Wall bounce! Count:", bounce_count)
+		state_timer = vulnerable_duration  # タイマーリセット
+		return
+
 	velocity.x = move_toward(velocity.x, 0, 300 * get_physics_process_delta_time())
 	if state_timer <= 0:
-		current_state = State.COOLDOWN
-		state_timer = 1.0
+		# 連続攻撃チェック
+		if combo_attack_enabled and combo_count < max_combo - 1:
+			combo_count += 1
+			print("[Boss] Combo attack! Count:", combo_count + 1)
+			_choose_attack()  # 次の攻撃を即座に開始
+		else:
+			combo_count = 0
+			current_state = State.COOLDOWN
+			var cooldown_time = 1.0 / (rage_speed_multiplier if is_enraged else 1.0)
+			state_timer = cooldown_time
 
 func _state_cooldown() -> void:
 	velocity.x = move_toward(velocity.x, 0, 300 * get_physics_process_delta_time())
 	if state_timer <= 0:
 		current_state = State.IDLE
-		state_timer = 1.0
+		var idle_time = 1.0 / (rage_speed_multiplier if is_enraged else 1.0)
+		state_timer = idle_time
 
 func _shake(intensity: float, duration: float) -> void:
 	if _shake_tween:
@@ -163,14 +205,28 @@ func take_damage(amount: int) -> void:
 	print("[Boss] HP:", current_hp, "/", max_hp)
 	health_changed.emit(current_hp, max_hp)
 
+	# 怒りモードチェック（HP50%以下で発動）
+	if rage_mode_enabled and not is_enraged and current_hp <= max_hp * 0.5:
+		_activate_rage_mode()
+
 	# ダメージフラッシュ
 	$Sprite2D.color = Color.WHITE
 	await get_tree().create_timer(0.1).timeout
-	$Sprite2D.color = Color(0.8, 0.2, 0.2, 1)
+	if is_enraged:
+		$Sprite2D.color = Color(1.0, 0.3, 0.0, 1)  # 怒りモードはオレンジ
+	else:
+		$Sprite2D.color = Color(0.8, 0.2, 0.2, 1)
 
 	if current_hp <= 0:
 		print("[Boss] DIED!")
 		_die()
+
+func _activate_rage_mode() -> void:
+	is_enraged = true
+	print("[Boss] RAGE MODE ACTIVATED!")
+	# 怒りモードの視覚エフェクト
+	$Sprite2D.color = Color(1.0, 0.3, 0.0, 1)  # オレンジに変更
+	_shake(8.0, 0.5)
 
 func _die() -> void:
 	if _shake_tween:

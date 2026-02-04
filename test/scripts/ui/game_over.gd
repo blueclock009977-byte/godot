@@ -15,16 +15,16 @@ func show_game_over() -> void:
 	panel.visible = true
 	get_tree().paused = true
 
-func show_victory() -> void:
+func show_victory(reward_gold: int = 0) -> void:
 	_is_ending = false
-	$Panel/Label.text = "STAGE " + str(StageManager.current_stage - 1) + " CLEAR!"
+	$Panel/Label.text = "STAGE " + str(StageManager.current_stage - 1) + " CLEAR!\n+" + str(reward_gold) + "G"
 	$Panel/RetryButton.text = "NEXT STAGE"
 	panel.visible = true
 	get_tree().paused = true
 
-func show_ending() -> void:
+func show_ending(reward_gold: int = 0) -> void:
 	_is_ending = true
-	$Panel/Label.text = "CONGRATULATIONS!\nALL STAGES CLEARED!"
+	$Panel/Label.text = "CONGRATULATIONS!\nALL STAGES CLEARED!\n+" + str(reward_gold) + "G"
 	$Panel/RetryButton.text = "NEW GAME"
 	panel.visible = true
 	get_tree().paused = true
