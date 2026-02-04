@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://c8x2m4j7k9npl"]
+[gd_scene load_steps=8 format=3 uid="uid://c8x2m4j7k9npl"]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/boss/boss.tscn" id="2_boss"]
@@ -9,11 +9,16 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(1280, 40)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(40, 720)
+
 [node name="Battle" type="Node2D"]
 script = ExtResource("3_manager")
 
 [node name="Floor" type="StaticBody2D" parent="."]
-position = Vector2(640, 680)
+position = Vector2(640, 700)
+collision_layer = 1
+collision_mask = 0
 
 [node name="FloorShape" type="CollisionShape2D" parent="Floor"]
 shape = SubResource("RectangleShape2D_floor")
@@ -23,7 +28,23 @@ offset_left = -640.0
 offset_top = -20.0
 offset_right = 640.0
 offset_bottom = 20.0
-color = Color(0.3, 0.3, 0.3, 1)
+color = Color(0.4, 0.3, 0.2, 1)
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-20, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="WallShape" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(1300, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="WallShape" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("RectangleShape2D_wall")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(200, 600)
