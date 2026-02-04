@@ -1,5 +1,12 @@
 extends CharacterBody2D
 
+signal health_changed(current_hp, max_hp)
+signal player_died
+
+# HPパラメータ
+const MAX_HP = 100
+var current_hp := MAX_HP
+
 # 移動パラメータ
 const SPEED = 300.0
 const JUMP_VELOCITY = -500.0
@@ -35,6 +42,9 @@ var current_arrows := MAX_ARROWS
 @export var arrow_scene: PackedScene
 
 @onready var sword_hitbox: Area2D = $SwordHitbox
+
+func _ready() -> void:
+	current_hp = MAX_HP
 
 func _physics_process(delta: float) -> void:
 	# ダッシュ・ローリング中は通常移動をスキップ
@@ -150,3 +160,32 @@ func _roll() -> void:
 
 	await get_tree().create_timer(ROLL_COOLDOWN).timeout
 	can_roll = true
+
+func take_damage(amount: int) -> void:
+	if is_invincible:
+		return
+
+	current_hp -= amount
+	health_changed.emit(current_hp, MAX_HP)
+
+	# ダメージ時の無敵時間
+	is_invincible = true
+	# ヒットフラッシュ（点滅）
+	_hit_flash()
+	await get_tree().create_timer(0.5).timeout
+	is_invincible = false
+
+	if current_hp <= 0:
+		_die()
+
+func _hit_flash() -> void:
+	for i in range(3):
+		$Sprite2D.modulate.a = 0.3
+		await get_tree().create_timer(0.1).timeout
+		$Sprite2D.modulate.a = 1.0
+		await get_tree().create_timer(0.1).timeout
+
+func _die() -> void:
+	player_died.emit()
+	# 入力を無効化
+	set_physics_process(false)
