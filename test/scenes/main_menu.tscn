@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7xqm3n4p2kfl"]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_main_menu"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main_menu")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 150.0
+offset_right = 840.0
+offset_bottom = 200.0
+theme_override_font_sizes/font_size = 48
+text = "DEATH BOSS"
+horizontal_alignment = 1
+
+[node name="StartButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 350.0
+offset_right = 740.0
+offset_bottom = 400.0
+text = "START"
+
+[node name="QuitButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 420.0
+offset_right = 740.0
+offset_bottom = 470.0
+text = "QUIT"
