@@ -47,10 +47,10 @@ collision_mask = 0
 shape = SubResource("RectangleShape2D_wall")
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(200, 600)
+position = Vector2(200, 680)
 
 [node name="Boss" parent="." instance=ExtResource("2_boss")]
-position = Vector2(1000, 600)
+position = Vector2(1000, 680)
 
 [node name="HUD" parent="." instance=ExtResource("4_hud")]
 
