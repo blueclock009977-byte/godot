@@ -5,6 +5,7 @@ signal boss_died
 
 const MAX_HP = 500
 const GRAVITY = 800.0
+const CONTACT_DAMAGE = 20
 
 var current_hp := MAX_HP
 var player: Node2D = null
@@ -16,6 +17,8 @@ var state_timer := 0.0
 
 func _ready() -> void:
 	current_hp = MAX_HP
+	# Hitboxのシグナル接続
+	$Hitbox.body_entered.connect(_on_hitbox_body_entered)
 	# プレイヤーを探す
 	await get_tree().process_frame
 	player = get_tree().get_first_node_in_group("player")
@@ -105,3 +108,7 @@ func take_damage(amount: int) -> void:
 func _die() -> void:
 	boss_died.emit()
 	queue_free()
+
+func _on_hitbox_body_entered(body: Node2D) -> void:
+	if body.is_in_group("player") and body.has_method("take_damage"):
+		body.take_damage(CONTACT_DAMAGE)
