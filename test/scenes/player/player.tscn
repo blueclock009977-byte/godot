@@ -1,7 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://bqx7v3k2h5nmp"]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
-[ext_resource type="PackedScene" uid="uid://carro1wscene" path="res://scenes/player/arrow.tscn" id="2_arrow"]
+[ext_resource type="PackedScene" path="res://scenes/player/arrow.tscn" id="2_arrow"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
 size = Vector2(32, 64)
