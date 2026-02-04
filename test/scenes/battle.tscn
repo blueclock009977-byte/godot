@@ -19,11 +19,11 @@ position = Vector2(640, 680)
 shape = SubResource("RectangleShape2D_floor")
 
 [node name="FloorSprite" type="ColorRect" parent="Floor"]
-offset_left = -640
-offset_top = -20
-offset_right = 640
-offset_bottom = 20
-color = Color(0.3, 0.3, 0.3)
+offset_left = -640.0
+offset_top = -20.0
+offset_right = 640.0
+offset_bottom = 20.0
+color = Color(0.3, 0.3, 0.3, 1)
 
 [node name="Player" parent="." instance=ExtResource("1_player")]
 position = Vector2(200, 600)
