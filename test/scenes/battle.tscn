@@ -1,12 +1,16 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/boss/boss.tscn" id="2_boss"]
+[ext_resource type="Script" path="res://scripts/battle_manager.gd" id="3_manager"]
+[ext_resource type="PackedScene" uid="uid://hud_scene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" uid="uid://cxgameover001" path="res://scenes/ui/game_over.tscn" id="5_gameover"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(1280, 40)
 
 [node name="Battle" type="Node2D"]
+script = ExtResource("3_manager")
 
 [node name="Floor" type="StaticBody2D" parent="."]
 position = Vector2(640, 680)
@@ -26,3 +30,7 @@ position = Vector2(200, 600)
 
 [node name="Boss" parent="." instance=ExtResource("2_boss")]
 position = Vector2(1000, 600)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="GameOver" parent="." instance=ExtResource("5_gameover")]
