@@ -1,0 +1,88 @@
+[gd_scene format=3 uid="uid://be8p2wnnlnf81"]
+
+[ext_resource type="Script" path="res://scripts/ui/stage_select.gd" id="1_stage_select"]
+
+[node name="StageSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_stage_select")
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 440.0
+offset_top = 80.0
+offset_right = 840.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 48
+text = "ステージ選択"
+horizontal_alignment = 1
+
+[node name="StageGrid" type="GridContainer" parent="."]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 180.0
+offset_right = 1040.0
+offset_bottom = 480.0
+columns = 5
+
+[node name="Stage1Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 1"
+
+[node name="Stage2Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 2"
+
+[node name="Stage3Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 3"
+
+[node name="Stage4Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 4"
+
+[node name="Stage5Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 5"
+
+[node name="Stage6Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 6"
+
+[node name="Stage7Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 7"
+
+[node name="Stage8Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 8"
+
+[node name="Stage9Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 9"
+
+[node name="Stage10Button" type="Button" parent="StageGrid"]
+custom_minimum_size = Vector2(150, 80)
+layout_mode = 2
+text = "Stage 10"
+
+[node name="BackButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 520.0
+offset_right = 740.0
+offset_bottom = 570.0
+text = "戻る"
