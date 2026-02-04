@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 signal health_changed(current_hp, max_hp)
 signal player_died
+signal arrow_changed(current_arrows, max_arrows)
 
 # HPパラメータ
 const MAX_HP = 100
@@ -118,6 +119,7 @@ func _sword_attack() -> void:
 
 func _bow_attack() -> void:
 	current_arrows -= 1
+	arrow_changed.emit(current_arrows, MAX_ARROWS)
 
 	var arrow = arrow_scene.instantiate()
 	arrow.global_position = global_position
@@ -129,6 +131,7 @@ func _bow_attack() -> void:
 	# 矢の回復
 	await get_tree().create_timer(ARROW_RELOAD_TIME).timeout
 	current_arrows = min(current_arrows + 1, MAX_ARROWS)
+	arrow_changed.emit(current_arrows, MAX_ARROWS)
 
 func _dash() -> void:
 	is_dashing = true
