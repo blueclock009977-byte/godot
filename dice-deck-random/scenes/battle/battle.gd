@@ -315,8 +315,8 @@ func _setup_game() -> void:
 	_update_hp_display()
 
 func _start_battle() -> void:
-	# Draw initial hands (5 cards each)
-	for i in range(5):
+	# Draw initial hands (4 cards each)
+	for i in range(4):
 		_draw_card_player()
 		_draw_card_opponent()
 	_update_hand_display()
@@ -373,6 +373,8 @@ func _apply_turn_start_passives(is_player: bool) -> void:
 func _on_dice_roll_pressed() -> void:
 	if current_phase != Phase.DICE_ROLL or current_turn != Turn.PLAYER:
 		return
+	if is_animating:
+		return
 	is_animating = true
 	_roll_dice()
 	await _roll_dice_animated()
@@ -409,6 +411,7 @@ func _roll_dice_animated() -> void:
 	dice_label.text = "Dice: %d" % current_dice
 	dice_label.add_theme_font_size_override("font_size", 36)
 	# Brief scale punch on dice label
+	dice_label.pivot_offset = dice_label.size / 2
 	var tween := create_tween()
 	tween.tween_property(dice_label, "scale", Vector2(1.3, 1.3), 0.1)
 	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
@@ -614,7 +617,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	_add_log("%s を召喚!" % card_ui.card_data.card_name)
 
 	# Apply on_summon effects
-	_apply_on_summon(card_ui, slot)
+	await _apply_on_summon(card_ui, slot)
 
 	# Auto_trigger effect 16: opponent has card that deals 1 dmg to summoned card
 	var enemy_slots := opponent_slots if is_player else player_slots
@@ -811,7 +814,7 @@ func _destroy_card(slot: FieldSlot, is_player_card: bool, killer_slot: FieldSlot
 				_add_log("%s: 隣接味方破壊でATK+1!" % adj_card.card_data.card_name)
 
 	# Apply on_destroy effects
-	_apply_on_destroy(card_ui, slot, is_player_card, killer_slot)
+	await _apply_on_destroy(card_ui, slot, is_player_card, killer_slot)
 
 	# Play destruction animation then remove
 	await card_ui.play_destroy_animation()
@@ -990,6 +993,8 @@ func _on_end_turn_pressed() -> void:
 		return
 	if current_phase == Phase.GAME_OVER:
 		return
+	if is_animating:
+		return
 
 	_clear_selection()
 	current_phase = Phase.END_TURN
@@ -1050,7 +1055,7 @@ func _ai_turn() -> void:
 			continue
 
 		# Priority 4: Summon to front row first
-		if _ai_try_summon_front():
+		if await _ai_try_summon_front():
 			actions_taken = true
 			await get_tree().create_timer(0.4).timeout
 			# After summon, check if new attack ready
@@ -1058,7 +1063,7 @@ func _ai_turn() -> void:
 			continue
 
 		# Priority 5: Summon to back row
-		if _ai_try_summon_back():
+		if await _ai_try_summon_back():
 			actions_taken = true
 			await get_tree().create_timer(0.4).timeout
 			_ai_set_attack_ready()
@@ -1119,7 +1124,7 @@ func _ai_try_kill_card() -> bool:
 			if tcard.current_hp <= atk:
 				# Can kill this target
 				_add_log("相手AI: %sで%sを倒す!" % [aslot.card_ui.card_data.card_name, tcard.card_data.card_name])
-				_execute_ai_attack(aslot, tslot)
+				await _execute_ai_attack(aslot, tslot)
 				return true
 	return false
 
@@ -1151,7 +1156,7 @@ func _ai_try_trade() -> bool:
 				best_target = tslot
 
 	if best_attacker != null and best_target != null:
-		_execute_ai_attack(best_attacker, best_target)
+		await _execute_ai_attack(best_attacker, best_target)
 		return true
 	return false
 
@@ -1165,7 +1170,7 @@ func _ai_try_summon_front() -> bool:
 		if opponent_slots[i].is_empty():
 			var card_ui: CardUI = summonable[0]
 			card_ui.set_face_down(false)
-			_summon_card_to_slot(card_ui, opponent_slots[i])
+			await _summon_card_to_slot(card_ui, opponent_slots[i])
 			return true
 	return false
 
@@ -1178,7 +1183,7 @@ func _ai_try_summon_back() -> bool:
 		if opponent_slots[i].is_empty():
 			var card_ui: CardUI = summonable[0]
 			card_ui.set_face_down(false)
-			_summon_card_to_slot(card_ui, opponent_slots[i])
+			await _summon_card_to_slot(card_ui, opponent_slots[i])
 			return true
 	return false
 
