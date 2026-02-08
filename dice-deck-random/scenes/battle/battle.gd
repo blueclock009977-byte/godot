@@ -158,16 +158,16 @@ func _build_ui() -> void:
 
 	dice_roll_button = Button.new()
 	dice_roll_button.text = "Roll Dice"
-	dice_roll_button.custom_minimum_size = Vector2(180, 50)
-	dice_roll_button.add_theme_font_size_override("font_size", 22)
+	dice_roll_button.custom_minimum_size = Vector2(200, 60)
+	dice_roll_button.add_theme_font_size_override("font_size", 24)
 	dice_roll_button.pressed.connect(_on_dice_roll_pressed)
 	dice_vbox.add_child(dice_roll_button)
 
 	# End Turn button
 	end_turn_button = Button.new()
 	end_turn_button.text = "End Turn"
-	end_turn_button.custom_minimum_size = Vector2(180, 70)
-	end_turn_button.add_theme_font_size_override("font_size", 24)
+	end_turn_button.custom_minimum_size = Vector2(200, 80)
+	end_turn_button.add_theme_font_size_override("font_size", 26)
 	end_turn_button.pressed.connect(_on_end_turn_pressed)
 	center_panel.add_child(end_turn_button)
 
@@ -363,6 +363,7 @@ func _apply_turn_start_passives(is_player: bool) -> void:
 			var card_ui: CardUI = slot.card_ui
 			if card_ui.card_data.effect_type == "passive" and card_ui.card_data.effect_id == 13:
 				card_ui.heal(1)
+				_spawn_heal_popup(card_ui, 1)
 				_add_log("%s: HP1回復 (パッシブ)" % card_ui.card_data.card_name)
 
 # ==============================================================================
@@ -372,7 +373,9 @@ func _apply_turn_start_passives(is_player: bool) -> void:
 func _on_dice_roll_pressed() -> void:
 	if current_phase != Phase.DICE_ROLL or current_turn != Turn.PLAYER:
 		return
+	is_animating = true
 	_roll_dice()
+	await _roll_dice_animated()
 	current_phase = Phase.DRAW
 	_update_phase_display()
 
@@ -383,7 +386,8 @@ func _on_dice_roll_pressed() -> void:
 	_add_log("2枚ドロー")
 
 	# After draw, go to main phase
-	await get_tree().create_timer(0.5).timeout
+	is_animating = false
+	await get_tree().create_timer(0.3).timeout
 	current_phase = Phase.MAIN
 	_update_phase_display()
 	_update_summonable_indicators()
@@ -392,9 +396,23 @@ func _on_dice_roll_pressed() -> void:
 
 func _roll_dice() -> int:
 	current_dice = randi_range(1, 6)
-	dice_label.text = "Dice: %d" % current_dice
 	_add_log("ダイス: %d" % current_dice)
 	return current_dice
+
+func _roll_dice_animated() -> void:
+	# Cycling animation before showing final result
+	for i in range(8):
+		var fake := randi_range(1, 6)
+		dice_label.text = "Dice: %d" % fake
+		dice_label.add_theme_font_size_override("font_size", 40)
+		await get_tree().create_timer(0.06).timeout
+	dice_label.text = "Dice: %d" % current_dice
+	dice_label.add_theme_font_size_override("font_size", 36)
+	# Brief scale punch on dice label
+	var tween := create_tween()
+	tween.tween_property(dice_label, "scale", Vector2(1.3, 1.3), 0.1)
+	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
+	await tween.finished
 
 # ==============================================================================
 # MAIN PHASE - SUMMONING
@@ -605,9 +623,11 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 			var ec: CardUI = eslot.card_ui
 			if ec.card_data.effect_type == "auto_trigger" and ec.card_data.effect_id == 16:
 				var remaining := card_ui.take_damage(1)
+				card_ui.play_damage_flash()
+				_spawn_damage_popup(card_ui, 1)
 				_add_log("%s: 相手召喚に反応し1ダメージ!" % ec.card_data.card_name)
 				if remaining <= 0:
-					_destroy_card(slot, is_player, null)
+					await _destroy_card(slot, is_player, null)
 					# Update displays
 					if is_player:
 						_update_hand_display()
@@ -664,12 +684,13 @@ func _execute_attack(attacker_slot: FieldSlot, target_slot: FieldSlot, _extra) -
 		if is_player_attacking:
 			opponent_hp -= atk
 			_add_log("%s がプレイヤーに%dダメージ!" % [attacker_card.card_data.card_name, atk])
-			# Player has ATK=0, deals no damage back
+			_spawn_hp_damage_popup(false, atk)
 		else:
 			player_hp -= atk
 			_add_log("%s がプレイヤーに%dダメージ!" % [attacker_card.card_data.card_name, atk])
+			_spawn_hp_damage_popup(true, atk)
 		_update_hp_display()
-		_check_game_over()
+		await _check_game_over()
 	else:
 		# Battle with another card
 		var defender_card: CardUI = target_slot.card_ui
@@ -705,17 +726,23 @@ func _execute_attack(attacker_slot: FieldSlot, target_slot: FieldSlot, _extra) -
 		# Apply mutual damage
 		var atk_remaining := attacker_card.take_damage(def_damage_to_atk)
 		var def_remaining := defender_card.take_damage(atk_damage_to_def)
+		attacker_card.play_damage_flash()
+		defender_card.play_damage_flash()
+		_spawn_damage_popup(attacker_card, def_damage_to_atk)
+		_spawn_damage_popup(defender_card, atk_damage_to_def)
 
 		_add_log("  -> %s HP: %d, %s HP: %d" % [
 			attacker_card.card_data.card_name, atk_remaining,
 			defender_card.card_data.card_name, def_remaining
 		])
 
+		await get_tree().create_timer(0.3).timeout
+
 		# Check destruction (defender first, then attacker)
 		if def_remaining <= 0:
-			_destroy_card(target_slot, not is_player_attacking, attacker_slot)
+			await _destroy_card(target_slot, not is_player_attacking, attacker_slot)
 		if atk_remaining <= 0:
-			_destroy_card(attacker_slot, is_player_attacking, target_slot)
+			await _destroy_card(attacker_slot, is_player_attacking, target_slot)
 
 	is_animating = false
 	_clear_selection()
@@ -786,7 +813,9 @@ func _destroy_card(slot: FieldSlot, is_player_card: bool, killer_slot: FieldSlot
 	# Apply on_destroy effects
 	_apply_on_destroy(card_ui, slot, is_player_card, killer_slot)
 
-	# Remove from slot and add to trash
+	# Play destruction animation then remove
+	await card_ui.play_destroy_animation()
+
 	slot.remove_card()
 	if card_ui.get_parent():
 		card_ui.get_parent().remove_child(card_ui)
@@ -814,9 +843,11 @@ func _apply_on_summon(card_ui: CardUI, slot: FieldSlot) -> void:
 				var target: FieldSlot = targets[randi() % targets.size()]
 				var tcard: CardUI = target.card_ui
 				var remaining := tcard.take_damage(1)
+				tcard.play_damage_flash()
+				_spawn_damage_popup(tcard, 1)
 				_add_log("効果: %sに1ダメージ!" % tcard.card_data.card_name)
 				if remaining <= 0:
-					_destroy_card(target, not is_player, slot)
+					await _destroy_card(target, not is_player, slot)
 
 		2:  # Draw 1
 			if is_player:
@@ -845,9 +876,11 @@ func _apply_on_summon(card_ui: CardUI, slot: FieldSlot) -> void:
 						lowest = t
 				var tcard: CardUI = lowest.card_ui
 				var remaining := tcard.take_damage(2)
+				tcard.play_damage_flash()
+				_spawn_damage_popup(tcard, 2)
 				_add_log("効果: %sに2ダメージ!" % tcard.card_data.card_name)
 				if remaining <= 0:
-					_destroy_card(lowest, not is_player, slot)
+					await _destroy_card(lowest, not is_player, slot)
 
 		5:  # Adjacent ally +1 attack die
 			var adj := _get_adjacent_slots(slot)
@@ -885,9 +918,11 @@ func _apply_on_destroy(card_ui: CardUI, slot: FieldSlot, is_player_card: bool, k
 			if killer_slot != null and not killer_slot.is_empty():
 				var kcard: CardUI = killer_slot.card_ui
 				var remaining := kcard.take_damage(2)
+				kcard.play_damage_flash()
+				_spawn_damage_popup(kcard, 2)
 				_add_log("破壊効果: %sに2ダメージ!" % kcard.card_data.card_name)
 				if remaining <= 0:
-					_destroy_card(killer_slot, not is_player, null)
+					await _destroy_card(killer_slot, not is_player, null)
 
 		8:  # 1 dmg all enemies
 			var targets := _get_non_empty_slots(enemy_slots)
@@ -895,11 +930,13 @@ func _apply_on_destroy(card_ui: CardUI, slot: FieldSlot, is_player_card: bool, k
 			for t in targets:
 				var tc: CardUI = t.card_ui
 				var remaining := tc.take_damage(1)
+				tc.play_damage_flash()
+				_spawn_damage_popup(tc, 1)
 				_add_log("破壊効果: %sに1ダメージ!" % tc.card_data.card_name)
 				if remaining <= 0:
 					to_destroy.append(t)
 			for t in to_destroy:
-				_destroy_card(t, not is_player, null)
+				await _destroy_card(t, not is_player, null)
 
 		9:  # Recover random from trash
 			var trash := player_trash if is_player else opponent_trash
@@ -924,6 +961,7 @@ func _apply_on_destroy(card_ui: CardUI, slot: FieldSlot, is_player_card: bool, k
 				if not a.is_empty() and a.is_player_side == is_player:
 					var ac: CardUI = a.card_ui
 					ac.heal(2)
+					_spawn_heal_popup(ac, 2)
 					_add_log("破壊効果: %s HP+2!" % ac.card_data.card_name)
 
 # ==============================================================================
@@ -966,9 +1004,9 @@ func _on_end_turn_pressed() -> void:
 # ==============================================================================
 
 func _ai_turn() -> void:
-	# Roll dice
+	# Roll dice with animation
 	_roll_dice()
-	await get_tree().create_timer(0.5).timeout
+	await _roll_dice_animated()
 
 	# Draw 2 cards
 	_draw_card_opponent()
@@ -1059,8 +1097,9 @@ func _ai_try_attack_player() -> bool:
 
 	player_hp -= atk
 	_add_log("相手 %s がプレイヤーに%dダメージ!" % [card_ui.card_data.card_name, atk])
+	_spawn_hp_damage_popup(true, atk)
 	_update_hp_display()
-	_check_game_over()
+	await _check_game_over()
 	return true
 
 func _ai_try_kill_card() -> bool:
@@ -1186,12 +1225,17 @@ func _execute_ai_attack(attacker_slot: FieldSlot, target_slot: FieldSlot) -> voi
 	# Apply mutual damage
 	var atk_remaining := attacker_card.take_damage(def_damage_to_atk)
 	var def_remaining := defender_card.take_damage(atk_damage_to_def)
+	attacker_card.play_damage_flash()
+	defender_card.play_damage_flash()
+	_spawn_damage_popup(attacker_card, def_damage_to_atk)
+	_spawn_damage_popup(defender_card, atk_damage_to_def)
+	await get_tree().create_timer(0.3).timeout
 
 	# Check destruction
 	if def_remaining <= 0:
-		_destroy_card(target_slot, true, attacker_slot)
+		await _destroy_card(target_slot, true, attacker_slot)
 	if atk_remaining <= 0:
-		_destroy_card(attacker_slot, false, target_slot)
+		await _destroy_card(attacker_slot, false, target_slot)
 
 func _get_attack_ready_slots(slots: Array) -> Array:
 	var result := []
@@ -1446,7 +1490,7 @@ func _find_slot_at_position(pos: Vector2, player_side: bool) -> FieldSlot:
 	var closest: FieldSlot = null
 	var closest_dist := 200.0  # Max distance to snap
 	for slot in slots:
-		var center := slot.global_position + slot.size / 2
+		var center: Vector2 = slot.global_position + slot.size / 2
 		var dist := pos.distance_to(center)
 		if dist < closest_dist:
 			closest_dist = dist
@@ -1458,6 +1502,55 @@ func _is_position_in_opponent_hp_area(pos: Vector2) -> bool:
 	# Expand the area a bit for easier targeting
 	rect = rect.grow(50)
 	return rect.has_point(pos)
+
+func _spawn_damage_popup(node: Control, amount: int) -> void:
+	var popup := Label.new()
+	popup.text = "-%d" % amount
+	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup.add_theme_font_size_override("font_size", 32)
+	popup.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+	popup.z_index = 50
+	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup.position = Vector2(node.size.x / 2 - 20, -10)
+	node.add_child(popup)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(popup, "position:y", popup.position.y - 60, 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.7).set_delay(0.3)
+	tween.finished.connect(popup.queue_free)
+
+func _spawn_heal_popup(node: Control, amount: int) -> void:
+	var popup := Label.new()
+	popup.text = "+%d" % amount
+	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup.add_theme_font_size_override("font_size", 28)
+	popup.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
+	popup.z_index = 50
+	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup.position = Vector2(node.size.x / 2 - 20, -10)
+	node.add_child(popup)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(popup, "position:y", popup.position.y - 50, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.6).set_delay(0.2)
+	tween.finished.connect(popup.queue_free)
+
+func _spawn_hp_damage_popup(is_player: bool, amount: int) -> void:
+	var label := player_hp_label if is_player else opponent_hp_label
+	var popup := Label.new()
+	popup.text = "-%d" % amount
+	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup.add_theme_font_size_override("font_size", 36)
+	popup.add_theme_color_override("font_color", Color(1, 0.1, 0.1))
+	popup.z_index = 50
+	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup.position = Vector2(label.size.x / 2 - 20, -20)
+	label.add_child(popup)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(popup, "position:y", popup.position.y - 60, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.8).set_delay(0.3)
+	tween.finished.connect(popup.queue_free)
 
 func _add_log(msg: String) -> void:
 	battle_log_messages.append(msg)

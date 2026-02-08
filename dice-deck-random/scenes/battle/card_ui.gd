@@ -24,6 +24,7 @@ var stats_label: Label
 var dice_label: Label
 var effect_label: Label
 var glow_effect: ColorRect
+var glow_tween: Tween
 
 func _ready() -> void:
 	custom_minimum_size = Vector2(140, 200)
@@ -134,13 +135,15 @@ func _update_display() -> void:
 	style.corner_radius_bottom_right = 8
 	background.add_theme_stylebox_override("panel", style)
 
-	glow_effect.visible = is_attack_ready or is_summonable or is_selected
+	var should_glow := is_attack_ready or is_summonable or is_selected
+	glow_effect.visible = should_glow
 	if is_selected:
 		glow_effect.color = Color(1, 1, 0, 0.3)
 	elif is_attack_ready:
 		glow_effect.color = Color(1, 0.3, 0.3, 0.25)
 	elif is_summonable:
 		glow_effect.color = Color(0.3, 1, 0.3, 0.25)
+	_update_glow_animation(should_glow)
 
 func get_all_attack_dice() -> Array[int]:
 	var result: Array[int] = card_data.attack_dice.duplicate()
@@ -216,3 +219,24 @@ func _gui_input(event: InputEvent) -> void:
 func reset_position() -> void:
 	global_position = original_position
 	is_dragging = false
+
+func _update_glow_animation(should_glow: bool) -> void:
+	if glow_tween:
+		glow_tween.kill()
+		glow_tween = null
+	if should_glow and glow_effect.visible:
+		glow_tween = create_tween().set_loops()
+		glow_tween.tween_property(glow_effect, "modulate:a", 0.4, 0.6).set_trans(Tween.TRANS_SINE)
+		glow_tween.tween_property(glow_effect, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE)
+
+func play_destroy_animation() -> Signal:
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(self, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(self, "scale", Vector2(0.7, 0.7), 0.3).set_trans(Tween.TRANS_QUAD)
+	return tween.finished
+
+func play_damage_flash() -> void:
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", Color(1, 0.3, 0.3), 0.08)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.15)
