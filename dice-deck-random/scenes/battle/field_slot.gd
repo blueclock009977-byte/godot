@@ -9,10 +9,11 @@ var card_ui: Control = null  # CardUI reference
 var forward_slots: Array = []
 
 var background: Panel
+var is_highlighted: bool = false
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(150, 210)
-	size = Vector2(150, 210)
+	custom_minimum_size = Vector2(185, 260)
+	size = Vector2(185, 260)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	background = Panel.new()
@@ -50,12 +51,23 @@ func is_protected() -> bool:
 			return false
 	return true
 
+func set_highlighted(highlight: bool) -> void:
+	is_highlighted = highlight
+	_update_display()
+
 func _update_display() -> void:
 	if not is_inside_tree():
 		return
 	var style := StyleBoxFlat.new()
 	if card_ui != null:
 		style.bg_color = Color(0, 0, 0, 0)
+	elif is_highlighted:
+		style.bg_color = Color(0.2, 1.0, 0.2, 0.15)
+		style.border_width_left = 2
+		style.border_width_right = 2
+		style.border_width_top = 2
+		style.border_width_bottom = 2
+		style.border_color = Color(0.3, 1.0, 0.3, 0.6)
 	else:
 		style.bg_color = Color(1, 1, 1, 0.08)
 		style.border_width_left = 1

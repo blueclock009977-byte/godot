@@ -173,6 +173,7 @@ func _on_remove_card(index: int) -> void:
 func _on_save() -> void:
 	if deck.size() == MAX_DECK_SIZE:
 		GameManager.player_deck = deck.duplicate()
+		GameManager.save_deck()
 		# Show confirmation
 		var popup := AcceptDialog.new()
 		popup.title = "Saved"

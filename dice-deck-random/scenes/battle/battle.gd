@@ -68,6 +68,7 @@ var log_label: Label
 
 var animation_timer: Timer
 var is_animating: bool = false
+var roll_button_tween: Tween
 
 # ==============================================================================
 # INITIALIZATION
@@ -110,19 +111,31 @@ func _build_ui() -> void:
 	opponent_hand_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	opp_hand_scroll.add_child(opponent_hand_container)
 
-	# --- Opponent HP ---
+	# --- Opponent HP + Surrender ---
+	var opp_hp_row := HBoxContainer.new()
+	opp_hp_row.add_theme_constant_override("separation", 8)
+	main_vbox.add_child(opp_hp_row)
+
 	opponent_hp_label = Label.new()
 	opponent_hp_label.text = "OPPONENT HP: 20"
 	opponent_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	opponent_hp_label.add_theme_font_size_override("font_size", 28)
 	opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+	opponent_hp_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	opponent_hp_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	opponent_hp_label.gui_input.connect(_on_opponent_hp_clicked)
-	main_vbox.add_child(opponent_hp_label)
+	opp_hp_row.add_child(opponent_hp_label)
+
+	var surrender_btn := Button.new()
+	surrender_btn.text = "降参"
+	surrender_btn.custom_minimum_size = Vector2(100, 40)
+	surrender_btn.add_theme_font_size_override("font_size", 18)
+	surrender_btn.pressed.connect(_on_surrender_pressed)
+	opp_hp_row.add_child(surrender_btn)
 
 	# --- Opponent Back Row (2 slots, centered) ---
 	var opp_back_center := CenterContainer.new()
-	opp_back_center.custom_minimum_size = Vector2(0, 220)
+	opp_back_center.custom_minimum_size = Vector2(0, 270)
 	main_vbox.add_child(opp_back_center)
 	opponent_back_row = HBoxContainer.new()
 	opponent_back_row.add_theme_constant_override("separation", 20)
@@ -130,50 +143,85 @@ func _build_ui() -> void:
 
 	# --- Opponent Front Row (3 slots, centered) ---
 	var opp_front_center := CenterContainer.new()
-	opp_front_center.custom_minimum_size = Vector2(0, 220)
+	opp_front_center.custom_minimum_size = Vector2(0, 270)
 	main_vbox.add_child(opp_front_center)
 	opponent_front_row = HBoxContainer.new()
 	opponent_front_row.add_theme_constant_override("separation", 10)
 	opp_front_center.add_child(opponent_front_row)
 
-	# --- Center Divider with Dice + End Turn ---
-	var center_container := CenterContainer.new()
-	center_container.custom_minimum_size = Vector2(0, 80)
-	main_vbox.add_child(center_container)
+	# --- Center Divider: Dice (left) | Phase (center) | End Turn (right) ---
 	center_panel = HBoxContainer.new()
-	center_panel.add_theme_constant_override("separation", 40)
-	center_container.add_child(center_panel)
+	center_panel.custom_minimum_size = Vector2(0, 80)
+	center_panel.add_theme_constant_override("separation", 8)
+	main_vbox.add_child(center_panel)
 
-	# Dice display
+	# Left: Dice display
 	var dice_vbox := VBoxContainer.new()
-	dice_vbox.add_theme_constant_override("separation", 4)
+	dice_vbox.add_theme_constant_override("separation", 2)
+	dice_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center_panel.add_child(dice_vbox)
 
 	dice_label = Label.new()
 	dice_label.text = "Dice: -"
 	dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	dice_label.add_theme_font_size_override("font_size", 36)
+	dice_label.add_theme_font_size_override("font_size", 32)
 	dice_label.add_theme_color_override("font_color", Color(1, 1, 0.6))
 	dice_vbox.add_child(dice_label)
 
 	dice_roll_button = Button.new()
-	dice_roll_button.text = "Roll Dice"
-	dice_roll_button.custom_minimum_size = Vector2(200, 60)
+	dice_roll_button.text = "ROLL"
+	dice_roll_button.custom_minimum_size = Vector2(0, 60)
 	dice_roll_button.add_theme_font_size_override("font_size", 24)
+	# Yellow styled button
+	var roll_style := StyleBoxFlat.new()
+	roll_style.bg_color = Color(0.15, 0.15, 0.1)
+	roll_style.border_width_left = 3
+	roll_style.border_width_right = 3
+	roll_style.border_width_top = 3
+	roll_style.border_width_bottom = 3
+	roll_style.border_color = Color(1, 0.9, 0.1)
+	roll_style.corner_radius_top_left = 8
+	roll_style.corner_radius_top_right = 8
+	roll_style.corner_radius_bottom_left = 8
+	roll_style.corner_radius_bottom_right = 8
+	dice_roll_button.add_theme_stylebox_override("normal", roll_style)
+	var roll_hover := roll_style.duplicate()
+	roll_hover.bg_color = Color(0.3, 0.3, 0.1)
+	dice_roll_button.add_theme_stylebox_override("hover", roll_hover)
+	var roll_pressed := roll_style.duplicate()
+	roll_pressed.bg_color = Color(0.4, 0.4, 0.1)
+	dice_roll_button.add_theme_stylebox_override("pressed", roll_pressed)
+	dice_roll_button.add_theme_color_override("font_color", Color(1, 0.95, 0.3))
 	dice_roll_button.pressed.connect(_on_dice_roll_pressed)
 	dice_vbox.add_child(dice_roll_button)
 
-	# End Turn button
+	# Center: Phase label
+	phase_label = Label.new()
+	phase_label.text = ""
+	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	phase_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	phase_label.add_theme_font_size_override("font_size", 28)
+	phase_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	phase_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center_panel.add_child(phase_label)
+
+	# Right: End Turn button
+	var end_turn_vbox := VBoxContainer.new()
+	end_turn_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	end_turn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	center_panel.add_child(end_turn_vbox)
+
 	end_turn_button = Button.new()
 	end_turn_button.text = "End Turn"
-	end_turn_button.custom_minimum_size = Vector2(200, 80)
-	end_turn_button.add_theme_font_size_override("font_size", 26)
+	end_turn_button.custom_minimum_size = Vector2(0, 60)
+	end_turn_button.add_theme_font_size_override("font_size", 22)
 	end_turn_button.pressed.connect(_on_end_turn_pressed)
-	center_panel.add_child(end_turn_button)
+	end_turn_vbox.add_child(end_turn_button)
 
 	# --- Player Front Row (3 slots, centered) ---
 	var pl_front_center := CenterContainer.new()
-	pl_front_center.custom_minimum_size = Vector2(0, 220)
+	pl_front_center.custom_minimum_size = Vector2(0, 270)
 	main_vbox.add_child(pl_front_center)
 	player_front_row = HBoxContainer.new()
 	player_front_row.add_theme_constant_override("separation", 10)
@@ -181,7 +229,7 @@ func _build_ui() -> void:
 
 	# --- Player Back Row (2 slots, centered) ---
 	var pl_back_center := CenterContainer.new()
-	pl_back_center.custom_minimum_size = Vector2(0, 220)
+	pl_back_center.custom_minimum_size = Vector2(0, 270)
 	main_vbox.add_child(pl_back_center)
 	player_back_row = HBoxContainer.new()
 	player_back_row.add_theme_constant_override("separation", 20)
@@ -214,18 +262,7 @@ func _build_ui() -> void:
 	player_hand_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	player_hand_scroll.add_child(player_hand_container)
 
-	# --- Phase Label (overlay) ---
-	phase_label = Label.new()
-	phase_label.text = ""
-	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	phase_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	phase_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	phase_label.offset_top = 460
-	phase_label.add_theme_font_size_override("font_size", 40)
-	phase_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
-	phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	phase_label.z_index = 10
-	add_child(phase_label)
+	# phase_label is now part of center_panel (created above)
 
 	# --- Log Label (bottom overlay) ---
 	log_label = Label.new()
@@ -335,6 +372,11 @@ func _start_player_turn() -> void:
 	current_turn = Turn.PLAYER
 	_add_log("--- Player Turn %d ---" % turn_number)
 
+	# Reset attacked flags
+	for slot in player_slots:
+		if not slot.is_empty():
+			(slot.card_ui as CardUI).has_attacked_this_turn = false
+
 	# Passive effect 13: turn start heal 1 for player cards
 	_apply_turn_start_passives(true)
 
@@ -346,6 +388,11 @@ func _start_player_turn() -> void:
 func _start_opponent_turn() -> void:
 	current_turn = Turn.OPPONENT
 	_add_log("--- Opponent Turn %d ---" % turn_number)
+
+	# Reset attacked flags
+	for slot in opponent_slots:
+		if not slot.is_empty():
+			(slot.card_ui as CardUI).has_attacked_this_turn = false
 
 	# Passive effect 13: turn start heal 1 for opponent cards
 	_apply_turn_start_passives(false)
@@ -424,6 +471,7 @@ func _roll_dice_animated() -> void:
 func _update_summonable_indicators() -> void:
 	for card_ui in player_hand:
 		var can_summon := _can_summon_card(card_ui, true)
+		card_ui.is_summon_and_attack = can_summon and (current_dice in card_ui.get_all_attack_dice())
 		card_ui.set_summonable(can_summon)
 
 func _can_summon_card(card_ui: CardUI, is_player: bool) -> bool:
@@ -438,12 +486,12 @@ func _update_attack_ready_indicators() -> void:
 	for slot in player_slots:
 		if not slot.is_empty():
 			var card_ui: CardUI = slot.card_ui
-			# Check if dice matches attack_dice (including bonus)
+			if card_ui.has_attacked_this_turn:
+				continue
 			var all_dice := card_ui.get_all_attack_dice()
 			if current_dice in all_dice and not card_ui.is_attack_ready:
 				card_ui.set_attack_ready(true)
 				_add_log("%s: 攻撃可能!" % card_ui.card_data.card_name)
-			# If already attack_ready from previous turn, keep it
 			card_ui._update_display()
 
 # ==============================================================================
@@ -468,11 +516,18 @@ func _on_card_clicked(card_ui: CardUI) -> void:
 			return
 
 	elif current_phase == Phase.ATTACK_TARGET:
+		if selected_attacker == null:
+			return
 		# Cancel selection if tapping same card
-		if selected_attacker != null and selected_attacker.card_ui == card_ui:
+		if selected_attacker.card_ui == card_ui:
 			_clear_selection()
 			current_phase = Phase.MAIN
 			_update_phase_display()
+			return
+		# Attack enemy card if clicked
+		var enemy_slot := _find_slot_for_card(card_ui, false)
+		if enemy_slot != null and not enemy_slot.is_empty() and not enemy_slot.is_protected():
+			_execute_attack(selected_attacker, enemy_slot, null)
 			return
 
 func _handle_hand_card_tap(card_ui: CardUI) -> void:
@@ -483,6 +538,8 @@ func _handle_hand_card_tap(card_ui: CardUI) -> void:
 		# Deselect
 		card_ui.set_selected(false)
 		selected_hand_card = null
+		_clear_slot_highlights()
+		_update_phase_display()
 		return
 
 	# Select this card
@@ -494,6 +551,9 @@ func _handle_hand_card_tap(card_ui: CardUI) -> void:
 
 	card_ui.set_selected(true)
 	selected_hand_card = card_ui
+	_clear_slot_highlights()
+	_highlight_empty_player_slots()
+	_update_phase_display()
 
 func _handle_field_card_tap(card_ui: CardUI, slot: FieldSlot) -> void:
 	if selected_hand_card != null:
@@ -612,6 +672,10 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	# Set face up
 	card_ui.set_face_down(false)
 
+	# Ensure card_clicked is connected for field interaction
+	if not card_ui.card_clicked.is_connected(_on_card_clicked):
+		card_ui.card_clicked.connect(_on_card_clicked)
+
 	# Place in slot
 	slot.place_card(card_ui)
 	_add_log("%s を召喚!" % card_ui.card_data.card_name)
@@ -639,16 +703,19 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 					_update_summonable_indicators()
 					return
 
-	# Clear selection
+	# Clear selection and highlights
 	selected_hand_card = null
 	card_ui.set_selected(false)
 	card_ui.set_summonable(false)
+	card_ui.is_summon_and_attack = false
+	_clear_slot_highlights()
 
 	# Refresh displays
 	if is_player:
 		_update_hand_display()
 		_update_summonable_indicators()
 		_update_attack_ready_indicators()
+		_update_phase_display()
 	else:
 		_update_opponent_hand_display()
 
@@ -669,6 +736,7 @@ func _execute_attack(attacker_slot: FieldSlot, target_slot: FieldSlot, _extra) -
 
 	# Consume attack ready
 	attacker_card.set_attack_ready(false)
+	attacker_card.has_attacked_this_turn = true
 	attacker_card.set_selected(false)
 
 	# Passive effect 14: on attack draw 1
@@ -1018,7 +1086,7 @@ func _ai_turn() -> void:
 	_draw_card_opponent()
 	_update_opponent_hand_display()
 	_add_log("相手: 2枚ドロー")
-	await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(0.6).timeout
 
 	# Set attack ready for opponent cards
 	_ai_set_attack_ready()
@@ -1035,7 +1103,7 @@ func _ai_turn() -> void:
 			actions_taken = true
 			if current_phase == Phase.GAME_OVER:
 				return
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.8).timeout
 			continue
 
 		# Priority 2: Kill enemy card
@@ -1043,7 +1111,7 @@ func _ai_turn() -> void:
 			actions_taken = true
 			if current_phase == Phase.GAME_OVER:
 				return
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.8).timeout
 			continue
 
 		# Priority 3: Best trade efficiency
@@ -1051,13 +1119,13 @@ func _ai_turn() -> void:
 			actions_taken = true
 			if current_phase == Phase.GAME_OVER:
 				return
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.8).timeout
 			continue
 
 		# Priority 4: Summon to front row first
 		if await _ai_try_summon_front():
 			actions_taken = true
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.8).timeout
 			# After summon, check if new attack ready
 			_ai_set_attack_ready()
 			continue
@@ -1065,19 +1133,21 @@ func _ai_turn() -> void:
 		# Priority 5: Summon to back row
 		if await _ai_try_summon_back():
 			actions_taken = true
-			await get_tree().create_timer(0.4).timeout
+			await get_tree().create_timer(0.8).timeout
 			_ai_set_attack_ready()
 			continue
 
 		# Priority 6: End turn (break the loop)
 
 	_add_log("相手: ターン終了")
-	await get_tree().create_timer(0.5).timeout
+	await get_tree().create_timer(1.0).timeout
 
 func _ai_set_attack_ready() -> void:
 	for slot in opponent_slots:
 		if not slot.is_empty():
 			var card_ui: CardUI = slot.card_ui
+			if card_ui.has_attacked_this_turn:
+				continue
 			var all_dice := card_ui.get_all_attack_dice()
 			if current_dice in all_dice and not card_ui.is_attack_ready:
 				card_ui.set_attack_ready(true)
@@ -1093,12 +1163,16 @@ func _ai_try_attack_player() -> bool:
 	var card_ui: CardUI = slot.card_ui
 	var atk := _get_effective_atk(card_ui, slot)
 	card_ui.set_attack_ready(false)
+	card_ui.has_attacked_this_turn = true
 
 	# Passive 14: on attack draw 1
 	if card_ui.card_data.effect_type == "passive" and card_ui.card_data.effect_id == 14:
 		_draw_card_opponent()
 		_update_opponent_hand_display()
 		_add_log("%s: 攻撃時1枚ドロー!" % card_ui.card_data.card_name)
+
+	# Direct attack lunge animation toward player HP
+	await _play_direct_attack_animation(card_ui, slot, true)
 
 	player_hp -= atk
 	_add_log("相手 %s がプレイヤーに%dダメージ!" % [card_ui.card_data.card_name, atk])
@@ -1197,6 +1271,7 @@ func _get_ai_summonable_cards() -> Array:
 func _execute_ai_attack(attacker_slot: FieldSlot, target_slot: FieldSlot) -> void:
 	var attacker_card: CardUI = attacker_slot.card_ui
 	attacker_card.set_attack_ready(false)
+	attacker_card.has_attacked_this_turn = true
 
 	# Passive 14: on attack draw 1
 	if attacker_card.card_data.effect_type == "passive" and attacker_card.card_data.effect_id == 14:
@@ -1212,6 +1287,9 @@ func _execute_ai_attack(attacker_slot: FieldSlot, target_slot: FieldSlot) -> voi
 		attacker_card.card_data.card_name, atk_atk,
 		defender_card.card_data.card_name, def_atk
 	])
+
+	# Attack lunge animation: attacker moves toward defender
+	await _play_attack_animation(attacker_card, attacker_slot, defender_card, target_slot)
 
 	# Damage reduction passive 12
 	var atk_damage_to_def := atk_atk
@@ -1234,7 +1312,7 @@ func _execute_ai_attack(attacker_slot: FieldSlot, target_slot: FieldSlot) -> voi
 	defender_card.play_damage_flash()
 	_spawn_damage_popup(attacker_card, def_damage_to_atk)
 	_spawn_damage_popup(defender_card, atk_damage_to_def)
-	await get_tree().create_timer(0.3).timeout
+	await get_tree().create_timer(0.5).timeout
 
 	# Check destruction
 	if def_remaining <= 0:
@@ -1359,8 +1437,19 @@ func _update_phase_display() -> void:
 		phase_label.text = "OPPONENT TURN"
 
 func _update_buttons() -> void:
-	dice_roll_button.visible = (current_phase == Phase.DICE_ROLL and current_turn == Turn.PLAYER)
+	var show_roll := (current_phase == Phase.DICE_ROLL and current_turn == Turn.PLAYER)
+	dice_roll_button.visible = show_roll
 	end_turn_button.disabled = (current_phase == Phase.DICE_ROLL or current_turn != Turn.PLAYER or current_phase == Phase.GAME_OVER)
+
+	# Pulse the roll button when waiting for dice roll
+	if roll_button_tween:
+		roll_button_tween.kill()
+		roll_button_tween = null
+		dice_roll_button.modulate = Color.WHITE
+	if show_roll:
+		roll_button_tween = create_tween().set_loops()
+		roll_button_tween.tween_property(dice_roll_button, "modulate", Color(1.5, 1.4, 0.5), 0.35).set_trans(Tween.TRANS_SINE)
+		roll_button_tween.tween_property(dice_roll_button, "modulate", Color(0.8, 0.8, 0.6), 0.35).set_trans(Tween.TRANS_SINE)
 
 # ==============================================================================
 # SELECTION
@@ -1373,10 +1462,32 @@ func _clear_selection() -> void:
 	if selected_attacker != null and not selected_attacker.is_empty():
 		(selected_attacker.card_ui as CardUI).set_selected(false)
 	selected_attacker = null
+	_clear_slot_highlights()
+
+func _highlight_empty_player_slots() -> void:
+	for slot in player_slots:
+		if slot.is_empty():
+			slot.set_highlighted(true)
+
+func _clear_slot_highlights() -> void:
+	for slot in player_slots:
+		slot.set_highlighted(false)
+	for slot in opponent_slots:
+		slot.set_highlighted(false)
 
 # ==============================================================================
 # GAME OVER
 # ==============================================================================
+
+func _on_surrender_pressed() -> void:
+	if current_phase == Phase.GAME_OVER:
+		return
+	current_phase = Phase.GAME_OVER
+	_update_phase_display()
+	_add_log("降参しました...")
+	GameManager.battle_result = "lose"
+	await get_tree().create_timer(1.0).timeout
+	_show_result("SURRENDER")
 
 func _check_game_over() -> void:
 	if player_hp <= 0:
@@ -1401,11 +1512,14 @@ func _show_result(text: String) -> void:
 	overlay.z_index = 100
 	add_child(overlay)
 
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+
 	var result_vbox := VBoxContainer.new()
-	result_vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	result_vbox.add_theme_constant_override("separation", 16)
 	result_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	result_vbox.z_index = 101
-	overlay.add_child(result_vbox)
+	center.add_child(result_vbox)
 
 	var result_label := Label.new()
 	result_label.text = text
@@ -1423,16 +1537,19 @@ func _show_result(text: String) -> void:
 	hp_info.add_theme_font_size_override("font_size", 24)
 	result_vbox.add_child(hp_info)
 
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 30)
-	result_vbox.add_child(spacer)
-
 	var retry_button := Button.new()
-	retry_button.text = "Retry"
-	retry_button.custom_minimum_size = Vector2(200, 60)
+	retry_button.text = "もう一度"
+	retry_button.custom_minimum_size = Vector2(300, 70)
 	retry_button.add_theme_font_size_override("font_size", 28)
 	retry_button.pressed.connect(func(): GameManager.change_scene("res://scenes/battle/battle.tscn"))
 	result_vbox.add_child(retry_button)
+
+	var title_button := Button.new()
+	title_button.text = "タイトルへ"
+	title_button.custom_minimum_size = Vector2(300, 70)
+	title_button.add_theme_font_size_override("font_size", 28)
+	title_button.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
+	result_vbox.add_child(title_button)
 
 # ==============================================================================
 # UTILITY FUNCTIONS
@@ -1556,6 +1673,51 @@ func _spawn_hp_damage_popup(is_player: bool, amount: int) -> void:
 	tween.tween_property(popup, "position:y", popup.position.y - 60, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup, "modulate:a", 0.0, 0.8).set_delay(0.3)
 	tween.finished.connect(popup.queue_free)
+
+func _play_attack_animation(attacker_card: CardUI, attacker_slot: FieldSlot, defender_card: CardUI, target_slot: FieldSlot) -> void:
+	# Lunge attacker toward defender then back
+	var attacker_orig := attacker_card.global_position
+	var target_center := target_slot.global_position + target_slot.size / 2
+	var attacker_center := attacker_slot.global_position + attacker_slot.size / 2
+	var direction := (target_center - attacker_center).normalized()
+	var lunge_distance := attacker_center.distance_to(target_center) * 0.4
+	var lunge_pos := attacker_orig + direction * lunge_distance
+
+	attacker_card.top_level = true
+	attacker_card.global_position = attacker_orig
+	attacker_card.z_index = 50
+
+	var tween := create_tween()
+	tween.tween_property(attacker_card, "global_position", lunge_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(attacker_card, "global_position", attacker_orig, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await tween.finished
+
+	attacker_card.top_level = false
+	attacker_card.z_index = 1
+	attacker_card.position = Vector2(5, 5)
+
+func _play_direct_attack_animation(card_ui: CardUI, slot: FieldSlot, is_player_target: bool) -> void:
+	# Lunge card toward the target player's HP label
+	var card_orig := card_ui.global_position
+	var hp_label := player_hp_label if is_player_target else opponent_hp_label
+	var target_center := hp_label.global_position + hp_label.size / 2
+	var card_center := slot.global_position + slot.size / 2
+	var direction := (target_center - card_center).normalized()
+	var lunge_distance := card_center.distance_to(target_center) * 0.3
+	var lunge_pos := card_orig + direction * lunge_distance
+
+	card_ui.top_level = true
+	card_ui.global_position = card_orig
+	card_ui.z_index = 50
+
+	var tween := create_tween()
+	tween.tween_property(card_ui, "global_position", lunge_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(card_ui, "global_position", card_orig, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await tween.finished
+
+	card_ui.top_level = false
+	card_ui.z_index = 1
+	card_ui.position = Vector2(5, 5)
 
 func _add_log(msg: String) -> void:
 	battle_log_messages.append(msg)
