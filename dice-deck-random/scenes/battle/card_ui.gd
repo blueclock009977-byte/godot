@@ -8,26 +8,21 @@ signal card_drag_ended(card_ui: CardUI, target_position: Vector2)
 var card_data: CardData
 var current_hp: int = 0
 var current_atk: int = 0
-var is_attack_ready: bool = false
-var has_attacked_this_turn: bool = false
-var is_summonable: bool = false
-var is_summon_and_attack: bool = false
 var is_selected: bool = false
 var is_face_down: bool = false
 var is_dragging: bool = false
 var is_pressing: bool = false
+var is_summonable: bool = false
+var is_movable: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
 var press_start_pos: Vector2 = Vector2.ZERO
 var original_position: Vector2 = Vector2.ZERO
 const DRAG_THRESHOLD := 15.0
-var bonus_attack_dice: Array[int] = []
 
-# Child nodes
 var background: Panel
-var summon_dice_label: Label
+var mana_cost_label: Label
 var image_area: Panel
 var name_label: Label
-var effect_label: Label
 var attack_dice_label: Label
 var hp_badge: Panel
 var hp_label: Label
@@ -40,14 +35,12 @@ func _ready() -> void:
 	size = Vector2(175, 250)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
-	# Background panel
 	background = Panel.new()
 	background.name = "Background"
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
 
-	# Main margin - MOUSE_FILTER_IGNORE so clicks pass to CardUI
 	var margin := MarginContainer.new()
 	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	margin.add_theme_constant_override("margin_left", 6)
@@ -62,22 +55,22 @@ func _ready() -> void:
 	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.add_child(vbox)
 
-	# 1) Summon dice (top)
-	summon_dice_label = Label.new()
-	summon_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	summon_dice_label.add_theme_font_size_override("font_size", 20)
-	summon_dice_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
-	summon_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(summon_dice_label)
+	# Mana cost (top)
+	mana_cost_label = Label.new()
+	mana_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mana_cost_label.add_theme_font_size_override("font_size", 22)
+	mana_cost_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
+	mana_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(mana_cost_label)
 
-	# 2) Image area (card color illustration placeholder)
+	# Image area
 	image_area = Panel.new()
 	image_area.custom_minimum_size = Vector2(0, 80)
 	image_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	image_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(image_area)
 
-	# 3) Card name
+	# Card name
 	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 18)
@@ -85,16 +78,7 @@ func _ready() -> void:
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
 
-	# 4) Effect description
-	effect_label = Label.new()
-	effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	effect_label.add_theme_font_size_override("font_size", 12)
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	effect_label.custom_minimum_size = Vector2(0, 0)
-	effect_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(effect_label)
-
-	# 5) Attack dice
+	# Attack dice
 	attack_dice_label = Label.new()
 	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	attack_dice_label.add_theme_font_size_override("font_size", 20)
@@ -102,7 +86,7 @@ func _ready() -> void:
 	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(attack_dice_label)
 
-	# 6) Bottom row: HP circle (left) / ATK circle (right)
+	# Bottom row: HP / ATK
 	var bottom_row := HBoxContainer.new()
 	bottom_row.add_theme_constant_override("separation", 0)
 	bottom_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -110,7 +94,6 @@ func _ready() -> void:
 	bottom_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(bottom_row)
 
-	# HP badge
 	hp_badge = Panel.new()
 	hp_badge.custom_minimum_size = Vector2(44, 44)
 	hp_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -125,13 +108,11 @@ func _ready() -> void:
 	hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hp_badge.add_child(hp_label)
 
-	# Spacer between badges
 	var badge_spacer := Control.new()
 	badge_spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	badge_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_row.add_child(badge_spacer)
 
-	# ATK badge
 	atk_badge = Panel.new()
 	atk_badge.custom_minimum_size = Vector2(44, 44)
 	atk_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -157,10 +138,8 @@ func _update_display() -> void:
 	if not is_inside_tree():
 		return
 	if is_face_down:
-		summon_dice_label.text = ""
+		mana_cost_label.text = ""
 		name_label.text = "???"
-		effect_label.text = ""
-		effect_label.visible = false
 		attack_dice_label.text = ""
 		hp_label.text = ""
 		atk_label.text = ""
@@ -182,31 +161,17 @@ func _update_display() -> void:
 		image_area.add_theme_stylebox_override("panel", img_style)
 		return
 
-	# Summon dice (top)
-	var s_dice := ""
-	for d in card_data.summon_dice:
-		s_dice += "[%d]" % d
-	summon_dice_label.text = s_dice if s_dice != "" else "-"
+	# Mana cost
+	mana_cost_label.text = "💎%d" % card_data.mana_cost
 
-	# Card name
 	name_label.text = card_data.card_name
 
-	# Effect
-	if card_data.effect_description != "":
-		effect_label.text = card_data.effect_description
-		effect_label.visible = true
-	else:
-		effect_label.text = ""
-		effect_label.visible = false
-
 	# Attack dice
-	var all_atk_dice := get_all_attack_dice()
 	var a_dice := ""
-	for d in all_atk_dice:
+	for d in card_data.attack_dice:
 		a_dice += "[%d]" % d
 	attack_dice_label.text = a_dice if a_dice != "" else "-"
 
-	# HP / ATK badges
 	hp_badge.visible = true
 	atk_badge.visible = true
 	hp_label.text = "%d" % current_hp
@@ -214,26 +179,22 @@ func _update_display() -> void:
 	_update_badge_style(hp_badge, Color(0.15, 0.55, 0.15))
 	_update_badge_style(atk_badge, Color(0.7, 0.15, 0.15))
 
-	# Border color: selected=white, summon+attack=yellow, attack=red, summon=green
+	# Border
 	var border_color: Color
 	var border_width: int = 2
 	if is_selected:
 		border_color = Color(1, 1, 1)
 		border_width = 4
-	elif is_attack_ready:
-		border_color = Color(1, 0.2, 0.2)
-		border_width = 4
-	elif is_summon_and_attack:
-		border_color = Color(1, 0.9, 0.1)
-		border_width = 4
 	elif is_summonable:
 		border_color = Color(0.2, 1, 0.2)
+		border_width = 4
+	elif is_movable:
+		border_color = Color(0.2, 0.7, 1.0)
 		border_width = 4
 	else:
 		border_color = card_data.color
 		border_width = 2
 
-	# Background style
 	var style := StyleBoxFlat.new()
 	style.bg_color = card_data.color.darkened(0.5)
 	style.border_width_left = border_width
@@ -247,7 +208,6 @@ func _update_display() -> void:
 	style.corner_radius_bottom_right = 8
 	background.add_theme_stylebox_override("panel", style)
 
-	# Image area style (lighter card color)
 	var img_style := StyleBoxFlat.new()
 	img_style.bg_color = card_data.color.darkened(0.2)
 	img_style.corner_radius_top_left = 4
@@ -256,8 +216,7 @@ func _update_display() -> void:
 	img_style.corner_radius_bottom_right = 4
 	image_area.add_theme_stylebox_override("panel", img_style)
 
-	# Glow animation for active states
-	var should_glow := is_attack_ready or is_summonable or is_summon_and_attack or is_selected
+	var should_glow := is_selected or is_summonable or is_movable
 	_update_glow_animation(should_glow)
 
 func _update_badge_style(badge: Panel, color: Color) -> void:
@@ -274,33 +233,21 @@ func _update_badge_style(badge: Panel, color: Color) -> void:
 	s.border_color = Color(color.r * 1.5, color.g * 1.5, color.b * 1.5, 0.6)
 	badge.add_theme_stylebox_override("panel", s)
 
-func get_all_attack_dice() -> Array[int]:
-	var result: Array[int] = card_data.attack_dice.duplicate()
-	for d in bonus_attack_dice:
-		if d not in result:
-			result.append(d)
-	result.sort()
-	return result
-
 func take_damage(amount: int) -> int:
 	current_hp -= amount
 	_update_display()
 	return current_hp
 
-func heal(amount: int) -> void:
-	current_hp += amount
-	_update_display()
-
-func set_attack_ready(ready: bool) -> void:
-	is_attack_ready = ready
+func set_selected(selected: bool) -> void:
+	is_selected = selected
 	_update_display()
 
 func set_summonable(summonable: bool) -> void:
 	is_summonable = summonable
 	_update_display()
 
-func set_selected(selected: bool) -> void:
-	is_selected = selected
+func set_movable(movable: bool) -> void:
+	is_movable = movable
 	_update_display()
 
 func set_face_down(face_down: bool) -> void:
@@ -320,7 +267,6 @@ func _end_drag() -> void:
 	z_index = 0
 
 func _gui_input(event: InputEvent) -> void:
-	# --- Mouse ---
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
@@ -334,7 +280,6 @@ func _gui_input(event: InputEvent) -> void:
 					_end_drag()
 					card_drag_ended.emit(self, drop_pos)
 				elif is_pressing:
-					# No drag happened = pure tap
 					card_clicked.emit(self)
 				is_pressing = false
 				accept_event()
@@ -347,8 +292,6 @@ func _gui_input(event: InputEvent) -> void:
 		if is_dragging:
 			global_position = get_global_mouse_position() - drag_offset
 			accept_event()
-
-	# --- Touch ---
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			is_pressing = true
@@ -387,7 +330,6 @@ func _update_glow_animation(should_glow: bool) -> void:
 		glow_tween.kill()
 		glow_tween = null
 	if should_glow:
-		# Pulse modulate alpha for border glow effect
 		glow_tween = create_tween().set_loops()
 		glow_tween.tween_property(self, "modulate:a", 0.6, 0.5).set_trans(Tween.TRANS_SINE)
 		glow_tween.tween_property(self, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE)

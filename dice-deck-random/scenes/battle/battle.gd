@@ -1,1730 +1,907 @@
 extends Control
 
-# ==============================================================================
-# Battle Controller - Dice Deck Random
-# ==============================================================================
-# Full battle scene: UI creation, game flow, effects, NPC AI, drag & tap support
-# Layout: 1080x1920 portrait
-# ==============================================================================
+# ─── Constants ───
+const CARD_UI_SCENE := preload("res://scenes/battle/card_ui.tscn")
+const FIELD_SLOT_SCENE := preload("res://scenes/battle/field_slot.tscn")
+const MAX_HP := 20
+const MAX_MANA_CAP := 5
+const STARTING_HAND := 3
+const MOVE_COST := 1
 
-const CardUIScene := preload("res://scenes/battle/card_ui.tscn")
-const FieldSlotScene := preload("res://scenes/battle/field_slot.tscn")
+# ─── Enums ───
+enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
+enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
 
-# --- Game State ---
-enum Phase { DICE_ROLL, DRAW, MAIN, ATTACK_TARGET, END_TURN, GAME_OVER }
-enum Turn { PLAYER, OPPONENT }
-
-var current_phase: Phase = Phase.DICE_ROLL
-var current_turn: Turn = Turn.PLAYER
+# ─── Game State ───
+var player_hp: int = MAX_HP
+var opponent_hp: int = MAX_HP
+var player_mana: int = 0
+var player_max_mana: int = 0
+var opponent_mana: int = 0
+var opponent_max_mana: int = 0
+var player_deck: Array[CardData] = []
+var opponent_deck: Array[CardData] = []
+var player_hand: Array = []  # Array of CardUI
+var opponent_hand: Array = []  # Array of CardData (hidden)
 var current_dice: int = 0
 var turn_number: int = 0
-
-# --- HP ---
-var player_hp: int = 20
-var opponent_hp: int = 20
-
-# --- Decks, Hands, Trash ---
-var player_deck: Array = []
-var player_hand: Array = []  # Array of CardUI
-var player_trash: Array = []  # Array of CardData
-
-var opponent_deck: Array = []
-var opponent_hand: Array = []  # Array of CardUI
-var opponent_trash: Array = []  # Array of CardData
-
-# --- Field Slots ---
-var player_slots: Array = []  # Array of FieldSlot [front0,front1,front2,back3,back4]
-var opponent_slots: Array = []
-
-# --- Selection State ---
-var selected_hand_card: Control = null  # CardUI from hand for summoning
-var selected_attacker: FieldSlot = null  # FieldSlot with attack-ready card
-
-# --- Log ---
-var battle_log_messages: Array[String] = []
-
-# --- UI References ---
-var background: ColorRect
-var main_vbox: VBoxContainer
-
-var opponent_hand_container: HBoxContainer
-var opponent_hp_label: Label
-var opponent_back_row: HBoxContainer
-var opponent_front_row: HBoxContainer
-
-var center_panel: HBoxContainer
-var dice_label: Label
-var dice_roll_button: Button
-var end_turn_button: Button
-
-var player_front_row: HBoxContainer
-var player_back_row: HBoxContainer
-var player_hp_label: Label
-var player_hand_scroll: ScrollContainer
-var player_hand_container: HBoxContainer
-
-var phase_label: Label
-var log_label: Label
-
-var animation_timer: Timer
+var is_player_turn: bool = true
+var is_player_first: bool = true
+var current_phase: Phase = Phase.MAIN1
+var select_mode: SelectMode = SelectMode.NONE
+var selected_hand_card: CardUI = null
+var selected_field_card: CardUI = null
+var selected_field_slot: FieldSlot = null
 var is_animating: bool = false
-var roll_button_tween: Tween
+var game_over: bool = false
 
-# ==============================================================================
-# INITIALIZATION
-# ==============================================================================
+# ─── UI References ───
+var player_slots: Array = []  # FieldSlot[6]: 0-2 front, 3-5 back
+var opponent_slots: Array = []
+var player_hand_container: HBoxContainer
+var opponent_hand_container: HBoxContainer
+var player_hp_label: Label
+var opponent_hp_label: Label
+var mana_label: Label
+var phase_label: Label
+var dice_label: Label
+var end_turn_btn: Button
+var surrender_btn: Button
+var log_label: RichTextLabel
+var phase_overlay: ColorRect
+var phase_overlay_label: Label
+var turn_indicator_label: Label
+var center_info: HBoxContainer
 
 func _ready() -> void:
 	_build_ui()
-	_setup_game()
-	_start_battle()
+	_start_game()
 
+# ═══════════════════════════════════════════
+# UI CONSTRUCTION
+# ═══════════════════════════════════════════
 func _build_ui() -> void:
-	# Full-screen dark background
-	background = ColorRect.new()
-	background.color = Color(0.08, 0.08, 0.12)
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
+	# Background
+	var bg := ColorRect.new()
+	bg.color = Color(0.08, 0.08, 0.12)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(bg)
 
-	# Main vertical layout
-	main_vbox = VBoxContainer.new()
+	# Main layout
+	var main_vbox := VBoxContainer.new()
 	main_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	main_vbox.add_theme_constant_override("separation", 4)
 	add_child(main_vbox)
 
-	# --- Opponent Hand Area ---
-	var opp_hand_panel := PanelContainer.new()
-	opp_hand_panel.custom_minimum_size = Vector2(0, 100)
-	var opp_hand_style := StyleBoxFlat.new()
-	opp_hand_style.bg_color = Color(0.12, 0.12, 0.18)
-	opp_hand_panel.add_theme_stylebox_override("panel", opp_hand_style)
-	main_vbox.add_child(opp_hand_panel)
-
-	var opp_hand_scroll := ScrollContainer.new()
-	opp_hand_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	opp_hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	opp_hand_panel.add_child(opp_hand_scroll)
-
+	# ── Opponent hand area ──
 	opponent_hand_container = HBoxContainer.new()
-	opponent_hand_container.add_theme_constant_override("separation", 4)
 	opponent_hand_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	opp_hand_scroll.add_child(opponent_hand_container)
+	opponent_hand_container.add_theme_constant_override("separation", 4)
+	opponent_hand_container.custom_minimum_size.y = 60
+	main_vbox.add_child(opponent_hand_container)
 
-	# --- Opponent HP + Surrender ---
-	var opp_hp_row := HBoxContainer.new()
-	opp_hp_row.add_theme_constant_override("separation", 8)
-	main_vbox.add_child(opp_hp_row)
+	# ── Turn indicator ──
+	turn_indicator_label = Label.new()
+	turn_indicator_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	turn_indicator_label.add_theme_font_size_override("font_size", 20)
+	turn_indicator_label.custom_minimum_size.y = 30
+	main_vbox.add_child(turn_indicator_label)
 
+	# ── Opponent HP ──
 	opponent_hp_label = Label.new()
-	opponent_hp_label.text = "OPPONENT HP: 20"
 	opponent_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	opponent_hp_label.add_theme_font_size_override("font_size", 28)
 	opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
-	opponent_hp_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	opponent_hp_label.mouse_filter = Control.MOUSE_FILTER_STOP
-	opponent_hp_label.gui_input.connect(_on_opponent_hp_clicked)
-	opp_hp_row.add_child(opponent_hp_label)
+	main_vbox.add_child(opponent_hp_label)
 
-	var surrender_btn := Button.new()
-	surrender_btn.text = "降参"
-	surrender_btn.custom_minimum_size = Vector2(100, 40)
-	surrender_btn.add_theme_font_size_override("font_size", 18)
-	surrender_btn.pressed.connect(_on_surrender_pressed)
-	opp_hp_row.add_child(surrender_btn)
+	# ── Opponent back row (slots 3,4,5) ──
+	var opp_back_row := HBoxContainer.new()
+	opp_back_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	opp_back_row.add_theme_constant_override("separation", 6)
+	main_vbox.add_child(opp_back_row)
+	for i in range(3, 6):
+		var slot := FIELD_SLOT_SCENE.instantiate() as FieldSlot
+		slot.slot_index = i
+		slot.is_player_side = false
+		opp_back_row.add_child(slot)
+		slot.setup_lane_info()
+		opponent_slots.append(null)  # placeholder
 
-	# --- Opponent Back Row (2 slots, centered) ---
-	var opp_back_center := CenterContainer.new()
-	opp_back_center.custom_minimum_size = Vector2(0, 270)
-	main_vbox.add_child(opp_back_center)
-	opponent_back_row = HBoxContainer.new()
-	opponent_back_row.add_theme_constant_override("separation", 20)
-	opp_back_center.add_child(opponent_back_row)
+	# ── Opponent front row (slots 0,1,2) ──
+	var opp_front_row := HBoxContainer.new()
+	opp_front_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	opp_front_row.add_theme_constant_override("separation", 6)
+	main_vbox.add_child(opp_front_row)
+	for i in range(0, 3):
+		var slot := FIELD_SLOT_SCENE.instantiate() as FieldSlot
+		slot.slot_index = i
+		slot.is_player_side = false
+		opp_front_row.add_child(slot)
+		slot.setup_lane_info()
+		opponent_slots.append(null)  # placeholder
 
-	# --- Opponent Front Row (3 slots, centered) ---
-	var opp_front_center := CenterContainer.new()
-	opp_front_center.custom_minimum_size = Vector2(0, 270)
-	main_vbox.add_child(opp_front_center)
-	opponent_front_row = HBoxContainer.new()
-	opponent_front_row.add_theme_constant_override("separation", 10)
-	opp_front_center.add_child(opponent_front_row)
+	# Fix opponent_slots ordering: we added 3,4,5 then 0,1,2
+	# Reorder so index matches slot_index
+	var temp_opp: Array = []
+	temp_opp.resize(6)
+	for slot_node in opp_back_row.get_children():
+		if slot_node is FieldSlot:
+			temp_opp[slot_node.slot_index] = slot_node
+	for slot_node in opp_front_row.get_children():
+		if slot_node is FieldSlot:
+			temp_opp[slot_node.slot_index] = slot_node
+	opponent_slots = temp_opp
 
-	# --- Center Divider: Dice (left) | Phase (center) | End Turn (right) ---
-	center_panel = HBoxContainer.new()
-	center_panel.custom_minimum_size = Vector2(0, 80)
-	center_panel.add_theme_constant_override("separation", 8)
-	main_vbox.add_child(center_panel)
-
-	# Left: Dice display
-	var dice_vbox := VBoxContainer.new()
-	dice_vbox.add_theme_constant_override("separation", 2)
-	dice_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	center_panel.add_child(dice_vbox)
+	# ── Center info bar ──
+	center_info = HBoxContainer.new()
+	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
+	center_info.add_theme_constant_override("separation", 20)
+	center_info.custom_minimum_size.y = 60
+	main_vbox.add_child(center_info)
 
 	dice_label = Label.new()
-	dice_label.text = "Dice: -"
-	dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dice_label.text = "🎲 -"
 	dice_label.add_theme_font_size_override("font_size", 32)
-	dice_label.add_theme_color_override("font_color", Color(1, 1, 0.6))
-	dice_vbox.add_child(dice_label)
+	center_info.add_child(dice_label)
 
-	dice_roll_button = Button.new()
-	dice_roll_button.text = "ROLL"
-	dice_roll_button.custom_minimum_size = Vector2(0, 60)
-	dice_roll_button.add_theme_font_size_override("font_size", 24)
-	# Yellow styled button
-	var roll_style := StyleBoxFlat.new()
-	roll_style.bg_color = Color(0.15, 0.15, 0.1)
-	roll_style.border_width_left = 3
-	roll_style.border_width_right = 3
-	roll_style.border_width_top = 3
-	roll_style.border_width_bottom = 3
-	roll_style.border_color = Color(1, 0.9, 0.1)
-	roll_style.corner_radius_top_left = 8
-	roll_style.corner_radius_top_right = 8
-	roll_style.corner_radius_bottom_left = 8
-	roll_style.corner_radius_bottom_right = 8
-	dice_roll_button.add_theme_stylebox_override("normal", roll_style)
-	var roll_hover := roll_style.duplicate()
-	roll_hover.bg_color = Color(0.3, 0.3, 0.1)
-	dice_roll_button.add_theme_stylebox_override("hover", roll_hover)
-	var roll_pressed := roll_style.duplicate()
-	roll_pressed.bg_color = Color(0.4, 0.4, 0.1)
-	dice_roll_button.add_theme_stylebox_override("pressed", roll_pressed)
-	dice_roll_button.add_theme_color_override("font_color", Color(1, 0.95, 0.3))
-	dice_roll_button.pressed.connect(_on_dice_roll_pressed)
-	dice_vbox.add_child(dice_roll_button)
-
-	# Center: Phase label
 	phase_label = Label.new()
-	phase_label.text = ""
-	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	phase_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	phase_label.add_theme_font_size_override("font_size", 28)
-	phase_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
-	phase_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	phase_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	center_panel.add_child(phase_label)
+	phase_label.text = "Main1"
+	phase_label.add_theme_font_size_override("font_size", 24)
+	center_info.add_child(phase_label)
 
-	# Right: End Turn button
-	var end_turn_vbox := VBoxContainer.new()
-	end_turn_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	end_turn_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	center_panel.add_child(end_turn_vbox)
+	end_turn_btn = Button.new()
+	end_turn_btn.text = "END"
+	end_turn_btn.custom_minimum_size = Vector2(100, 50)
+	end_turn_btn.add_theme_font_size_override("font_size", 22)
+	end_turn_btn.pressed.connect(_on_end_phase)
+	center_info.add_child(end_turn_btn)
 
-	end_turn_button = Button.new()
-	end_turn_button.text = "End Turn"
-	end_turn_button.custom_minimum_size = Vector2(0, 60)
-	end_turn_button.add_theme_font_size_override("font_size", 22)
-	end_turn_button.pressed.connect(_on_end_turn_pressed)
-	end_turn_vbox.add_child(end_turn_button)
+	surrender_btn = Button.new()
+	surrender_btn.text = "🏳"
+	surrender_btn.custom_minimum_size = Vector2(60, 50)
+	surrender_btn.add_theme_font_size_override("font_size", 22)
+	surrender_btn.pressed.connect(_on_surrender)
+	center_info.add_child(surrender_btn)
 
-	# --- Player Front Row (3 slots, centered) ---
-	var pl_front_center := CenterContainer.new()
-	pl_front_center.custom_minimum_size = Vector2(0, 270)
-	main_vbox.add_child(pl_front_center)
-	player_front_row = HBoxContainer.new()
-	player_front_row.add_theme_constant_override("separation", 10)
-	pl_front_center.add_child(player_front_row)
+	# ── Player front row (slots 0,1,2) ──
+	var pl_front_row := HBoxContainer.new()
+	pl_front_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	pl_front_row.add_theme_constant_override("separation", 6)
+	main_vbox.add_child(pl_front_row)
+	for i in range(0, 3):
+		var slot := FIELD_SLOT_SCENE.instantiate() as FieldSlot
+		slot.slot_index = i
+		slot.is_player_side = true
+		pl_front_row.add_child(slot)
+		slot.setup_lane_info()
+		player_slots.append(null)
 
-	# --- Player Back Row (2 slots, centered) ---
-	var pl_back_center := CenterContainer.new()
-	pl_back_center.custom_minimum_size = Vector2(0, 270)
-	main_vbox.add_child(pl_back_center)
-	player_back_row = HBoxContainer.new()
-	player_back_row.add_theme_constant_override("separation", 20)
-	pl_back_center.add_child(player_back_row)
+	# ── Player back row (slots 3,4,5) ──
+	var pl_back_row := HBoxContainer.new()
+	pl_back_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	pl_back_row.add_theme_constant_override("separation", 6)
+	main_vbox.add_child(pl_back_row)
+	for i in range(3, 6):
+		var slot := FIELD_SLOT_SCENE.instantiate() as FieldSlot
+		slot.slot_index = i
+		slot.is_player_side = true
+		pl_back_row.add_child(slot)
+		slot.setup_lane_info()
+		player_slots.append(null)
 
-	# --- Player HP ---
+	# Fix player_slots ordering
+	var temp_pl: Array = []
+	temp_pl.resize(6)
+	for slot_node in pl_front_row.get_children():
+		if slot_node is FieldSlot:
+			temp_pl[slot_node.slot_index] = slot_node
+	for slot_node in pl_back_row.get_children():
+		if slot_node is FieldSlot:
+			temp_pl[slot_node.slot_index] = slot_node
+	player_slots = temp_pl
+
+	# Connect slot signals
+	for slot in player_slots:
+		if slot:
+			slot.slot_clicked.connect(_on_player_slot_clicked)
+	for slot in opponent_slots:
+		if slot:
+			slot.slot_clicked.connect(_on_opponent_slot_clicked)
+
+	# ── Player HP ──
 	player_hp_label = Label.new()
-	player_hp_label.text = "PLAYER HP: 20"
 	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	player_hp_label.add_theme_font_size_override("font_size", 28)
-	player_hp_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1))
+	player_hp_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 	main_vbox.add_child(player_hp_label)
 
-	# --- Player Hand Area ---
-	var pl_hand_panel := PanelContainer.new()
-	pl_hand_panel.custom_minimum_size = Vector2(0, 130)
-	pl_hand_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	var pl_hand_style := StyleBoxFlat.new()
-	pl_hand_style.bg_color = Color(0.1, 0.1, 0.16)
-	pl_hand_panel.add_theme_stylebox_override("panel", pl_hand_style)
-	main_vbox.add_child(pl_hand_panel)
+	# ── Mana display ──
+	mana_label = Label.new()
+	mana_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	mana_label.add_theme_font_size_override("font_size", 24)
+	mana_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
+	main_vbox.add_child(mana_label)
 
-	player_hand_scroll = ScrollContainer.new()
-	player_hand_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	player_hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	pl_hand_panel.add_child(player_hand_scroll)
+	# ── Player hand ──
+	var hand_scroll := ScrollContainer.new()
+	hand_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	hand_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	main_vbox.add_child(hand_scroll)
 
 	player_hand_container = HBoxContainer.new()
-	player_hand_container.add_theme_constant_override("separation", 6)
 	player_hand_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	player_hand_scroll.add_child(player_hand_container)
-
-	# phase_label is now part of center_panel (created above)
-
-	# --- Log Label (bottom overlay) ---
-	log_label = Label.new()
-	log_label.text = ""
-	log_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	log_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	log_label.offset_bottom = -10
-	log_label.offset_top = -60
-	log_label.add_theme_font_size_override("font_size", 16)
-	log_label.add_theme_color_override("font_color", Color(1, 1, 0.7, 0.8))
-	log_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	log_label.z_index = 10
-	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	add_child(log_label)
-
-	# --- Create Field Slots ---
-	_create_field_slots()
-
-	# --- Animation timer ---
-	animation_timer = Timer.new()
-	animation_timer.one_shot = true
-	add_child(animation_timer)
-
-func _create_field_slots() -> void:
-	# Player front row: slots 0,1,2
-	for i in range(3):
-		var slot: FieldSlot = FieldSlotScene.instantiate()
-		slot.slot_index = i
-		slot.is_player_side = true
-		player_front_row.add_child(slot)
-		player_slots.append(slot)
-		slot.slot_clicked.connect(_on_slot_clicked)
-
-	# Player back row: slots 3,4
-	for i in range(2):
-		var slot: FieldSlot = FieldSlotScene.instantiate()
-		slot.slot_index = 3 + i
-		slot.is_player_side = true
-		player_back_row.add_child(slot)
-		player_slots.append(slot)
-		slot.slot_clicked.connect(_on_slot_clicked)
-
-	# Opponent front row: slots 0,1,2
-	for i in range(3):
-		var slot: FieldSlot = FieldSlotScene.instantiate()
-		slot.slot_index = i
-		slot.is_player_side = false
-		opponent_front_row.add_child(slot)
-		opponent_slots.append(slot)
-		slot.slot_clicked.connect(_on_slot_clicked)
-
-	# Opponent back row: slots 3,4
-	for i in range(2):
-		var slot: FieldSlot = FieldSlotScene.instantiate()
-		slot.slot_index = 3 + i
-		slot.is_player_side = false
-		opponent_back_row.add_child(slot)
-		opponent_slots.append(slot)
-		slot.slot_clicked.connect(_on_slot_clicked)
-
-	# Set up forward_slots for protection mapping
-	# Player back slot 3 protected by front 0,1
-	player_slots[3].forward_slots = [player_slots[0], player_slots[1]]
-	# Player back slot 4 protected by front 1,2
-	player_slots[4].forward_slots = [player_slots[1], player_slots[2]]
-
-	# Opponent back slot 3 protected by front 0,1
-	opponent_slots[3].forward_slots = [opponent_slots[0], opponent_slots[1]]
-	# Opponent back slot 4 protected by front 1,2
-	opponent_slots[4].forward_slots = [opponent_slots[1], opponent_slots[2]]
-
-func _setup_game() -> void:
-	# Set up player deck
-	if GameManager.player_deck.size() > 0:
-		player_deck = []
-		for card_data in GameManager.player_deck:
-			player_deck.append(card_data.duplicate_card())
-		player_deck.shuffle()
-	else:
-		player_deck = CardDatabase.build_random_deck()
-
-	# Build opponent deck
-	opponent_deck = CardDatabase.build_random_deck()
-
-	player_hp = 20
-	opponent_hp = 20
-	_update_hp_display()
-
-func _start_battle() -> void:
-	# Draw initial hands (4 cards each)
-	for i in range(4):
-		_draw_card_player()
-		_draw_card_opponent()
-	_update_hand_display()
-	_update_opponent_hand_display()
-
-	# Player goes first
-	current_turn = Turn.PLAYER
-	turn_number = 1
-	_start_player_turn()
-
-# ==============================================================================
-# TURN FLOW
-# ==============================================================================
-
-func _start_player_turn() -> void:
-	current_turn = Turn.PLAYER
-	_add_log("--- Player Turn %d ---" % turn_number)
-
-	# Reset attacked flags
-	for slot in player_slots:
-		if not slot.is_empty():
-			(slot.card_ui as CardUI).has_attacked_this_turn = false
-
-	# Passive effect 13: turn start heal 1 for player cards
-	_apply_turn_start_passives(true)
-
-	current_phase = Phase.DICE_ROLL
-	_update_phase_display()
-	_update_buttons()
-	_clear_selection()
-
-func _start_opponent_turn() -> void:
-	current_turn = Turn.OPPONENT
-	_add_log("--- Opponent Turn %d ---" % turn_number)
-
-	# Reset attacked flags
-	for slot in opponent_slots:
-		if not slot.is_empty():
-			(slot.card_ui as CardUI).has_attacked_this_turn = false
-
-	# Passive effect 13: turn start heal 1 for opponent cards
-	_apply_turn_start_passives(false)
-
-	# AI handles everything
-	await _ai_turn()
-
-	turn_number += 1
-	_start_player_turn()
-
-func _apply_turn_start_passives(is_player: bool) -> void:
-	var slots := player_slots if is_player else opponent_slots
-	for slot in slots:
-		if not slot.is_empty():
-			var card_ui: CardUI = slot.card_ui
-			if card_ui.card_data.effect_type == "passive" and card_ui.card_data.effect_id == 13:
-				card_ui.heal(1)
-				_spawn_heal_popup(card_ui, 1)
-				_add_log("%s: HP1回復 (パッシブ)" % card_ui.card_data.card_name)
-
-# ==============================================================================
-# DICE ROLLING
-# ==============================================================================
-
-func _on_dice_roll_pressed() -> void:
-	if current_phase != Phase.DICE_ROLL or current_turn != Turn.PLAYER:
-		return
-	if is_animating:
-		return
-	is_animating = true
-	_roll_dice()
-	await _roll_dice_animated()
-	current_phase = Phase.DRAW
-	_update_phase_display()
-
-	# Draw 2 cards
-	_draw_card_player()
-	_draw_card_player()
-	_update_hand_display()
-	_add_log("2枚ドロー")
-
-	# After draw, go to main phase
-	is_animating = false
-	await get_tree().create_timer(0.3).timeout
-	current_phase = Phase.MAIN
-	_update_phase_display()
-	_update_summonable_indicators()
-	_update_attack_ready_indicators()
-	_update_buttons()
-
-func _roll_dice() -> int:
-	current_dice = randi_range(1, 6)
-	_add_log("ダイス: %d" % current_dice)
-	return current_dice
-
-func _roll_dice_animated() -> void:
-	# Cycling animation before showing final result
-	for i in range(8):
-		var fake := randi_range(1, 6)
-		dice_label.text = "Dice: %d" % fake
-		dice_label.add_theme_font_size_override("font_size", 40)
-		await get_tree().create_timer(0.06).timeout
-	dice_label.text = "Dice: %d" % current_dice
-	dice_label.add_theme_font_size_override("font_size", 36)
-	# Brief scale punch on dice label
-	dice_label.pivot_offset = dice_label.size / 2
-	var tween := create_tween()
-	tween.tween_property(dice_label, "scale", Vector2(1.3, 1.3), 0.1)
-	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
-	await tween.finished
-
-# ==============================================================================
-# MAIN PHASE - SUMMONING
-# ==============================================================================
-
-func _update_summonable_indicators() -> void:
-	for card_ui in player_hand:
-		var can_summon := _can_summon_card(card_ui, true)
-		card_ui.is_summon_and_attack = can_summon and (current_dice in card_ui.get_all_attack_dice())
-		card_ui.set_summonable(can_summon)
-
-func _can_summon_card(card_ui: CardUI, is_player: bool) -> bool:
-	if current_dice in card_ui.card_data.summon_dice:
-		var slots := player_slots if is_player else opponent_slots
-		for slot in slots:
-			if slot.is_empty():
-				return true
-	return false
-
-func _update_attack_ready_indicators() -> void:
-	for slot in player_slots:
-		if not slot.is_empty():
-			var card_ui: CardUI = slot.card_ui
-			if card_ui.has_attacked_this_turn:
-				continue
-			var all_dice := card_ui.get_all_attack_dice()
-			if current_dice in all_dice and not card_ui.is_attack_ready:
-				card_ui.set_attack_ready(true)
-				_add_log("%s: 攻撃可能!" % card_ui.card_data.card_name)
-			card_ui._update_display()
-
-# ==============================================================================
-# CARD INTERACTION - TAP & DRAG
-# ==============================================================================
-
-func _on_card_clicked(card_ui: CardUI) -> void:
-	if current_turn != Turn.PLAYER or current_phase == Phase.DICE_ROLL or current_phase == Phase.GAME_OVER:
-		return
-	if is_animating:
-		return
-
-	if current_phase == Phase.MAIN:
-		# Check if card is in hand (for summoning)
-		if card_ui in player_hand:
-			_handle_hand_card_tap(card_ui)
-			return
-		# Check if card is on field (for attacking)
-		var slot := _find_slot_for_card(card_ui, true)
-		if slot != null and card_ui.is_attack_ready:
-			_handle_field_card_tap(card_ui, slot)
-			return
-
-	elif current_phase == Phase.ATTACK_TARGET:
-		if selected_attacker == null:
-			return
-		# Cancel selection if tapping same card
-		if selected_attacker.card_ui == card_ui:
-			_clear_selection()
-			current_phase = Phase.MAIN
-			_update_phase_display()
-			return
-		# Attack enemy card if clicked
-		var enemy_slot := _find_slot_for_card(card_ui, false)
-		if enemy_slot != null and not enemy_slot.is_empty() and not enemy_slot.is_protected():
-			_execute_attack(selected_attacker, enemy_slot, null)
-			return
-
-func _handle_hand_card_tap(card_ui: CardUI) -> void:
-	if not card_ui.is_summonable:
-		return
-
-	if selected_hand_card == card_ui:
-		# Deselect
-		card_ui.set_selected(false)
-		selected_hand_card = null
-		_clear_slot_highlights()
-		_update_phase_display()
-		return
-
-	# Select this card
-	if selected_hand_card != null:
-		selected_hand_card.set_selected(false)
-	if selected_attacker != null:
-		selected_attacker.card_ui.set_selected(false)
-		selected_attacker = null
-
-	card_ui.set_selected(true)
-	selected_hand_card = card_ui
-	_clear_slot_highlights()
-	_highlight_empty_player_slots()
-	_update_phase_display()
-
-func _handle_field_card_tap(card_ui: CardUI, slot: FieldSlot) -> void:
-	if selected_hand_card != null:
-		selected_hand_card.set_selected(false)
-		selected_hand_card = null
-
-	if selected_attacker != null:
-		selected_attacker.card_ui.set_selected(false)
-
-	card_ui.set_selected(true)
-	selected_attacker = slot
-	current_phase = Phase.ATTACK_TARGET
-	_update_phase_display()
-
-func _on_card_drag_ended(card_ui: CardUI, target_position: Vector2) -> void:
-	if current_turn != Turn.PLAYER or is_animating:
-		card_ui.reset_position()
-		return
-
-	if current_phase == Phase.MAIN or current_phase == Phase.ATTACK_TARGET:
-		# Check if card from hand is dragged onto an empty player slot
-		if card_ui in player_hand and card_ui.is_summonable:
-			var target_slot := _find_slot_at_position(target_position, true)
-			if target_slot != null and target_slot.is_empty() and target_slot.is_player_side:
-				_summon_card_to_slot(card_ui, target_slot)
-				return
-
-		# Check if field card dragged onto enemy slot or enemy area (attack)
-		var attacker_slot := _find_slot_for_card(card_ui, true)
-		if attacker_slot != null and card_ui.is_attack_ready:
-			# Try to find target
-			var target_slot := _find_slot_at_position(target_position, false)
-			if target_slot != null:
-				if not target_slot.is_empty() and not target_slot.is_player_side:
-					if not target_slot.is_protected():
-						_execute_attack(attacker_slot, target_slot, null)
-						return
-			# Check if dragged to opponent HP area
-			if _is_position_in_opponent_hp_area(target_position):
-				if _can_attack_player(false):
-					_execute_attack(attacker_slot, null, null)
-					return
-
-	card_ui.reset_position()
-
-func _on_slot_clicked(slot: FieldSlot) -> void:
-	if current_turn != Turn.PLAYER or is_animating:
-		return
-
-	if current_phase == Phase.MAIN:
-		# If we have a hand card selected and slot is empty player slot
-		if selected_hand_card != null and slot.is_empty() and slot.is_player_side:
-			_summon_card_to_slot(selected_hand_card, slot)
-			return
-
-	if current_phase == Phase.ATTACK_TARGET:
-		if selected_attacker != null:
-			# Clicking an enemy slot
-			if not slot.is_player_side:
-				if not slot.is_empty() and not slot.is_protected():
-					_execute_attack(selected_attacker, slot, null)
-					return
-				elif slot.is_empty():
-					# Maybe they're trying to attack through? Ignore
-					pass
-			# Clicking own slot = cancel
-			if slot.is_player_side:
-				_clear_selection()
-				current_phase = Phase.MAIN
-				_update_phase_display()
-				return
-
-	# Click on opponent HP label area for direct attack
-	# (handled separately via the HP label click)
-
-func _on_opponent_hp_clicked(_event: InputEvent) -> void:
-	if not (_event is InputEventMouseButton or _event is InputEventScreenTouch):
-		return
-	if _event is InputEventMouseButton and not _event.pressed:
-		return
-	if _event is InputEventScreenTouch and not _event.pressed:
-		return
-
-	if current_phase == Phase.ATTACK_TARGET and selected_attacker != null:
-		if _can_attack_player(false):
-			_execute_attack(selected_attacker, null, null)
-
-func _on_player_hp_clicked(_event: InputEvent) -> void:
-	# For opponent AI: not used directly
-	pass
-
-# ==============================================================================
-# SUMMONING
-# ==============================================================================
-
-func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
-	if not slot.is_empty():
-		card_ui.reset_position()
-		return
-	if not (current_dice in card_ui.card_data.summon_dice):
-		card_ui.reset_position()
-		return
-
-	var is_player := card_ui in player_hand
-
-	# Remove from hand
-	if is_player:
-		player_hand.erase(card_ui)
-	else:
-		opponent_hand.erase(card_ui)
-
-	# Remove from parent container
-	if card_ui.get_parent():
-		card_ui.get_parent().remove_child(card_ui)
-
-	# Set face up
-	card_ui.set_face_down(false)
-
-	# Ensure card_clicked is connected for field interaction
-	if not card_ui.card_clicked.is_connected(_on_card_clicked):
-		card_ui.card_clicked.connect(_on_card_clicked)
-
-	# Place in slot
-	slot.place_card(card_ui)
-	_add_log("%s を召喚!" % card_ui.card_data.card_name)
-
-	# Apply on_summon effects
-	await _apply_on_summon(card_ui, slot)
-
-	# Auto_trigger effect 16: opponent has card that deals 1 dmg to summoned card
-	var enemy_slots := opponent_slots if is_player else player_slots
-	for eslot in enemy_slots:
-		if not eslot.is_empty():
-			var ec: CardUI = eslot.card_ui
-			if ec.card_data.effect_type == "auto_trigger" and ec.card_data.effect_id == 16:
-				var remaining := card_ui.take_damage(1)
-				card_ui.play_damage_flash()
-				_spawn_damage_popup(card_ui, 1)
-				_add_log("%s: 相手召喚に反応し1ダメージ!" % ec.card_data.card_name)
-				if remaining <= 0:
-					await _destroy_card(slot, is_player, null)
-					# Update displays
-					if is_player:
-						_update_hand_display()
-					else:
-						_update_opponent_hand_display()
-					_update_summonable_indicators()
-					return
-
-	# Clear selection and highlights
-	selected_hand_card = null
-	card_ui.set_selected(false)
-	card_ui.set_summonable(false)
-	card_ui.is_summon_and_attack = false
-	_clear_slot_highlights()
-
-	# Refresh displays
-	if is_player:
-		_update_hand_display()
-		_update_summonable_indicators()
-		_update_attack_ready_indicators()
-		_update_phase_display()
-	else:
-		_update_opponent_hand_display()
-
-# ==============================================================================
-# ATTACK EXECUTION
-# ==============================================================================
-
-func _execute_attack(attacker_slot: FieldSlot, target_slot: FieldSlot, _extra) -> void:
-	var attacker_card: CardUI = attacker_slot.card_ui
-	if attacker_card == null or not attacker_card.is_attack_ready:
-		_clear_selection()
-		current_phase = Phase.MAIN
-		_update_phase_display()
-		return
-
-	var is_player_attacking := attacker_slot.is_player_side
-	is_animating = true
-
-	# Consume attack ready
-	attacker_card.set_attack_ready(false)
-	attacker_card.has_attacked_this_turn = true
-	attacker_card.set_selected(false)
-
-	# Passive effect 14: on attack draw 1
-	if attacker_card.card_data.effect_type == "passive" and attacker_card.card_data.effect_id == 14:
-		if is_player_attacking:
-			_draw_card_player()
-			_update_hand_display()
+	player_hand_container.add_theme_constant_override("separation", 6)
+	player_hand_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hand_scroll.add_child(player_hand_container)
+
+	# ── Log (small, at bottom) ──
+	log_label = RichTextLabel.new()
+	log_label.bbcode_enabled = true
+	log_label.scroll_following = true
+	log_label.custom_minimum_size.y = 80
+	log_label.add_theme_font_size_override("normal_font_size", 16)
+	main_vbox.add_child(log_label)
+
+	# ── Phase transition overlay ──
+	phase_overlay = ColorRect.new()
+	phase_overlay.color = Color(0, 0, 0, 0.85)
+	phase_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	phase_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	phase_overlay.visible = false
+	phase_overlay.z_index = 100
+	add_child(phase_overlay)
+
+	phase_overlay_label = Label.new()
+	phase_overlay_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	phase_overlay_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	phase_overlay_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	phase_overlay_label.add_theme_font_size_override("font_size", 56)
+	phase_overlay.add_child(phase_overlay_label)
+
+func _update_all_ui() -> void:
+	player_hp_label.text = "♥ Player: %d" % player_hp
+	opponent_hp_label.text = "♥ Opponent: %d" % opponent_hp
+	var mana_str := ""
+	for i in range(MAX_MANA_CAP):
+		if i < player_mana:
+			mana_str += "●"
+		elif i < player_max_mana:
+			mana_str += "○"
 		else:
-			_draw_card_opponent()
-			_update_opponent_hand_display()
-		_add_log("%s: 攻撃時1枚ドロー!" % attacker_card.card_data.card_name)
-
-	if target_slot == null:
-		# Direct attack on player/opponent
-		var atk := _get_effective_atk(attacker_card, attacker_slot)
-		if is_player_attacking:
-			opponent_hp -= atk
-			_add_log("%s がプレイヤーに%dダメージ!" % [attacker_card.card_data.card_name, atk])
-			_spawn_hp_damage_popup(false, atk)
-		else:
-			player_hp -= atk
-			_add_log("%s がプレイヤーに%dダメージ!" % [attacker_card.card_data.card_name, atk])
-			_spawn_hp_damage_popup(true, atk)
-		_update_hp_display()
-		await _check_game_over()
+			mana_str += "·"
+	mana_label.text = "Mana: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
+	var phase_names := {Phase.MAIN1: "Main1", Phase.DICE: "Dice", Phase.DRAW: "Draw", Phase.MAIN2: "Main2", Phase.END: "End"}
+	phase_label.text = phase_names.get(current_phase, "?")
+	# Turn indicator
+	if is_player_turn:
+		var go_text := "先行" if is_player_first else "後攻"
+		turn_indicator_label.text = "YOUR TURN (%s) - Turn %d" % [go_text, turn_number]
+		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 	else:
-		# Battle with another card
-		var defender_card: CardUI = target_slot.card_ui
-		if defender_card == null:
-			is_animating = false
-			_clear_selection()
-			current_phase = Phase.MAIN
-			_update_phase_display()
-			return
-
-		var atk_atk := _get_effective_atk(attacker_card, attacker_slot)
-		var def_atk := _get_effective_atk(defender_card, target_slot)
-
-		_add_log("%s (ATK:%d) vs %s (ATK:%d)" % [
-			attacker_card.card_data.card_name, atk_atk,
-			defender_card.card_data.card_name, def_atk
-		])
-
-		# Apply damage reduction (passive 12)
-		var atk_damage_to_def := atk_atk
-		var def_damage_to_atk := def_atk
-
-		if defender_card.card_data.effect_type == "passive" and defender_card.card_data.effect_id == 12:
-			atk_damage_to_def = maxi(atk_damage_to_def - 1, 1)
-		if attacker_card.card_data.effect_type == "passive" and attacker_card.card_data.effect_id == 12:
-			def_damage_to_atk = maxi(def_damage_to_atk - 1, 1)
-
-		# Auto trigger 18: when attacked, deal 1 extra damage back
-		if defender_card.card_data.effect_type == "auto_trigger" and defender_card.card_data.effect_id == 18:
-			def_damage_to_atk += 1
-			_add_log("%s: 被攻撃時+1反撃!" % defender_card.card_data.card_name)
-
-		# Apply mutual damage
-		var atk_remaining := attacker_card.take_damage(def_damage_to_atk)
-		var def_remaining := defender_card.take_damage(atk_damage_to_def)
-		attacker_card.play_damage_flash()
-		defender_card.play_damage_flash()
-		_spawn_damage_popup(attacker_card, def_damage_to_atk)
-		_spawn_damage_popup(defender_card, atk_damage_to_def)
-
-		_add_log("  -> %s HP: %d, %s HP: %d" % [
-			attacker_card.card_data.card_name, atk_remaining,
-			defender_card.card_data.card_name, def_remaining
-		])
-
-		await get_tree().create_timer(0.3).timeout
-
-		# Check destruction (defender first, then attacker)
-		if def_remaining <= 0:
-			await _destroy_card(target_slot, not is_player_attacking, attacker_slot)
-		if atk_remaining <= 0:
-			await _destroy_card(attacker_slot, is_player_attacking, target_slot)
-
-	is_animating = false
-	_clear_selection()
-
-	if current_phase != Phase.GAME_OVER:
-		current_phase = Phase.MAIN
-		_update_phase_display()
-		if is_player_attacking:
-			_update_summonable_indicators()
-
-func _get_effective_atk(card_ui: CardUI, slot: FieldSlot) -> int:
-	var base_atk := card_ui.current_atk
-	# Passive 11: adjacent allies ATK+1
-	# Passive 15: adjacent enemies ATK-1 (min 0)
-	var adj_slots := _get_adjacent_slots(slot)
-	for adj_slot in adj_slots:
-		if not adj_slot.is_empty():
-			var adj_card: CardUI = adj_slot.card_ui
-			# Allied passive 11
-			if adj_card.card_data.effect_type == "passive" and adj_card.card_data.effect_id == 11:
-				if adj_slot.is_player_side == slot.is_player_side:
-					base_atk += 1
-	# Check enemy adjacent for passive 15
-	var enemy_slots := opponent_slots if slot.is_player_side else player_slots
-	for eslot in enemy_slots:
-		if not eslot.is_empty():
-			var ec: CardUI = eslot.card_ui
-			if ec.card_data.effect_type == "passive" and ec.card_data.effect_id == 15:
-				# Check if this enemy card is adjacent to the card being calculated
-				# "Adjacent enemy" means in adjacent slot positions
-				var ec_adj := _get_adjacent_slots(eslot)
-				# For cross-side adjacency: front-row cards face each other
-				# We use a simpler mapping: front slots face each other directly
-				if _are_facing(slot, eslot):
-					base_atk = maxi(base_atk - 1, 0)
-	return base_atk
-
-func _are_facing(slot_a: FieldSlot, slot_b: FieldSlot) -> bool:
-	# Two slots from different sides "face" each other if they're in similar positions
-	if slot_a.is_player_side == slot_b.is_player_side:
-		return false
-	# Front row cards face front row cards in same column
-	if slot_a.slot_index < 3 and slot_b.slot_index < 3:
-		return slot_a.slot_index == slot_b.slot_index
-	return false
-
-# ==============================================================================
-# DESTRUCTION & EFFECTS
-# ==============================================================================
-
-func _destroy_card(slot: FieldSlot, is_player_card: bool, killer_slot: FieldSlot) -> void:
-	var card_ui: CardUI = slot.card_ui
-	if card_ui == null:
-		return
-
-	_add_log("%s 破壊!" % card_ui.card_data.card_name)
-
-	# Auto trigger 17: adjacent ally destroyed -> self ATK+1
-	var adj_slots := _get_adjacent_slots(slot)
-	for adj in adj_slots:
-		if not adj.is_empty() and adj.is_player_side == slot.is_player_side:
-			var adj_card: CardUI = adj.card_ui
-			if adj_card.card_data.effect_type == "auto_trigger" and adj_card.card_data.effect_id == 17:
-				adj_card.current_atk += 1
-				adj_card._update_display()
-				_add_log("%s: 隣接味方破壊でATK+1!" % adj_card.card_data.card_name)
-
-	# Apply on_destroy effects
-	await _apply_on_destroy(card_ui, slot, is_player_card, killer_slot)
-
-	# Play destruction animation then remove
-	await card_ui.play_destroy_animation()
-
-	slot.remove_card()
-	if card_ui.get_parent():
-		card_ui.get_parent().remove_child(card_ui)
-
-	if is_player_card:
-		player_trash.append(card_ui.card_data)
+		turn_indicator_label.text = "OPPONENT TURN - Turn %d" % turn_number
+		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	if current_dice > 0:
+		dice_label.text = "🎲 %d" % current_dice
 	else:
-		opponent_trash.append(card_ui.card_data)
-
-	card_ui.queue_free()
-
-func _apply_on_summon(card_ui: CardUI, slot: FieldSlot) -> void:
-	var eid := card_ui.card_data.effect_id
-	if card_ui.card_data.effect_type != "on_summon":
-		return
-
-	var is_player := slot.is_player_side
-	var enemy_slots := opponent_slots if is_player else player_slots
-	var ally_slots := player_slots if is_player else opponent_slots
-
-	match eid:
-		1:  # 1 dmg random enemy
-			var targets := _get_non_empty_slots(enemy_slots)
-			if targets.size() > 0:
-				var target: FieldSlot = targets[randi() % targets.size()]
-				var tcard: CardUI = target.card_ui
-				var remaining := tcard.take_damage(1)
-				tcard.play_damage_flash()
-				_spawn_damage_popup(tcard, 1)
-				_add_log("効果: %sに1ダメージ!" % tcard.card_data.card_name)
-				if remaining <= 0:
-					await _destroy_card(target, not is_player, slot)
-
-		2:  # Draw 1
-			if is_player:
-				_draw_card_player()
-				_update_hand_display()
-			else:
-				_draw_card_opponent()
-				_update_opponent_hand_display()
-			_add_log("効果: 1枚ドロー!")
-
-		3:  # Adjacent ally ATK+1 permanent
-			var adj := _get_adjacent_slots(slot)
-			for a in adj:
-				if not a.is_empty() and a.is_player_side == is_player:
-					var ac: CardUI = a.card_ui
-					ac.current_atk += 1
-					ac._update_display()
-					_add_log("効果: %s ATK+1!" % ac.card_data.card_name)
-
-		4:  # 2 dmg lowest HP enemy
-			var targets := _get_non_empty_slots(enemy_slots)
-			if targets.size() > 0:
-				var lowest: FieldSlot = targets[0]
-				for t in targets:
-					if (t.card_ui as CardUI).current_hp < (lowest.card_ui as CardUI).current_hp:
-						lowest = t
-				var tcard: CardUI = lowest.card_ui
-				var remaining := tcard.take_damage(2)
-				tcard.play_damage_flash()
-				_spawn_damage_popup(tcard, 2)
-				_add_log("効果: %sに2ダメージ!" % tcard.card_data.card_name)
-				if remaining <= 0:
-					await _destroy_card(lowest, not is_player, slot)
-
-		5:  # Adjacent ally +1 attack die
-			var adj := _get_adjacent_slots(slot)
-			for a in adj:
-				if not a.is_empty() and a.is_player_side == is_player:
-					var ac: CardUI = a.card_ui
-					# Add a bonus attack die (next unused number)
-					var existing := ac.get_all_attack_dice()
-					for d in range(1, 7):
-						if d not in existing:
-							ac.bonus_attack_dice.append(d)
-							ac._update_display()
-							_add_log("効果: %s 攻撃ダイス+[%d]!" % [ac.card_data.card_name, d])
-							break
-
-func _apply_on_destroy(card_ui: CardUI, slot: FieldSlot, is_player_card: bool, killer_slot: FieldSlot) -> void:
-	var eid := card_ui.card_data.effect_id
-	if card_ui.card_data.effect_type != "on_destroy":
-		return
-
-	var is_player := is_player_card
-	var enemy_slots := opponent_slots if is_player else player_slots
-
-	match eid:
-		6:  # Draw 1
-			if is_player:
-				_draw_card_player()
-				_update_hand_display()
-			else:
-				_draw_card_opponent()
-				_update_opponent_hand_display()
-			_add_log("破壊効果: 1枚ドロー!")
-
-		7:  # 2 dmg to destroyer
-			if killer_slot != null and not killer_slot.is_empty():
-				var kcard: CardUI = killer_slot.card_ui
-				var remaining := kcard.take_damage(2)
-				kcard.play_damage_flash()
-				_spawn_damage_popup(kcard, 2)
-				_add_log("破壊効果: %sに2ダメージ!" % kcard.card_data.card_name)
-				if remaining <= 0:
-					await _destroy_card(killer_slot, not is_player, null)
-
-		8:  # 1 dmg all enemies
-			var targets := _get_non_empty_slots(enemy_slots)
-			var to_destroy: Array = []
-			for t in targets:
-				var tc: CardUI = t.card_ui
-				var remaining := tc.take_damage(1)
-				tc.play_damage_flash()
-				_spawn_damage_popup(tc, 1)
-				_add_log("破壊効果: %sに1ダメージ!" % tc.card_data.card_name)
-				if remaining <= 0:
-					to_destroy.append(t)
-			for t in to_destroy:
-				await _destroy_card(t, not is_player, null)
-
-		9:  # Recover random from trash
-			var trash := player_trash if is_player else opponent_trash
-			if trash.size() > 0:
-				var idx := randi() % trash.size()
-				var recovered: CardData = trash[idx]
-				trash.remove_at(idx)
-				var new_card_ui: CardUI = CardUIScene.instantiate()
-				new_card_ui.setup(recovered)
-				if is_player:
-					player_hand.append(new_card_ui)
-					_update_hand_display()
-				else:
-					new_card_ui.set_face_down(true)
-					opponent_hand.append(new_card_ui)
-					_update_opponent_hand_display()
-				_add_log("破壊効果: %sを回収!" % recovered.card_name)
-
-		10:  # Adjacent allies HP+2
-			var adj := _get_adjacent_slots(slot)
-			for a in adj:
-				if not a.is_empty() and a.is_player_side == is_player:
-					var ac: CardUI = a.card_ui
-					ac.heal(2)
-					_spawn_heal_popup(ac, 2)
-					_add_log("破壊効果: %s HP+2!" % ac.card_data.card_name)
-
-# ==============================================================================
-# DIRECT ATTACK PROTECTION CHECK
-# ==============================================================================
-
-func _can_attack_player(is_player_target: bool) -> bool:
-	# Player is protected by back slots 3 AND 4 both occupied
-	var slots := player_slots if is_player_target else opponent_slots
-	# Check if both back slots have cards
-	if not slots[3].is_empty() and not slots[4].is_empty():
-		return false
-	# Also check if any front-row cards are unprotected (all must be gone or back must be open)
-	# Actually the rule is: player is protected by back slots 3 AND 4 both occupied
-	# So if either back slot is empty, player can be attacked
-	return true
-
-# ==============================================================================
-# END TURN
-# ==============================================================================
-
-func _on_end_turn_pressed() -> void:
-	if current_turn != Turn.PLAYER:
-		return
-	if current_phase == Phase.DICE_ROLL:
-		return
-	if current_phase == Phase.GAME_OVER:
-		return
-	if is_animating:
-		return
-
-	_clear_selection()
-	current_phase = Phase.END_TURN
-	_update_phase_display()
-
-	# Start opponent turn
-	await get_tree().create_timer(0.3).timeout
-	_start_opponent_turn()
-
-# ==============================================================================
-# NPC AI
-# ==============================================================================
-
-func _ai_turn() -> void:
-	# Roll dice with animation
-	_roll_dice()
-	await _roll_dice_animated()
-
-	# Draw 2 cards
-	_draw_card_opponent()
-	_draw_card_opponent()
+		dice_label.text = "🎲 -"
+	# Opponent hand display
 	_update_opponent_hand_display()
-	_add_log("相手: 2枚ドロー")
-	await get_tree().create_timer(0.6).timeout
-
-	# Set attack ready for opponent cards
-	_ai_set_attack_ready()
-
-	# Main phase: summon and attack in priority order
-	# Can interleave summoning and attacking
-
-	var actions_taken := true
-	while actions_taken:
-		actions_taken = false
-
-		# Priority 1: Attack player if possible
-		if await _ai_try_attack_player():
-			actions_taken = true
-			if current_phase == Phase.GAME_OVER:
-				return
-			await get_tree().create_timer(0.8).timeout
-			continue
-
-		# Priority 2: Kill enemy card
-		if await _ai_try_kill_card():
-			actions_taken = true
-			if current_phase == Phase.GAME_OVER:
-				return
-			await get_tree().create_timer(0.8).timeout
-			continue
-
-		# Priority 3: Best trade efficiency
-		if await _ai_try_trade():
-			actions_taken = true
-			if current_phase == Phase.GAME_OVER:
-				return
-			await get_tree().create_timer(0.8).timeout
-			continue
-
-		# Priority 4: Summon to front row first
-		if await _ai_try_summon_front():
-			actions_taken = true
-			await get_tree().create_timer(0.8).timeout
-			# After summon, check if new attack ready
-			_ai_set_attack_ready()
-			continue
-
-		# Priority 5: Summon to back row
-		if await _ai_try_summon_back():
-			actions_taken = true
-			await get_tree().create_timer(0.8).timeout
-			_ai_set_attack_ready()
-			continue
-
-		# Priority 6: End turn (break the loop)
-
-	_add_log("相手: ターン終了")
-	await get_tree().create_timer(1.0).timeout
-
-func _ai_set_attack_ready() -> void:
-	for slot in opponent_slots:
-		if not slot.is_empty():
-			var card_ui: CardUI = slot.card_ui
-			if card_ui.has_attacked_this_turn:
-				continue
-			var all_dice := card_ui.get_all_attack_dice()
-			if current_dice in all_dice and not card_ui.is_attack_ready:
-				card_ui.set_attack_ready(true)
-
-func _ai_try_attack_player() -> bool:
-	if not _can_attack_player(true):
-		return false
-	var attackers := _get_attack_ready_slots(opponent_slots)
-	if attackers.size() == 0:
-		return false
-	# Pick random attacker
-	var slot: FieldSlot = attackers[randi() % attackers.size()]
-	var card_ui: CardUI = slot.card_ui
-	var atk := _get_effective_atk(card_ui, slot)
-	card_ui.set_attack_ready(false)
-	card_ui.has_attacked_this_turn = true
-
-	# Passive 14: on attack draw 1
-	if card_ui.card_data.effect_type == "passive" and card_ui.card_data.effect_id == 14:
-		_draw_card_opponent()
-		_update_opponent_hand_display()
-		_add_log("%s: 攻撃時1枚ドロー!" % card_ui.card_data.card_name)
-
-	# Direct attack lunge animation toward player HP
-	await _play_direct_attack_animation(card_ui, slot, true)
-
-	player_hp -= atk
-	_add_log("相手 %s がプレイヤーに%dダメージ!" % [card_ui.card_data.card_name, atk])
-	_spawn_hp_damage_popup(true, atk)
-	_update_hp_display()
-	await _check_game_over()
-	return true
-
-func _ai_try_kill_card() -> bool:
-	var attackers := _get_attack_ready_slots(opponent_slots)
-	if attackers.size() == 0:
-		return false
-
-	# Find enemy cards that can be killed
-	var targets := _get_attackable_targets(player_slots)
-	if targets.size() == 0:
-		return false
-
-	for aslot in attackers:
-		var atk := _get_effective_atk(aslot.card_ui, aslot)
-		for tslot in targets:
-			var tcard: CardUI = tslot.card_ui
-			if tcard.current_hp <= atk:
-				# Can kill this target
-				_add_log("相手AI: %sで%sを倒す!" % [aslot.card_ui.card_data.card_name, tcard.card_data.card_name])
-				await _execute_ai_attack(aslot, tslot)
-				return true
-	return false
-
-func _ai_try_trade() -> bool:
-	var attackers := _get_attack_ready_slots(opponent_slots)
-	if attackers.size() == 0:
-		return false
-
-	var targets := _get_attackable_targets(player_slots)
-	if targets.size() == 0:
-		return false
-
-	# Pick the attack with best efficiency (most damage relative to own loss)
-	var best_score: float = -999.0
-	var best_attacker: FieldSlot = null
-	var best_target: FieldSlot = null
-
-	for aslot in attackers:
-		var acard: CardUI = aslot.card_ui
-		var atk := _get_effective_atk(acard, aslot)
-		for tslot in targets:
-			var tcard: CardUI = tslot.card_ui
-			var def_atk := _get_effective_atk(tcard, tslot)
-			# Score: damage dealt - damage taken
-			var score: float = float(atk) - float(def_atk) * 0.8
-			if score > best_score:
-				best_score = score
-				best_attacker = aslot
-				best_target = tslot
-
-	if best_attacker != null and best_target != null:
-		await _execute_ai_attack(best_attacker, best_target)
-		return true
-	return false
-
-func _ai_try_summon_front() -> bool:
-	# Find summonable cards and empty front-row slots
-	var summonable := _get_ai_summonable_cards()
-	if summonable.size() == 0:
-		return false
-
-	for i in range(3):  # Front row slots 0,1,2
-		if opponent_slots[i].is_empty():
-			var card_ui: CardUI = summonable[0]
-			card_ui.set_face_down(false)
-			await _summon_card_to_slot(card_ui, opponent_slots[i])
-			return true
-	return false
-
-func _ai_try_summon_back() -> bool:
-	var summonable := _get_ai_summonable_cards()
-	if summonable.size() == 0:
-		return false
-
-	for i in [3, 4]:  # Back row slots
-		if opponent_slots[i].is_empty():
-			var card_ui: CardUI = summonable[0]
-			card_ui.set_face_down(false)
-			await _summon_card_to_slot(card_ui, opponent_slots[i])
-			return true
-	return false
-
-func _get_ai_summonable_cards() -> Array:
-	var result := []
-	for card_ui in opponent_hand:
-		if current_dice in card_ui.card_data.summon_dice:
-			result.append(card_ui)
-	return result
-
-func _execute_ai_attack(attacker_slot: FieldSlot, target_slot: FieldSlot) -> void:
-	var attacker_card: CardUI = attacker_slot.card_ui
-	attacker_card.set_attack_ready(false)
-	attacker_card.has_attacked_this_turn = true
-
-	# Passive 14: on attack draw 1
-	if attacker_card.card_data.effect_type == "passive" and attacker_card.card_data.effect_id == 14:
-		_draw_card_opponent()
-		_update_opponent_hand_display()
-		_add_log("%s: 攻撃時1枚ドロー!" % attacker_card.card_data.card_name)
-
-	var atk_atk := _get_effective_atk(attacker_card, attacker_slot)
-	var defender_card: CardUI = target_slot.card_ui
-	var def_atk := _get_effective_atk(defender_card, target_slot)
-
-	_add_log("相手 %s (ATK:%d) vs %s (ATK:%d)" % [
-		attacker_card.card_data.card_name, atk_atk,
-		defender_card.card_data.card_name, def_atk
-	])
-
-	# Attack lunge animation: attacker moves toward defender
-	await _play_attack_animation(attacker_card, attacker_slot, defender_card, target_slot)
-
-	# Damage reduction passive 12
-	var atk_damage_to_def := atk_atk
-	var def_damage_to_atk := def_atk
-
-	if defender_card.card_data.effect_type == "passive" and defender_card.card_data.effect_id == 12:
-		atk_damage_to_def = maxi(atk_damage_to_def - 1, 1)
-	if attacker_card.card_data.effect_type == "passive" and attacker_card.card_data.effect_id == 12:
-		def_damage_to_atk = maxi(def_damage_to_atk - 1, 1)
-
-	# Auto trigger 18: when attacked, deal 1 extra damage back
-	if defender_card.card_data.effect_type == "auto_trigger" and defender_card.card_data.effect_id == 18:
-		def_damage_to_atk += 1
-		_add_log("%s: 被攻撃時+1反撃!" % defender_card.card_data.card_name)
-
-	# Apply mutual damage
-	var atk_remaining := attacker_card.take_damage(def_damage_to_atk)
-	var def_remaining := defender_card.take_damage(atk_damage_to_def)
-	attacker_card.play_damage_flash()
-	defender_card.play_damage_flash()
-	_spawn_damage_popup(attacker_card, def_damage_to_atk)
-	_spawn_damage_popup(defender_card, atk_damage_to_def)
-	await get_tree().create_timer(0.5).timeout
-
-	# Check destruction
-	if def_remaining <= 0:
-		await _destroy_card(target_slot, true, attacker_slot)
-	if atk_remaining <= 0:
-		await _destroy_card(attacker_slot, false, target_slot)
-
-func _get_attack_ready_slots(slots: Array) -> Array:
-	var result := []
-	for slot in slots:
-		if not slot.is_empty() and (slot.card_ui as CardUI).is_attack_ready:
-			result.append(slot)
-	return result
-
-func _get_attackable_targets(slots: Array) -> Array:
-	var result := []
-	for slot in slots:
-		if not slot.is_empty() and not slot.is_protected():
-			result.append(slot)
-	return result
-
-# ==============================================================================
-# DRAWING CARDS
-# ==============================================================================
-
-func _draw_card_player() -> void:
-	if player_deck.size() == 0:
-		_add_log("デッキが空です!")
-		return
-	var card_data: CardData = player_deck.pop_front()
-	var card_ui: CardUI = CardUIScene.instantiate()
-	player_hand.append(card_ui)
-	player_hand_container.add_child(card_ui)
-	card_ui.setup(card_data)
-	card_ui.card_clicked.connect(_on_card_clicked)
-	card_ui.card_drag_ended.connect(_on_card_drag_ended)
-
-func _draw_card_opponent() -> void:
-	if opponent_deck.size() == 0:
-		_add_log("相手デッキが空です!")
-		return
-	var card_data: CardData = opponent_deck.pop_front()
-	var card_ui: CardUI = CardUIScene.instantiate()
-	card_ui.setup(card_data)
-	card_ui.set_face_down(true)
-	opponent_hand.append(card_ui)
-	opponent_hand_container.add_child(card_ui)
-
-# ==============================================================================
-# HAND DISPLAY
-# ==============================================================================
-
-func _update_hand_display() -> void:
-	# Ensure all hand cards are children of the container
-	for card_ui in player_hand:
-		if card_ui.get_parent() != player_hand_container:
-			if card_ui.get_parent():
-				card_ui.get_parent().remove_child(card_ui)
-			player_hand_container.add_child(card_ui)
-		# Reconnect signals if needed
-		if not card_ui.card_clicked.is_connected(_on_card_clicked):
-			card_ui.card_clicked.connect(_on_card_clicked)
-		if not card_ui.card_drag_ended.is_connected(_on_card_drag_ended):
-			card_ui.card_drag_ended.connect(_on_card_drag_ended)
+	# Hand card summonability
+	_update_hand_highlights()
 
 func _update_opponent_hand_display() -> void:
-	for card_ui in opponent_hand:
-		if card_ui.get_parent() != opponent_hand_container:
-			if card_ui.get_parent():
-				card_ui.get_parent().remove_child(card_ui)
-			opponent_hand_container.add_child(card_ui)
-		card_ui.set_face_down(true)
+	for child in opponent_hand_container.get_children():
+		child.queue_free()
+	for i in range(opponent_hand.size()):
+		var card_back := Panel.new()
+		card_back.custom_minimum_size = Vector2(40, 55)
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.3, 0.3, 0.4)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
+		card_back.add_theme_stylebox_override("panel", style)
+		opponent_hand_container.add_child(card_back)
 
-# ==============================================================================
-# HP DISPLAY
-# ==============================================================================
+func _update_hand_highlights() -> void:
+	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
+	for card_ui in player_hand:
+		if card_ui is CardUI:
+			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and card_ui.card_data.mana_cost <= player_mana and _has_empty_player_slot()
+			card_ui.set_summonable(can_summon)
 
-func _update_hp_display() -> void:
-	player_hp_label.text = "PLAYER HP: %d" % player_hp
-	opponent_hp_label.text = "OPPONENT HP: %d" % opponent_hp
-
-	# Color changes
-	if player_hp <= 5:
-		player_hp_label.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	elif player_hp <= 10:
-		player_hp_label.add_theme_color_override("font_color", Color(1, 0.6, 0.3))
-	else:
-		player_hp_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1))
-
-	if opponent_hp <= 5:
-		opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	elif opponent_hp <= 10:
-		opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.6, 0.3))
-	else:
-		opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
-
-# ==============================================================================
-# PHASE DISPLAY & BUTTONS
-# ==============================================================================
-
-func _update_phase_display() -> void:
-	match current_phase:
-		Phase.DICE_ROLL:
-			phase_label.text = "DICE ROLL"
-		Phase.DRAW:
-			phase_label.text = "DRAW"
-		Phase.MAIN:
-			if selected_hand_card != null:
-				phase_label.text = "SUMMON: スロットを選択"
-			elif selected_attacker != null:
-				phase_label.text = "TARGET: 攻撃先を選択"
-			else:
-				phase_label.text = "MAIN PHASE"
-		Phase.ATTACK_TARGET:
-			phase_label.text = "TARGET: 攻撃先を選択"
-		Phase.END_TURN:
-			phase_label.text = "END TURN"
-		Phase.GAME_OVER:
-			phase_label.text = "GAME OVER"
-
-	if current_turn == Turn.OPPONENT and current_phase != Phase.GAME_OVER:
-		phase_label.text = "OPPONENT TURN"
-
-func _update_buttons() -> void:
-	var show_roll := (current_phase == Phase.DICE_ROLL and current_turn == Turn.PLAYER)
-	dice_roll_button.visible = show_roll
-	end_turn_button.disabled = (current_phase == Phase.DICE_ROLL or current_turn != Turn.PLAYER or current_phase == Phase.GAME_OVER)
-
-	# Pulse the roll button when waiting for dice roll
-	if roll_button_tween:
-		roll_button_tween.kill()
-		roll_button_tween = null
-		dice_roll_button.modulate = Color.WHITE
-	if show_roll:
-		roll_button_tween = create_tween().set_loops()
-		roll_button_tween.tween_property(dice_roll_button, "modulate", Color(1.5, 1.4, 0.5), 0.35).set_trans(Tween.TRANS_SINE)
-		roll_button_tween.tween_property(dice_roll_button, "modulate", Color(0.8, 0.8, 0.6), 0.35).set_trans(Tween.TRANS_SINE)
-
-# ==============================================================================
-# SELECTION
-# ==============================================================================
-
-func _clear_selection() -> void:
-	if selected_hand_card != null:
-		selected_hand_card.set_selected(false)
-		selected_hand_card = null
-	if selected_attacker != null and not selected_attacker.is_empty():
-		(selected_attacker.card_ui as CardUI).set_selected(false)
-	selected_attacker = null
-	_clear_slot_highlights()
-
-func _highlight_empty_player_slots() -> void:
+func _has_empty_player_slot() -> bool:
 	for slot in player_slots:
-		if slot.is_empty():
-			slot.set_highlighted(true)
+		if slot and slot.is_empty():
+			return true
+	return false
 
-func _clear_slot_highlights() -> void:
-	for slot in player_slots:
-		slot.set_highlighted(false)
-	for slot in opponent_slots:
-		slot.set_highlighted(false)
+func _log(text: String) -> void:
+	log_label.append_text(text + "\n")
 
-# ==============================================================================
-# GAME OVER
-# ==============================================================================
+func _show_phase_banner(text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
+	phase_overlay_label.text = text
+	phase_overlay_label.add_theme_color_override("font_color", banner_color)
+	phase_overlay.modulate = Color(1, 1, 1, 0)
+	phase_overlay.visible = true
+	var tween := create_tween()
+	tween.tween_property(phase_overlay, "modulate:a", 1.0, 0.15)
+	tween.tween_interval(duration)
+	tween.tween_property(phase_overlay, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(func(): phase_overlay.visible = false)
+	await tween.finished
 
-func _on_surrender_pressed() -> void:
-	if current_phase == Phase.GAME_OVER:
+
+# ═══════════════════════════════════════════
+# GAME START
+# ═══════════════════════════════════════════
+func _start_game() -> void:
+	# Prepare decks
+	if GameManager.player_deck.size() >= 20:
+		for card in GameManager.player_deck:
+			player_deck.append(card.duplicate_card())
+	else:
+		player_deck = _to_card_data_array(CardDatabase.build_random_deck())
+	opponent_deck = _to_card_data_array(CardDatabase.build_random_deck())
+	player_deck.shuffle()
+	opponent_deck.shuffle()
+
+	# Decide who goes first
+	is_player_first = randi() % 2 == 0
+	is_player_turn = is_player_first
+	turn_number = 0
+
+	_log("[color=yellow]Game Start! %s goes first.[/color]" % ("Player" if is_player_first else "Opponent"))
+
+	# Show who goes first
+	if is_player_first:
+		await _show_phase_banner("⚔ BATTLE START ⚔\nYou go FIRST (先行)", Color(0.3, 1.0, 0.5), 1.2)
+	else:
+		await _show_phase_banner("⚔ BATTLE START ⚔\nYou go SECOND (後攻)", Color(1.0, 0.7, 0.3), 1.2)
+
+	# Draw starting hands
+	for i in range(STARTING_HAND):
+		_player_draw_card()
+		_opponent_draw_card()
+
+	_update_all_ui()
+	_start_turn()
+
+func _to_card_data_array(arr: Array) -> Array[CardData]:
+	var result: Array[CardData] = []
+	for item in arr:
+		result.append(item)
+	return result
+
+# ═══════════════════════════════════════════
+# TURN FLOW
+# ═══════════════════════════════════════════
+func _start_turn() -> void:
+	if game_over:
 		return
-	current_phase = Phase.GAME_OVER
-	_update_phase_display()
-	_add_log("降参しました...")
-	GameManager.battle_result = "lose"
-	await get_tree().create_timer(1.0).timeout
-	_show_result("SURRENDER")
+	turn_number += 1
+	current_dice = 0
+	_clear_selection()
 
-func _check_game_over() -> void:
-	if player_hp <= 0:
-		current_phase = Phase.GAME_OVER
-		_update_phase_display()
-		_add_log("GAME OVER - 敗北...")
-		GameManager.battle_result = "lose"
-		await get_tree().create_timer(2.0).timeout
-		_show_result("DEFEAT")
-	elif opponent_hp <= 0:
-		current_phase = Phase.GAME_OVER
-		_update_phase_display()
-		_add_log("GAME OVER - 勝利!")
-		GameManager.battle_result = "win"
-		await get_tree().create_timer(2.0).timeout
-		_show_result("VICTORY")
-
-func _show_result(text: String) -> void:
-	var overlay := ColorRect.new()
-	overlay.color = Color(0, 0, 0, 0.7)
-	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.z_index = 100
-	add_child(overlay)
-
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	overlay.add_child(center)
-
-	var result_vbox := VBoxContainer.new()
-	result_vbox.add_theme_constant_override("separation", 16)
-	result_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	center.add_child(result_vbox)
-
-	var result_label := Label.new()
-	result_label.text = text
-	result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	result_label.add_theme_font_size_override("font_size", 64)
-	if text == "VICTORY":
-		result_label.add_theme_color_override("font_color", Color(1, 0.85, 0.2))
+	if is_player_turn:
+		# Increase max mana
+		player_max_mana = mini(player_max_mana + 1, MAX_MANA_CAP)
+		player_mana = player_max_mana
+		_log("[color=cyan]── Player Turn %d (Mana: %d) ──[/color]" % [turn_number, player_mana])
 	else:
-		result_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
-	result_vbox.add_child(result_label)
+		opponent_max_mana = mini(opponent_max_mana + 1, MAX_MANA_CAP)
+		opponent_mana = opponent_max_mana
+		_log("[color=red]── Opponent Turn %d ──[/color]" % turn_number)
 
-	var hp_info := Label.new()
-	hp_info.text = "Player HP: %d | Opponent HP: %d" % [player_hp, opponent_hp]
-	hp_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hp_info.add_theme_font_size_override("font_size", 24)
-	result_vbox.add_child(hp_info)
+	# Check first turn special rules
+	var is_first_player_turn1 := is_player_first and turn_number == 1 and is_player_turn
+	var is_second_player_turn1 := (not is_player_first) and turn_number == 1 and (not is_player_turn)
 
-	var retry_button := Button.new()
-	retry_button.text = "もう一度"
-	retry_button.custom_minimum_size = Vector2(300, 70)
-	retry_button.add_theme_font_size_override("font_size", 28)
-	retry_button.pressed.connect(func(): GameManager.change_scene("res://scenes/battle/battle.tscn"))
-	result_vbox.add_child(retry_button)
+	var skip_dice_draw := is_first_player_turn1 or is_second_player_turn1
 
-	var title_button := Button.new()
-	title_button.text = "タイトルへ"
-	title_button.custom_minimum_size = Vector2(300, 70)
-	title_button.add_theme_font_size_override("font_size", 28)
-	title_button.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
-	result_vbox.add_child(title_button)
+	current_phase = Phase.MAIN1
+	_update_all_ui()
 
-# ==============================================================================
-# UTILITY FUNCTIONS
-# ==============================================================================
-
-func _get_adjacent_slots(slot: FieldSlot) -> Array:
-	var slots := player_slots if slot.is_player_side else opponent_slots
-	var result := []
-	var idx := slot.slot_index
-
-	if idx < 3:
-		# Front row: adjacent front slots
-		if idx > 0:
-			result.append(slots[idx - 1])
-		if idx < 2:
-			result.append(slots[idx + 1])
-		# Also adjacent to back row slots
-		# Front 0 adjacent to Back 3
-		# Front 1 adjacent to Back 3 and Back 4
-		# Front 2 adjacent to Back 4
-		if idx == 0 or idx == 1:
-			result.append(slots[3])
-		if idx == 1 or idx == 2:
-			result.append(slots[4])
+	if is_player_turn:
+		await _show_phase_banner("YOUR TURN", Color(0.3, 1.0, 0.5), 0.6)
 	else:
-		# Back row
-		# Back 3 adjacent to Front 0, 1 and Back 4
-		# Back 4 adjacent to Front 1, 2 and Back 3
-		if idx == 3:
-			result.append(slots[0])
-			result.append(slots[1])
-			result.append(slots[4])
-		elif idx == 4:
-			result.append(slots[1])
-			result.append(slots[2])
-			result.append(slots[3])
-	return result
+		await _show_phase_banner("OPPONENT TURN", Color(1.0, 0.4, 0.4), 0.6)
 
-func _get_non_empty_slots(slots: Array) -> Array:
-	var result := []
-	for slot in slots:
-		if not slot.is_empty():
-			result.append(slot)
-	return result
+	if is_player_turn:
+		# Player: wait for input in Main1
+		pass
+	else:
+		# Opponent AI turn
+		await _run_opponent_turn(skip_dice_draw)
 
-func _find_slot_for_card(card_ui: CardUI, is_player: bool) -> FieldSlot:
-	var slots := player_slots if is_player else opponent_slots
-	for slot in slots:
-		if slot.card_ui == card_ui:
-			return slot
-	return null
+func _on_end_phase() -> void:
+	if not is_player_turn or is_animating or game_over:
+		return
 
-func _find_slot_at_position(pos: Vector2, player_side: bool) -> FieldSlot:
-	var slots := player_slots if player_side else opponent_slots
-	for slot in slots:
-		var rect := Rect2(slot.global_position, slot.size)
-		if rect.has_point(pos):
-			return slot
-	# If not exact hit, find closest slot within reasonable distance
-	var closest: FieldSlot = null
-	var closest_dist := 200.0  # Max distance to snap
-	for slot in slots:
-		var center: Vector2 = slot.global_position + slot.size / 2
-		var dist := pos.distance_to(center)
-		if dist < closest_dist:
-			closest_dist = dist
-			closest = slot
-	return closest
+	var is_first_player_turn1 := is_player_first and turn_number == 1
+	var skip_dice_draw := is_first_player_turn1
 
-func _is_position_in_opponent_hp_area(pos: Vector2) -> bool:
-	var rect := Rect2(opponent_hp_label.global_position, opponent_hp_label.size)
-	# Expand the area a bit for easier targeting
-	rect = rect.grow(50)
-	return rect.has_point(pos)
+	if current_phase == Phase.MAIN1:
+		if skip_dice_draw:
+			# First player turn 1: skip directly to end
+			_end_turn()
+			return
+		else:
+			#  Dice phase
+			current_phase = Phase.DICE
+			_clear_selection()
+			_update_all_ui()
+			await _show_phase_banner("🎲 DICE!", Color(1, 0.9, 0.3), 0.5)
+			await _do_dice_and_battle()
+			if game_over:
+				return
+			# Draw phase
+			current_phase = Phase.DRAW
+			_update_all_ui()
+			_player_draw_card()
+			_log("Player draws a card.")
+			# Go to Main2
+			current_phase = Phase.MAIN2
+			_clear_selection()
+			_update_all_ui()
+			await _show_phase_banner("MAIN PHASE 2", Color(0.5, 0.8, 1.0), 0.5)
+	elif current_phase == Phase.MAIN2:
+		_end_turn()
 
-func _spawn_damage_popup(node: Control, amount: int) -> void:
+func _end_turn() -> void:
+	current_phase = Phase.END
+	_clear_selection()
+	_update_all_ui()
+	is_player_turn = not is_player_turn
+	_start_turn()
+
+# ═══════════════════════════════════════════
+# DICE & BATTLE
+# ═══════════════════════════════════════════
+func _do_dice_and_battle() -> void:
+	is_animating = true
+	# Roll dice with animation
+	current_dice = await _animate_dice_roll()
+	_log("[color=yellow]🎲 Dice: %d[/color]" % current_dice)
+	_update_all_ui()
+
+	# Turn player's cards attack first
+	var turn_slots: Array
+	var def_slots: Array
+	if is_player_turn:
+		turn_slots = player_slots
+		def_slots = opponent_slots
+	else:
+		turn_slots = opponent_slots
+		def_slots = player_slots
+
+	# Attack in slot order 0→1→2→3→4→5
+	await _resolve_attacks(turn_slots, def_slots, is_player_turn)
+	if game_over:
+		is_animating = false
+		return
+
+	# Surviving defender's cards attack
+	await _resolve_attacks(def_slots, turn_slots, not is_player_turn)
+	if game_over:
+		is_animating = false
+		return
+
+	is_animating = false
+
+func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_player: bool) -> void:
+	for i in range(6):
+		var slot: FieldSlot = attacker_slots[i]
+		if not slot or slot.is_empty():
+			continue
+		var card_ui: CardUI = slot.card_ui
+		if current_dice not in card_ui.card_data.attack_dice:
+			continue
+
+		var lane: int = slot.lane
+		var is_front: bool = slot.is_front_row
+
+		# Find target
+		var target_slot: FieldSlot = null
+		var target_is_player_hp := false
+
+		if is_front:
+			var enemy_front: FieldSlot = defender_slots[lane]
+			var enemy_back: FieldSlot = defender_slots[lane + 3]
+			if enemy_front and not enemy_front.is_empty():
+				target_slot = enemy_front
+			elif enemy_back and not enemy_back.is_empty():
+				target_slot = enemy_back
+			else:
+				target_is_player_hp = true
+		else:
+			var enemy_front: FieldSlot = defender_slots[lane]
+			var enemy_back: FieldSlot = defender_slots[lane + 3]
+			if enemy_front and not enemy_front.is_empty():
+				target_slot = enemy_front
+			elif enemy_back and not enemy_back.is_empty():
+				target_slot = enemy_back
+			else:
+				target_is_player_hp = true
+
+		var atk_name := card_ui.card_data.card_name
+		var damage: int = card_ui.current_atk
+
+		# Highlight attacker briefly
+		card_ui.modulate = Color(1.5, 1.2, 0.5)
+		await get_tree().create_timer(0.2).timeout
+
+		if target_is_player_hp:
+			if attacker_is_player:
+				_log("[color=lime]%s → 相手HPに%dダメージ！[/color]" % [atk_name, damage])
+				await _animate_attack(card_ui, opponent_hp_label)
+				_spawn_damage_popup(opponent_hp_label.global_position + Vector2(50, 0), damage)
+				_shake_node(opponent_hp_label)
+				opponent_hp -= damage
+				if opponent_hp <= 0:
+					_game_end(true)
+					return
+			else:
+				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
+				await _animate_attack(card_ui, player_hp_label)
+				_spawn_damage_popup(player_hp_label.global_position + Vector2(50, 0), damage)
+				_shake_node(player_hp_label)
+				player_hp -= damage
+				if player_hp <= 0:
+					_game_end(false)
+					return
+		elif target_slot:
+			var def_card: CardUI = target_slot.card_ui
+			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
+			await _animate_attack(card_ui, def_card)
+			def_card.play_damage_flash()
+			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
+			var remaining := def_card.take_damage(damage)
+			if remaining <= 0:
+				_log("[color=gray]%s 破壊！[/color]" % def_card.card_data.card_name)
+				await def_card.play_destroy_animation()
+				target_slot.remove_card()
+				def_card.queue_free()
+
+		card_ui.modulate = Color.WHITE
+		_update_all_ui()
+		await get_tree().create_timer(0.3).timeout
+
+func _animate_dice_roll() -> int:
+	var final := randi() % 6 + 1
+	dice_label.add_theme_font_size_override("font_size", 32)
+	for i in range(12):
+		current_dice = randi() % 6 + 1
+		dice_label.text = "🎲 %d" % current_dice
+		dice_label.pivot_offset = dice_label.size / 2
+		if i % 2 == 0:
+			dice_label.scale = Vector2(1.2, 1.2)
+		else:
+			dice_label.scale = Vector2(0.9, 0.9)
+		await get_tree().create_timer(0.04 + i * 0.025).timeout
+	current_dice = final
+	dice_label.text = "🎲 %d" % current_dice
+	var tween := create_tween()
+	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
+	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
+	await tween.finished
+	dice_label.add_theme_font_size_override("font_size", 36)
+	await get_tree().create_timer(0.3).timeout
+	return final
+
+func _animate_attack(card_ui: CardUI, target_node: Control) -> void:
+	var orig := card_ui.global_position
+	var target_center := target_node.global_position + target_node.size / 2
+	var card_center := orig + card_ui.size / 2
+	var direction := (target_center - card_center).normalized()
+	var lunge_distance := card_center.distance_to(target_center) * 0.4
+	lunge_distance = clampf(lunge_distance, 30.0, 200.0)
+	var lunge_pos := orig + direction * lunge_distance
+
+	card_ui.z_index = 50
+	var tween := create_tween()
+	tween.tween_property(card_ui, "global_position", lunge_pos, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween.tween_property(card_ui, "global_position", orig, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await tween.finished
+	card_ui.z_index = 1
+
+func _shake_node(node: Control) -> void:
+	var orig_pos := node.position
+	var tween := create_tween()
+	tween.tween_property(node, "position", orig_pos + Vector2(8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos, 0.04)
+
+func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
 	var popup := Label.new()
 	popup.text = "-%d" % amount
-	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	popup.add_theme_font_size_override("font_size", 32)
 	popup.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	popup.z_index = 50
-	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	popup.position = Vector2(node.size.x / 2 - 20, -10)
-	node.add_child(popup)
+	popup.global_position = pos
+	popup.z_index = 200
+	popup.top_level = true
+	add_child(popup)
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(popup, "position:y", popup.position.y - 60, 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(popup, "modulate:a", 0.0, 0.7).set_delay(0.3)
-	tween.finished.connect(popup.queue_free)
+	tween.tween_property(popup, "global_position:y", pos.y - 60, 0.6)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.6)
+	tween.finished.connect(func(): popup.queue_free())
 
-func _spawn_heal_popup(node: Control, amount: int) -> void:
-	var popup := Label.new()
-	popup.text = "+%d" % amount
-	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	popup.add_theme_font_size_override("font_size", 28)
-	popup.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
-	popup.z_index = 50
-	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	popup.position = Vector2(node.size.x / 2 - 20, -10)
-	node.add_child(popup)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(popup, "position:y", popup.position.y - 50, 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(popup, "modulate:a", 0.0, 0.6).set_delay(0.2)
-	tween.finished.connect(popup.queue_free)
+# ═══════════════════════════════════════════
+# DRAW
+# ═══════════════════════════════════════════
+func _player_draw_card() -> void:
+	if player_deck.is_empty():
+		return
+	var card_data: CardData = player_deck.pop_front()
+	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
+	player_hand_container.add_child(card_ui)
+	card_ui.setup(card_data)
+	card_ui.card_clicked.connect(_on_hand_card_clicked)
+	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+	player_hand.append(card_ui)
+	_update_all_ui()
 
-func _spawn_hp_damage_popup(is_player: bool, amount: int) -> void:
-	var label := player_hp_label if is_player else opponent_hp_label
-	var popup := Label.new()
-	popup.text = "-%d" % amount
-	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	popup.add_theme_font_size_override("font_size", 36)
-	popup.add_theme_color_override("font_color", Color(1, 0.1, 0.1))
-	popup.z_index = 50
-	popup.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	popup.position = Vector2(label.size.x / 2 - 20, -20)
-	label.add_child(popup)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(popup, "position:y", popup.position.y - 60, 0.8).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(popup, "modulate:a", 0.0, 0.8).set_delay(0.3)
-	tween.finished.connect(popup.queue_free)
+func _opponent_draw_card() -> void:
+	if opponent_deck.is_empty():
+		return
+	var card_data: CardData = opponent_deck.pop_front()
+	opponent_hand.append(card_data)
+	_update_opponent_hand_display()
 
-func _play_attack_animation(attacker_card: CardUI, attacker_slot: FieldSlot, defender_card: CardUI, target_slot: FieldSlot) -> void:
-	# Lunge attacker toward defender then back
-	var attacker_orig := attacker_card.global_position
-	var target_center := target_slot.global_position + target_slot.size / 2
-	var attacker_center := attacker_slot.global_position + attacker_slot.size / 2
-	var direction := (target_center - attacker_center).normalized()
-	var lunge_distance := attacker_center.distance_to(target_center) * 0.4
-	var lunge_pos := attacker_orig + direction * lunge_distance
+# ═══════════════════════════════════════════
+# PLAYER INPUT
+# ═══════════════════════════════════════════
+func _clear_selection() -> void:
+	if selected_hand_card:
+		selected_hand_card.set_selected(false)
+		selected_hand_card = null
+	if selected_field_card:
+		selected_field_card.set_selected(false)
+		selected_field_card.set_movable(false)
+		selected_field_card = null
+		selected_field_slot = null
+	select_mode = SelectMode.NONE
+	for slot in player_slots:
+		if slot:
+			slot.set_highlighted(false)
 
-	attacker_card.top_level = true
-	attacker_card.global_position = attacker_orig
-	attacker_card.z_index = 50
+func _on_hand_card_clicked(card_ui: CardUI) -> void:
+	if not is_player_turn or is_animating or game_over:
+		return
+	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
+		return
 
-	var tween := create_tween()
-	tween.tween_property(attacker_card, "global_position", lunge_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(attacker_card, "global_position", attacker_orig, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	await tween.finished
+	if select_mode == SelectMode.SUMMON_SELECT_SLOT and selected_hand_card == card_ui:
+		# Deselect
+		_clear_selection()
+		return
 
-	attacker_card.top_level = false
-	attacker_card.z_index = 1
-	attacker_card.position = Vector2(5, 5)
+	# Check if affordable
+	if card_ui.card_data.mana_cost > player_mana:
+		_log("Not enough mana!")
+		return
+	if not _has_empty_player_slot():
+		_log("No empty slots!")
+		return
 
-func _play_direct_attack_animation(card_ui: CardUI, slot: FieldSlot, is_player_target: bool) -> void:
-	# Lunge card toward the target player's HP label
-	var card_orig := card_ui.global_position
-	var hp_label := player_hp_label if is_player_target else opponent_hp_label
-	var target_center := hp_label.global_position + hp_label.size / 2
-	var card_center := slot.global_position + slot.size / 2
-	var direction := (target_center - card_center).normalized()
-	var lunge_distance := card_center.distance_to(target_center) * 0.3
-	var lunge_pos := card_orig + direction * lunge_distance
+	_clear_selection()
+	selected_hand_card = card_ui
+	card_ui.set_selected(true)
+	select_mode = SelectMode.SUMMON_SELECT_SLOT
+	# Highlight empty slots
+	for slot in player_slots:
+		if slot and slot.is_empty():
+			slot.set_highlighted(true)
 
-	card_ui.top_level = true
-	card_ui.global_position = card_orig
-	card_ui.z_index = 50
+func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
+	if not is_player_turn or is_animating or game_over:
+		card_ui.reset_position()
+		return
+	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
+		card_ui.reset_position()
+		return
+	if card_ui.card_data.mana_cost > player_mana:
+		card_ui.reset_position()
+		return
 
-	var tween := create_tween()
-	tween.tween_property(card_ui, "global_position", lunge_pos, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(card_ui, "global_position", card_orig, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	await tween.finished
+	# Find slot under drop
+	for slot in player_slots:
+		if slot and slot.is_empty():
+			var slot_rect := Rect2(slot.global_position, slot.size)
+			if slot_rect.has_point(drop_pos):
+				_summon_card_to_slot(card_ui, slot)
+				return
+	card_ui.reset_position()
 
-	card_ui.top_level = false
-	card_ui.z_index = 1
-	card_ui.position = Vector2(5, 5)
+func _on_player_slot_clicked(slot: FieldSlot) -> void:
+	if not is_player_turn or is_animating or game_over:
+		return
+	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
+		return
 
-func _add_log(msg: String) -> void:
-	battle_log_messages.append(msg)
-	# Show last 2 messages
-	var display_text := ""
-	var start := maxi(0, battle_log_messages.size() - 2)
-	for i in range(start, battle_log_messages.size()):
-		display_text += battle_log_messages[i] + "\n"
-	log_label.text = display_text.strip_edges()
-	print("[Battle] " + msg)
+	if select_mode == SelectMode.SUMMON_SELECT_SLOT:
+		# Summon to this slot
+		if slot.is_empty() and selected_hand_card:
+			_summon_card_to_slot(selected_hand_card, slot)
+		return
+
+	if select_mode == SelectMode.MOVE_SELECT_SLOT:
+		# Move to this slot
+		if slot.is_empty() and selected_field_slot:
+			_move_card_to_slot(selected_field_slot, slot)
+		else:
+			_clear_selection()
+		return
+
+	# Clicking on occupied slot: select for move
+	if not slot.is_empty():
+		if player_mana >= MOVE_COST:
+			_clear_selection()
+			selected_field_card = slot.card_ui
+			selected_field_slot = slot
+			slot.card_ui.set_selected(true)
+			slot.card_ui.set_movable(true)
+			select_mode = SelectMode.MOVE_SELECT_SLOT
+			# Highlight adjacent empty slots
+			var adjacent := _get_adjacent_slots(slot.slot_index)
+			for adj_idx in adjacent:
+				var adj_slot: FieldSlot = player_slots[adj_idx]
+				if adj_slot and adj_slot.is_empty():
+					adj_slot.set_highlighted(true)
+		else:
+			_clear_selection()
+
+func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
+	# No direct interaction with opponent slots in v2
+	pass
+
+func _get_adjacent_slots(idx: int) -> Array[int]:
+	# Adjacent = same row left/right, or same lane other row
+	var result: Array[int] = []
+	var row_start := (idx / 3) * 3
+	var lane_idx := idx % 3
+	# Left in same row
+	if lane_idx > 0:
+		result.append(row_start + lane_idx - 1)
+	# Right in same row
+	if lane_idx < 2:
+		result.append(row_start + lane_idx + 1)
+	# Same lane other row
+	if idx < 3:
+		result.append(idx + 3)
+	else:
+		result.append(idx - 3)
+	return result
+
+func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
+	player_mana -= card_ui.card_data.mana_cost
+	# Remove from hand
+	player_hand.erase(card_ui)
+	card_ui.card_clicked.disconnect(_on_hand_card_clicked)
+	card_ui.card_drag_ended.disconnect(_on_hand_card_drag_ended)
+	card_ui.set_selected(false)
+	card_ui.set_summonable(false)
+	if card_ui.get_parent():
+		card_ui.get_parent().remove_child(card_ui)
+	card_ui.reset_position()
+	slot.place_card(card_ui)
+	_log("Summoned %s (cost %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
+	_clear_selection()
+	_update_all_ui()
+
+func _move_card_to_slot(from_slot: FieldSlot, to_slot: FieldSlot) -> void:
+	player_mana -= MOVE_COST
+	var card := from_slot.remove_card()
+	to_slot.place_card(card)
+	_log("Moved %s (cost 1 mana)" % card.card_data.card_name)
+	_clear_selection()
+	_update_all_ui()
+
+# ═══════════════════════════════════════════
+# OPPONENT AI
+# ═══════════════════════════════════════════
+func _run_opponent_turn(skip_dice_draw: bool) -> void:
+	await get_tree().create_timer(0.5).timeout
+
+	# Main Phase 1 - Summon
+	current_phase = Phase.MAIN1
+	_update_all_ui()
+	await _ai_summon_phase()
+	await get_tree().create_timer(0.3).timeout
+
+	if not skip_dice_draw:
+		# Dice phase
+		current_phase = Phase.DICE
+		_update_all_ui()
+		await _do_dice_and_battle()
+		if game_over:
+			return
+		await get_tree().create_timer(0.3).timeout
+
+		# Draw
+		current_phase = Phase.DRAW
+		_update_all_ui()
+		_opponent_draw_card()
+		_log("Opponent draws a card.")
+		await get_tree().create_timer(0.3).timeout
+
+	# Main Phase 2
+	current_phase = Phase.MAIN2
+	_update_all_ui()
+	await _ai_summon_phase()
+	await get_tree().create_timer(0.3).timeout
+
+	# End turn
+	is_player_turn = not is_player_turn
+	_start_turn()
+
+func _ai_summon_phase() -> void:
+	# Sort hand by mana cost descending (strongest first)
+	var sorted_hand := opponent_hand.duplicate()
+	sorted_hand.sort_custom(func(a, b): return a.mana_cost > b.mana_cost)
+
+	for card_data in sorted_hand:
+		if card_data.mana_cost > opponent_mana:
+			continue
+		# Find best slot: prioritize front row, then lanes with player cards
+		var best_slot: FieldSlot = null
+		var best_score: int = -1
+
+		for slot in opponent_slots:
+			if not slot or not slot.is_empty():
+				continue
+			var score := 0
+			# Prefer front row
+			if slot.is_front_row:
+				score += 10
+			# Prefer lanes where player has cards (to block)
+			var player_front: FieldSlot = player_slots[slot.lane]
+			var player_back: FieldSlot = player_slots[slot.lane + 3]
+			if (player_front and not player_front.is_empty()) or (player_back and not player_back.is_empty()):
+				score += 5
+			# Prefer center lane
+			if slot.lane == 1:
+				score += 2
+			if score > best_score:
+				best_score = score
+				best_slot = slot
+
+		if best_slot:
+			opponent_mana -= card_data.mana_cost
+			opponent_hand.erase(card_data)
+			var card_ui := CARD_UI_SCENE.instantiate() as CardUI
+			best_slot.place_card(card_ui)
+			card_ui.setup(card_data)
+			_log("Opponent summons %s" % card_data.card_name)
+			_update_all_ui()
+			await get_tree().create_timer(0.4).timeout
+
+# ═══════════════════════════════════════════
+# GAME END
+# ═══════════════════════════════════════════
+func _game_end(player_wins: bool) -> void:
+	game_over = true
+	_update_all_ui()
+	if player_wins:
+		_log("[color=yellow]★ YOU WIN! ★[/color]")
+		GameManager.battle_result = "win"
+	else:
+		_log("[color=red]★ YOU LOSE... ★[/color]")
+		GameManager.battle_result = "lose"
+	# Delay then go to result
+	await get_tree().create_timer(2.0).timeout
+	GameManager.change_scene("res://scenes/result/result.tscn")
+
+func _on_surrender() -> void:
+	if game_over:
+		return
+	game_over = true
+	GameManager.battle_result = "lose"
+	_log("[color=red]Player surrendered.[/color]")
+	await get_tree().create_timer(1.0).timeout
+	GameManager.change_scene("res://scenes/result/result.tscn")

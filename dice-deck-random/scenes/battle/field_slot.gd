@@ -3,10 +3,11 @@ extends Control
 
 signal slot_clicked(slot: FieldSlot)
 
-var slot_index: int = 0
+var slot_index: int = 0  # 0-5: 0-2 front, 3-5 back
 var is_player_side: bool = true
-var card_ui: Control = null  # CardUI reference
-var forward_slots: Array = []
+var card_ui: Control = null
+var lane: int = 0  # 0=left, 1=center, 2=right
+var is_front_row: bool = true
 
 var background: Panel
 var is_highlighted: bool = false
@@ -21,8 +22,12 @@ func _ready() -> void:
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(background)
-
 	_update_display()
+
+func setup_lane_info() -> void:
+	# slot 0,1,2 = front row; 3,4,5 = back row
+	is_front_row = slot_index < 3
+	lane = slot_index % 3  # 0=left,1=center,2=right
 
 func is_empty() -> bool:
 	return card_ui == null
@@ -33,7 +38,7 @@ func place_card(card: Control) -> void:
 		card.reparent(self)
 	else:
 		add_child(card)
-	card.position = Vector2(5, 5)  # Small padding
+	card.position = Vector2(5, 5)
 	card.z_index = 1
 	_update_display()
 
@@ -42,14 +47,6 @@ func remove_card() -> Control:
 	card_ui = null
 	_update_display()
 	return card
-
-func is_protected() -> bool:
-	if forward_slots.size() == 0:
-		return false
-	for slot in forward_slots:
-		if slot.is_empty():
-			return false
-	return true
 
 func set_highlighted(highlight: bool) -> void:
 	is_highlighted = highlight

@@ -1,7 +1,6 @@
 extends Control
 
 func _ready() -> void:
-	# Dark background
 	var bg := ColorRect.new()
 	bg.color = Color(0.1, 0.1, 0.15)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -22,9 +21,12 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 48)
 	vbox.add_child(title)
 
-	var spacer := Control.new()
-	spacer.custom_minimum_size.y = 60
-	vbox.add_child(spacer)
+	var subtitle := Label.new()
+	subtitle.text = "v2"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_size_override("font_size", 24)
+	subtitle.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	vbox.add_child(subtitle)
 
 	var npc_btn := Button.new()
 	npc_btn.text = "NPC Battle"
@@ -48,7 +50,6 @@ func _ready() -> void:
 	vbox.add_child(rules_btn)
 
 func _show_rules() -> void:
-	# Full-screen rules overlay
 	var overlay := ColorRect.new()
 	overlay.color = Color(0, 0, 0, 0.85)
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -67,14 +68,12 @@ func _show_rules() -> void:
 	vbox.add_theme_constant_override("separation", 10)
 	margin.add_child(vbox)
 
-	# Title
 	var title := Label.new()
-	title.text = "ルール説明"
+	title.text = "ルール説明 v2"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
 	vbox.add_child(title)
 
-	# Scrollable rules
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -89,84 +88,52 @@ func _show_rules() -> void:
 	scroll.add_child(rules_label)
 
 	rules_label.text = """[b]■ ゲーム概要[/b]
-1対1のダイス×カードバトルゲーム。
-お互いのHP(20)を先に0にした方が勝ちです。
+1対1のダイス×カードバトル。HP20同士で戦います。
 
 [b]■ デッキ[/b]
-・デッキは20枚で構成されます
-・同じカードは2枚まで入れられます
-・デッキ編集画面で自分のデッキを組めます
+・20枚構成、同じカード最大2枚
+・初期手札: 3枚
+
+[b]■ マナシステム[/b]
+・毎ターン最大マナ+1(上限5)
+・ターン開始時、最大マナまで全回復
+・召喚: カードのコスト分消費
+・移動: 1マナ消費
 
 [b]■ ターンの流れ[/b]
-各ターンは以下の順で進みます:
+1. マナ回復(最大+1)
+2. [color=green]メインフェイズ1[/color] — 召喚/移動
+3. [color=yellow]🎲ダイスロール → バトル解決[/color]
+4. ドロー(1枚)
+5. [color=green]メインフェイズ2[/color] — 召喚/移動
+6. ターンエンド
 
-[color=yellow]1. ダイスロール[/color]
-  サイコロを1個振ります(1〜6)。
-  この出目がそのターンの全ての行動の基準になります。
+[b]■ 先攻1ターン目[/b]
+ダイスなし、ドローなし(メイン1→メイン2→終了)
 
-[color=yellow]2. ドロー[/color]
-  デッキから2枚カードを引きます。
+[b]■ フィールド(3x2 レーン制)[/b]
+  [後4][後5][後6]  相手後列
+  [前1][前2][前3]  相手前列
+  ─────────────
+  [前1][前2][前3]  自分前列
+  [後4][後5][後6]  自分後列
 
-[color=yellow]3. メインフェイズ[/color]
-  以下の行動を好きな順番・回数で行えます:
-  ・カードの召喚
-  ・カードで攻撃
-  行動が終わったら「End Turn」で相手のターンへ。
+レーン: 左(1/4) 中央(2/5) 右(3/6)
 
-[b]■ カードの見方[/b]
-[color=green]上段: 召喚ダイス目[/color] — この出目で召喚できる
-中央: カード名 / 効果テキスト
-[color=red]下段: 攻撃ダイス目[/color] — この出目で攻撃できる
-左下: [color=green]HP[/color](体力)  右下: [color=red]ATK[/color](攻撃力)
+[b]■ バトル解決[/b]
+1. ダイス1個(両者共通)
+2. ターンプレイヤーの該当カードがスロット順に攻撃
+3. 生き残った相手の該当カードがスロット順に攻撃
 
-[b]■ 召喚[/b]
-・ダイスの出目がカードの[color=green]召喚ダイス目[/color]と一致すれば召喚可能
-・召喚可能なカードは[color=green]緑の枠[/color]で表示されます
-・カードをタップ → 光っている空きスロットをタップ
-・またはカードをドラッグ&ドロップでも召喚できます
-・1ターンに何枚でも召喚できます
+[b]■ 攻撃対象(自動・同レーン)[/b]
+優先: 敵前列 → 敵後列 → 敵プレイヤーHP
+・後列は同レーンに味方前列がいる間は守られる
 
-[b]■ 攻撃[/b]
-・ダイスの出目がカードの[color=red]攻撃ダイス目[/color]と一致すれば攻撃可能
-・攻撃可能なカードは[color=red]赤い枠[/color]で表示されます
-・カードをタップ → 敵カードをタップで攻撃
-・またはカードをドラッグ&ドロップでも攻撃できます
-・攻撃するとATK分のダメージを敵カードのHPに与えます
-・HPが0以下になったカードは破壊されます
+[b]■ 操作[/b]
+・召喚: 手札カードタップ → 空きスロットタップ
+・移動: フィールドカードタップ → 隣接空きスロットタップ(1マナ)
+・ドラッグ&ドロップも可"""
 
-[b]■ フィールド配置[/b]
-フィールドは前列3枠 + 後列2枠の計5枠です:
-
-  [後列3] [後列4]
-  [前列0] [前列1] [前列2]
-
-[color=cyan]・後列の守り:[/color]
-  後列3は前列0と前列1の両方にカードがいる間、攻撃されません。
-  後列4は前列1と前列2の両方にカードがいる間、攻撃されません。
-
-[color=cyan]・プレイヤーへの直接攻撃:[/color]
-  後列3と後列4の両方にカードがいる場合、
-  プレイヤーへの直接攻撃はできません。
-  どちらかが空いていれば直接攻撃が可能です。
-
-[b]■ カード効果の種類[/b]
-[color=green]召喚時効果[/color] — カードを場に出した瞬間に発動
-  例: ダメージ、ドロー、味方強化など
-
-[color=red]破壊時効果[/color] — カードが破壊された時に発動
-  例: ドロー、反撃ダメージ、全体ダメージなど
-
-[color=cyan]常時効果(パッシブ)[/color] — 場にいる間ずっと有効
-  例: 隣接味方ATK+1、被ダメージ軽減など
-
-[color=yellow]自動発動効果[/color] — 特定の条件で自動的に発動
-  例: 相手召喚時にダメージ、被攻撃時に反撃など
-
-[b]■ 勝利条件[/b]
-相手のHPを0以下にすれば勝利!
-デッキが尽きてもゲームは続きます。"""
-
-	# Close button
 	var close_btn := Button.new()
 	close_btn.text = "閉じる"
 	close_btn.custom_minimum_size.y = 70
