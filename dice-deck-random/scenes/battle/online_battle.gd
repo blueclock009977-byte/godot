@@ -161,7 +161,7 @@ func _build_ui() -> void:
 	dice_sb.set_corner_radius_all(8)
 	dice_sb.set_content_margin_all(8)
 	dice_panel.add_theme_stylebox_override("panel", dice_sb)
-	dice_panel.custom_minimum_size = Vector2(140, 100)
+	dice_panel.custom_minimum_size = Vector2(200, 110)
 	center_info.add_child(dice_panel)
 
 	var dice_vbox := VBoxContainer.new()
@@ -170,14 +170,14 @@ func _build_ui() -> void:
 
 	var dice_title := Label.new()
 	dice_title.text = "ダイス"
-	dice_title.add_theme_font_size_override("font_size", 20)
+	dice_title.add_theme_font_size_override("font_size", 24)
 	dice_title.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 	dice_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_vbox.add_child(dice_title)
 
 	dice_label = Label.new()
 	dice_label.text = "-"
-	dice_label.add_theme_font_size_override("font_size", 48)
+	dice_label.add_theme_font_size_override("font_size", 56)
 	dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_vbox.add_child(dice_label)
 
@@ -201,20 +201,20 @@ func _build_ui() -> void:
 	# 右: ボタン縦2つ（大きなブロック）
 	var btn_col := VBoxContainer.new()
 	btn_col.add_theme_constant_override("separation", 4)
-	btn_col.custom_minimum_size.x = 170
+	btn_col.custom_minimum_size.x = 220
 	center_info.add_child(btn_col)
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(170, 55)
-	end_turn_btn.add_theme_font_size_override("font_size", 22)
+	end_turn_btn.custom_minimum_size = Vector2(220, 55)
+	end_turn_btn.add_theme_font_size_override("font_size", 26)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(170, 55)
-	next_phase_btn.add_theme_font_size_override("font_size", 22)
+	next_phase_btn.custom_minimum_size = Vector2(220, 55)
+	next_phase_btn.add_theme_font_size_override("font_size", 26)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
 
