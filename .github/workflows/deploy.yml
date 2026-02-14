@@ -25,18 +25,12 @@ jobs:
 
       - name: Setup export templates
         run: |
-          # Find where Godot expects templates
           TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.4.1.stable"
           mkdir -p "$TEMPLATE_DIR"
-          echo "Template dir: $TEMPLATE_DIR"
-          echo "HOME: $HOME"
-          # Download official export templates
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
           cp /tmp/templates/* "$TEMPLATE_DIR/"
           rm -rf /tmp/templates /tmp/templates.tpz
-          echo "Templates installed:"
-          ls "$TEMPLATE_DIR/" | grep web
 
       - name: Import project
         run: |
@@ -49,10 +43,8 @@ jobs:
           mkdir -p dice-deck-random/build/web
           cd dice-deck-random
           godot --headless --export-release "Web" build/web/index.html
-          # Add cache-busting headers for GitHub Pages
-          echo "/*
-  Cache-Control: no-cache, no-store, must-revalidate
-  Pragma: no-cache" > build/web/_headers
+          # Inject cache-busting meta tags into index.html
+          sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' build/web/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
