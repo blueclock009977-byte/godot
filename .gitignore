@@ -1,0 +1,12 @@
+
+# OpenClaw agent files (private)
+AGENTS.md
+SOUL.md
+MEMORY.md
+USER.md
+IDENTITY.md
+TOOLS.md
+HEARTBEAT.md
+BOOTSTRAP.md
+memory/
+.DS_Store
