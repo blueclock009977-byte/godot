@@ -183,7 +183,7 @@ func _build_ui() -> void:
 	center_info.add_child(info_btn_row)
 
 	next_phase_btn = Button.new()
-	next_phase_btn.text = "次へ"
+	next_phase_btn.text = "次のフェーズへ"
 	next_phase_btn.custom_minimum_size = Vector2(100, 50)
 	next_phase_btn.add_theme_font_size_override("font_size", 22)
 	next_phase_btn.pressed.connect(_on_end_phase)
