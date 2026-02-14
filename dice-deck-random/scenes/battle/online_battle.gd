@@ -469,11 +469,9 @@ func _start_turn() -> void:
 
 	if is_player_turn:
 		await _show_phase_banner("自分のターン", Color(0.3, 1.0, 0.5), 0.6)
-		await _show_phase_banner("メインフェイズ1", Color(0.3, 1.0, 0.5), 0.4)
 		# Player input enabled - wait for actions
 	else:
 		await _show_phase_banner("相手のターン", Color(1.0, 0.4, 0.4), 0.6)
-		await _show_phase_banner("メインフェイズ1", Color(1.0, 0.4, 0.4), 0.4)
 		# Wait for opponent actions via Firebase polling
 		_waiting_for_opponent = true
 
@@ -505,6 +503,7 @@ func _on_end_phase() -> void:
 			# Draw
 			current_phase = Phase.DRAW
 			_update_all_ui()
+			await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
 			_player_draw_card()
 			_opponent_draw_card()
 			await _send_action({"type": "draw"})
@@ -529,6 +528,7 @@ func _end_turn() -> void:
 	current_phase = Phase.END
 	_clear_selection()
 	_update_all_ui()
+	await _show_phase_banner("ターン終了", Color(0.6, 0.6, 0.6), 0.5)
 	is_player_turn = not is_player_turn
 	_start_turn()
 
@@ -590,6 +590,7 @@ func _execute_opponent_action(action: Dictionary) -> void:
 		"draw":
 			current_phase = Phase.DRAW
 			_update_all_ui()
+			await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
 			_player_draw_card()
 			_opponent_draw_card()
 			_log("両者カードをドロー。")

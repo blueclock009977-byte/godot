@@ -469,8 +469,8 @@ func _on_end_phase() -> void:
 			# Draw phase
 			current_phase = Phase.DRAW
 			_update_all_ui()
-			_player_draw_card()
 			await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
+			_player_draw_card()
 			_log("カードを1枚ドローした。")
 			# Go to Main2
 			current_phase = Phase.MAIN2
