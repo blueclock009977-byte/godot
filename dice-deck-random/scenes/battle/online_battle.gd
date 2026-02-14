@@ -151,7 +151,7 @@ func _build_ui() -> void:
 	center_info = HBoxContainer.new()
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
 	center_info.add_theme_constant_override("separation", 0)
-	center_info.custom_minimum_size.y = 120
+	center_info.custom_minimum_size.y = 170
 	main_vbox.add_child(center_info)
 
 	# 左: ダイス（大きなブロック）
@@ -161,7 +161,7 @@ func _build_ui() -> void:
 	dice_sb.set_corner_radius_all(8)
 	dice_sb.set_content_margin_all(8)
 	dice_panel.add_theme_stylebox_override("panel", dice_sb)
-	dice_panel.custom_minimum_size = Vector2(200, 110)
+	dice_panel.custom_minimum_size = Vector2(220, 160)
 	center_info.add_child(dice_panel)
 
 	var dice_vbox := VBoxContainer.new()
@@ -206,14 +206,14 @@ func _build_ui() -> void:
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(220, 55)
+	end_turn_btn.custom_minimum_size = Vector2(220, 80)
 	end_turn_btn.add_theme_font_size_override("font_size", 26)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(220, 55)
+	next_phase_btn.custom_minimum_size = Vector2(220, 80)
 	next_phase_btn.add_theme_font_size_override("font_size", 26)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
@@ -221,11 +221,11 @@ func _build_ui() -> void:
 	# 降参ボタン - 右上
 	surrender_btn = Button.new()
 	surrender_btn.text = "降参"
-	surrender_btn.custom_minimum_size = Vector2(80, 40)
-	surrender_btn.add_theme_font_size_override("font_size", 18)
+	surrender_btn.custom_minimum_size = Vector2(120, 50)
+	surrender_btn.add_theme_font_size_override("font_size", 24)
 	surrender_btn.pressed.connect(_on_surrender)
 	surrender_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	surrender_btn.position = Vector2(-90, 5)
+	surrender_btn.position = Vector2(-130, 5)
 	add_child(surrender_btn)
 
 	# Player front row
