@@ -135,23 +135,42 @@ func _build_ui() -> void:
 
 	# ── Center info bar (全幅) ──
 	center_info = HBoxContainer.new()
-	center_info.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
-	center_info.add_theme_constant_override("separation", 8)
-	center_info.custom_minimum_size.y = 110
+	center_info.add_theme_constant_override("separation", 0)
+	center_info.custom_minimum_size.y = 120
 	main_vbox.add_child(center_info)
 
-	# 左: ダイス
+	# 左: ダイス（大きなブロック）
+	var dice_panel := PanelContainer.new()
+	var dice_sb := StyleBoxFlat.new()
+	dice_sb.bg_color = Color(0.12, 0.12, 0.2, 0.9)
+	dice_sb.set_corner_radius_all(8)
+	dice_sb.set_content_margin_all(8)
+	dice_panel.add_theme_stylebox_override("panel", dice_sb)
+	dice_panel.custom_minimum_size = Vector2(140, 100)
+	center_info.add_child(dice_panel)
+
+	var dice_vbox := VBoxContainer.new()
+	dice_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	dice_panel.add_child(dice_vbox)
+
+	var dice_title := Label.new()
+	dice_title.text = "ダイス"
+	dice_title.add_theme_font_size_override("font_size", 20)
+	dice_title.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
+	dice_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dice_vbox.add_child(dice_title)
+
 	dice_label = Label.new()
-	dice_label.text = "ダイス: -"
-	dice_label.add_theme_font_size_override("font_size", 36)
-	dice_label.custom_minimum_size.x = 130
-	center_info.add_child(dice_label)
+	dice_label.text = "-"
+	dice_label.add_theme_font_size_override("font_size", 48)
+	dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dice_vbox.add_child(dice_label)
 
 	# 中央: フェーズ表示
 	var phase_bg := PanelContainer.new()
 	var phase_sb := StyleBoxFlat.new()
-	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.8)
+	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.9)
 	phase_sb.set_corner_radius_all(8)
 	phase_sb.set_content_margin_all(12)
 	phase_bg.add_theme_stylebox_override("panel", phase_sb)
@@ -162,23 +181,25 @@ func _build_ui() -> void:
 	phase_label.text = "メイン1"
 	phase_label.add_theme_font_size_override("font_size", 44)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	phase_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	phase_bg.add_child(phase_label)
 
-	# 右: ボタン縦2つ
+	# 右: ボタン縦2つ（大きなブロック）
 	var btn_col := VBoxContainer.new()
-	btn_col.add_theme_constant_override("separation", 6)
+	btn_col.add_theme_constant_override("separation", 4)
+	btn_col.custom_minimum_size.x = 170
 	center_info.add_child(btn_col)
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(160, 45)
+	end_turn_btn.custom_minimum_size = Vector2(170, 55)
 	end_turn_btn.add_theme_font_size_override("font_size", 22)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(160, 45)
+	next_phase_btn.custom_minimum_size = Vector2(170, 55)
 	next_phase_btn.add_theme_font_size_override("font_size", 22)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
@@ -312,9 +333,9 @@ func _update_all_ui() -> void:
 		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	if current_dice > 0:
-		dice_label.text = "ダイス: %d" % current_dice
+		dice_label.text = "%d" % current_dice
 	else:
-		dice_label.text = "ダイス: -"
+		dice_label.text = "-"
 	# Opponent hand display
 	_update_opponent_hand_display()
 	# Hand card summonability
@@ -612,7 +633,7 @@ func _animate_dice_roll() -> int:
 	dice_label.add_theme_font_size_override("font_size", 40)
 	for i in range(12):
 		current_dice = randi() % 6 + 1
-		dice_label.text = "ダイス: %d" % current_dice
+		dice_label.text = "%d" % current_dice
 		dice_label.pivot_offset = dice_label.size / 2
 		if i % 2 == 0:
 			dice_label.scale = Vector2(1.2, 1.2)
@@ -620,7 +641,7 @@ func _animate_dice_roll() -> int:
 			dice_label.scale = Vector2(0.9, 0.9)
 		await get_tree().create_timer(0.04 + i * 0.025).timeout
 	current_dice = final
-	dice_label.text = "ダイス: %d" % current_dice
+	dice_label.text = "%d" % current_dice
 	var tween := create_tween()
 	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
 	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
