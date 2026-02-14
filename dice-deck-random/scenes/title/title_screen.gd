@@ -35,22 +35,22 @@ func _ready() -> void:
 	vbox.add_child(spacer)
 
 	# Online Match
-	var online_btn := _make_button("オンライン対戦", Color(0.9, 0.3, 0.3))
+	var online_btn := _make_button("⚔ オンライン対戦", Color(0.9, 0.3, 0.3))
 	online_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/lobby/lobby.tscn"))
 	vbox.add_child(online_btn)
 
 	# NPC Battle
-	var npc_btn := _make_button("NPC対戦", Color(0.3, 0.7, 0.9))
+	var npc_btn := _make_button("🤖 NPC対戦", Color(0.3, 0.7, 0.9))
 	npc_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/battle/battle.tscn"))
 	vbox.add_child(npc_btn)
 
 	# Deck Edit
-	var deck_btn := _make_button("デッキ編集", Color(0.3, 0.8, 0.4))
+	var deck_btn := _make_button("📋 デッキ編集", Color(0.3, 0.8, 0.4))
 	deck_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/deck_editor/deck_editor.tscn"))
 	vbox.add_child(deck_btn)
 
 	# Rules
-	var rules_btn := _make_button("ルール", Color(0.5, 0.5, 0.6))
+	var rules_btn := _make_button("📖 ルール", Color(0.5, 0.5, 0.6))
 	rules_btn.pressed.connect(_show_rules)
 	vbox.add_child(rules_btn)
 
@@ -133,7 +133,7 @@ func _show_rules() -> void:
 [b]■ ターンの流れ[/b]
 1. マナ回復(最大+1)
 2. [color=green]メインフェイズ1[/color] — 召喚/移動
-3. [color=yellow][dice] ダイスロール → バトル解決[/color]
+3. [color=yellow]🎲ダイスロール → バトル解決[/color]
 4. ドロー(1枚)
 5. [color=green]メインフェイズ2[/color] — 召喚/移動
 6. ターンエンド
