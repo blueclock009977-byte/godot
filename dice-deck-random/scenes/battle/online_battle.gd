@@ -424,7 +424,7 @@ func _start_turn() -> void:
 	if is_player_turn:
 		player_max_mana = mini(player_max_mana + 1, MAX_MANA_CAP)
 		player_mana = player_max_mana
-		_log("[color=cyan]── Your Turn %d (Mana: %d) ──[/color]" % [turn_number, player_mana])
+		_log("[color=cyan]── 自分のターン %d (マナ: %d) ──[/color]" % [turn_number, player_mana])
 	else:
 		opponent_max_mana = mini(opponent_max_mana + 1, MAX_MANA_CAP)
 		opponent_mana = opponent_max_mana
@@ -646,7 +646,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 
 		if target_is_player_hp:
 			if attacker_is_player:
-				_log("[color=lime]%s → Opponent HP -%d![/color]" % [atk_name, damage])
+				_log("[color=lime]%s → 相手HPに%dダメージ！[/color]" % [atk_name, damage])
 				await _animate_attack(card_ui, opponent_hp_label)
 				_spawn_damage_popup(opponent_hp_label.global_position + Vector2(50, 0), damage)
 				_shake_node(opponent_hp_label)
@@ -655,7 +655,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 					_game_end(true)
 					return
 			else:
-				_log("[color=red]%s → Your HP -%d![/color]" % [atk_name, damage])
+				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
 				await _animate_attack(card_ui, player_hp_label)
 				_spawn_damage_popup(player_hp_label.global_position + Vector2(50, 0), damage)
 				_shake_node(player_hp_label)
@@ -671,7 +671,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
 			var remaining := def_card.take_damage(damage)
 			if remaining <= 0:
-				_log("[color=gray]%s destroyed![/color]" % def_card.card_data.card_name)
+				_log("[color=gray]%s 破壊！[/color]" % def_card.card_data.card_name)
 				await def_card.play_destroy_animation()
 				target_slot.remove_card()
 				def_card.queue_free()
@@ -918,7 +918,7 @@ func _on_surrender() -> void:
 	game_over = true
 	await _send_action({"type": "surrender"})
 	GameManager.battle_result = "lose"
-	_log("[color=red]You surrendered.[/color]")
+	_log("[color=red]降参しました。[/color]")
 	await MultiplayerManager.leave_room()
 	await get_tree().create_timer(1.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
