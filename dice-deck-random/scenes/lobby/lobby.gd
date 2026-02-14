@@ -55,7 +55,7 @@ func _build_ui() -> void:
 	main_menu.add_theme_constant_override("separation", 20)
 	root_vbox.add_child(main_menu)
 
-	var random_btn := _make_button("ランダムマッチ", Color(0.9, 0.4, 0.2))
+	var random_btn := _make_button("[dice] ランダムマッチ", Color(0.9, 0.4, 0.2))
 	random_btn.pressed.connect(_on_random_match)
 	main_menu.add_child(random_btn)
 
@@ -63,7 +63,7 @@ func _build_ui() -> void:
 	friend_btn.pressed.connect(_show_friend_menu)
 	main_menu.add_child(friend_btn)
 
-	var back_btn := _make_button("戻る", Color(0.4, 0.4, 0.5))
+	var back_btn := _make_button("< 戻る", Color(0.4, 0.4, 0.5))
 	back_btn.pressed.connect(_on_back)
 	main_menu.add_child(back_btn)
 
@@ -95,7 +95,7 @@ func _build_ui() -> void:
 	join_btn.pressed.connect(_on_join_room)
 	friend_menu.add_child(join_btn)
 
-	var friend_back_btn := _make_button("戻る", Color(0.4, 0.4, 0.5))
+	var friend_back_btn := _make_button("< 戻る", Color(0.4, 0.4, 0.5))
 	friend_back_btn.pressed.connect(_show_main_menu)
 	friend_menu.add_child(friend_back_btn)
 

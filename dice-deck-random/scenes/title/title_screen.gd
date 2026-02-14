@@ -133,7 +133,7 @@ func _show_rules() -> void:
 [b]■ ターンの流れ[/b]
 1. マナ回復(最大+1)
 2. [color=green]メインフェイズ1[/color] — 召喚/移動
-3. [color=yellow]ダイスロール → バトル解決[/color]
+3. [color=yellow][dice] ダイスロール → バトル解決[/color]
 4. ドロー(1枚)
 5. [color=green]メインフェイズ2[/color] — 召喚/移動
 6. ターンエンド

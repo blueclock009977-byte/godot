@@ -73,7 +73,7 @@ func _ready() -> void:
 	tab_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_vbox.add_child(tab_row)
 
-	var filter_labels := ["ALL", "1コスト", "2コスト", "3コスト", "4コスト", "5コスト"]
+	var filter_labels := ["ALL", "1", "2", "3", "4", "5"]
 	for i in range(filter_labels.size()):
 		var btn := Button.new()
 		btn.text = filter_labels[i]
