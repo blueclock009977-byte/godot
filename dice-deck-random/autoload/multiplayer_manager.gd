@@ -91,6 +91,9 @@ func leave_room() -> void:
 	_polling = false
 	if room_code != "":
 		await FirebaseManager.patch_data("rooms/%s" % room_code, {"status": "finished"})
+		# 部屋削除は遅延実行
+		var code_to_delete := room_code
+		_schedule_room_delete(code_to_delete)
 	is_in_room = false
 	room_code = ""
 	_last_action_index = -1
@@ -178,9 +181,19 @@ func _generate_room_code() -> String:
 
 func find_waiting_room() -> String:
 	var result := await FirebaseManager.get_data("rooms")
+	var now := Time.get_unix_time_from_system()
 	if result.code == 200 and result.data != null and result.data is Dictionary:
 		for code in result.data.keys():
 			var room: Dictionary = result.data[code]
 			if room.get("status", "") == "waiting":
-				return code
+				var created: float = float(room.get("created_at", 0))
+				if now - created < 300:  # 5分以内の部屋のみ
+					return code
+				else:
+					# 古い部屋を削除
+					await FirebaseManager.delete_data("rooms/%s" % code)
 	return ""
+
+func _schedule_room_delete(code: String) -> void:
+	await get_tree().create_timer(5.0).timeout
+	await FirebaseManager.delete_data("rooms/%s" % code)

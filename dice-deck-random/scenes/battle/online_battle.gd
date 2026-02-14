@@ -65,12 +65,15 @@ var center_info: HBoxContainer
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
 	MultiplayerManager.action_received.connect(_on_action_received)
+	MultiplayerManager.opponent_disconnected.connect(_on_opponent_disconnected)
 	_build_ui()
 	_start_game()
 
 func _exit_tree() -> void:
 	if MultiplayerManager.action_received.is_connected(_on_action_received):
 		MultiplayerManager.action_received.disconnect(_on_action_received)
+	if MultiplayerManager.opponent_disconnected.is_connected(_on_opponent_disconnected):
+		MultiplayerManager.opponent_disconnected.disconnect(_on_opponent_disconnected)
 
 # ═══════════════════════════════════════════
 # UI CONSTRUCTION (same as battle.gd)
@@ -909,6 +912,15 @@ func _game_end(player_wins: bool) -> void:
 		_log("[color=red]敗北...[/color]")
 		GameManager.battle_result = "lose"
 	await MultiplayerManager.leave_room()
+	await get_tree().create_timer(2.0).timeout
+	GameManager.change_scene("res://scenes/result/result.tscn")
+
+func _on_opponent_disconnected() -> void:
+	if game_over:
+		return
+	_log("[color=red]相手が切断しました[/color]")
+	game_over = true
+	GameManager.battle_result = "win"
 	await get_tree().create_timer(2.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
 
