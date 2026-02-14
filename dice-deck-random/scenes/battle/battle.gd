@@ -133,18 +133,19 @@ func _build_ui() -> void:
 			temp_opp[slot_node.slot_index] = slot_node
 	opponent_slots = temp_opp
 
-	# ── Center info bar ──
+	# ── Center info bar (全幅) ──
 	center_info = HBoxContainer.new()
+	center_info.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
-	center_info.add_theme_constant_override("separation", 12)
+	center_info.add_theme_constant_override("separation", 8)
 	center_info.custom_minimum_size.y = 110
 	main_vbox.add_child(center_info)
 
 	# 左: ダイス
 	dice_label = Label.new()
 	dice_label.text = "ダイス: -"
-	dice_label.add_theme_font_size_override("font_size", 40)
-	dice_label.custom_minimum_size.x = 160
+	dice_label.add_theme_font_size_override("font_size", 36)
+	dice_label.custom_minimum_size.x = 130
 	center_info.add_child(dice_label)
 
 	# 中央: フェーズ表示
@@ -152,7 +153,7 @@ func _build_ui() -> void:
 	var phase_sb := StyleBoxFlat.new()
 	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.8)
 	phase_sb.set_corner_radius_all(8)
-	phase_sb.set_content_margin_all(10)
+	phase_sb.set_content_margin_all(12)
 	phase_bg.add_theme_stylebox_override("panel", phase_sb)
 	phase_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	center_info.add_child(phase_bg)
@@ -165,31 +166,31 @@ func _build_ui() -> void:
 
 	# 右: ボタン縦2つ
 	var btn_col := VBoxContainer.new()
-	btn_col.add_theme_constant_override("separation", 4)
+	btn_col.add_theme_constant_override("separation", 6)
 	center_info.add_child(btn_col)
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(180, 50)
-	end_turn_btn.add_theme_font_size_override("font_size", 24)
+	end_turn_btn.custom_minimum_size = Vector2(160, 45)
+	end_turn_btn.add_theme_font_size_override("font_size", 22)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(180, 50)
-	next_phase_btn.add_theme_font_size_override("font_size", 24)
+	next_phase_btn.custom_minimum_size = Vector2(160, 45)
+	next_phase_btn.add_theme_font_size_override("font_size", 22)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
 
 	# 降参ボタン - 右上
 	surrender_btn = Button.new()
 	surrender_btn.text = "降参"
-	surrender_btn.custom_minimum_size = Vector2(70, 35)
-	surrender_btn.add_theme_font_size_override("font_size", 16)
+	surrender_btn.custom_minimum_size = Vector2(80, 40)
+	surrender_btn.add_theme_font_size_override("font_size", 18)
 	surrender_btn.pressed.connect(_on_surrender)
 	surrender_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	surrender_btn.position = Vector2(-80, 10)
+	surrender_btn.position = Vector2(-90, 5)
 	add_child(surrender_btn)
 
 	# ── Player front row (slots 0,1,2) ──
