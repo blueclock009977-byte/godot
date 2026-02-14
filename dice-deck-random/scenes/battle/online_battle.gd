@@ -184,16 +184,16 @@ func _build_ui() -> void:
 	# 中央: フェーズ表示
 	var phase_bg := PanelContainer.new()
 	var phase_sb := StyleBoxFlat.new()
-	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.9)
+	phase_sb.bg_color = Color(0, 0, 0, 0)
 	phase_sb.set_corner_radius_all(8)
 	phase_sb.set_content_margin_all(12)
 	phase_bg.add_theme_stylebox_override("panel", phase_sb)
-	phase_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# phase_bg fixed size
 	center_info.add_child(phase_bg)
 
 	phase_label = Label.new()
-	phase_label.text = "メイン1"
-	phase_label.add_theme_font_size_override("font_size", 44)
+	phase_label.text = "フェーズ: メイン1"
+	phase_label.add_theme_font_size_override("font_size", 32)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	phase_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	phase_bg.add_child(phase_label)
@@ -201,19 +201,19 @@ func _build_ui() -> void:
 	# 右: ボタン縦2つ（大きなブロック）
 	var btn_col := VBoxContainer.new()
 	btn_col.add_theme_constant_override("separation", 4)
-	btn_col.custom_minimum_size.x = 220
+	btn_col.custom_minimum_size.x = 160
 	center_info.add_child(btn_col)
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(220, 80)
+	end_turn_btn.custom_minimum_size = Vector2(160, 80)
 	end_turn_btn.add_theme_font_size_override("font_size", 26)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(220, 80)
+	next_phase_btn.custom_minimum_size = Vector2(160, 80)
 	next_phase_btn.add_theme_font_size_override("font_size", 26)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
@@ -335,7 +335,7 @@ func _update_all_ui() -> void:
 		else:
 			mana_str += "·"
 	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー", Phase.MAIN2: "メイン2", Phase.END: "終了"}
+	var phase_names := {Phase.MAIN1: "フェーズ: メイン1", Phase.DICE: "フェーズ: ダイス", Phase.DRAW: "フェーズ: ドロー", Phase.MAIN2: "フェーズ: メイン2", Phase.END: "フェーズ: 終了"}
 	phase_label.text = phase_names.get(current_phase, "?")
 	if is_player_turn:
 		var go_text := "先行" if is_player_first else "後攻"
