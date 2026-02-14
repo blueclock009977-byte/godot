@@ -14,3 +14,6 @@ memory/
 # Claude Code config (private)
 .claude/
 CLAUDE.md
+
+# Media inbound (screenshots etc)
+media/
