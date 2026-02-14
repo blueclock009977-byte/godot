@@ -140,7 +140,7 @@ func _build_ui() -> void:
 	main_vbox.add_child(center_info)
 
 	dice_label = Label.new()
-	dice_label.text = "Dice: -"
+	dice_label.text = "ダイス: -"
 	dice_label.add_theme_font_size_override("font_size", 32)
 	center_info.add_child(dice_label)
 
@@ -157,7 +157,7 @@ func _build_ui() -> void:
 	center_info.add_child(end_turn_btn)
 
 	surrender_btn = Button.new()
-	surrender_btn.text = "X"
+	surrender_btn.text = "降参"
 	surrender_btn.custom_minimum_size = Vector2(60, 50)
 	surrender_btn.add_theme_font_size_override("font_size", 22)
 	surrender_btn.pressed.connect(_on_surrender)
@@ -260,8 +260,8 @@ func _build_ui() -> void:
 	phase_overlay.add_child(phase_overlay_label)
 
 func _update_all_ui() -> void:
-	player_hp_label.text = "HP Player: %d" % player_hp
-	opponent_hp_label.text = "HP Opponent: %d" % opponent_hp
+	player_hp_label.text = "HP 自分: %d" % player_hp
+	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
 	var mana_str := ""
 	for i in range(MAX_MANA_CAP):
 		if i < player_mana:
@@ -275,16 +275,16 @@ func _update_all_ui() -> void:
 	phase_label.text = phase_names.get(current_phase, "?")
 	# Turn indicator
 	if is_player_turn:
-		var go_text := "First" if is_player_first else "Second"
+		var go_text := "先行" if is_player_first else "後攻"
 		turn_indicator_label.text = "YOUR TURN (%s) - Turn %d" % [go_text, turn_number]
 		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 	else:
 		turn_indicator_label.text = "OPPONENT TURN - Turn %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	if current_dice > 0:
-		dice_label.text = "Dice: %d" % current_dice
+		dice_label.text = "ダイス: %d" % current_dice
 	else:
-		dice_label.text = "Dice: -"
+		dice_label.text = "ダイス: -"
 	# Opponent hand display
 	_update_opponent_hand_display()
 	# Hand card summonability
@@ -357,9 +357,9 @@ func _start_game() -> void:
 
 	# Show who goes first
 	if is_player_first:
-		await _show_phase_banner("== BATTLE START ==\nYou go FIRST (First)", Color(0.3, 1.0, 0.5), 1.2)
+		await _show_phase_banner("バトル開始!\nあなたは先行です", Color(0.3, 1.0, 0.5), 1.2)
 	else:
-		await _show_phase_banner("== BATTLE START ==\nYou go SECOND (Second)", Color(1.0, 0.7, 0.3), 1.2)
+		await _show_phase_banner("バトル開始!\nあなたは後攻です", Color(1.0, 0.7, 0.3), 1.2)
 
 	# Draw starting hands
 	for i in range(STARTING_HAND):
@@ -433,7 +433,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DICE
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("DICE!", Color(1, 0.9, 0.3), 0.5)
+			await _show_phase_banner("ダイス!", Color(1, 0.9, 0.3), 0.5)
 			await _do_dice_and_battle()
 			if game_over:
 				return
@@ -464,7 +464,7 @@ func _do_dice_and_battle() -> void:
 	is_animating = true
 	# Roll dice with animation
 	current_dice = await _animate_dice_roll()
-	_log("[color=yellow]Dice: Dice: %d[/color]" % current_dice)
+	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
 	_update_all_ui()
 
 	# Turn player's cards attack first
@@ -574,7 +574,7 @@ func _animate_dice_roll() -> int:
 	dice_label.add_theme_font_size_override("font_size", 32)
 	for i in range(12):
 		current_dice = randi() % 6 + 1
-		dice_label.text = "Dice: %d" % current_dice
+		dice_label.text = "ダイス: %d" % current_dice
 		dice_label.pivot_offset = dice_label.size / 2
 		if i % 2 == 0:
 			dice_label.scale = Vector2(1.2, 1.2)
@@ -582,7 +582,7 @@ func _animate_dice_roll() -> int:
 			dice_label.scale = Vector2(0.9, 0.9)
 		await get_tree().create_timer(0.04 + i * 0.025).timeout
 	current_dice = final
-	dice_label.text = "Dice: %d" % current_dice
+	dice_label.text = "ダイス: %d" % current_dice
 	var tween := create_tween()
 	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
 	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
@@ -888,10 +888,10 @@ func _game_end(player_wins: bool) -> void:
 	game_over = true
 	_update_all_ui()
 	if player_wins:
-		_log("[color=yellow]YOU WIN![/color]")
+		_log("[color=yellow]勝利![/color]")
 		GameManager.battle_result = "win"
 	else:
-		_log("[color=red]YOU LOSE...[/color]")
+		_log("[color=red]敗北...[/color]")
 		GameManager.battle_result = "lose"
 	# Delay then go to result
 	await get_tree().create_timer(2.0).timeout

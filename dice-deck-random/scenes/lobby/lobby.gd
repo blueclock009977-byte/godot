@@ -27,7 +27,7 @@ func _build_ui() -> void:
 	center.add_child(root_vbox)
 
 	var title := Label.new()
-	title.text = "Online Battle"
+	title.text = "オンライン対戦"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 42)
 	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
@@ -55,15 +55,15 @@ func _build_ui() -> void:
 	main_menu.add_theme_constant_override("separation", 20)
 	root_vbox.add_child(main_menu)
 
-	var random_btn := _make_button("Random Match", Color(0.9, 0.4, 0.2))
+	var random_btn := _make_button("ランダムマッチ", Color(0.9, 0.4, 0.2))
 	random_btn.pressed.connect(_on_random_match)
 	main_menu.add_child(random_btn)
 
-	var friend_btn := _make_button("Friend Match", Color(0.3, 0.6, 0.9))
+	var friend_btn := _make_button("フレンド対戦", Color(0.3, 0.6, 0.9))
 	friend_btn.pressed.connect(_show_friend_menu)
 	main_menu.add_child(friend_btn)
 
-	var back_btn := _make_button("Back", Color(0.4, 0.4, 0.5))
+	var back_btn := _make_button("戻る", Color(0.4, 0.4, 0.5))
 	back_btn.pressed.connect(_on_back)
 	main_menu.add_child(back_btn)
 
@@ -73,7 +73,7 @@ func _build_ui() -> void:
 	friend_menu.visible = false
 	root_vbox.add_child(friend_menu)
 
-	var create_btn := _make_button("Create Room", Color(0.3, 0.8, 0.4))
+	var create_btn := _make_button("部屋を作る", Color(0.3, 0.8, 0.4))
 	create_btn.pressed.connect(_on_create_room)
 	friend_menu.add_child(create_btn)
 
@@ -91,11 +91,11 @@ func _build_ui() -> void:
 	room_code_input.custom_minimum_size.y = 60
 	friend_menu.add_child(room_code_input)
 
-	var join_btn := _make_button("Join Room", Color(0.3, 0.6, 0.9))
+	var join_btn := _make_button("部屋に参加", Color(0.3, 0.6, 0.9))
 	join_btn.pressed.connect(_on_join_room)
 	friend_menu.add_child(join_btn)
 
-	var friend_back_btn := _make_button("Back", Color(0.4, 0.4, 0.5))
+	var friend_back_btn := _make_button("戻る", Color(0.4, 0.4, 0.5))
 	friend_back_btn.pressed.connect(_show_main_menu)
 	friend_menu.add_child(friend_back_btn)
 
