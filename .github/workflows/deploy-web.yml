@@ -1,0 +1,63 @@
+name: Deploy Dice Deck Random to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'dice-deck-random/**'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:  # 手動実行もOK
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  export-web:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup export templates
+        run: |
+          mkdir -p /root/.local/share/godot/export_templates/4.4.1.stable
+          mv /root/.local/share/godot/templates/linux_debug.x86_64 /root/.local/share/godot/export_templates/4.4.1.stable/ || true
+          # Download web export template
+          cd /root/.local/share/godot/export_templates/4.4.1.stable
+          if [ ! -f "web_release.zip" ]; then
+            apt-get update && apt-get install -y wget unzip
+            wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O templates.tpz
+            unzip -o templates.tpz
+            mv templates/* . || true
+            rm -rf templates templates.tpz
+          fi
+
+      - name: Export Web build
+        run: |
+          mkdir -p dice-deck-random/build/web
+          cd dice-deck-random
+          godot --headless --export-release "Web" build/web/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dice-deck-random/build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: export-web
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
