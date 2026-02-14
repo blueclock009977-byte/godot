@@ -151,7 +151,7 @@ func _build_ui() -> void:
 	main_vbox.add_child(center_info)
 
 	dice_label = Label.new()
-	dice_label.text = "🎲 -"
+	dice_label.text = "Dice: -"
 	dice_label.add_theme_font_size_override("font_size", 32)
 	center_info.add_child(dice_label)
 
@@ -168,7 +168,7 @@ func _build_ui() -> void:
 	center_info.add_child(end_turn_btn)
 
 	surrender_btn = Button.new()
-	surrender_btn.text = "🏳"
+	surrender_btn.text = "X"
 	surrender_btn.custom_minimum_size = Vector2(60, 50)
 	surrender_btn.add_theme_font_size_override("font_size", 22)
 	surrender_btn.pressed.connect(_on_surrender)
@@ -269,8 +269,8 @@ func _build_ui() -> void:
 	phase_overlay.add_child(phase_overlay_label)
 
 func _update_all_ui() -> void:
-	player_hp_label.text = "♥ You: %d" % player_hp
-	opponent_hp_label.text = "♥ Opponent: %d" % opponent_hp
+	player_hp_label.text = "HP You: %d" % player_hp
+	opponent_hp_label.text = "HP Opponent: %d" % opponent_hp
 	var mana_str := ""
 	for i in range(MAX_MANA_CAP):
 		if i < player_mana:
@@ -283,7 +283,7 @@ func _update_all_ui() -> void:
 	var phase_names := {Phase.MAIN1: "Main1", Phase.DICE: "Dice", Phase.DRAW: "Draw", Phase.MAIN2: "Main2", Phase.END: "End"}
 	phase_label.text = phase_names.get(current_phase, "?")
 	if is_player_turn:
-		var go_text := "先行" if is_player_first else "後攻"
+		var go_text := "First" if is_player_first else "Second"
 		turn_indicator_label.text = "YOUR TURN (%s) - Turn %d" % [go_text, turn_number]
 		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 		end_turn_btn.disabled = false
@@ -292,9 +292,9 @@ func _update_all_ui() -> void:
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 		end_turn_btn.disabled = true
 	if current_dice > 0:
-		dice_label.text = "🎲 %d" % current_dice
+		dice_label.text = "Dice: %d" % current_dice
 	else:
-		dice_label.text = "🎲 -"
+		dice_label.text = "Dice: -"
 	_update_opponent_hand_display()
 	_update_hand_highlights()
 
@@ -380,9 +380,9 @@ func _start_game() -> void:
 	_log("[color=yellow]Online Game Start! %s goes first.[/color]" % ("You" if is_player_first else "Opponent"))
 
 	if is_player_first:
-		await _show_phase_banner("⚔ ONLINE BATTLE ⚔\nYou go FIRST (先行)", Color(0.3, 1.0, 0.5), 1.2)
+		await _show_phase_banner("== ONLINE BATTLE ==\nYou go FIRST (First)", Color(0.3, 1.0, 0.5), 1.2)
 	else:
-		await _show_phase_banner("⚔ ONLINE BATTLE ⚔\nYou go SECOND (後攻)", Color(1.0, 0.7, 0.3), 1.2)
+		await _show_phase_banner("== ONLINE BATTLE ==\nYou go SECOND (Second)", Color(1.0, 0.7, 0.3), 1.2)
 
 	# Draw starting hands
 	for i in range(STARTING_HAND):
@@ -460,7 +460,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DICE
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("🎲 DICE!", Color(1, 0.9, 0.3), 0.5)
+			await _show_phase_banner("Dice: DICE!", Color(1, 0.9, 0.3), 0.5)
 			var dice_val := randi() % 6 + 1
 			await _send_action({"type": "dice_roll", "value": dice_val})
 			await _do_dice_and_battle(dice_val)
@@ -535,7 +535,7 @@ func _execute_opponent_action(action: Dictionary) -> void:
 					# Dice phase
 					current_phase = Phase.DICE
 					_update_all_ui()
-					await _show_phase_banner("🎲 DICE!", Color(1, 0.9, 0.3), 0.5)
+					await _show_phase_banner("Dice: DICE!", Color(1, 0.9, 0.3), 0.5)
 					# Wait for dice_roll action
 			elif phase_name == "main2":
 				_end_turn()
@@ -590,7 +590,7 @@ func _opponent_move(from_idx: int, to_idx: int) -> void:
 func _do_dice_and_battle(dice_val: int) -> void:
 	is_animating = true
 	current_dice = await _animate_dice_roll_to(dice_val)
-	_log("[color=yellow]🎲 Dice: %d[/color]" % current_dice)
+	_log("[color=yellow]Dice: Dice: %d[/color]" % current_dice)
 	_update_all_ui()
 
 	# Turn player attacks first
@@ -684,14 +684,14 @@ func _animate_dice_roll_to(target: int) -> int:
 	dice_label.add_theme_font_size_override("font_size", 32)
 	for i in range(12):
 		var fake := randi() % 6 + 1
-		dice_label.text = "🎲 %d" % fake
+		dice_label.text = "Dice: %d" % fake
 		dice_label.pivot_offset = dice_label.size / 2
 		if i % 2 == 0:
 			dice_label.scale = Vector2(1.2, 1.2)
 		else:
 			dice_label.scale = Vector2(0.9, 0.9)
 		await get_tree().create_timer(0.04 + i * 0.025).timeout
-	dice_label.text = "🎲 %d" % target
+	dice_label.text = "Dice: %d" % target
 	var tween := create_tween()
 	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
 	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
@@ -903,10 +903,10 @@ func _game_end(player_wins: bool) -> void:
 	_waiting_for_opponent = false
 	_update_all_ui()
 	if player_wins:
-		_log("[color=yellow]★ YOU WIN! ★[/color]")
+		_log("[color=yellow]YOU WIN![/color]")
 		GameManager.battle_result = "win"
 	else:
-		_log("[color=red]★ YOU LOSE... ★[/color]")
+		_log("[color=red]YOU LOSE...[/color]")
 		GameManager.battle_result = "lose"
 	await MultiplayerManager.leave_room()
 	await get_tree().create_timer(2.0).timeout
