@@ -156,12 +156,12 @@ func _build_ui() -> void:
 	center_info.add_child(dice_label)
 
 	phase_label = Label.new()
-	phase_label.text = "Main1"
+	phase_label.text = "メイン1"
 	phase_label.add_theme_font_size_override("font_size", 24)
 	center_info.add_child(phase_label)
 
 	end_turn_btn = Button.new()
-	end_turn_btn.text = "END"
+	end_turn_btn.text = "終了"
 	end_turn_btn.custom_minimum_size = Vector2(100, 50)
 	end_turn_btn.add_theme_font_size_override("font_size", 22)
 	end_turn_btn.pressed.connect(_on_end_phase)
@@ -269,8 +269,8 @@ func _build_ui() -> void:
 	phase_overlay.add_child(phase_overlay_label)
 
 func _update_all_ui() -> void:
-	player_hp_label.text = "♥ You: %d" % player_hp
-	opponent_hp_label.text = "♥ Opponent: %d" % opponent_hp
+	player_hp_label.text = "HP 自分: %d" % player_hp
+	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
 	var mana_str := ""
 	for i in range(MAX_MANA_CAP):
 		if i < player_mana:
@@ -279,16 +279,16 @@ func _update_all_ui() -> void:
 			mana_str += "○"
 		else:
 			mana_str += "·"
-	mana_label.text = "Mana: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var phase_names := {Phase.MAIN1: "Main1", Phase.DICE: "Dice", Phase.DRAW: "Draw", Phase.MAIN2: "Main2", Phase.END: "End"}
+	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
+	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー", Phase.MAIN2: "メイン2", Phase.END: "終了"}
 	phase_label.text = phase_names.get(current_phase, "?")
 	if is_player_turn:
 		var go_text := "先行" if is_player_first else "後攻"
-		turn_indicator_label.text = "YOUR TURN (%s) - Turn %d" % [go_text, turn_number]
+		turn_indicator_label.text = "自分のターン (%s) - ターン %d" % [go_text, turn_number]
 		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 		end_turn_btn.disabled = false
 	else:
-		turn_indicator_label.text = "OPPONENT TURN - Turn %d" % turn_number
+		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 		end_turn_btn.disabled = true
 	if current_dice > 0:
@@ -377,12 +377,12 @@ func _start_game() -> void:
 	is_player_turn = is_player_first
 	turn_number = 0
 
-	_log("[color=yellow]Online Game Start! %s goes first.[/color]" % ("You" if is_player_first else "Opponent"))
+	_log("[color=yellow]オンラインゲーム開始！ %s が先行です。[/color]" % ("自分" if is_player_first else "相手"))
 
 	if is_player_first:
-		await _show_phase_banner("⚔ ONLINE BATTLE ⚔\nYou go FIRST (先行)", Color(0.3, 1.0, 0.5), 1.2)
+		await _show_phase_banner("オンラインバトル！\nあなたは先行です", Color(0.3, 1.0, 0.5), 1.2)
 	else:
-		await _show_phase_banner("⚔ ONLINE BATTLE ⚔\nYou go SECOND (後攻)", Color(1.0, 0.7, 0.3), 1.2)
+		await _show_phase_banner("オンラインバトル！\nあなたは後攻です", Color(1.0, 0.7, 0.3), 1.2)
 
 	# Draw starting hands
 	for i in range(STARTING_HAND):
@@ -428,16 +428,16 @@ func _start_turn() -> void:
 	else:
 		opponent_max_mana = mini(opponent_max_mana + 1, MAX_MANA_CAP)
 		opponent_mana = opponent_max_mana
-		_log("[color=red]── Opponent Turn %d ──[/color]" % turn_number)
+		_log("[color=red]── 相手のターン %d ──[/color]" % turn_number)
 
 	current_phase = Phase.MAIN1
 	_update_all_ui()
 
 	if is_player_turn:
-		await _show_phase_banner("YOUR TURN", Color(0.3, 1.0, 0.5), 0.6)
+		await _show_phase_banner("自分のターン", Color(0.3, 1.0, 0.5), 0.6)
 		# Player input enabled - wait for actions
 	else:
-		await _show_phase_banner("OPPONENT TURN", Color(1.0, 0.4, 0.4), 0.6)
+		await _show_phase_banner("相手のターン", Color(1.0, 0.4, 0.4), 0.6)
 		# Wait for opponent actions via Firebase polling
 		_waiting_for_opponent = true
 
@@ -460,7 +460,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DICE
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("🎲 DICE!", Color(1, 0.9, 0.3), 0.5)
+			await _show_phase_banner("🎲 ダイス!", Color(1, 0.9, 0.3), 0.5)
 			var dice_val := randi() % 6 + 1
 			await _send_action({"type": "dice_roll", "value": dice_val})
 			await _do_dice_and_battle(dice_val)
@@ -472,12 +472,12 @@ func _on_end_phase() -> void:
 			_player_draw_card()
 			_opponent_draw_card()
 			await _send_action({"type": "draw"})
-			_log("Both players draw.")
+			_log("両者カードをドロー。")
 			# Main2
 			current_phase = Phase.MAIN2
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("MAIN PHASE 2", Color(0.5, 0.8, 1.0), 0.5)
+			await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
 	elif current_phase == Phase.MAIN2:
 		await _send_action({"type": "end_phase", "phase": "main2"})
 		_end_turn()
@@ -535,7 +535,7 @@ func _execute_opponent_action(action: Dictionary) -> void:
 					# Dice phase
 					current_phase = Phase.DICE
 					_update_all_ui()
-					await _show_phase_banner("🎲 DICE!", Color(1, 0.9, 0.3), 0.5)
+					await _show_phase_banner("🎲 ダイス!", Color(1, 0.9, 0.3), 0.5)
 					# Wait for dice_roll action
 			elif phase_name == "main2":
 				_end_turn()
@@ -549,11 +549,11 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			_update_all_ui()
 			_player_draw_card()
 			_opponent_draw_card()
-			_log("Both players draw.")
+			_log("両者カードをドロー。")
 			current_phase = Phase.MAIN2
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("MAIN PHASE 2", Color(0.5, 0.8, 1.0), 0.5)
+			await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
 		"surrender":
 			_game_end(true)
 
@@ -570,7 +570,7 @@ func _opponent_summon(card_id: int, slot_idx: int) -> void:
 	var slot: FieldSlot = opponent_slots[slot_idx]
 	slot.place_card(card_ui)
 	card_ui.setup(data_copy)
-	_log("Opponent summons %s" % data_copy.card_name)
+	_log("相手が %s を召喚" % data_copy.card_name)
 	_update_all_ui()
 
 func _opponent_move(from_idx: int, to_idx: int) -> void:
@@ -581,7 +581,7 @@ func _opponent_move(from_idx: int, to_idx: int) -> void:
 	opponent_mana -= MOVE_COST
 	var card := from_slot.remove_card()
 	to_slot.place_card(card)
-	_log("Opponent moves %s" % card.card_data.card_name)
+	_log("相手が %s を移動" % card.card_data.card_name)
 	_update_all_ui()
 
 # ═══════════════════════════════════════════
@@ -590,7 +590,7 @@ func _opponent_move(from_idx: int, to_idx: int) -> void:
 func _do_dice_and_battle(dice_val: int) -> void:
 	is_animating = true
 	current_dice = await _animate_dice_roll_to(dice_val)
-	_log("[color=yellow]🎲 Dice: %d[/color]" % current_dice)
+	_log("[color=yellow]🎲 ダイス: %d[/color]" % current_dice)
 	_update_all_ui()
 
 	# Turn player attacks first
@@ -790,10 +790,10 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 		_clear_selection()
 		return
 	if card_ui.card_data.mana_cost > player_mana:
-		_log("Not enough mana!")
+		_log("マナが足りない！")
 		return
 	if not _has_empty_player_slot():
-		_log("No empty slots!")
+		_log("空きスロットがない！")
 		return
 	_clear_selection()
 	selected_hand_card = card_ui
@@ -880,7 +880,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 		card_ui.get_parent().remove_child(card_ui)
 	card_ui.reset_position()
 	slot.place_card(card_ui)
-	_log("Summoned %s (cost %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
+	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
 	_clear_selection()
 	_update_all_ui()
 	# Send to Firebase
@@ -890,7 +890,7 @@ func _move_card_to_slot(from_slot: FieldSlot, to_slot: FieldSlot) -> void:
 	player_mana -= MOVE_COST
 	var card := from_slot.remove_card()
 	to_slot.place_card(card)
-	_log("Moved %s (cost 1 mana)" % card.card_data.card_name)
+	_log("移動: %s (マナ1消費)" % card.card_data.card_name)
 	_clear_selection()
 	_update_all_ui()
 	await _send_action({"type": "move", "from_slot": from_slot.slot_index, "to_slot": to_slot.slot_index})
@@ -903,10 +903,10 @@ func _game_end(player_wins: bool) -> void:
 	_waiting_for_opponent = false
 	_update_all_ui()
 	if player_wins:
-		_log("[color=yellow]★ YOU WIN! ★[/color]")
+		_log("[color=yellow]勝利！[/color]")
 		GameManager.battle_result = "win"
 	else:
-		_log("[color=red]★ YOU LOSE... ★[/color]")
+		_log("[color=red]敗北...[/color]")
 		GameManager.battle_result = "lose"
 	await MultiplayerManager.leave_room()
 	await get_tree().create_timer(2.0).timeout

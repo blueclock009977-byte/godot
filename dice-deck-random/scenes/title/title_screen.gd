@@ -17,7 +17,7 @@ func _ready() -> void:
 
 	# Title
 	var title := Label.new()
-	title.text = "Dice Deck Random"
+	title.text = "ダイスデッキランダム"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 52)
 	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))

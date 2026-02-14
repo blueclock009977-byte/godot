@@ -28,7 +28,7 @@ func _ready() -> void:
 
 	# Header
 	var header := Label.new()
-	header.text = "DECK EDITOR"
+	header.text = "デッキ編集"
 	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	header.add_theme_font_size_override("font_size", 32)
 	header.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
@@ -62,7 +62,7 @@ func _ready() -> void:
 
 	# === CARD POOL SECTION ===
 	var pool_header := Label.new()
-	pool_header.text = "CARD POOL (タップで追加)"
+	pool_header.text = "カード一覧 (タップで追加)"
 	pool_header.add_theme_font_size_override("font_size", 20)
 	pool_header.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	main_vbox.add_child(pool_header)
@@ -230,7 +230,7 @@ func _update_deck_display() -> void:
 
 		deck_grid.add_child(card_ui)
 
-	deck_count_label.text = "YOUR DECK: %d / %d (タップで削除)" % [deck.size(), MAX_DECK_SIZE]
+	deck_count_label.text = "デッキ: %d / %d (タップで削除)" % [deck.size(), MAX_DECK_SIZE]
 	if deck.size() == MAX_DECK_SIZE:
 		deck_count_label.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
 	else:
