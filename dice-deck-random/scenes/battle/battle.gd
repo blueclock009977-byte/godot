@@ -52,7 +52,7 @@ var log_label: RichTextLabel
 var phase_overlay: ColorRect
 var phase_overlay_label: Label
 var turn_indicator_label: Label
-var center_info: VBoxContainer
+var center_info: HBoxContainer
 
 func _ready() -> void:
 	_build_ui()
@@ -134,62 +134,62 @@ func _build_ui() -> void:
 	opponent_slots = temp_opp
 
 	# ── Center info bar ──
-	center_info = VBoxContainer.new()
+	center_info = HBoxContainer.new()
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
-	center_info.add_theme_constant_override("separation", 8)
-	center_info.custom_minimum_size.y = 80
+	center_info.add_theme_constant_override("separation", 12)
+	center_info.custom_minimum_size.y = 90
 	main_vbox.add_child(center_info)
 
-	var info_top_row := HBoxContainer.new()
-	info_top_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	info_top_row.add_theme_constant_override("separation", 30)
-	center_info.add_child(info_top_row)
-
+	# 左: ダイス
 	dice_label = Label.new()
 	dice_label.text = "ダイス: -"
 	dice_label.add_theme_font_size_override("font_size", 32)
-	info_top_row.add_child(dice_label)
+	dice_label.custom_minimum_size.x = 160
+	center_info.add_child(dice_label)
 
+	# 中央: フェーズ表示
 	var phase_bg := PanelContainer.new()
 	var phase_sb := StyleBoxFlat.new()
 	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.8)
 	phase_sb.set_corner_radius_all(8)
-	phase_sb.set_content_margin_all(8)
+	phase_sb.set_content_margin_all(10)
 	phase_bg.add_theme_stylebox_override("panel", phase_sb)
-	info_top_row.add_child(phase_bg)
+	phase_bg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center_info.add_child(phase_bg)
 
 	phase_label = Label.new()
 	phase_label.text = "メイン1"
 	phase_label.add_theme_font_size_override("font_size", 36)
+	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	phase_bg.add_child(phase_label)
 
-	var info_btn_row := HBoxContainer.new()
-	info_btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	info_btn_row.add_theme_constant_override("separation", 16)
-	center_info.add_child(info_btn_row)
-
-	next_phase_btn = Button.new()
-	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(100, 50)
-	next_phase_btn.add_theme_font_size_override("font_size", 22)
-	next_phase_btn.pressed.connect(_on_end_phase)
-	info_btn_row.add_child(next_phase_btn)
+	# 右: ボタン縦2つ
+	var btn_col := VBoxContainer.new()
+	btn_col.add_theme_constant_override("separation", 4)
+	center_info.add_child(btn_col)
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(140, 50)
-	end_turn_btn.add_theme_font_size_override("font_size", 22)
+	end_turn_btn.custom_minimum_size = Vector2(150, 40)
+	end_turn_btn.add_theme_font_size_override("font_size", 18)
 	end_turn_btn.pressed.connect(_on_end_turn)
-	info_btn_row.add_child(end_turn_btn)
+	btn_col.add_child(end_turn_btn)
 
-	# Surrender button - top right
+	next_phase_btn = Button.new()
+	next_phase_btn.text = "次のフェーズへ"
+	next_phase_btn.custom_minimum_size = Vector2(150, 40)
+	next_phase_btn.add_theme_font_size_override("font_size", 18)
+	next_phase_btn.pressed.connect(_on_end_phase)
+	btn_col.add_child(next_phase_btn)
+
+	# 降参ボタン - 右上
 	surrender_btn = Button.new()
 	surrender_btn.text = "降参"
-	surrender_btn.custom_minimum_size = Vector2(40, 40)
+	surrender_btn.custom_minimum_size = Vector2(70, 35)
 	surrender_btn.add_theme_font_size_override("font_size", 16)
 	surrender_btn.pressed.connect(_on_surrender)
 	surrender_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	surrender_btn.position = Vector2(-50, 10)
+	surrender_btn.position = Vector2(-80, 10)
 	add_child(surrender_btn)
 
 	# ── Player front row (slots 0,1,2) ──
