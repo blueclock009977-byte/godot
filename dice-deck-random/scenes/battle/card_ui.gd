@@ -17,7 +17,7 @@ var is_movable: bool = false
 var drag_offset: Vector2 = Vector2.ZERO
 var press_start_pos: Vector2 = Vector2.ZERO
 var original_position: Vector2 = Vector2.ZERO
-const DRAG_THRESHOLD := 15.0
+const DRAG_THRESHOLD := 30.0
 
 var background: Panel
 var mana_cost_label: Label
