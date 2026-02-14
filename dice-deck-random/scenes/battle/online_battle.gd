@@ -151,13 +151,13 @@ func _build_ui() -> void:
 	center_info = HBoxContainer.new()
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
 	center_info.add_theme_constant_override("separation", 12)
-	center_info.custom_minimum_size.y = 90
+	center_info.custom_minimum_size.y = 110
 	main_vbox.add_child(center_info)
 
 	# 左: ダイス
 	dice_label = Label.new()
 	dice_label.text = "ダイス: -"
-	dice_label.add_theme_font_size_override("font_size", 32)
+	dice_label.add_theme_font_size_override("font_size", 40)
 	dice_label.custom_minimum_size.x = 160
 	center_info.add_child(dice_label)
 
@@ -173,7 +173,7 @@ func _build_ui() -> void:
 
 	phase_label = Label.new()
 	phase_label.text = "メイン1"
-	phase_label.add_theme_font_size_override("font_size", 36)
+	phase_label.add_theme_font_size_override("font_size", 44)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	phase_bg.add_child(phase_label)
 
@@ -184,15 +184,15 @@ func _build_ui() -> void:
 
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン終了"
-	end_turn_btn.custom_minimum_size = Vector2(150, 40)
-	end_turn_btn.add_theme_font_size_override("font_size", 18)
+	end_turn_btn.custom_minimum_size = Vector2(180, 50)
+	end_turn_btn.add_theme_font_size_override("font_size", 24)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次のフェーズへ"
-	next_phase_btn.custom_minimum_size = Vector2(150, 40)
-	next_phase_btn.add_theme_font_size_override("font_size", 18)
+	next_phase_btn.custom_minimum_size = Vector2(180, 50)
+	next_phase_btn.add_theme_font_size_override("font_size", 24)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
 
@@ -725,7 +725,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		await get_tree().create_timer(0.3).timeout
 
 func _animate_dice_roll_to(target: int) -> int:
-	dice_label.add_theme_font_size_override("font_size", 32)
+	dice_label.add_theme_font_size_override("font_size", 40)
 	for i in range(12):
 		var fake := randi() % 6 + 1
 		dice_label.text = "ダイス: %d" % fake
