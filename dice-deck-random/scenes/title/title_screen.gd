@@ -113,8 +113,8 @@ func _show_rules() -> void:
 	rules_label.bbcode_enabled = true
 	rules_label.fit_content = true
 	rules_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	rules_label.add_theme_font_size_override("normal_font_size", 22)
-	rules_label.add_theme_font_size_override("bold_font_size", 24)
+	rules_label.add_theme_font_size_override("normal_font_size", 32)
+	rules_label.add_theme_font_size_override("bold_font_size", 36)
 	scroll.add_child(rules_label)
 
 	rules_label.text = """[b]■ ゲーム概要[/b]
