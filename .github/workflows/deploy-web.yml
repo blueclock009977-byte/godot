@@ -3,10 +3,7 @@ name: Deploy Dice Deck Random to GitHub Pages
 on:
   push:
     branches: [master]
-    paths:
-      - 'dice-deck-random/**'
-      - '.github/workflows/deploy-web.yml'
-  workflow_dispatch:  # 手動実行もOK
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,16 +26,25 @@ jobs:
       - name: Setup export templates
         run: |
           mkdir -p /root/.local/share/godot/export_templates/4.4.1.stable
-          mv /root/.local/share/godot/templates/linux_debug.x86_64 /root/.local/share/godot/export_templates/4.4.1.stable/ || true
-          # Download web export template
-          cd /root/.local/share/godot/export_templates/4.4.1.stable
-          if [ ! -f "web_release.zip" ]; then
-            apt-get update && apt-get install -y wget unzip
-            wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O templates.tpz
-            unzip -o templates.tpz
-            mv templates/* . || true
-            rm -rf templates templates.tpz
+          # The barichello image has templates at /root/.local/share/godot/templates/
+          # We need to copy them to the right place
+          cp /root/.local/share/godot/templates/* /root/.local/share/godot/export_templates/4.4.1.stable/ 2>/dev/null || true
+          # List what we have
+          ls -la /root/.local/share/godot/export_templates/4.4.1.stable/ || true
+          # If web templates are missing, download them
+          if [ ! -f "/root/.local/share/godot/export_templates/4.4.1.stable/web_nothreads_release.zip" ]; then
+            wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
+            cd /tmp && unzip -o templates.tpz
+            cp /tmp/templates/* /root/.local/share/godot/export_templates/4.4.1.stable/
+            rm -rf /tmp/templates /tmp/templates.tpz
           fi
+          ls -la /root/.local/share/godot/export_templates/4.4.1.stable/
+
+      - name: Import project
+        run: |
+          cd dice-deck-random
+          godot --headless --import 2>&1 || true
+          sleep 2
 
       - name: Export Web build
         run: |
