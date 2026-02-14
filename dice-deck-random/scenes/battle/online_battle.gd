@@ -55,12 +55,13 @@ var mana_label: Label
 var phase_label: Label
 var dice_label: Label
 var end_turn_btn: Button
+var next_phase_btn: Button
 var surrender_btn: Button
 var log_label: RichTextLabel
 var phase_overlay: ColorRect
 var phase_overlay_label: Label
 var turn_indicator_label: Label
-var center_info: HBoxContainer
+var center_info: VBoxContainer
 
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
@@ -147,35 +148,63 @@ func _build_ui() -> void:
 	opponent_slots = temp_opp
 
 	# Center info bar
-	center_info = HBoxContainer.new()
+	center_info = VBoxContainer.new()
 	center_info.alignment = BoxContainer.ALIGNMENT_CENTER
-	center_info.add_theme_constant_override("separation", 20)
-	center_info.custom_minimum_size.y = 60
+	center_info.add_theme_constant_override("separation", 8)
+	center_info.custom_minimum_size.y = 80
 	main_vbox.add_child(center_info)
+
+	var info_top_row := HBoxContainer.new()
+	info_top_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	info_top_row.add_theme_constant_override("separation", 30)
+	center_info.add_child(info_top_row)
 
 	dice_label = Label.new()
 	dice_label.text = "ダイス: -"
 	dice_label.add_theme_font_size_override("font_size", 32)
-	center_info.add_child(dice_label)
+	info_top_row.add_child(dice_label)
+
+	var phase_bg := PanelContainer.new()
+	var phase_sb := StyleBoxFlat.new()
+	phase_sb.bg_color = Color(0.15, 0.15, 0.3, 0.8)
+	phase_sb.set_corner_radius_all(8)
+	phase_sb.set_content_margin_all(8)
+	phase_bg.add_theme_stylebox_override("panel", phase_sb)
+	info_top_row.add_child(phase_bg)
 
 	phase_label = Label.new()
 	phase_label.text = "メイン1"
-	phase_label.add_theme_font_size_override("font_size", 24)
-	center_info.add_child(phase_label)
+	phase_label.add_theme_font_size_override("font_size", 36)
+	phase_bg.add_child(phase_label)
+
+	var info_btn_row := HBoxContainer.new()
+	info_btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	info_btn_row.add_theme_constant_override("separation", 16)
+	center_info.add_child(info_btn_row)
+
+	next_phase_btn = Button.new()
+	next_phase_btn.text = "次へ"
+	next_phase_btn.custom_minimum_size = Vector2(100, 50)
+	next_phase_btn.add_theme_font_size_override("font_size", 22)
+	next_phase_btn.pressed.connect(_on_end_phase)
+	info_btn_row.add_child(next_phase_btn)
 
 	end_turn_btn = Button.new()
-	end_turn_btn.text = "終了"
-	end_turn_btn.custom_minimum_size = Vector2(100, 50)
+	end_turn_btn.text = "ターン終了"
+	end_turn_btn.custom_minimum_size = Vector2(140, 50)
 	end_turn_btn.add_theme_font_size_override("font_size", 22)
-	end_turn_btn.pressed.connect(_on_end_phase)
-	center_info.add_child(end_turn_btn)
+	end_turn_btn.pressed.connect(_on_end_turn)
+	info_btn_row.add_child(end_turn_btn)
 
+	# Surrender button - top right
 	surrender_btn = Button.new()
 	surrender_btn.text = "降参"
-	surrender_btn.custom_minimum_size = Vector2(60, 50)
-	surrender_btn.add_theme_font_size_override("font_size", 22)
+	surrender_btn.custom_minimum_size = Vector2(40, 40)
+	surrender_btn.add_theme_font_size_override("font_size", 16)
 	surrender_btn.pressed.connect(_on_surrender)
-	center_info.add_child(surrender_btn)
+	surrender_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	surrender_btn.position = Vector2(-50, 10)
+	add_child(surrender_btn)
 
 	# Player front row
 	var pl_front_row := HBoxContainer.new()
@@ -251,8 +280,8 @@ func _build_ui() -> void:
 	log_label = RichTextLabel.new()
 	log_label.bbcode_enabled = true
 	log_label.scroll_following = true
-	log_label.custom_minimum_size.y = 80
-	log_label.add_theme_font_size_override("normal_font_size", 16)
+	log_label.custom_minimum_size.y = 150
+	log_label.add_theme_font_size_override("normal_font_size", 20)
 	main_vbox.add_child(log_label)
 
 	# Phase overlay
@@ -290,10 +319,12 @@ func _update_all_ui() -> void:
 		turn_indicator_label.text = "自分のターン (%s) - ターン %d" % [go_text, turn_number]
 		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 		end_turn_btn.disabled = false
+		next_phase_btn.disabled = false
 	else:
 		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 		end_turn_btn.disabled = true
+		next_phase_btn.disabled = true
 	if current_dice > 0:
 		dice_label.text = "ダイス: %d" % current_dice
 	else:
@@ -483,6 +514,13 @@ func _on_end_phase() -> void:
 			await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
 	elif current_phase == Phase.MAIN2:
 		await _send_action({"type": "end_phase", "phase": "main2"})
+		_end_turn()
+
+func _on_end_turn() -> void:
+	if not is_player_turn or is_animating or game_over:
+		return
+	if current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2:
+		await _send_action({"type": "end_turn"})
 		_end_turn()
 
 func _end_turn() -> void:
