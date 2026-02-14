@@ -42,6 +42,13 @@ func _ready() -> void:
 	deck_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/deck_editor/deck_editor.tscn"))
 	vbox.add_child(deck_btn)
 
+	var online_btn := Button.new()
+	online_btn.text = "Online Battle"
+	online_btn.custom_minimum_size.y = 80
+	online_btn.add_theme_font_size_override("font_size", 28)
+	online_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/lobby/lobby.tscn"))
+	vbox.add_child(online_btn)
+
 	var rules_btn := Button.new()
 	rules_btn.text = "Rules"
 	rules_btn.custom_minimum_size.y = 80

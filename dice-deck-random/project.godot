@@ -19,6 +19,8 @@ config/icon="res://icon.svg"
 
 GameManager="*res://autoload/game_manager.gd"
 CardDatabase="*res://autoload/card_database.gd"
+FirebaseManager="*res://autoload/firebase_manager.gd"
+MultiplayerManager="*res://autoload/multiplayer_manager.gd"
 
 [display]
 
