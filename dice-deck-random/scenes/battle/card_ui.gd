@@ -162,7 +162,7 @@ func _update_display() -> void:
 		return
 
 	# Mana cost
-	mana_cost_label.text = "💎%d" % card_data.mana_cost
+	mana_cost_label.text = "%dコスト" % card_data.mana_cost
 
 	name_label.text = card_data.card_name
 

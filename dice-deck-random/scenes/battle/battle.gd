@@ -140,7 +140,7 @@ func _build_ui() -> void:
 	main_vbox.add_child(center_info)
 
 	dice_label = Label.new()
-	dice_label.text = "🎲 -"
+	dice_label.text = "ダイス: -"
 	dice_label.add_theme_font_size_override("font_size", 32)
 	center_info.add_child(dice_label)
 
@@ -157,7 +157,7 @@ func _build_ui() -> void:
 	center_info.add_child(end_turn_btn)
 
 	surrender_btn = Button.new()
-	surrender_btn.text = "🏳"
+	surrender_btn.text = "降参"
 	surrender_btn.custom_minimum_size = Vector2(60, 50)
 	surrender_btn.add_theme_font_size_override("font_size", 22)
 	surrender_btn.pressed.connect(_on_surrender)
@@ -282,9 +282,9 @@ func _update_all_ui() -> void:
 		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	if current_dice > 0:
-		dice_label.text = "🎲 %d" % current_dice
+		dice_label.text = "ダイス: %d" % current_dice
 	else:
-		dice_label.text = "🎲 -"
+		dice_label.text = "ダイス: -"
 	# Opponent hand display
 	_update_opponent_hand_display()
 	# Hand card summonability
@@ -433,7 +433,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DICE
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("🎲 ダイス!", Color(1, 0.9, 0.3), 0.5)
+			await _show_phase_banner("ダイス!", Color(1, 0.9, 0.3), 0.5)
 			await _do_dice_and_battle()
 			if game_over:
 				return
@@ -464,7 +464,7 @@ func _do_dice_and_battle() -> void:
 	is_animating = true
 	# Roll dice with animation
 	current_dice = await _animate_dice_roll()
-	_log("[color=yellow]🎲 ダイス: %d[/color]" % current_dice)
+	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
 	_update_all_ui()
 
 	# Turn player's cards attack first
@@ -574,7 +574,7 @@ func _animate_dice_roll() -> int:
 	dice_label.add_theme_font_size_override("font_size", 32)
 	for i in range(12):
 		current_dice = randi() % 6 + 1
-		dice_label.text = "🎲 %d" % current_dice
+		dice_label.text = "ダイス: %d" % current_dice
 		dice_label.pivot_offset = dice_label.size / 2
 		if i % 2 == 0:
 			dice_label.scale = Vector2(1.2, 1.2)
@@ -582,7 +582,7 @@ func _animate_dice_roll() -> int:
 			dice_label.scale = Vector2(0.9, 0.9)
 		await get_tree().create_timer(0.04 + i * 0.025).timeout
 	current_dice = final
-	dice_label.text = "🎲 %d" % current_dice
+	dice_label.text = "ダイス: %d" % current_dice
 	var tween := create_tween()
 	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
 	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
