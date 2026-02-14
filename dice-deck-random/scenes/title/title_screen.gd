@@ -2,59 +2,82 @@ extends Control
 
 func _ready() -> void:
 	var bg := ColorRect.new()
-	bg.color = Color(0.1, 0.1, 0.15)
+	bg.color = Color(0.08, 0.08, 0.12)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	var vbox := VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	vbox.offset_left = -200
-	vbox.offset_right = 200
-	vbox.offset_top = -250
-	vbox.offset_bottom = 250
-	vbox.add_theme_constant_override("separation", 40)
-	add_child(vbox)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
 
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 30)
+	vbox.custom_minimum_size.x = 500
+	center.add_child(vbox)
+
+	# Title
 	var title := Label.new()
 	title.text = "Dice Deck Random"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_font_size_override("font_size", 52)
+	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	vbox.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "v2"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 24)
-	subtitle.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
+	subtitle.add_theme_font_size_override("font_size", 22)
+	subtitle.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 	vbox.add_child(subtitle)
 
-	var npc_btn := Button.new()
-	npc_btn.text = "NPC Battle"
-	npc_btn.custom_minimum_size.y = 80
-	npc_btn.add_theme_font_size_override("font_size", 28)
-	npc_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/battle/battle.tscn"))
-	vbox.add_child(npc_btn)
+	var spacer := Control.new()
+	spacer.custom_minimum_size.y = 20
+	vbox.add_child(spacer)
 
-	var deck_btn := Button.new()
-	deck_btn.text = "Deck Edit"
-	deck_btn.custom_minimum_size.y = 80
-	deck_btn.add_theme_font_size_override("font_size", 28)
-	deck_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/deck_editor/deck_editor.tscn"))
-	vbox.add_child(deck_btn)
-
-	var online_btn := Button.new()
-	online_btn.text = "Online Battle"
-	online_btn.custom_minimum_size.y = 80
-	online_btn.add_theme_font_size_override("font_size", 28)
+	# Online Match
+	var online_btn := _make_button("⚔ オンライン対戦", Color(0.9, 0.3, 0.3))
 	online_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/lobby/lobby.tscn"))
 	vbox.add_child(online_btn)
 
-	var rules_btn := Button.new()
-	rules_btn.text = "Rules"
-	rules_btn.custom_minimum_size.y = 80
-	rules_btn.add_theme_font_size_override("font_size", 28)
+	# NPC Battle
+	var npc_btn := _make_button("🤖 NPC対戦", Color(0.3, 0.7, 0.9))
+	npc_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/battle/battle.tscn"))
+	vbox.add_child(npc_btn)
+
+	# Deck Edit
+	var deck_btn := _make_button("📋 デッキ編集", Color(0.3, 0.8, 0.4))
+	deck_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/deck_editor/deck_editor.tscn"))
+	vbox.add_child(deck_btn)
+
+	# Rules
+	var rules_btn := _make_button("📖 ルール", Color(0.5, 0.5, 0.6))
 	rules_btn.pressed.connect(_show_rules)
 	vbox.add_child(rules_btn)
+
+func _make_button(text: String, color: Color) -> Button:
+	var btn := Button.new()
+	btn.text = text
+	btn.custom_minimum_size.y = 80
+	btn.add_theme_font_size_override("font_size", 28)
+	var style := StyleBoxFlat.new()
+	style.bg_color = color.darkened(0.6)
+	style.border_width_left = 3
+	style.border_width_right = 3
+	style.border_width_top = 3
+	style.border_width_bottom = 3
+	style.border_color = color
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	btn.add_theme_stylebox_override("normal", style)
+	var hover := style.duplicate()
+	hover.bg_color = color.darkened(0.4)
+	btn.add_theme_stylebox_override("hover", hover)
+	var pressed := style.duplicate()
+	pressed.bg_color = color.darkened(0.2)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	return btn
 
 func _show_rules() -> void:
 	var overlay := ColorRect.new()

@@ -175,3 +175,12 @@ func _generate_room_code() -> String:
 	for i in range(6):
 		code += chars[randi() % chars.length()]
 	return code
+
+func find_waiting_room() -> String:
+	var result := await FirebaseManager.get_data("rooms")
+	if result.code == 200 and result.data != null and result.data is Dictionary:
+		for code in result.data.keys():
+			var room: Dictionary = result.data[code]
+			if room.get("status", "") == "waiting":
+				return code
+	return ""

@@ -1,11 +1,10 @@
 extends Control
 
-var room_code_input: LineEdit
 var status_label: Label
-var create_btn: Button
-var join_btn: Button
-var back_btn: Button
 var room_code_display: Label
+var room_code_input: LineEdit
+var main_menu: VBoxContainer
+var friend_menu: VBoxContainer
 var waiting_panel: VBoxContainer
 
 func _ready() -> void:
@@ -18,58 +17,21 @@ func _build_ui() -> void:
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
-	var vbox := VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	vbox.offset_left = -220
-	vbox.offset_right = 220
-	vbox.offset_top = -350
-	vbox.offset_bottom = 350
-	vbox.add_theme_constant_override("separation", 30)
-	add_child(vbox)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
+	var root_vbox := VBoxContainer.new()
+	root_vbox.add_theme_constant_override("separation", 20)
+	root_vbox.custom_minimum_size.x = 500
+	center.add_child(root_vbox)
 
 	var title := Label.new()
-	title.text = "Online Battle"
+	title.text = "⚔ オンライン対戦"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 42)
-	vbox.add_child(title)
-
-	# Create room button
-	create_btn = Button.new()
-	create_btn.text = "Create Room"
-	create_btn.custom_minimum_size.y = 80
-	create_btn.add_theme_font_size_override("font_size", 28)
-	create_btn.pressed.connect(_on_create_room)
-	vbox.add_child(create_btn)
-
-	# Separator
-	var sep_label := Label.new()
-	sep_label.text = "── OR ──"
-	sep_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	sep_label.add_theme_font_size_override("font_size", 20)
-	sep_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
-	vbox.add_child(sep_label)
-
-	# Join room
-	var join_label := Label.new()
-	join_label.text = "Enter Room Code:"
-	join_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	join_label.add_theme_font_size_override("font_size", 22)
-	vbox.add_child(join_label)
-
-	room_code_input = LineEdit.new()
-	room_code_input.placeholder_text = "ABCDEF"
-	room_code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	room_code_input.add_theme_font_size_override("font_size", 32)
-	room_code_input.max_length = 6
-	room_code_input.custom_minimum_size.y = 60
-	vbox.add_child(room_code_input)
-
-	join_btn = Button.new()
-	join_btn.text = "Join Room"
-	join_btn.custom_minimum_size.y = 80
-	join_btn.add_theme_font_size_override("font_size", 28)
-	join_btn.pressed.connect(_on_join_room)
-	vbox.add_child(join_btn)
+	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	root_vbox.add_child(title)
 
 	# Status
 	status_label = Label.new()
@@ -78,23 +40,98 @@ func _build_ui() -> void:
 	status_label.add_theme_font_size_override("font_size", 22)
 	status_label.add_theme_color_override("font_color", Color(1, 0.8, 0.3))
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-	vbox.add_child(status_label)
+	root_vbox.add_child(status_label)
 
-	# Room code display (shown when waiting)
+	# Room code display (for waiting)
 	room_code_display = Label.new()
 	room_code_display.text = ""
 	room_code_display.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	room_code_display.add_theme_font_size_override("font_size", 48)
+	room_code_display.add_theme_font_size_override("font_size", 56)
 	room_code_display.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	vbox.add_child(room_code_display)
+	root_vbox.add_child(room_code_display)
 
-	# Back button
-	back_btn = Button.new()
-	back_btn.text = "Back"
-	back_btn.custom_minimum_size.y = 60
-	back_btn.add_theme_font_size_override("font_size", 24)
+	# === MAIN MENU ===
+	main_menu = VBoxContainer.new()
+	main_menu.add_theme_constant_override("separation", 20)
+	root_vbox.add_child(main_menu)
+
+	var random_btn := _make_button("🎲 ランダムマッチ", Color(0.9, 0.4, 0.2))
+	random_btn.pressed.connect(_on_random_match)
+	main_menu.add_child(random_btn)
+
+	var friend_btn := _make_button("👥 フレンド対戦", Color(0.3, 0.6, 0.9))
+	friend_btn.pressed.connect(_show_friend_menu)
+	main_menu.add_child(friend_btn)
+
+	var back_btn := _make_button("← 戻る", Color(0.4, 0.4, 0.5))
 	back_btn.pressed.connect(_on_back)
-	vbox.add_child(back_btn)
+	main_menu.add_child(back_btn)
+
+	# === FRIEND MENU (hidden initially) ===
+	friend_menu = VBoxContainer.new()
+	friend_menu.add_theme_constant_override("separation", 20)
+	friend_menu.visible = false
+	root_vbox.add_child(friend_menu)
+
+	var create_btn := _make_button("🏠 部屋を作る", Color(0.3, 0.8, 0.4))
+	create_btn.pressed.connect(_on_create_room)
+	friend_menu.add_child(create_btn)
+
+	var join_label := Label.new()
+	join_label.text = "ルームコードを入力:"
+	join_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	join_label.add_theme_font_size_override("font_size", 20)
+	friend_menu.add_child(join_label)
+
+	room_code_input = LineEdit.new()
+	room_code_input.placeholder_text = "ABCDEF"
+	room_code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	room_code_input.add_theme_font_size_override("font_size", 36)
+	room_code_input.max_length = 6
+	room_code_input.custom_minimum_size.y = 60
+	friend_menu.add_child(room_code_input)
+
+	var join_btn := _make_button("🚪 部屋に参加", Color(0.3, 0.6, 0.9))
+	join_btn.pressed.connect(_on_join_room)
+	friend_menu.add_child(join_btn)
+
+	var friend_back_btn := _make_button("← 戻る", Color(0.4, 0.4, 0.5))
+	friend_back_btn.pressed.connect(_show_main_menu)
+	friend_menu.add_child(friend_back_btn)
+
+func _make_button(text: String, color: Color) -> Button:
+	var btn := Button.new()
+	btn.text = text
+	btn.custom_minimum_size.y = 70
+	btn.add_theme_font_size_override("font_size", 26)
+	var style := StyleBoxFlat.new()
+	style.bg_color = color.darkened(0.6)
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_color = color
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_left = 8
+	style.corner_radius_bottom_right = 8
+	btn.add_theme_stylebox_override("normal", style)
+	var hover := style.duplicate()
+	hover.bg_color = color.darkened(0.4)
+	btn.add_theme_stylebox_override("hover", hover)
+	return btn
+
+func _show_friend_menu() -> void:
+	main_menu.visible = false
+	friend_menu.visible = true
+	status_label.text = ""
+	room_code_display.text = ""
+
+func _show_main_menu() -> void:
+	friend_menu.visible = false
+	main_menu.visible = true
+	status_label.text = ""
+	room_code_display.text = ""
 
 func _get_deck_ids() -> Array:
 	var ids: Array = []
@@ -107,44 +144,71 @@ func _get_deck_ids() -> Array:
 			ids.append(card.id)
 	return ids
 
+# === RANDOM MATCH ===
+func _on_random_match() -> void:
+	main_menu.visible = false
+	friend_menu.visible = false
+	status_label.text = "対戦相手を探しています..."
+
+	var deck_ids := _get_deck_ids()
+
+	# Check if there's a waiting room
+	var waiting_room := await MultiplayerManager.find_waiting_room()
+	if waiting_room != "":
+		# Join existing room
+		status_label.text = "対戦相手が見つかりました！"
+		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
+		if success:
+			await get_tree().create_timer(1.0).timeout
+			_start_online_battle()
+			return
+	
+	# No waiting room, create one
+	var code := await MultiplayerManager.create_room(deck_ids)
+	if code != "":
+		room_code_display.text = ""
+		status_label.text = "対戦相手を待っています..."
+	else:
+		status_label.text = "エラーが発生しました"
+		_show_main_menu()
+
+# === FRIEND MATCH ===
 func _on_create_room() -> void:
-	create_btn.disabled = true
-	join_btn.disabled = true
-	status_label.text = "Creating room..."
+	friend_menu.visible = false
+	status_label.text = "部屋を作成中..."
 
 	var deck_ids := _get_deck_ids()
 	var code := await MultiplayerManager.create_room(deck_ids)
 	if code != "":
 		room_code_display.text = code
-		status_label.text = "Waiting for opponent...\nShare this code:"
+		status_label.text = "相手にこのコードを共有してね:"
 	else:
-		status_label.text = "Failed to create room."
-		create_btn.disabled = false
-		join_btn.disabled = false
+		status_label.text = "部屋の作成に失敗しました"
+		_show_friend_menu()
 
 func _on_join_room() -> void:
 	var code := room_code_input.text.strip_edges().to_upper()
 	if code.length() != 6:
-		status_label.text = "Enter a 6-letter room code."
+		status_label.text = "6文字のコードを入力してください"
 		return
 
-	create_btn.disabled = true
-	join_btn.disabled = true
-	status_label.text = "Joining room %s..." % code
+	friend_menu.visible = false
+	status_label.text = "部屋 %s に参加中..." % code
 
 	var deck_ids := _get_deck_ids()
 	var success := await MultiplayerManager.join_room(code, deck_ids)
 	if success:
-		status_label.text = "Joined! Starting game..."
+		status_label.text = "参加成功！ゲーム開始..."
 		await get_tree().create_timer(1.0).timeout
 		_start_online_battle()
 	else:
-		status_label.text = "Failed to join. Room may not exist or is full."
-		create_btn.disabled = false
-		join_btn.disabled = false
+		status_label.text = "参加失敗。部屋が存在しないか満員です"
+		_show_friend_menu()
 
+# === CALLBACKS ===
 func _on_opponent_joined() -> void:
-	status_label.text = "Opponent joined! Starting game..."
+	status_label.text = "対戦相手が来た！ゲーム開始..."
+	room_code_display.text = ""
 	await get_tree().create_timer(1.0).timeout
 	_start_online_battle()
 
