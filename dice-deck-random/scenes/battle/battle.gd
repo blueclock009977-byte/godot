@@ -470,6 +470,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DRAW
 			_update_all_ui()
 			_player_draw_card()
+			await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
 			_log("カードを1枚ドローした。")
 			# Go to Main2
 			current_phase = Phase.MAIN2
@@ -489,6 +490,7 @@ func _end_turn() -> void:
 	current_phase = Phase.END
 	_clear_selection()
 	_update_all_ui()
+	await _show_phase_banner("ターン終了", Color(0.6, 0.6, 0.6), 0.5)
 	is_player_turn = not is_player_turn
 	_start_turn()
 
@@ -846,6 +848,7 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 	# Main Phase 1 - Summon
 	current_phase = Phase.MAIN1
 	_update_all_ui()
+	await _show_phase_banner("メイン1", Color(0.3, 1.0, 0.5), 0.5)
 	await _ai_summon_phase()
 	await get_tree().create_timer(0.3).timeout
 
@@ -853,6 +856,7 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 		# Dice phase
 		current_phase = Phase.DICE
 		_update_all_ui()
+		await _show_phase_banner("ダイス!", Color(1, 0.9, 0.3), 0.5)
 		await _do_dice_and_battle()
 		if game_over:
 			return
@@ -861,6 +865,7 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 		# Draw
 		current_phase = Phase.DRAW
 		_update_all_ui()
+		await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
 		_opponent_draw_card()
 		_log("相手がカードをドローした。")
 		await get_tree().create_timer(0.3).timeout
@@ -868,6 +873,7 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 	# Main Phase 2
 	current_phase = Phase.MAIN2
 	_update_all_ui()
+	await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
 	await _ai_summon_phase()
 	await get_tree().create_timer(0.3).timeout
 

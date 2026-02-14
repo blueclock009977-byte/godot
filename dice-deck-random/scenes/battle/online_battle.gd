@@ -469,9 +469,11 @@ func _start_turn() -> void:
 
 	if is_player_turn:
 		await _show_phase_banner("自分のターン", Color(0.3, 1.0, 0.5), 0.6)
+		await _show_phase_banner("メインフェイズ1", Color(0.3, 1.0, 0.5), 0.4)
 		# Player input enabled - wait for actions
 	else:
 		await _show_phase_banner("相手のターン", Color(1.0, 0.4, 0.4), 0.6)
+		await _show_phase_banner("メインフェイズ1", Color(1.0, 0.4, 0.4), 0.4)
 		# Wait for opponent actions via Firebase polling
 		_waiting_for_opponent = true
 
