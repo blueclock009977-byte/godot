@@ -16,9 +16,9 @@ enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
 var player_hp: int = MAX_HP
 var opponent_hp: int = MAX_HP
 var player_mana: int = 0
-var player_max_mana: int = 1
+var player_max_mana: int = 0
 var opponent_mana: int = 0
-var opponent_max_mana: int = 1
+var opponent_max_mana: int = 0
 var player_deck: Array[CardData] = []
 var opponent_deck: Array[CardData] = []
 var player_hand: Array = []  # Array of CardUI
