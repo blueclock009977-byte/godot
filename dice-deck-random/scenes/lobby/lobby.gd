@@ -7,6 +7,8 @@ var main_menu: VBoxContainer
 var friend_menu: VBoxContainer
 var waiting_panel: VBoxContainer
 var cancel_btn: Button
+var _search_timer: Timer
+var _searching: bool = false
 
 func _ready() -> void:
 	_build_ui()
@@ -159,6 +161,7 @@ func _hide_cancel() -> void:
 
 func _on_cancel() -> void:
 	_hide_cancel()
+	_stop_search()
 	status_label.text = "キャンセル中..."
 	if MultiplayerManager.is_in_room:
 		await MultiplayerManager.leave_room()
@@ -194,31 +197,68 @@ func _on_random_match() -> void:
 	friend_menu.visible = false
 	_show_cancel()
 	status_label.text = "対戦相手を探しています..."
+	_searching = true
 
 	var deck_ids := _get_deck_ids()
 
-	# Check if there's a waiting room
+	# First try: find existing room
+	var matched := await _try_join_waiting_room(deck_ids)
+	if matched:
+		return
+
+	# No room found, create one and keep searching
+	var code := await MultiplayerManager.create_room(deck_ids)
+	if code == "":
+		status_label.text = "部屋作成に失敗しました。通信エラーの可能性があります"
+		await get_tree().create_timer(3.0).timeout
+		_searching = false
+		_show_main_menu()
+		return
+
+	# Start periodic re-search while waiting
+	_search_timer = Timer.new()
+	_search_timer.wait_time = 5.0
+	_search_timer.timeout.connect(_on_search_tick.bind(deck_ids))
+	add_child(_search_timer)
+	_search_timer.start()
+
+func _try_join_waiting_room(deck_ids: Array) -> bool:
 	var waiting_room := await MultiplayerManager.find_waiting_room()
 	if waiting_room != "":
-		status_label.text = "対戦相手が見つかりました！接続確認中..."
 		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
 		if success:
 			status_label.text = "対戦相手が見つかりました！"
+			_stop_search()
+			await get_tree().create_timer(1.0).timeout
+			_start_online_battle()
+			return true
+	return false
+
+func _on_search_tick(deck_ids: Array) -> void:
+	if not _searching:
+		return
+	var waiting_room := await MultiplayerManager.find_waiting_room()
+	if waiting_room != "" and _searching:
+		# Found another room! Leave ours and join theirs
+		var old_code := MultiplayerManager.room_code
+		await MultiplayerManager.leave_room()
+		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
+		if success:
+			status_label.text = "対戦相手が見つかりました！"
+			_stop_search()
 			await get_tree().create_timer(1.0).timeout
 			_start_online_battle()
 			return
 		else:
-			status_label.text = "相手が応答なし。部屋を作成中..."
+			# Join failed, recreate our room
+			await MultiplayerManager.create_room(deck_ids)
 
-	# No waiting room, create one
-	var code := await MultiplayerManager.create_room(deck_ids)
-	if code != "":
-		room_code_display.text = ""
-		status_label.text = "対戦相手を待っています..."
-	else:
-		status_label.text = "部屋作成に失敗しました。通信エラーの可能性があります"
-		await get_tree().create_timer(3.0).timeout
-		_show_main_menu()
+func _stop_search() -> void:
+	_searching = false
+	if _search_timer:
+		_search_timer.stop()
+		_search_timer.queue_free()
+		_search_timer = null
 
 
 # === FRIEND MATCH ===
