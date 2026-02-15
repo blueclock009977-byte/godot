@@ -44,41 +44,18 @@ jobs:
           cd dice-deck-random
           godot --headless --export-release "Web" build/web/index.html
 
+          cd build/web
           TIMESTAMP=$(date +%s)
-          echo "Build timestamp: $TIMESTAMP"
-
-          # Show what files were generated
-          ls -la build/web/
-
-          # Remove ALL service worker files
-          find build/web/ -name "*worker*" -delete 2>/dev/null || true
-          find build/web/ -name "*.sw.js" -delete 2>/dev/null || true
-
-          # Disable service worker in HTML
-          sed -i 's/serviceWorker/\/\/serviceWorker/g' build/web/index.html
 
           # Add cache-busting meta tags
-          sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' build/web/index.html
+          sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' index.html
 
-          # Rename JS/WASM/PCK files with timestamp and update references
-          cd build/web
-          for ext in js wasm pck; do
-            for f in *.$ext; do
-              if [ -f "$f" ]; then
-                base="${f%.$ext}"
-                newname="${base}.${ext}?v=${TIMESTAMP}"
-                # Update all references in HTML files
-                sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
-                echo "Cache-busted: $f"
-              fi
-            done
+          # Add timestamp to file references in index.html
+          for f in *.js *.wasm *.pck; do
+            if [ -f "$f" ]; then
+              sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
+            fi
           done
-
-          # Also handle single/double quote patterns
-          sed -i "s/\.js'/\.js?v=${TIMESTAMP}'/g" index.html
-          
-          echo "=== Final index.html head ==="
-          head -20 index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
