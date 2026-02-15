@@ -226,6 +226,9 @@ func find_waiting_room() -> String:
 					continue
 				# ホストが生きてるかチェック（last_seenが5秒以内）
 				var p1 = room.get("player1")
+				# 自分の部屋はスキップ
+				if p1 is Dictionary and p1.get("id", "") == FirebaseManager.player_id:
+					continue
 				if p1 is Dictionary:
 					var last_seen: float = float(p1.get("last_seen", 0))
 					if last_seen > 0 and now - last_seen > 5.0:

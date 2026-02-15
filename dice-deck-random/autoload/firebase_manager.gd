@@ -8,13 +8,25 @@ const FIREBASE_URL := "https://dicedeckrandomtcg-default-rtdb.firebaseio.com"
 var player_id: String = ""
 
 func _ready() -> void:
-	_generate_player_id()
+	_load_or_create_player_id()
 
-func _generate_player_id() -> void:
+func _load_or_create_player_id() -> void:
+	var path := "user://player_id.txt"
+	if FileAccess.file_exists(path):
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f:
+			player_id = f.get_as_text().strip_edges()
+			f.close()
+			if player_id.length() > 0:
+				return
 	var chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	player_id = ""
 	for i in range(16):
 		player_id += chars[randi() % chars.length()]
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f:
+		f.store_string(player_id)
+		f.close()
 
 # ─── HTTP helpers ───
 
