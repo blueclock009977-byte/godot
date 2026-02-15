@@ -5,7 +5,7 @@ const CARD_UI_SCENE := preload("res://scenes/battle/card_ui.tscn")
 const FIELD_SLOT_SCENE := preload("res://scenes/battle/field_slot.tscn")
 const MAX_HP := 20
 const MAX_MANA_CAP := 5
-const STARTING_HAND := 3
+const STARTING_HAND := 5
 const MOVE_COST := 1
 
 # ─── Enums ───
@@ -16,9 +16,9 @@ enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
 var player_hp: int = MAX_HP
 var opponent_hp: int = MAX_HP
 var player_mana: int = 0
-var player_max_mana: int = 0
+var player_max_mana: int = 1
 var opponent_mana: int = 0
-var opponent_max_mana: int = 0
+var opponent_max_mana: int = 1
 var player_deck: Array[CardData] = []
 var opponent_deck: Array[CardData] = []
 var player_hand: Array = []  # Array of CardUI
