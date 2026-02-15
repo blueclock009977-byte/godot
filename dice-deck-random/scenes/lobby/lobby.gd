@@ -180,7 +180,7 @@ func _on_random_match() -> void:
 	# Check if there's a waiting room
 	_debug_log("[ランダム] 待機部屋を検索中...")
 	var waiting_room := await MultiplayerManager.find_waiting_room()
-	_debug_log("[ランダム] 検索結果: '%s'" % waiting_room)
+	_debug_log("[ランダム] 検索結果: '%s' (find_err: %s)" % [waiting_room, MultiplayerManager.last_error])
 	if waiting_room != "":
 		status_label.text = "対戦相手が見つかりました！"
 		_debug_log("[ランダム] 部屋 %s に参加中..." % waiting_room)
@@ -194,7 +194,7 @@ func _on_random_match() -> void:
 	# No waiting room, create one
 	_debug_log("[ランダム] 部屋作成中...")
 	var code := await MultiplayerManager.create_room(deck_ids)
-	_debug_log("[ランダム] 作成結果: '%s'" % code)
+	_debug_log("[ランダム] 作成結果: '%s' (err: %s)" % [code, MultiplayerManager.last_error])
 	if code != "":
 		room_code_display.text = ""
 		status_label.text = "対戦相手を待っています..."

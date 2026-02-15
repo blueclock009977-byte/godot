@@ -18,6 +18,7 @@ var is_in_room: bool = false
 var _poll_timer: Timer
 var _last_action_index: int = -1
 var _polling: bool = false
+var last_error: String = ""
 
 func _ready() -> void:
 	_poll_timer = Timer.new()
@@ -46,6 +47,7 @@ func create_room(deck_ids: Array) -> String:
 	}
 
 	var result := await FirebaseManager.put_data("rooms/%s" % room_code, room_data)
+	last_error = "HTTP %d" % result.code
 	if result.code == 200:
 		is_in_room = true
 		_last_action_index = -1
@@ -181,6 +183,7 @@ func _generate_room_code() -> String:
 
 func find_waiting_room() -> String:
 	var result := await FirebaseManager.get_data("rooms")
+	last_error = "HTTP %d" % result.code
 	var now := Time.get_unix_time_from_system()
 	if result.code == 200 and result.data != null and result.data is Dictionary:
 		for code in result.data.keys():
