@@ -883,12 +883,13 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 		_log("相手がカードをドローした。")
 		await get_tree().create_timer(0.3).timeout
 
-	# Main Phase 2
-	current_phase = Phase.MAIN2
-	_update_all_ui()
-	await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
-	await _ai_summon_phase()
-	await get_tree().create_timer(0.3).timeout
+	if not skip_dice_draw:
+		# Main Phase 2
+		current_phase = Phase.MAIN2
+		_update_all_ui()
+		await _show_phase_banner("メインフェイズ2", Color(0.5, 0.8, 1.0), 0.5)
+		await _ai_summon_phase()
+		await get_tree().create_timer(0.3).timeout
 
 	# End turn
 	is_player_turn = not is_player_turn
