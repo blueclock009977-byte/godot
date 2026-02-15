@@ -799,12 +799,10 @@ func _on_player_slot_clicked(slot: FieldSlot) -> void:
 			slot.card_ui.set_selected(true)
 			slot.card_ui.set_movable(true)
 			select_mode = SelectMode.MOVE_SELECT_SLOT
-			# Highlight adjacent empty slots
-			var adjacent := _get_adjacent_slots(slot.slot_index)
-			for adj_idx in adjacent:
-				var adj_slot: FieldSlot = player_slots[adj_idx]
-				if adj_slot and adj_slot.is_empty():
-					adj_slot.set_highlighted(true)
+			# Highlight all empty slots
+			for s in player_slots:
+				if s and s.is_empty():
+					s.set_highlighted(true)
 		else:
 			_clear_selection()
 
