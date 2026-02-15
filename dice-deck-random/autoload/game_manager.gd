@@ -22,6 +22,13 @@ func save_deck() -> void:
 	if file:
 		file.store_string(JSON.stringify(ids))
 		file.close()
+		_sync_fs()
+
+func _sync_fs() -> void:
+	if OS.get_name() == "Web":
+		if OS.has_feature("web"):
+			var js_code := "if (window.Module && Module.FS) { Module.FS.syncfs(false, function(err) { if(err) console.error('FS sync error:', err); }); }"
+			JavaScriptBridge.eval(js_code)
 
 func load_deck() -> void:
 	if not FileAccess.file_exists(DECK_SAVE_PATH):

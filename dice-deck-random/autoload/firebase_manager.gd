@@ -27,6 +27,8 @@ func _load_or_create_player_id() -> void:
 	if f:
 		f.store_string(player_id)
 		f.close()
+		if OS.get_name() == "Web" and OS.has_feature("web"):
+			JavaScriptBridge.eval("if(window.Module&&Module.FS){Module.FS.syncfs(false,function(e){})}")
 
 # ─── HTTP helpers ───
 
