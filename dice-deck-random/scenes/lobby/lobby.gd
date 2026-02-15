@@ -169,7 +169,8 @@ func _on_random_match() -> void:
 		room_code_display.text = ""
 		status_label.text = "対戦相手を待っています..."
 	else:
-		status_label.text = "エラーが発生しました"
+		status_label.text = "部屋作成に失敗しました。通信エラーの可能性があります"
+		await get_tree().create_timer(3.0).timeout
 		_show_main_menu()
 
 # === FRIEND MATCH ===
@@ -183,7 +184,8 @@ func _on_create_room() -> void:
 		room_code_display.text = code
 		status_label.text = "相手にこのコードを共有してね:"
 	else:
-		status_label.text = "部屋の作成に失敗しました"
+		status_label.text = "部屋の作成に失敗しました。通信エラーの可能性があります"
+		await get_tree().create_timer(3.0).timeout
 		_show_friend_menu()
 
 func _on_join_room() -> void:

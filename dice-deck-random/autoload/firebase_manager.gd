@@ -60,9 +60,12 @@ func delete_data(path: String) -> Dictionary:
 	return _parse_response(result)
 
 func _parse_response(result: Array) -> Dictionary:
+	var result_code: int = result[0]
 	var response_code: int = result[1]
 	var body: PackedByteArray = result[3]
 	var body_str := body.get_string_from_utf8()
+	if response_code != 200:
+		print("[Firebase] HTTP %d (result: %d) body: %s" % [response_code, result_code, body_str.left(500)])
 	var parsed = null
 	if body_str.length() > 0:
 		var json := JSON.new()
