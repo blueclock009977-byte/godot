@@ -5,50 +5,56 @@ enum GameState { TITLE, DECK_EDIT, BATTLE, RESULT }
 var current_state: GameState = GameState.TITLE
 var player_deck: Array = []
 var battle_result: String = ""
+var user_name: String = ""
 
 func _ready() -> void:
-	load_deck()
+	_load_user_name()
+	if user_name != "":
+		FirebaseManager.player_id = user_name
 
 func change_scene(scene_path: String) -> void:
 	get_tree().change_scene_to_file(scene_path)
 
+func _load_user_name() -> void:
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("localStorage.getItem('ddr_user_name') || ''")
+		if result != null and str(result) != "":
+			user_name = str(result)
+	else:
+		var path := "user://user_name.txt"
+		if FileAccess.file_exists(path):
+			var f := FileAccess.open(path, FileAccess.READ)
+			if f:
+				user_name = f.get_as_text().strip_edges()
+				f.close()
+
+func save_user_name(name: String) -> void:
+	user_name = name
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("localStorage.setItem('ddr_user_name', '%s')" % name)
+	else:
+		var f := FileAccess.open("user://user_name.txt", FileAccess.WRITE)
+		if f:
+			f.store_string(name)
+			f.close()
+
 func save_deck() -> void:
+	if user_name == "":
+		return
 	var ids: Array[int] = []
 	for card in player_deck:
 		ids.append(card.id)
 	var json_str := JSON.stringify(ids)
-	if OS.has_feature("web"):
-		var js := "try { localStorage.setItem('ddr_deck', JSON.stringify(%s)); 'ok'; } catch(e) { e.message; }" % json_str
-		var result = JavaScriptBridge.eval(js)
-		print("[save_deck] result: ", result)
-	else:
-		var file := FileAccess.open("user://deck.json", FileAccess.WRITE)
-		if file:
-			file.store_string(json_str)
-			file.close()
+	# Save to Firebase
+	await FirebaseManager.put_data("users/%s/deck" % user_name, ids)
 
 func load_deck() -> void:
-	var text := ""
-	if OS.has_feature("web"):
-		var result = JavaScriptBridge.eval("localStorage.getItem('ddr_deck') || ''")
-		if result != null:
-			text = str(result)
-		print("[load_deck] loaded: ", text.left(80))
-	else:
-		var path := "user://deck.json"
-		if not FileAccess.file_exists(path):
-			return
-		var file := FileAccess.open(path, FileAccess.READ)
-		if not file:
-			return
-		text = file.get_as_text()
-		file.close()
-	if text == "" or text == "null":
+	if user_name == "":
 		return
-	var json := JSON.new()
-	if json.parse(text) != OK:
+	var result := await FirebaseManager.get_data("users/%s/deck" % user_name)
+	if result.code != 200 or result.data == null:
 		return
-	var ids = json.data
+	var ids = result.data
 	if ids is not Array:
 		return
 	player_deck = []

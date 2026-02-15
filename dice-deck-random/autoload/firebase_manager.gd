@@ -8,7 +8,9 @@ const FIREBASE_URL := "https://dicedeckrandomtcg-default-rtdb.firebaseio.com"
 var player_id: String = ""
 
 func _ready() -> void:
+	# Delay to let GameManager load first
 	_load_or_create_player_id()
+	# Will be overridden by user_name when set
 
 func _load_or_create_player_id() -> void:
 	# Try loading from localStorage (web) or file
