@@ -7,6 +7,7 @@ var main_menu: VBoxContainer
 var friend_menu: VBoxContainer
 var waiting_panel: VBoxContainer
 var debug_label: RichTextLabel
+var cancel_btn: Button
 
 func _ready() -> void:
 	_build_ui()
@@ -117,6 +118,32 @@ func _build_ui() -> void:
 	debug_label.add_theme_color_override("default_color", Color(0.2, 1.0, 0.2))
 	debug_panel.add_child(debug_label)
 
+	# Cancel button
+	cancel_btn = Button.new()
+	cancel_btn.text = "キャンセル"
+	cancel_btn.custom_minimum_size = Vector2(300, 70)
+	cancel_btn.add_theme_font_size_override("font_size", 26)
+	var cancel_style := StyleBoxFlat.new()
+	cancel_style.bg_color = Color(0.5, 0.2, 0.2)
+	cancel_style.border_width_left = 2
+	cancel_style.border_width_right = 2
+	cancel_style.border_width_top = 2
+	cancel_style.border_width_bottom = 2
+	cancel_style.border_color = Color(0.9, 0.3, 0.3)
+	cancel_style.corner_radius_top_left = 8
+	cancel_style.corner_radius_top_right = 8
+	cancel_style.corner_radius_bottom_left = 8
+	cancel_style.corner_radius_bottom_right = 8
+	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
+	cancel_btn.pressed.connect(_on_cancel)
+	cancel_btn.visible = false
+	cancel_btn.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	cancel_btn.offset_top = -200
+	cancel_btn.offset_bottom = -130
+	cancel_btn.offset_left = -150
+	cancel_btn.offset_right = 150
+	add_child(cancel_btn)
+
 func _make_button(text: String, color: Color) -> Button:
 	var btn := Button.new()
 	btn.text = text
@@ -138,6 +165,21 @@ func _make_button(text: String, color: Color) -> Button:
 	hover.bg_color = color.darkened(0.4)
 	btn.add_theme_stylebox_override("hover", hover)
 	return btn
+
+func _show_cancel() -> void:
+	if cancel_btn:
+		cancel_btn.visible = true
+
+func _hide_cancel() -> void:
+	if cancel_btn:
+		cancel_btn.visible = false
+
+func _on_cancel() -> void:
+	_hide_cancel()
+	status_label.text = "キャンセル中..."
+	if MultiplayerManager.is_in_room:
+		await MultiplayerManager.leave_room()
+	_show_main_menu()
 
 func _debug_log(msg: String) -> void:
 	print(msg)
@@ -171,6 +213,7 @@ func _get_deck_ids() -> Array:
 func _on_random_match() -> void:
 	main_menu.visible = false
 	friend_menu.visible = false
+	_show_cancel()
 	status_label.text = "対戦相手を探しています..."
 	_debug_log("[ランダム] 開始...")
 
@@ -207,6 +250,7 @@ func _on_random_match() -> void:
 # === FRIEND MATCH ===
 func _on_create_room() -> void:
 	friend_menu.visible = false
+	_show_cancel()
 	status_label.text = "部屋を作成中..."
 
 	var deck_ids := _get_deck_ids()
@@ -240,12 +284,14 @@ func _on_join_room() -> void:
 
 # === CALLBACKS ===
 func _on_opponent_joined() -> void:
+	_hide_cancel()
 	status_label.text = "対戦相手が来た！ゲーム開始..."
 	room_code_display.text = ""
 	await get_tree().create_timer(1.0).timeout
 	_start_online_battle()
 
 func _start_online_battle() -> void:
+	_hide_cancel()
 	GameManager.change_scene("res://scenes/battle/online_battle.tscn")
 
 func _on_back() -> void:
