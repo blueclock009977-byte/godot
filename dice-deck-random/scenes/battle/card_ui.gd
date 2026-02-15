@@ -268,12 +268,23 @@ func _end_drag() -> void:
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-			card_clicked.emit(self)
-			accept_event()
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				is_pressing = true
+				press_start_pos = get_global_mouse_position()
+			else:
+				if is_pressing:
+					card_clicked.emit(self)
+				is_pressing = false
+				accept_event()
 	if event is InputEventScreenTouch:
-		if not event.pressed:
-			card_clicked.emit(self)
+		if event.pressed:
+			is_pressing = true
+			press_start_pos = event.position
+		else:
+			if is_pressing:
+				card_clicked.emit(self)
+			is_pressing = false
 			accept_event()
 
 func reset_position() -> void:
