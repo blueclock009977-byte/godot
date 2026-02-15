@@ -225,14 +225,18 @@ func _on_random_match() -> void:
 	var waiting_room := await MultiplayerManager.find_waiting_room()
 	_debug_log("[ランダム] 検索結果: '%s' (find_err: %s)" % [waiting_room, MultiplayerManager.last_error])
 	if waiting_room != "":
-		status_label.text = "対戦相手が見つかりました！"
-		_debug_log("[ランダム] 部屋 %s に参加中..." % waiting_room)
+		status_label.text = "対戦相手が見つかりました！接続確認中..."
+		_debug_log("[ランダム] 部屋 %s に参加+生存確認中..." % waiting_room)
 		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
 		_debug_log("[ランダム] 参加結果: %s" % str(success))
 		if success:
+			status_label.text = "対戦相手が見つかりました！"
 			await get_tree().create_timer(1.0).timeout
 			_start_online_battle()
 			return
+		else:
+			_debug_log("[ランダム] ホスト応答なし、部屋作成に切り替え")
+			status_label.text = "相手が応答なし。部屋を作成中..."
 
 	# No waiting room, create one
 	_debug_log("[ランダム] 部屋作成中...")

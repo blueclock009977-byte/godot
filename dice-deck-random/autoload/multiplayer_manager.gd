@@ -94,8 +94,23 @@ func join_room(code: String, deck_ids: Array) -> bool:
 		is_in_room = true
 		_last_action_index = -1
 		_poll_timer.start()
-		return true
 		_heartbeat_timer.start()
+		# ホスト生存確認: 4秒待ってlast_seenが更新されるかチェック
+		var pre_check := await FirebaseManager.get_data("rooms/%s/player1/last_seen" % room_code)
+		var pre_seen: float = 0.0
+		if pre_check.code == 200 and pre_check.data != null:
+			pre_seen = float(pre_check.data)
+		await get_tree().create_timer(4.0).timeout
+		var post_check := await FirebaseManager.get_data("rooms/%s/player1/last_seen" % room_code)
+		var post_seen: float = 0.0
+		if post_check.code == 200 and post_check.data != null:
+			post_seen = float(post_check.data)
+		if post_seen <= pre_seen:
+			# ホスト死亡 - 部屋を片付けて失敗
+			await leave_room()
+			await FirebaseManager.delete_data("rooms/%s" % room_code)
+			return false
+		return true
 	return false
 
 func leave_room() -> void:
