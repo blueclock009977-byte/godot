@@ -27,7 +27,7 @@ func _ready() -> void:
 	main_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "v1.3.5"
+	subtitle.text = "v1.3.6"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 22)
 	subtitle.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
@@ -255,7 +255,7 @@ func _show_rules() -> void:
 1. マナ回復(最大+1)
 2. [color=green]メインフェイズ1[/color] — 召喚/移動
 3. [color=yellow]ダイスロール → バトル解決[/color]
-4. ドロー(1枚)
+4. ドロー(1枚) & 1マナ回復
 5. [color=green]メインフェイズ2[/color] — 召喚/移動
 6. ターンエンド
 

@@ -315,7 +315,7 @@ func _update_all_ui() -> void:
 		else:
 			mana_str += "·"
 	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー", Phase.MAIN2: "メイン2", Phase.END: "終了"}
+	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー&1マナ回復", Phase.MAIN2: "メイン2", Phase.END: "終了"}
 	var whose := "自分" if is_player_turn else "相手"
 	phase_label.text = "%s: %s" % [whose, phase_names.get(current_phase, "?")]
 	if is_player_turn:
@@ -489,9 +489,11 @@ func _on_end_phase() -> void:
 			# Draw phase
 			current_phase = Phase.DRAW
 			_update_all_ui()
-			await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
+			await _show_phase_banner("ドロー & 1マナ回復", Color(0.5, 0.8, 1.0), 0.5)
 			_player_draw_card()
 			_log("カードを1枚ドローした。")
+			player_mana = mini(player_mana + 1, player_max_mana)
+			_log("[color=cyan]1マナ回復した。(マナ: %d/%d)[/color]" % [player_mana, player_max_mana])
 			# Go to Main2
 			current_phase = Phase.MAIN2
 			_clear_selection()
@@ -883,9 +885,11 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 		# Draw
 		current_phase = Phase.DRAW
 		_update_all_ui()
-		await _show_phase_banner("ドロー", Color(0.5, 0.8, 1.0), 0.5)
+		await _show_phase_banner("ドロー & 1マナ回復", Color(0.5, 0.8, 1.0), 0.5)
 		_opponent_draw_card()
 		_log("相手がカードをドローした。")
+		opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
+		_log("相手が1マナ回復した。")
 		await get_tree().create_timer(0.3).timeout
 
 	if not skip_dice_draw:
