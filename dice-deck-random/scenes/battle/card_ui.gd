@@ -276,7 +276,7 @@ func _gui_input(event: InputEvent) -> void:
 				is_pressing = true
 				press_start_pos = get_global_mouse_position()
 			else:
-				if is_pressing:
+				if is_pressing and _is_point_inside(get_global_mouse_position()):
 					card_clicked.emit(self)
 					if get_parent() is FieldSlot:
 						(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
@@ -287,12 +287,16 @@ func _gui_input(event: InputEvent) -> void:
 			is_pressing = true
 			press_start_pos = event.position
 		else:
-			if is_pressing:
+			if is_pressing and _is_point_inside(event.position):
 				card_clicked.emit(self)
 				if get_parent() is FieldSlot:
 					(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
 			is_pressing = false
 			accept_event()
+
+func _is_point_inside(point: Vector2) -> bool:
+	var rect := get_global_rect()
+	return rect.has_point(point)
 
 func reset_position() -> void:
 	if top_level:
