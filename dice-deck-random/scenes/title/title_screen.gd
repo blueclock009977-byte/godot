@@ -1,7 +1,7 @@
 extends Control
 
 var main_vbox: VBoxContainer
-var name_input_overlay: Control
+var name_label: Label
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -27,23 +27,19 @@ func _ready() -> void:
 	main_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "v1.3.1"
+	subtitle.text = "v1.3.2"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 22)
 	subtitle.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 	main_vbox.add_child(subtitle)
 
 	# User name display
-	var name_label := Label.new()
-	name_label.name = "NameLabel"
+	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
 	main_vbox.add_child(name_label)
-	if GameManager.user_name != "":
-		name_label.text = "プレイヤー: %s" % GameManager.user_name
-	else:
-		name_label.text = ""
+	_update_name_display()
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 10
@@ -69,89 +65,113 @@ func _ready() -> void:
 	rules_btn.pressed.connect(_show_rules)
 	main_vbox.add_child(rules_btn)
 
-	# Show name input if no name set
+	# Login / Register
 	if GameManager.user_name == "":
-		_show_name_input()
+		var login_btn := _make_button("ログイン / 新規登録", Color(0.8, 0.6, 0.2))
+		login_btn.pressed.connect(_show_login_menu)
+		main_vbox.add_child(login_btn)
 	else:
-		# Load deck from server for existing user
+		var logout_btn := _make_button("ログアウト", Color(0.4, 0.4, 0.5))
+		logout_btn.pressed.connect(_on_logout)
+		main_vbox.add_child(logout_btn)
+
+	# Load deck if logged in
+	if GameManager.user_name != "":
 		await GameManager.load_deck()
 
-func _show_name_input() -> void:
-	name_input_overlay = Control.new()
-	name_input_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_input_overlay.z_index = 20
-	add_child(name_input_overlay)
+func _update_name_display() -> void:
+	if GameManager.user_name != "":
+		name_label.text = "プレイヤー: %s" % GameManager.user_name
+	else:
+		name_label.text = "プレイヤー: ゲスト"
 
-	var dim := ColorRect.new()
-	dim.color = Color(0, 0, 0, 0.9)
-	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_input_overlay.add_child(dim)
+func _show_login_menu() -> void:
+	var overlay := ColorRect.new()
+	overlay.color = Color(0, 0, 0, 0.9)
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.z_index = 20
+	add_child(overlay)
 
 	var center2 := CenterContainer.new()
 	center2.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	name_input_overlay.add_child(center2)
+	overlay.add_child(center2)
+
+	var panel := PanelContainer.new()
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.12, 0.12, 0.18)
+	panel_style.corner_radius_top_left = 12
+	panel_style.corner_radius_top_right = 12
+	panel_style.corner_radius_bottom_left = 12
+	panel_style.corner_radius_bottom_right = 12
+	panel_style.border_width_left = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(1, 0.9, 0.3)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	center2.add_child(panel)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 40)
+	margin.add_theme_constant_override("margin_right", 40)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 30)
+	panel.add_child(margin)
 
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 20)
 	vbox.custom_minimum_size.x = 450
-	center2.add_child(vbox)
+	margin.add_child(vbox)
 
-	var prompt := Label.new()
-	prompt.text = "プレイヤー名を入力"
-	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	prompt.add_theme_font_size_override("font_size", 32)
-	prompt.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
-	vbox.add_child(prompt)
+	var title_l := Label.new()
+	title_l.text = "ログイン / 新規登録"
+	title_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_l.add_theme_font_size_override("font_size", 30)
+	title_l.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	vbox.add_child(title_l)
 
 	var hint := Label.new()
-	hint.text = "4~8文字(英数字)"
+	hint.text = "4~8文字(英数字)\n既存の名前ならログイン\n新しい名前なら新規登録"
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override("font_size", 20)
+	hint.add_theme_font_size_override("font_size", 18)
 	hint.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(hint)
 
-	var error_label := Label.new()
-	error_label.name = "ErrorLabel"
-	error_label.text = ""
-	error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	error_label.add_theme_font_size_override("font_size", 20)
-	error_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
-	vbox.add_child(error_label)
-
-	var input_btn := _make_button("名前を入力する", Color(0.3, 0.6, 0.9))
-	input_btn.pressed.connect(_on_name_input_pressed)
+	var input_btn := _make_button("名前を入力する", Color(0.3, 0.8, 0.4))
+	input_btn.pressed.connect(func():
+		var name_text := ""
+		if OS.has_feature("web"):
+			var result = JavaScriptBridge.eval("prompt('プレイヤー名 (4-8文字、英数字)', '') || ''")
+			if result != null:
+				name_text = str(result).strip_edges()
+		if name_text.length() < 4 or name_text.length() > 8:
+			return
+		var valid := true
+		for ch in name_text:
+			if not (ch >= "a" and ch <= "z") and not (ch >= "A" and ch <= "Z") and not (ch >= "0" and ch <= "9"):
+				valid = false
+				break
+		if not valid:
+			return
+		GameManager.save_user_name(name_text)
+		FirebaseManager.player_id = name_text
+		await GameManager.load_deck()
+		overlay.queue_free()
+		# Reload title screen to update buttons
+		GameManager.change_scene("res://scenes/title/title_screen.tscn")
+	)
 	vbox.add_child(input_btn)
 
-func _on_name_input_pressed() -> void:
-	var name_text := ""
-	if OS.has_feature("web"):
-		var result = JavaScriptBridge.eval("prompt('プレイヤー名を入力 (4-8文字、英数字)', '') || ''")
-		if result != null:
-			name_text = str(result).strip_edges()
-	else:
-		return
-	var error_label = name_input_overlay.get_node("CenterContainer/VBoxContainer/ErrorLabel") if name_input_overlay else null
-	if name_text.length() < 4 or name_text.length() > 8:
-		if error_label:
-			error_label.text = "4~8文字で入力してください"
-		return
-	var valid := true
-	for ch in name_text:
-		if not (ch >= "a" and ch <= "z") and not (ch >= "A" and ch <= "Z") and not (ch >= "0" and ch <= "9"):
-			valid = false
-			break
-	if not valid:
-		if error_label:
-			error_label.text = "英数字のみ使えます"
-		return
-	GameManager.save_user_name(name_text)
-	FirebaseManager.player_id = name_text
-	await GameManager.load_deck()
-	name_input_overlay.queue_free()
-	var nl = main_vbox.get_node("NameLabel")
-	if nl:
-		nl.text = "プレイヤー: %s" % name_text
+	var cancel_btn := _make_button("キャンセル", Color(0.4, 0.4, 0.5))
+	cancel_btn.pressed.connect(func(): overlay.queue_free())
+	vbox.add_child(cancel_btn)
 
+func _on_logout() -> void:
+	GameManager.user_name = ""
+	GameManager.player_deck = []
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("localStorage.removeItem('ddr_user_name')")
+	GameManager.change_scene("res://scenes/title/title_screen.tscn")
 
 func _make_button(text: String, color: Color) -> Button:
 	var btn := Button.new()
@@ -262,7 +282,7 @@ func _show_rules() -> void:
 
 [b]■ 操作[/b]
 ・召喚: 手札カードタップ → 空きスロットタップ
-・移動: フィールドカードタップ → 隣接空きスロットタップ(1マナ)
+・移動: フィールドカードタップ → 空きスロットタップ(1マナ)
 ・ドラッグ&ドロップも可"""
 
 	var close_btn := Button.new()
