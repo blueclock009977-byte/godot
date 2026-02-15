@@ -18,6 +18,9 @@ var is_in_room: bool = false
 var _poll_timer: Timer
 var _last_action_index: int = -1
 var _polling: bool = false
+var _heartbeat_timer: Timer
+const HEARTBEAT_INTERVAL := 3.0
+const HEARTBEAT_TIMEOUT := 8.0
 var last_error: String = ""
 
 func _ready() -> void:
@@ -25,6 +28,11 @@ func _ready() -> void:
 	_poll_timer.wait_time = 0.5
 	_poll_timer.timeout.connect(_poll_room)
 	add_child(_poll_timer)
+
+	_heartbeat_timer = Timer.new()
+	_heartbeat_timer.wait_time = HEARTBEAT_INTERVAL
+	_heartbeat_timer.timeout.connect(_send_heartbeat)
+	add_child(_heartbeat_timer)
 
 # ─── Room Management ───
 
@@ -53,6 +61,7 @@ func create_room(deck_ids: Array) -> String:
 		_last_action_index = -1
 		_poll_timer.start()
 		room_created.emit(room_code)
+		_heartbeat_timer.start()
 		return room_code
 	return ""
 
@@ -84,12 +93,25 @@ func join_room(code: String, deck_ids: Array) -> bool:
 		_last_action_index = -1
 		_poll_timer.start()
 		return true
+		_heartbeat_timer.start()
 	return false
 
 func leave_room() -> void:
 	if not is_in_room:
 		return
 	_poll_timer.stop()
+	_heartbeat_timer.stop()
+
+	# Check opponent heartbeat
+	if is_in_room:
+		var opp_key := "player2" if is_host else "player1"
+		var hb_result := await FirebaseManager.get_data("rooms/%s/%s/last_seen" % [room_code, opp_key])
+		if hb_result.code == 200 and hb_result.data != null:
+			var last_seen: float = float(hb_result.data)
+			var now := Time.get_unix_time_from_system()
+			if now - last_seen > HEARTBEAT_TIMEOUT:
+				opponent_disconnected.emit()
+
 	_polling = false
 	if room_code != "":
 		await FirebaseManager.patch_data("rooms/%s" % room_code, {"status": "finished"})
@@ -173,6 +195,12 @@ func get_opponent_deck() -> Array:
 	if result.code == 200 and result.data != null:
 		return Array(result.data)
 	return []
+
+func _send_heartbeat() -> void:
+	if not is_in_room:
+		return
+	var key := "player1" if is_host else "player2"
+	await FirebaseManager.put_data("rooms/%s/%s/last_seen" % [room_code, key], Time.get_unix_time_from_system())
 
 func _generate_room_code() -> String:
 	var chars := "ABCDEFGHJKLMNPQRSTUVWXYZ"
