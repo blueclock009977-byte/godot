@@ -270,51 +270,15 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				is_pressing = true
-				press_start_pos = get_global_mouse_position()
-				drag_offset = press_start_pos - global_position
 				accept_event()
 			else:
-				if is_dragging:
-					var drop_pos := global_position + size / 2
-					_end_drag()
-					card_drag_ended.emit(self, drop_pos)
-				elif is_pressing:
-					card_clicked.emit(self)
-				is_pressing = false
+				card_clicked.emit(self)
 				accept_event()
-	elif event is InputEventMouseMotion:
-		if is_pressing and not is_dragging:
-			var dist: float = get_global_mouse_position().distance_to(press_start_pos)
-			if dist >= DRAG_THRESHOLD:
-				_start_drag()
-				card_drag_started.emit(self)
-		if is_dragging:
-			global_position = get_global_mouse_position() - drag_offset
-			accept_event()
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			is_pressing = true
-			press_start_pos = event.position
-			drag_offset = event.position - global_position
 			accept_event()
 		else:
-			if is_dragging:
-				var drop_pos := global_position + size / 2
-				_end_drag()
-				card_drag_ended.emit(self, drop_pos)
-			elif is_pressing:
-				card_clicked.emit(self)
-			is_pressing = false
-			accept_event()
-	elif event is InputEventScreenDrag:
-		if is_pressing and not is_dragging:
-			var dist: float = event.position.distance_to(press_start_pos)
-			if dist >= DRAG_THRESHOLD:
-				_start_drag()
-				card_drag_started.emit(self)
-		if is_dragging:
-			global_position = event.position - drag_offset
+			card_clicked.emit(self)
 			accept_event()
 
 func reset_position() -> void:
