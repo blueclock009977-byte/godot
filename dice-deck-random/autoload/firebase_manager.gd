@@ -11,24 +11,35 @@ func _ready() -> void:
 	_load_or_create_player_id()
 
 func _load_or_create_player_id() -> void:
-	var path := "user://player_id.txt"
-	if FileAccess.file_exists(path):
-		var f := FileAccess.open(path, FileAccess.READ)
-		if f:
-			player_id = f.get_as_text().strip_edges()
-			f.close()
-			if player_id.length() > 0:
-				return
+	# Try loading from localStorage (web) or file
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("localStorage.getItem('ddr_player_id')")
+		if result != null and str(result).length() > 0:
+			player_id = str(result)
+			return
+	else:
+		var path := "user://player_id.txt"
+		if FileAccess.file_exists(path):
+			var f := FileAccess.open(path, FileAccess.READ)
+			if f:
+				player_id = f.get_as_text().strip_edges()
+				f.close()
+				if player_id.length() > 0:
+					return
+	# Generate new ID
 	var chars := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 	player_id = ""
 	for i in range(16):
 		player_id += chars[randi() % chars.length()]
-	var f := FileAccess.open(path, FileAccess.WRITE)
-	if f:
-		f.store_string(player_id)
-		f.close()
-		if OS.get_name() == "Web" and OS.has_feature("web"):
-			JavaScriptBridge.eval("if(window.Module&&Module.FS){Module.FS.syncfs(false,function(e){})}")
+	# Save
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("localStorage.setItem('ddr_player_id', '%s')" % player_id)
+	else:
+		var path := "user://player_id.txt"
+		var f := FileAccess.open(path, FileAccess.WRITE)
+		if f:
+			f.store_string(player_id)
+			f.close()
 
 # ─── HTTP helpers ───
 

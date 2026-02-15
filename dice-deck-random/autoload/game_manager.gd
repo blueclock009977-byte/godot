@@ -18,26 +18,31 @@ func save_deck() -> void:
 	var ids: Array[int] = []
 	for card in player_deck:
 		ids.append(card.id)
-	var file := FileAccess.open(DECK_SAVE_PATH, FileAccess.WRITE)
-	if file:
-		file.store_string(JSON.stringify(ids))
-		file.close()
-		_sync_fs()
-
-func _sync_fs() -> void:
-	if OS.get_name() == "Web":
-		if OS.has_feature("web"):
-			var js_code := "if (window.Module && Module.FS) { Module.FS.syncfs(false, function(err) { if(err) console.error('FS sync error:', err); }); }"
-			JavaScriptBridge.eval(js_code)
+	var json_str := JSON.stringify(ids)
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("localStorage.setItem('ddr_deck', '%s')" % json_str)
+	else:
+		var file := FileAccess.open(DECK_SAVE_PATH, FileAccess.WRITE)
+		if file:
+			file.store_string(json_str)
+			file.close()
 
 func load_deck() -> void:
-	if not FileAccess.file_exists(DECK_SAVE_PATH):
+	var text := ""
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("localStorage.getItem('ddr_deck')")
+		if result != null:
+			text = str(result)
+	else:
+		if not FileAccess.file_exists(DECK_SAVE_PATH):
+			return
+		var file := FileAccess.open(DECK_SAVE_PATH, FileAccess.READ)
+		if not file:
+			return
+		text = file.get_as_text()
+		file.close()
+	if text == "":
 		return
-	var file := FileAccess.open(DECK_SAVE_PATH, FileAccess.READ)
-	if not file:
-		return
-	var text := file.get_as_text()
-	file.close()
 	var json := JSON.new()
 	if json.parse(text) != OK:
 		return
