@@ -199,6 +199,7 @@ func _build_ui() -> void:
 	end_turn_btn.add_theme_font_size_override("font_size", 24)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
+	end_turn_btn.visible = false
 
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次の\nフェーズへ"
