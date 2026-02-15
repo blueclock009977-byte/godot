@@ -46,7 +46,8 @@ func create_room(deck_ids: Array) -> String:
 		"player1": {
 			"id": FirebaseManager.player_id,
 			"deck": deck_ids,
-			"ready": true
+			"ready": true,
+			"last_seen": Time.get_unix_time_from_system()
 		},
 		"game_state": {},
 		"actions": {},
@@ -82,7 +83,8 @@ func join_room(code: String, deck_ids: Array) -> bool:
 	var player2_data := {
 		"id": FirebaseManager.player_id,
 		"deck": deck_ids,
-		"ready": true
+		"ready": true,
+			"last_seen": Time.get_unix_time_from_system()
 	}
 	var patch_result := await FirebaseManager.patch_data("rooms/%s" % room_code, {
 		"player2": player2_data,
@@ -218,11 +220,20 @@ func find_waiting_room() -> String:
 			var room: Dictionary = result.data[code]
 			if room.get("status", "") == "waiting":
 				var created: float = float(room.get("created_at", 0))
-				if now - created < 300:  # 5分以内の部屋のみ
-					return code
-				else:
+				if now - created > 300:
 					# 古い部屋を削除
 					await FirebaseManager.delete_data("rooms/%s" % code)
+					continue
+				# ホストが生きてるかチェック（last_seenが5秒以内）
+				var p1 = room.get("player1")
+				if p1 is Dictionary:
+					var last_seen: float = float(p1.get("last_seen", 0))
+					if last_seen > 0 and now - last_seen > 5.0:
+						# ホスト死亡、部屋を削除
+						await FirebaseManager.delete_data("rooms/%s" % code)
+						continue
+				return code
+
 	return ""
 
 func _schedule_room_delete(code: String) -> void:
