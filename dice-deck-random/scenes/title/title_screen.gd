@@ -27,7 +27,7 @@ func _ready() -> void:
 	main_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "v1.3.0"
+	subtitle.text = "v1.3.1"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 22)
 	subtitle.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
@@ -91,32 +91,10 @@ func _show_name_input() -> void:
 	center2.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	name_input_overlay.add_child(center2)
 
-	var panel := PanelContainer.new()
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.12, 0.12, 0.18)
-	panel_style.corner_radius_top_left = 12
-	panel_style.corner_radius_top_right = 12
-	panel_style.corner_radius_bottom_left = 12
-	panel_style.corner_radius_bottom_right = 12
-	panel_style.border_width_left = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(1, 0.9, 0.3)
-	panel.add_theme_stylebox_override("panel", panel_style)
-	center2.add_child(panel)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 40)
-	margin.add_theme_constant_override("margin_right", 40)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	panel.add_child(margin)
-
 	var vbox := VBoxContainer.new()
 	vbox.add_theme_constant_override("separation", 20)
 	vbox.custom_minimum_size.x = 450
-	margin.add_child(vbox)
+	center2.add_child(vbox)
 
 	var prompt := Label.new()
 	prompt.text = "プレイヤー名を入力"
@@ -126,53 +104,54 @@ func _show_name_input() -> void:
 	vbox.add_child(prompt)
 
 	var hint := Label.new()
-	hint.text = "4〜8文字（英数字）"
+	hint.text = "4~8文字(英数字)"
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 20)
 	hint.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	vbox.add_child(hint)
 
-	var input := LineEdit.new()
-	input.placeholder_text = "Name"
-	input.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	input.add_theme_font_size_override("font_size", 36)
-	input.max_length = 8
-	input.custom_minimum_size.y = 70
-	vbox.add_child(input)
-
 	var error_label := Label.new()
+	error_label.name = "ErrorLabel"
 	error_label.text = ""
 	error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	error_label.add_theme_font_size_override("font_size", 18)
+	error_label.add_theme_font_size_override("font_size", 20)
 	error_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
 	vbox.add_child(error_label)
 
-	var ok_btn := _make_button("決定", Color(0.3, 0.8, 0.4))
-	ok_btn.pressed.connect(func():
-		var name_text := input.text.strip_edges()
-		if name_text.length() < 4:
-			error_label.text = "4文字以上入力してください"
-			return
-		# Check alphanumeric
-		var valid := true
-		for ch in name_text:
-			if not (ch >= "a" and ch <= "z") and not (ch >= "A" and ch <= "Z") and not (ch >= "0" and ch <= "9"):
-				valid = false
-				break
-		if not valid:
+	var input_btn := _make_button("名前を入力する", Color(0.3, 0.6, 0.9))
+	input_btn.pressed.connect(_on_name_input_pressed)
+	vbox.add_child(input_btn)
+
+func _on_name_input_pressed() -> void:
+	var name_text := ""
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("prompt('プレイヤー名を入力 (4-8文字、英数字)', '') || ''")
+		if result != null:
+			name_text = str(result).strip_edges()
+	else:
+		return
+	var error_label = name_input_overlay.get_node("CenterContainer/VBoxContainer/ErrorLabel") if name_input_overlay else null
+	if name_text.length() < 4 or name_text.length() > 8:
+		if error_label:
+			error_label.text = "4~8文字で入力してください"
+		return
+	var valid := true
+	for ch in name_text:
+		if not (ch >= "a" and ch <= "z") and not (ch >= "A" and ch <= "Z") and not (ch >= "0" and ch <= "9"):
+			valid = false
+			break
+	if not valid:
+		if error_label:
 			error_label.text = "英数字のみ使えます"
-			return
-		GameManager.save_user_name(name_text)
-		FirebaseManager.player_id = name_text
-		# Load deck from server
-		await GameManager.load_deck()
-		name_input_overlay.queue_free()
-		# Update name label
-		var nl = main_vbox.get_node("NameLabel")
-		if nl:
-			nl.text = "プレイヤー: %s" % name_text
-	)
-	vbox.add_child(ok_btn)
+		return
+	GameManager.save_user_name(name_text)
+	FirebaseManager.player_id = name_text
+	await GameManager.load_deck()
+	name_input_overlay.queue_free()
+	var nl = main_vbox.get_node("NameLabel")
+	if nl:
+		nl.text = "プレイヤー: %s" % name_text
+
 
 func _make_button(text: String, color: Color) -> Button:
 	var btn := Button.new()
