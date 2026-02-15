@@ -275,6 +275,8 @@ func _gui_input(event: InputEvent) -> void:
 			else:
 				if is_pressing:
 					card_clicked.emit(self)
+					if get_parent() is FieldSlot:
+						(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
 				is_pressing = false
 				accept_event()
 	if event is InputEventScreenTouch:
@@ -284,6 +286,8 @@ func _gui_input(event: InputEvent) -> void:
 		else:
 			if is_pressing:
 				card_clicked.emit(self)
+				if get_parent() is FieldSlot:
+					(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
 			is_pressing = false
 			accept_event()
 
