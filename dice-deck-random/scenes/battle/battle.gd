@@ -315,8 +315,13 @@ func _update_all_ui() -> void:
 		else:
 			mana_str += "·"
 	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var phase_names := {Phase.MAIN1: "フェーズ: メイン1", Phase.DICE: "フェーズ: ダイス", Phase.DRAW: "フェーズ: ドロー", Phase.MAIN2: "フェーズ: メイン2", Phase.END: "フェーズ: 終了"}
-	phase_label.text = phase_names.get(current_phase, "?")
+	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー", Phase.MAIN2: "メイン2", Phase.END: "終了"}
+	var whose := "自分" if is_player_turn else "相手"
+	phase_label.text = "%s: %s" % [whose, phase_names.get(current_phase, "?")]
+	if is_player_turn:
+		phase_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+	else:
+		phase_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
 	# Turn indicator
 	if is_player_turn:
 		var go_text := "先行" if is_player_first else "後攻"
