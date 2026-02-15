@@ -126,6 +126,9 @@ func _ready() -> void:
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	atk_badge.add_child(atk_label)
+	# setup()がツリー参加前に呼ばれた場合に描画
+	if card_data:
+		_update_display()
 
 func setup(data: CardData) -> void:
 	card_data = data
