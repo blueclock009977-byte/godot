@@ -201,14 +201,14 @@ func _on_random_match() -> void:
 	var waiting_room := await MultiplayerManager.find_waiting_room()
 	if waiting_room != "":
 		status_label.text = "対戦相手が見つかりました！接続確認中..."
-			var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
-			if success:
+		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
+		if success:
 			status_label.text = "対戦相手が見つかりました！"
 			await get_tree().create_timer(1.0).timeout
 			_start_online_battle()
 			return
 		else:
-					status_label.text = "相手が応答なし。部屋を作成中..."
+			status_label.text = "相手が応答なし。部屋を作成中..."
 
 	# No waiting room, create one
 	var code := await MultiplayerManager.create_room(deck_ids)
