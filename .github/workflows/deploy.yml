@@ -44,18 +44,41 @@ jobs:
           cd dice-deck-random
           godot --headless --export-release "Web" build/web/index.html
 
-          # Cache busting: remove service worker
-          rm -f build/web/*.service.worker.js build/web/*.worker.js 2>/dev/null || true
-          sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' build/web/index.html
+          TIMESTAMP=$(date +%s)
+          echo "Build timestamp: $TIMESTAMP"
+
+          # Show what files were generated
+          ls -la build/web/
+
+          # Remove ALL service worker files
+          find build/web/ -name "*worker*" -delete 2>/dev/null || true
+          find build/web/ -name "*.sw.js" -delete 2>/dev/null || true
+
+          # Disable service worker in HTML
+          sed -i 's/serviceWorker/\/\/serviceWorker/g' build/web/index.html
 
           # Add cache-busting meta tags
           sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' build/web/index.html
 
-          # Add timestamp to all .js and .wasm references to bust cache
-          TIMESTAMP=$(date +%s)
-          sed -i "s/\.js\"/\.js?v=${TIMESTAMP}\"/g" build/web/index.html
-          sed -i "s/\.wasm\"/\.wasm?v=${TIMESTAMP}\"/g" build/web/index.html
-          sed -i "s/\.pck\"/\.pck?v=${TIMESTAMP}\"/g" build/web/index.html
+          # Rename JS/WASM/PCK files with timestamp and update references
+          cd build/web
+          for ext in js wasm pck; do
+            for f in *.$ext; do
+              if [ -f "$f" ]; then
+                base="${f%.$ext}"
+                newname="${base}.${ext}?v=${TIMESTAMP}"
+                # Update all references in HTML files
+                sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
+                echo "Cache-busted: $f"
+              fi
+            done
+          done
+
+          # Also handle single/double quote patterns
+          sed -i "s/\.js'/\.js?v=${TIMESTAMP}'/g" index.html
+          
+          echo "=== Final index.html head ==="
+          head -20 index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
