@@ -100,6 +100,23 @@ func _build_ui() -> void:
 	friend_back_btn.pressed.connect(_show_main_menu)
 	friend_menu.add_child(friend_back_btn)
 
+	# Debug log overlay
+	var debug_panel := PanelContainer.new()
+	debug_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	debug_panel.offset_top = -300
+	var dbg_style := StyleBoxFlat.new()
+	dbg_style.bg_color = Color(0, 0, 0, 0.85)
+	dbg_style.corner_radius_top_left = 8
+	dbg_style.corner_radius_top_right = 8
+	debug_panel.add_theme_stylebox_override("panel", dbg_style)
+	add_child(debug_panel)
+	debug_label = RichTextLabel.new()
+	debug_label.bbcode_enabled = true
+	debug_label.scroll_following = true
+	debug_label.add_theme_font_size_override("normal_font_size", 16)
+	debug_label.add_theme_color_override("default_color", Color(0.2, 1.0, 0.2))
+	debug_panel.add_child(debug_label)
+
 func _make_button(text: String, color: Color) -> Button:
 	var btn := Button.new()
 	btn.text = text
