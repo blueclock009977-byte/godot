@@ -6,7 +6,6 @@ var room_code_input: LineEdit
 var main_menu: VBoxContainer
 var friend_menu: VBoxContainer
 var waiting_panel: VBoxContainer
-var debug_label: RichTextLabel
 var cancel_btn: Button
 
 func _ready() -> void:
@@ -101,22 +100,6 @@ func _build_ui() -> void:
 	friend_back_btn.pressed.connect(_show_main_menu)
 	friend_menu.add_child(friend_back_btn)
 
-	# Debug log overlay
-	var debug_panel := PanelContainer.new()
-	debug_panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	debug_panel.offset_top = -300
-	var dbg_style := StyleBoxFlat.new()
-	dbg_style.bg_color = Color(0, 0, 0, 0.85)
-	dbg_style.corner_radius_top_left = 8
-	dbg_style.corner_radius_top_right = 8
-	debug_panel.add_theme_stylebox_override("panel", dbg_style)
-	add_child(debug_panel)
-	debug_label = RichTextLabel.new()
-	debug_label.bbcode_enabled = true
-	debug_label.scroll_following = true
-	debug_label.add_theme_font_size_override("normal_font_size", 16)
-	debug_label.add_theme_color_override("default_color", Color(0.2, 1.0, 0.2))
-	debug_panel.add_child(debug_label)
 
 	# Cancel button
 	cancel_btn = Button.new()
@@ -181,10 +164,6 @@ func _on_cancel() -> void:
 		await MultiplayerManager.leave_room()
 	_show_main_menu()
 
-func _debug_log(msg: String) -> void:
-	print(msg)
-	if debug_label:
-		debug_label.append_text(msg + "\n")
 
 func _show_friend_menu() -> void:
 	main_menu.visible = false
@@ -215,33 +194,24 @@ func _on_random_match() -> void:
 	friend_menu.visible = false
 	_show_cancel()
 	status_label.text = "対戦相手を探しています..."
-	_debug_log("[ランダム] 開始...")
 
 	var deck_ids := _get_deck_ids()
-	_debug_log("[ランダム] デッキ: %d枚" % deck_ids.size())
 
 	# Check if there's a waiting room
-	_debug_log("[ランダム] 待機部屋を検索中...")
 	var waiting_room := await MultiplayerManager.find_waiting_room()
-	_debug_log("[ランダム] 検索結果: '%s' (find_err: %s)" % [waiting_room, MultiplayerManager.last_error])
 	if waiting_room != "":
 		status_label.text = "対戦相手が見つかりました！接続確認中..."
-		_debug_log("[ランダム] 部屋 %s に参加+生存確認中..." % waiting_room)
-		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
-		_debug_log("[ランダム] 参加結果: %s" % str(success))
-		if success:
+			var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
+			if success:
 			status_label.text = "対戦相手が見つかりました！"
 			await get_tree().create_timer(1.0).timeout
 			_start_online_battle()
 			return
 		else:
-			_debug_log("[ランダム] ホスト応答なし、部屋作成に切り替え")
-			status_label.text = "相手が応答なし。部屋を作成中..."
+					status_label.text = "相手が応答なし。部屋を作成中..."
 
 	# No waiting room, create one
-	_debug_log("[ランダム] 部屋作成中...")
 	var code := await MultiplayerManager.create_room(deck_ids)
-	_debug_log("[ランダム] 作成結果: '%s' (err: %s)" % [code, MultiplayerManager.last_error])
 	if code != "":
 		room_code_display.text = ""
 		status_label.text = "対戦相手を待っています..."
