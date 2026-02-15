@@ -112,6 +112,8 @@ func _show_rules() -> void:
 	var rules_label := RichTextLabel.new()
 	rules_label.bbcode_enabled = true
 	rules_label.fit_content = true
+	rules_label.scroll_active = false
+	rules_label.mouse_filter = Control.MOUSE_FILTER_PASS
 	rules_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	rules_label.add_theme_font_size_override("normal_font_size", 32)
 	rules_label.add_theme_font_size_override("bold_font_size", 36)
