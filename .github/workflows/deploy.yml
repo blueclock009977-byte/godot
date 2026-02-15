@@ -47,10 +47,13 @@ jobs:
           cd build/web
           TIMESTAMP=$(date +%s)
 
-          # Add cache-busting meta tags
-          sed -i 's|<head>|<head>\n<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">\n<meta http-equiv="Expires" content="0">|' index.html
+          # 1. Unregister any existing service workers + clear caches
+          sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
 
-          # Add timestamp to file references in index.html
+          # 2. Prevent new service worker registration
+          sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' index.html
+
+          # 3. Add timestamp to all file references
           for f in *.js *.wasm *.pck; do
             if [ -f "$f" ]; then
               sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
