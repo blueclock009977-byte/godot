@@ -270,7 +270,7 @@ func _build_ui() -> void:
 	hand_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	hand_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	hand_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	hand_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
+	# hand_scroll mouse_filter default
 	main_vbox.add_child(hand_scroll)
 
 	player_hand_container = HBoxContainer.new()
