@@ -369,24 +369,23 @@ func _update_all_ui() -> void:
 
 
 func _update_dice_preview() -> void:
-	var show := is_player_turn and not is_animating and not game_over and (current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2)
+	var show := not is_animating and not game_over and (current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2)
 	dice_preview_panel.visible = show
 	if not show:
 		return
 
-	var text := "[b][color=yellow]ダイス予測(相手HPへ/自分HPへ)[/color][/b]\n"
+	var text := ""
 	for dice_val in range(1, 7):
 		var result := _simulate_battle(dice_val)
-		var to_opp: int = result[0]
-		var to_me: int = result[1]
+		var score: int = result[0] - result[1]
 		var color := "gray"
-		if to_opp > 0 and to_opp > to_me:
+		var sign := ""
+		if score > 0:
 			color = "green"
-		elif to_me > 0 and to_me > to_opp:
+			sign = "+"
+		elif score < 0:
 			color = "red"
-		elif to_opp > 0 or to_me > 0:
-			color = "yellow"
-		text += "[b]%d[/b]:[color=%s]%d/%d[/color] " % [dice_val, color, to_opp, to_me]
+		text += "[b]%d[/b]:[color=%s]%s%d[/color] " % [dice_val, color, sign, score]
 	dice_preview_label.text = text
 
 func _simulate_battle(dice_val: int) -> Array:
