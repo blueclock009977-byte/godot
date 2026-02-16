@@ -33,6 +33,9 @@ var glow_tween: Tween
 var long_press_timer: Timer
 var long_press_fired: bool = false
 
+const BASE_WIDTH := 175.0
+const BASE_HEIGHT := 250.0
+
 func _ready() -> void:
 	custom_minimum_size = Vector2(175, 250)
 	size = Vector2(175, 250)
@@ -308,6 +311,21 @@ func _gui_input(event: InputEvent) -> void:
 					(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
 			is_pressing = false
 			accept_event()
+
+func set_card_size(w: float, h: float) -> void:
+	var sx := w / BASE_WIDTH
+	var sy := h / BASE_HEIGHT
+	var s := minf(sx, sy)
+	custom_minimum_size = Vector2(w, h)
+	size = Vector2(w, h)
+	mana_cost_label.add_theme_font_size_override("font_size", int(26 * s))
+	name_label.add_theme_font_size_override("font_size", int(22 * s))
+	attack_dice_label.add_theme_font_size_override("font_size", int(24 * s))
+	hp_label.add_theme_font_size_override("font_size", int(28 * s))
+	atk_label.add_theme_font_size_override("font_size", int(28 * s))
+	hp_badge.custom_minimum_size = Vector2(44 * s, 44 * s)
+	atk_badge.custom_minimum_size = Vector2(44 * s, 44 * s)
+	image_area.custom_minimum_size = Vector2(0, 80 * s)
 
 func _on_long_press() -> void:
 	if is_pressing:
