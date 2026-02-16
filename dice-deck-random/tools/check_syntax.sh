@@ -49,7 +49,7 @@ while IFS= read -r file; do
         ERRORS=$((ERRORS + 1))
     fi
     
-done < <(find "$PROJECT_DIR" -name "*.gd" -not -path "*/.godot/*")
+done < <(find "$PROJECT_DIR" -name "*.gd" -not -path "*/.godot/*" -not -path "*/addons/*")
 
 if [ "$ERRORS" -gt 0 ]; then
     echo ""

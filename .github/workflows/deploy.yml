@@ -17,6 +17,8 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +28,22 @@ jobs:
 
       - name: Run test suite
         run: bash dice-deck-random/tools/run_tests.sh
+
+      - name: Import project for GUT
+        run: |
+          cd dice-deck-random
+          godot --headless --import 2>&1 || true
+          sleep 2
+
+      - name: Run GUT unit tests
+        run: |
+          cd dice-deck-random
+          timeout 60 godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit 2>&1 | tee /tmp/gut_output.txt || true
+          cat /tmp/gut_output.txt
+          if grep -qE "failures:? [1-9]" /tmp/gut_output.txt; then
+            echo "::error::GUT tests have failures!"
+            exit 1
+          fi
 
   export-web:
     runs-on: ubuntu-latest
