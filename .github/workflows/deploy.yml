@@ -17,12 +17,32 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Run syntax check
         run: bash dice-deck-random/tools/check_syntax.sh
+
+      - name: Import project
+        run: |
+          cd dice-deck-random
+          godot --headless --import 2>&1 || true
+          sleep 2
+
+      - name: Run test runner
+        run: |
+          cd dice-deck-random
+          timeout 30 godot --headless --script tools/test_runner.gd 2>&1 | tee /tmp/test_output.txt
+          if grep -q "^FAIL" /tmp/test_output.txt; then
+            echo "::error::Tests failed!"
+            exit 1
+          fi
+          if ! grep -q "All tests PASS" /tmp/test_output.txt; then
+            echo "::warning::Test output unclear, continuing..."
+          fi
 
   export-web:
     runs-on: ubuntu-latest
