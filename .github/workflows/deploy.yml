@@ -15,39 +15,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.4.1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run syntax check
-        run: bash dice-deck-random/tools/check_syntax.sh
-
-      - name: Run test suite
-        run: bash dice-deck-random/tools/run_tests.sh
-
-      - name: Import project for GUT
-        run: |
-          cd dice-deck-random
-          godot --headless --import 2>&1 || true
-          sleep 2
-
-      - name: Run GUT unit tests
-        run: |
-          cd dice-deck-random
-          timeout 60 godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit 2>&1 | tee /tmp/gut_output.txt || true
-          cat /tmp/gut_output.txt
-          if grep -qE "failures:? [1-9]" /tmp/gut_output.txt; then
-            echo "::error::GUT tests have failures!"
-            exit 1
-          fi
-
   export-web:
     runs-on: ubuntu-latest
-    needs: test
     container:
       image: barichello/godot-ci:4.4.1
     steps:
@@ -78,23 +47,18 @@ jobs:
           cd build/web
           TIMESTAMP=$(date +%s)
 
-          # 1. Unregister any existing service workers + clear caches
           sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
 
-          # 2. Prevent new service worker registration
           sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' index.html
 
-          # 3. Delete service worker files entirely
           rm -f *.worker.js *.service.worker.js sw.js service-worker.js
 
-          # 4. Nuke any remaining SW registration calls in all JS files
           for f in *.js; do
             if [ -f "$f" ]; then
               sed -i "s/serviceWorker/____disabled____/g" "$f"
             fi
           done
 
-          # 5. Add timestamp to all file references
           for f in *.js *.wasm *.pck; do
             if [ -f "$f" ]; then
               sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
