@@ -398,7 +398,7 @@ func _update_dice_preview() -> void:
 		elif score < 0:
 			color = "red"
 		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
-	dice_preview_label.text = "text"
+	dice_preview_label.text = text
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []
