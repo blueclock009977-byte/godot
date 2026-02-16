@@ -852,6 +852,7 @@ func _player_draw_card() -> void:
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	player_hand_container.add_child(card_ui)
 	card_ui.setup(card_data)
+	card_ui.scale = Vector2(0.65, 0.65)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
 	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
@@ -1001,6 +1002,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	if card_ui.get_parent():
 		card_ui.get_parent().remove_child(card_ui)
 	card_ui.reset_position()
+	card_ui.scale = Vector2(1.0, 1.0)
 	slot.place_card(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
 	_clear_selection()
@@ -1129,8 +1131,8 @@ func _show_card_preview(card_ui: CardUI) -> void:
 	preview.setup(card_ui.card_data)
 	preview.current_hp = card_ui.current_hp
 	preview.current_atk = card_ui.current_atk
-	preview.custom_minimum_size = Vector2(300, 420)
-	preview.size = Vector2(300, 420)
+	preview.scale = Vector2(1.8, 1.8)
+	preview.pivot_offset = Vector2(87.5, 125)  # center of 175x250
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_preview_overlay.visible = true
 

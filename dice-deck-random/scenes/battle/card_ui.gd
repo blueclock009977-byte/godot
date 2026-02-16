@@ -34,8 +34,8 @@ var long_press_timer: Timer
 var long_press_fired: bool = false
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(120, 170)
-	size = Vector2(120, 170)
+	custom_minimum_size = Vector2(175, 250)
+	size = Vector2(175, 250)
 
 	long_press_timer = Timer.new()
 	long_press_timer.one_shot = true
@@ -67,14 +67,14 @@ func _ready() -> void:
 	# Mana cost (top)
 	mana_cost_label = Label.new()
 	mana_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_cost_label.add_theme_font_size_override("font_size", 18)
+	mana_cost_label.add_theme_font_size_override("font_size", 26)
 	mana_cost_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
 	mana_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(mana_cost_label)
 
 	# Image area
 	image_area = Panel.new()
-	image_area.custom_minimum_size = Vector2(0, 50)
+	image_area.custom_minimum_size = Vector2(0, 80)
 	image_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	image_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(image_area)
@@ -82,7 +82,7 @@ func _ready() -> void:
 	# Card name
 	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 22)
 	name_label.clip_text = true
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
@@ -90,7 +90,7 @@ func _ready() -> void:
 	# Attack dice
 	attack_dice_label = Label.new()
 	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	attack_dice_label.add_theme_font_size_override("font_size", 14)
+	attack_dice_label.add_theme_font_size_override("font_size", 24)
 	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(attack_dice_label)
@@ -104,14 +104,14 @@ func _ready() -> void:
 	vbox.add_child(bottom_row)
 
 	hp_badge = Panel.new()
-	hp_badge.custom_minimum_size = Vector2(32, 32)
+	hp_badge.custom_minimum_size = Vector2(44, 44)
 	hp_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_row.add_child(hp_badge)
 
 	hp_label = Label.new()
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_label.add_theme_font_size_override("font_size", 20)
+	hp_label.add_theme_font_size_override("font_size", 28)
 	hp_label.add_theme_color_override("font_color", Color.WHITE)
 	hp_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -123,14 +123,14 @@ func _ready() -> void:
 	bottom_row.add_child(badge_spacer)
 
 	atk_badge = Panel.new()
-	atk_badge.custom_minimum_size = Vector2(32, 32)
+	atk_badge.custom_minimum_size = Vector2(44, 44)
 	atk_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_row.add_child(atk_badge)
 
 	atk_label = Label.new()
 	atk_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	atk_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	atk_label.add_theme_font_size_override("font_size", 20)
+	atk_label.add_theme_font_size_override("font_size", 28)
 	atk_label.add_theme_color_override("font_color", Color.WHITE)
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
