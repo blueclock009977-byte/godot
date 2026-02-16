@@ -398,14 +398,7 @@ func _update_dice_preview() -> void:
 		elif score < 0:
 			color = "red"
 		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
-	var dbg_p := 0
-	var dbg_o := 0
-	for i2 in range(6):
-		if player_slots[i2] and not player_slots[i2].is_empty():
-			dbg_p += 1
-		if opponent_slots[i2] and not opponent_slots[i2].is_empty():
-			dbg_o += 1
-	dice_preview_label.text = text + "\n[font_size=20]dbg P:" + str(dbg_p) + " O:" + str(dbg_o) + " turn:" + str(is_player_turn) + " r1:" + str(_simulate_battle(1)) + " r2:" + str(_simulate_battle(2)) + "[/font_size]"
+dice_preview_label.text = text
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []
@@ -445,6 +438,10 @@ func _simulate_battle(dice_val: int) -> Array:
 				dmg_to_me += card["atk"]
 		else:
 			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
 
 	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
 	for card in def_cards:
@@ -461,6 +458,10 @@ func _simulate_battle(dice_val: int) -> Array:
 				dmg_to_opp += card["atk"]
 		else:
 			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
 
 	return [dmg_to_opp, dmg_to_me]
 
