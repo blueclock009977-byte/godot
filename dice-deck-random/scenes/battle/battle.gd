@@ -52,6 +52,8 @@ var log_label: RichTextLabel
 var phase_overlay: ColorRect
 var phase_overlay_label: Label
 var turn_indicator_label: Label
+var dice_preview_panel: PanelContainer
+var dice_preview_label: RichTextLabel
 var center_info: HBoxContainer
 
 func _ready() -> void:
@@ -279,7 +281,31 @@ func _build_ui() -> void:
 	player_hand_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hand_scroll.add_child(player_hand_container)
 
-	# ── Log (small, at bottom) ──
+# ── Dice Preview Panel ──
+	dice_preview_panel = PanelContainer.new()
+	var dp_style := StyleBoxFlat.new()
+	dp_style.bg_color = Color(0.1, 0.1, 0.18, 0.9)
+	dp_style.corner_radius_top_left = 8
+	dp_style.corner_radius_top_right = 8
+	dp_style.corner_radius_bottom_left = 8
+	dp_style.corner_radius_bottom_right = 8
+	dp_style.border_width_left = 1
+	dp_style.border_width_right = 1
+	dp_style.border_width_top = 1
+	dp_style.border_width_bottom = 1
+	dp_style.border_color = Color(1, 0.9, 0.3, 0.5)
+	dice_preview_panel.add_theme_stylebox_override("panel", dp_style)
+	main_vbox.add_child(dice_preview_panel)
+
+	dice_preview_label = RichTextLabel.new()
+	dice_preview_label.bbcode_enabled = true
+	dice_preview_label.fit_content = true
+	dice_preview_label.scroll_active = false
+	dice_preview_label.add_theme_font_size_override("normal_font_size", 17)
+	dice_preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dice_preview_panel.add_child(dice_preview_label)
+
+		# ── Log (small, at bottom) ──
 	log_label = RichTextLabel.new()
 	log_label.bbcode_enabled = true
 	log_label.scroll_following = true
@@ -338,6 +364,65 @@ func _update_all_ui() -> void:
 	_update_opponent_hand_display()
 	# Hand card summonability
 	_update_hand_highlights()
+	# Dice preview
+	_update_dice_preview()
+
+func _update_dice_preview() -> void:
+	# Show only during Main phases on player turn
+	var show := is_player_turn and not is_animating and not game_over and (current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2)
+	dice_preview_panel.visible = show
+	if not show:
+		return
+
+	var text := "[b][color=yellow]ダイス予測[/color][/b]\n"
+	for dice_val in range(1, 7):
+		var my_attackers := []
+		var opp_attackers := []
+
+		# Check player cards
+		for slot in player_slots:
+			if slot.card_ui != null and dice_val in slot.card_ui.card_data.attack_dice:
+				my_attackers.append(slot.card_ui)
+
+		# Check opponent cards
+		for slot in opponent_slots:
+			if slot.card_ui != null and dice_val in slot.card_ui.card_data.attack_dice:
+				opp_attackers.append(slot.card_ui)
+
+		var my_str := ""
+		if my_attackers.size() > 0:
+			var names := []
+			for card_ui in my_attackers:
+				names.append("%s(ATK%d)" % [card_ui.card_data.card_name, card_ui.current_atk])
+			my_str = "[color=green]" + ", ".join(PackedStringArray(names)) + "[/color]"
+		else:
+			my_str = "[color=gray]-[/color]"
+
+		var opp_str := ""
+		if opp_attackers.size() > 0:
+			var names := []
+			for card_ui in opp_attackers:
+				names.append("%s(ATK%d)" % [card_ui.card_data.card_name, card_ui.current_atk])
+			opp_str = "[color=red]" + ", ".join(PackedStringArray(names)) + "[/color]"
+		else:
+			opp_str = "[color=gray]-[/color]"
+
+		# Advantage indicator
+		var my_total_atk := 0
+		for card_ui in my_attackers:
+			my_total_atk += card_ui.current_atk
+		var opp_total_atk := 0
+		for card_ui in opp_attackers:
+			opp_total_atk += card_ui.current_atk
+		var indicator := ""
+		if my_total_atk > 0 and opp_total_atk == 0:
+			indicator = " [color=green]>>HP![/color]"
+		elif my_total_atk == 0 and opp_total_atk > 0:
+			indicator = " [color=red]<<HP![/color]"
+
+		text += "[b]%d[/b]: %s vs %s%s\n" % [dice_val, my_str, opp_str, indicator]
+
+	dice_preview_label.text = text
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
