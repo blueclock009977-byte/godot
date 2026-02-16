@@ -1,1 +1,23 @@
-class_name CardDataextends Resource@export var id: int = 0@export var card_name: String = ""@export var mana_cost: int = 1@export var hp: int = 1@export var atk: int = 1@export var attack_dice: Array[int] = []@export var color: Color = Color.WHITE@export var icon_name: String = "default"func duplicate_card() -> CardData:	var copy := CardData.new()	copy.id = id	copy.card_name = card_name	copy.mana_cost = mana_cost	copy.hp = hp	copy.atk = atk	copy.attack_dice = attack_dice.duplicate()	copy.color = color	copy.icon_name = icon_name	return copy
+class_name CardData
+extends Resource
+
+@export var id: int = 0
+@export var card_name: String = ""
+@export var mana_cost: int = 1
+@export var hp: int = 1
+@export var atk: int = 1
+@export var attack_dice: Array[int] = []
+@export var color: Color = Color.WHITE
+@export var icon_name: String = "default"
+
+func duplicate_card() -> CardData:
+	var copy := CardData.new()
+	copy.id = id
+	copy.card_name = card_name
+	copy.mana_cost = mana_cost
+	copy.hp = hp
+	copy.atk = atk
+	copy.attack_dice = attack_dice.duplicate()
+	copy.color = color
+	copy.icon_name = icon_name
+	return copy
