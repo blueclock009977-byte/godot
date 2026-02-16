@@ -45,6 +45,7 @@ func create_room(deck_ids: Array) -> String:
 		"status": "waiting",
 		"player1": {
 			"id": FirebaseManager.player_id,
+			"name": GameManager.user_name,
 			"deck": deck_ids,
 			"ready": true,
 			"last_seen": Time.get_unix_time_from_system()
@@ -79,9 +80,11 @@ func join_room(code: String, deck_ids: Array) -> bool:
 	is_host = false
 	my_player_number = 2
 	opponent_id = result.data["player1"]["id"]
+		opponent_name = result.data["player1"].get("name", "")
 
 	var player2_data := {
 		"id": FirebaseManager.player_id,
+			"name": GameManager.user_name,
 		"deck": deck_ids,
 		"ready": true,
 			"last_seen": Time.get_unix_time_from_system()
@@ -137,6 +140,7 @@ func leave_room() -> void:
 		_schedule_room_delete(code_to_delete)
 	is_in_room = false
 	room_code = ""
+	opponent_name = ""
 	_last_action_index = -1
 
 # ─── Actions ───
@@ -178,6 +182,7 @@ func _poll_room() -> void:
 			if data.get("status") == "playing" and data.get("player2") != null:
 				if opponent_id == "":
 					opponent_id = data["player2"]["id"]
+					opponent_name = data["player2"].get("name", "")
 					opponent_joined.emit()
 			if data.get("status") == "finished":
 				opponent_disconnected.emit()

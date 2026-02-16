@@ -313,8 +313,10 @@ func _build_ui() -> void:
 	phase_overlay.add_child(phase_overlay_label)
 
 func _update_all_ui() -> void:
-	player_hp_label.text = "HP 自分: %d" % player_hp
-	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
+	var my_name := GameManager.user_name if GameManager.user_name != "" else "自分"
+	var opp_name := MultiplayerManager.opponent_name if MultiplayerManager.opponent_name != "" else "相手"
+	player_hp_label.text = "HP %s: %d" % [my_name, player_hp]
+	opponent_hp_label.text = "HP %s: %d" % [opp_name, opponent_hp]
 	var mana_str := ""
 	for i in range(MAX_MANA_CAP):
 		if i < player_mana:
