@@ -512,6 +512,11 @@ func _update_hand_highlights() -> void:
 		if card_ui is CardUI:
 			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and card_ui.card_data.mana_cost <= player_mana and _has_empty_player_slot()
 			card_ui.set_summonable(can_summon)
+	# Field cards: glow if movable (in main phase, has mana, has empty slot)
+	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and _has_empty_player_slot()
+	for slot in player_slots:
+		if slot and not slot.is_empty():
+			slot.card_ui.set_movable(can_move)
 
 func _has_empty_player_slot() -> bool:
 	for slot in player_slots:
