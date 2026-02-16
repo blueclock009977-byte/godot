@@ -850,6 +850,7 @@ func _clear_selection() -> void:
 	for slot in player_slots:
 		if slot:
 			slot.set_highlighted(false)
+	_update_hand_highlights()
 
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if not _is_my_input_allowed():
