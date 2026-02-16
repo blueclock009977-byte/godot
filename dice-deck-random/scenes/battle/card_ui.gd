@@ -31,7 +31,7 @@ var atk_label: Label
 var glow_tween: Tween
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(175, 250)
+	custom_minimum_size = Vector2(200, 250)
 	size = Vector2(175, 250)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
