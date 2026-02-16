@@ -18,6 +18,7 @@ var is_in_room: bool = false
 var _poll_timer: Timer
 var _last_action_index: int = -1
 var _polling: bool = false
+var _my_room_created_at: float = 0.0
 var _heartbeat_timer: Timer
 const HEARTBEAT_INTERVAL := 3.0
 const HEARTBEAT_TIMEOUT := 8.0
@@ -62,6 +63,7 @@ func create_room(deck_ids: Array) -> String:
 		is_in_room = true
 		_last_action_index = -1
 		_poll_timer.start()
+		_my_room_created_at = Time.get_unix_time_from_system()
 		room_created.emit(room_code)
 		_heartbeat_timer.start()
 		return room_code
@@ -231,7 +233,7 @@ func _generate_room_code() -> String:
 		code += chars[randi() % chars.length()]
 	return code
 
-func find_waiting_room() -> String:
+func find_waiting_room(only_before: float = 0.0) -> String:
 	var result := await FirebaseManager.get_data("rooms")
 	last_error = "HTTP %d" % result.code
 	var now := Time.get_unix_time_from_system()
@@ -243,6 +245,8 @@ func find_waiting_room() -> String:
 				if now - created > 300:
 					# 古い部屋を削除
 					await FirebaseManager.delete_data("rooms/%s" % code)
+					continue
+				if only_before > 0.0 and created >= only_before:
 					continue
 				# ホストが生きてるかチェック（last_seenが5秒以内）
 				var p1 = room.get("player1")

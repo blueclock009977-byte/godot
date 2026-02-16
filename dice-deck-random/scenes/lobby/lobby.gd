@@ -208,7 +208,7 @@ func _on_random_match() -> void:
 	_search_timer.start()
 
 func _try_join_waiting_room(deck_ids: Array) -> bool:
-	var waiting_room := await MultiplayerManager.find_waiting_room()
+	var waiting_room := await MultiplayerManager.find_waiting_room(MultiplayerManager._my_room_created_at)
 	if waiting_room != "":
 		var success := await MultiplayerManager.join_room(waiting_room, deck_ids)
 		if success:
@@ -222,7 +222,7 @@ func _try_join_waiting_room(deck_ids: Array) -> bool:
 func _on_search_tick(deck_ids: Array) -> void:
 	if not _searching:
 		return
-	var waiting_room := await MultiplayerManager.find_waiting_room()
+	var waiting_room := await MultiplayerManager.find_waiting_room(MultiplayerManager._my_room_created_at)
 	if waiting_room != "" and _searching:
 		# Found another room! Leave ours and join theirs
 		var old_code := MultiplayerManager.room_code
