@@ -303,10 +303,10 @@ func _build_ui() -> void:
 	dice_preview_panel.add_child(dp_vbox)
 
 	var dp_title := Label.new()
-	dp_title.text = "-- ダイス予測 --"
+	dp_title.text = "ダイス予測"
 	dp_title.add_theme_font_size_override("font_size", 24)
 	dp_title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
-	dp_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dp_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	dp_vbox.add_child(dp_title)
 
 	dice_preview_label = RichTextLabel.new()
@@ -397,8 +397,8 @@ func _update_dice_preview() -> void:
 			sign = "+"
 		elif score < 0:
 			color = "red"
-		text += "[b]%d[/b]:[color=%s]%s%d[/color]   " % [dice_val, color, sign, score]
-	dice_preview_label.text = "[center]" + text + "[/center]"
+		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
+	dice_preview_label.text = "text"
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []
