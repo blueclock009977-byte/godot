@@ -82,14 +82,14 @@ func join_room(code: String, deck_ids: Array) -> bool:
 	is_host = false
 	my_player_number = 2
 	opponent_id = result.data["player1"]["id"]
-		opponent_name = result.data["player1"].get("name", "")
+	opponent_name = result.data["player1"].get("name", "")
 
 	var player2_data := {
 		"id": FirebaseManager.player_id,
-			"name": GameManager.user_name,
+		"name": GameManager.user_name,
 		"deck": deck_ids,
 		"ready": true,
-			"last_seen": Time.get_unix_time_from_system()
+		"last_seen": Time.get_unix_time_from_system()
 	}
 	var patch_result := await FirebaseManager.patch_data("rooms/%s" % room_code, {
 		"player2": player2_data,

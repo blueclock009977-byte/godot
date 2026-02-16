@@ -265,7 +265,7 @@ func _on_create_room() -> void:
 func _on_join_room() -> void:
 	var code := ""
 	if OS.has_feature("web"):
-		var result = JavaScriptBridge.eval("prompt('\xe3\x83\xab\xe3\x83\xbc\xe3\x83\xa0\xe3\x82\xb3\xe3\x83\xbc\xe3\x83\x89 (6\xe6\x96\x87\xe5\xad\x97)', '') || ''")
+		var result = JavaScriptBridge.eval("prompt('ルームコード (6文字)', '') || ''")
 		if result is String:
 			code = result.strip_edges().to_upper()
 	else:
