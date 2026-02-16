@@ -405,7 +405,7 @@ func _update_dice_preview() -> void:
 			dbg_p += 1
 		if opponent_slots[i2] and not opponent_slots[i2].is_empty():
 			dbg_o += 1
-	dice_preview_label.text = text + "\n[font_size=20]dbg P:" + str(dbg_p) + " O:" + str(dbg_o) + " turn:" + str(is_player_turn) + "[/font_size]"
+	dice_preview_label.text = text + "\n[font_size=20]dbg P:" + str(dbg_p) + " O:" + str(dbg_o) + " turn:" + str(is_player_turn) + " r1:" + str(_simulate_battle(1)) + " r2:" + str(_simulate_battle(2)) + "[/font_size]"
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []
@@ -434,7 +434,8 @@ func _simulate_battle(dice_val: int) -> Array:
 	for card in turn_cards:
 		if card["hp"] <= 0:
 			continue
-		if dice_val not in card["dice"]:
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
 			continue
 		var target = _sim_find_target(card, def_cards)
 		if target == null:
@@ -449,7 +450,8 @@ func _simulate_battle(dice_val: int) -> Array:
 	for card in def_cards:
 		if card["hp"] <= 0:
 			continue
-		if dice_val not in card["dice"]:
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
 			continue
 		var target = _sim_find_target(card, turn_cards)
 		if target == null:
