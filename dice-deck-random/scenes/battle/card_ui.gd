@@ -4,6 +4,7 @@ extends Control
 signal card_clicked(card_ui: CardUI)
 signal card_drag_started(card_ui: CardUI)
 signal card_drag_ended(card_ui: CardUI, target_position: Vector2)
+signal card_long_pressed(card_ui: CardUI)
 
 var card_data: CardData
 var current_hp: int = 0
@@ -29,10 +30,18 @@ var hp_label: Label
 var atk_badge: Panel
 var atk_label: Label
 var glow_tween: Tween
+var long_press_timer: Timer
+var long_press_fired: bool = false
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(200, 250)
-	size = Vector2(175, 250)
+	custom_minimum_size = Vector2(120, 170)
+	size = Vector2(120, 170)
+
+	long_press_timer = Timer.new()
+	long_press_timer.one_shot = true
+	long_press_timer.wait_time = 0.5
+	long_press_timer.timeout.connect(_on_long_press)
+	add_child(long_press_timer)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	background = Panel.new()
@@ -58,14 +67,14 @@ func _ready() -> void:
 	# Mana cost (top)
 	mana_cost_label = Label.new()
 	mana_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_cost_label.add_theme_font_size_override("font_size", 26)
+	mana_cost_label.add_theme_font_size_override("font_size", 18)
 	mana_cost_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
 	mana_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(mana_cost_label)
 
 	# Image area
 	image_area = Panel.new()
-	image_area.custom_minimum_size = Vector2(0, 80)
+	image_area.custom_minimum_size = Vector2(0, 50)
 	image_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	image_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(image_area)
@@ -73,7 +82,7 @@ func _ready() -> void:
 	# Card name
 	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.clip_text = true
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
@@ -81,7 +90,7 @@ func _ready() -> void:
 	# Attack dice
 	attack_dice_label = Label.new()
 	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	attack_dice_label.add_theme_font_size_override("font_size", 24)
+	attack_dice_label.add_theme_font_size_override("font_size", 14)
 	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(attack_dice_label)
@@ -95,14 +104,14 @@ func _ready() -> void:
 	vbox.add_child(bottom_row)
 
 	hp_badge = Panel.new()
-	hp_badge.custom_minimum_size = Vector2(44, 44)
+	hp_badge.custom_minimum_size = Vector2(32, 32)
 	hp_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_row.add_child(hp_badge)
 
 	hp_label = Label.new()
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_label.add_theme_font_size_override("font_size", 28)
+	hp_label.add_theme_font_size_override("font_size", 20)
 	hp_label.add_theme_color_override("font_color", Color.WHITE)
 	hp_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -114,14 +123,14 @@ func _ready() -> void:
 	bottom_row.add_child(badge_spacer)
 
 	atk_badge = Panel.new()
-	atk_badge.custom_minimum_size = Vector2(44, 44)
+	atk_badge.custom_minimum_size = Vector2(32, 32)
 	atk_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bottom_row.add_child(atk_badge)
 
 	atk_label = Label.new()
 	atk_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	atk_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	atk_label.add_theme_font_size_override("font_size", 28)
+	atk_label.add_theme_font_size_override("font_size", 20)
 	atk_label.add_theme_color_override("font_color", Color.WHITE)
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -274,9 +283,12 @@ func _gui_input(event: InputEvent) -> void:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				is_pressing = true
+				long_press_fired = false
 				press_start_pos = get_global_mouse_position()
+				long_press_timer.start()
 			else:
-				if is_pressing and _is_point_inside(get_global_mouse_position()):
+				long_press_timer.stop()
+				if is_pressing and not long_press_fired and _is_point_inside(get_global_mouse_position()):
 					card_clicked.emit(self)
 					if get_parent() is FieldSlot:
 						(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
@@ -285,14 +297,22 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			is_pressing = true
+			long_press_fired = false
 			press_start_pos = event.position
+			long_press_timer.start()
 		else:
-			if is_pressing and _is_point_inside(event.position):
+			long_press_timer.stop()
+			if is_pressing and not long_press_fired and _is_point_inside(event.position):
 				card_clicked.emit(self)
 				if get_parent() is FieldSlot:
 					(get_parent() as FieldSlot).slot_clicked.emit(get_parent())
 			is_pressing = false
 			accept_event()
+
+func _on_long_press() -> void:
+	if is_pressing:
+		long_press_fired = true
+		card_long_pressed.emit(self)
 
 func _is_point_inside(point: Vector2) -> bool:
 	var rect := get_global_rect()

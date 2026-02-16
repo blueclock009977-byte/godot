@@ -55,6 +55,8 @@ var turn_indicator_label: Label
 var dice_preview_panel: PanelContainer
 var dice_preview_label: RichTextLabel
 var center_info: HBoxContainer
+var card_preview_overlay: ColorRect
+var card_preview_container: CenterContainer
 
 func _ready() -> void:
 	_build_ui()
@@ -340,6 +342,19 @@ func _build_ui() -> void:
 	phase_overlay_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	phase_overlay_label.add_theme_font_size_override("font_size", 56)
 	phase_overlay.add_child(phase_overlay_label)
+
+	# ── Card Preview Overlay ──
+	card_preview_overlay = ColorRect.new()
+	card_preview_overlay.color = Color(0, 0, 0, 0.7)
+	card_preview_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	card_preview_overlay.visible = false
+	card_preview_overlay.z_index = 90
+	add_child(card_preview_overlay)
+	card_preview_container = CenterContainer.new()
+	card_preview_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.add_child(card_preview_container)
+	card_preview_overlay.gui_input.connect(_on_preview_overlay_input)
 
 func _update_all_ui() -> void:
 	player_hp_label.text = "HP 自分: %d" % player_hp
@@ -839,6 +854,7 @@ func _player_draw_card() -> void:
 	card_ui.setup(card_data)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
 	player_hand.append(card_ui)
 	_update_all_ui()
 
@@ -978,6 +994,8 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	player_hand.erase(card_ui)
 	card_ui.card_clicked.disconnect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.disconnect(_on_hand_card_drag_ended)
+	if card_ui.card_long_pressed.is_connected(_on_hand_card_long_pressed):
+		card_ui.card_long_pressed.disconnect(_on_hand_card_long_pressed)
 	card_ui.set_selected(false)
 	card_ui.set_summonable(false)
 	if card_ui.get_parent():
@@ -1097,6 +1115,35 @@ func _game_end(player_wins: bool) -> void:
 	# Delay then go to result
 	await get_tree().create_timer(2.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
+
+func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
+	_show_card_preview(card_ui)
+
+func _show_card_preview(card_ui: CardUI) -> void:
+	# Clear old preview
+	for child in card_preview_container.get_children():
+		child.queue_free()
+	# Create large preview card
+	var preview := CARD_UI_SCENE.instantiate() as CardUI
+	card_preview_container.add_child(preview)
+	preview.setup(card_ui.card_data)
+	preview.current_hp = card_ui.current_hp
+	preview.current_atk = card_ui.current_atk
+	preview.custom_minimum_size = Vector2(300, 420)
+	preview.size = Vector2(300, 420)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_preview_overlay.visible = true
+
+func _hide_card_preview() -> void:
+	card_preview_overlay.visible = false
+	for child in card_preview_container.get_children():
+		child.queue_free()
+
+func _on_preview_overlay_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_hide_card_preview()
+	if event is InputEventScreenTouch and event.pressed:
+		_hide_card_preview()
 
 func _on_surrender() -> void:
 	if game_over:
