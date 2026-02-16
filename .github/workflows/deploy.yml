@@ -46,7 +46,6 @@ jobs:
 
   export-web:
     runs-on: ubuntu-latest
-    needs: test
     container:
       image: barichello/godot-ci:4.4.1
     steps:
