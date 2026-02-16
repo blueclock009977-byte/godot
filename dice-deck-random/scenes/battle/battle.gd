@@ -852,6 +852,8 @@ func _player_draw_card() -> void:
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	player_hand_container.add_child(card_ui)
 	card_ui.setup(card_data)
+	card_ui.custom_minimum_size = Vector2(120, 170)
+	card_ui.size = Vector2(120, 170)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
 	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
@@ -913,6 +915,8 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
 	if not is_player_turn or is_animating or game_over:
 		card_ui.reset_position()
+	card_ui.custom_minimum_size = Vector2(175, 250)
+	card_ui.size = Vector2(175, 250)
 		return
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		card_ui.reset_position()

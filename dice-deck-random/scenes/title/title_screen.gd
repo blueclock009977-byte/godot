@@ -27,7 +27,7 @@ func _ready() -> void:
 	main_vbox.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "v1.10.3"
+	subtitle.text = "v1.10.4"
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 22)
 	subtitle.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
