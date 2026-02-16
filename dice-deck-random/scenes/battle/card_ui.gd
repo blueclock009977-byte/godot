@@ -142,11 +142,12 @@ func _ready() -> void:
 	if card_data:
 		_update_display()
 
-func setup(data: CardData) -> void:
+func setup(data: CardData, card_w: float = 175.0, card_h: float = 250.0) -> void:
 	card_data = data
 	current_hp = data.hp
 	current_atk = data.atk
 	if is_inside_tree():
+		set_card_size(card_w, card_h)
 		_update_display()
 
 func _update_display() -> void:

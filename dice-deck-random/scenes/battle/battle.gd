@@ -851,9 +851,7 @@ func _player_draw_card() -> void:
 	var card_data: CardData = player_deck.pop_front()
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	player_hand_container.add_child(card_ui)
-	card_ui.setup(card_data)
-	card_ui.custom_minimum_size = Vector2(120, 170)
-	card_ui.size = Vector2(120, 170)
+	card_ui.setup(card_data, 120, 170)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
 	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
@@ -915,8 +913,6 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
 	if not is_player_turn or is_animating or game_over:
 		card_ui.reset_position()
-	card_ui.custom_minimum_size = Vector2(175, 250)
-	card_ui.size = Vector2(175, 250)
 		return
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		card_ui.reset_position()
@@ -1005,6 +1001,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	if card_ui.get_parent():
 		card_ui.get_parent().remove_child(card_ui)
 	card_ui.reset_position()
+	card_ui.set_card_size(175, 250)
 	slot.place_card(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
 	_clear_selection()
@@ -1130,10 +1127,9 @@ func _show_card_preview(card_ui: CardUI) -> void:
 	# Create large preview card
 	var preview := CARD_UI_SCENE.instantiate() as CardUI
 	card_preview_container.add_child(preview)
-	preview.setup(card_ui.card_data)
+	preview.setup(card_ui.card_data, 300, 420)
 	preview.current_hp = card_ui.current_hp
 	preview.current_atk = card_ui.current_atk
-	preview.set_card_size(300, 420)
 
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card_preview_overlay.visible = true
