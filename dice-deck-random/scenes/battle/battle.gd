@@ -398,7 +398,14 @@ func _update_dice_preview() -> void:
 		elif score < 0:
 			color = "red"
 		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
-	dice_preview_label.text = text
+	var dbg_p := 0
+	var dbg_o := 0
+	for i2 in range(6):
+		if player_slots[i2] and not player_slots[i2].is_empty():
+			dbg_p += 1
+		if opponent_slots[i2] and not opponent_slots[i2].is_empty():
+			dbg_o += 1
+	dice_preview_label.text = text + "\n[font_size=20]dbg P:" + str(dbg_p) + " O:" + str(dbg_o) + " turn:" + str(is_player_turn) + "[/font_size]"
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []
