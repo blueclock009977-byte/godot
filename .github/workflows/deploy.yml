@@ -37,7 +37,7 @@ jobs:
 
       - name: Auto-update version in title screen
         run: |
-          VERSION=$(git log -1 --format=%s | grep -oP 'v\d+\.\d+\.\d+' || true)
+          VERSION=$(git log -1 --format=%s | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || true)
           if [ -n "$VERSION" ]; then
             sed -i "s/v[0-9]*\.[0-9]*\.[0-9]*/$VERSION/" dice-deck-random/scenes/title/title_screen.gd
             echo "Updated title version to $VERSION"
