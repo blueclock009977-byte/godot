@@ -2,7 +2,6 @@ extends Control
 
 var status_label: Label
 var room_code_display: Label
-var room_code_input: LineEdit
 var main_menu: VBoxContainer
 var friend_menu: VBoxContainer
 var waiting_panel: VBoxContainer
@@ -80,21 +79,7 @@ func _build_ui() -> void:
 	create_btn.pressed.connect(_on_create_room)
 	friend_menu.add_child(create_btn)
 
-	var join_label := Label.new()
-	join_label.text = "ルームコードを入力:"
-	join_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	join_label.add_theme_font_size_override("font_size", 20)
-	friend_menu.add_child(join_label)
-
-	room_code_input = LineEdit.new()
-	room_code_input.placeholder_text = "ABCDEF"
-	room_code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	room_code_input.add_theme_font_size_override("font_size", 36)
-	room_code_input.max_length = 6
-	room_code_input.custom_minimum_size.y = 60
-	friend_menu.add_child(room_code_input)
-
-	var join_btn := _make_button("部屋に参加", Color(0.3, 0.6, 0.9))
+	var join_btn := _make_button("コードで参加", Color(0.3, 0.6, 0.9))
 	join_btn.pressed.connect(_on_join_room)
 	friend_menu.add_child(join_btn)
 
@@ -278,8 +263,16 @@ func _on_create_room() -> void:
 		_show_friend_menu()
 
 func _on_join_room() -> void:
-	var code := room_code_input.text.strip_edges().to_upper()
+	var code := ""
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("prompt('\xe3\x83\xab\xe3\x83\xbc\xe3\x83\xa0\xe3\x82\xb3\xe3\x83\xbc\xe3\x83\x89 (6\xe6\x96\x87\xe5\xad\x97)', '') || ''")
+		if result is String:
+			code = result.strip_edges().to_upper()
+	else:
+		code = "TEST01"
 	if code.length() != 6:
+		if code == "":
+			return
 		status_label.text = "6文字のコードを入力してください"
 		return
 
