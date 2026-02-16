@@ -381,7 +381,7 @@ func _update_all_ui() -> void:
 
 
 func _update_dice_preview() -> void:
-	var show := not is_animating and not game_over and (current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2)
+	var show := not game_over
 	dice_preview_panel.visible = show
 	if not show:
 		return
