@@ -86,14 +86,14 @@ func _build_ui() -> void:
 	# ── Turn indicator ──
 	turn_indicator_label = Label.new()
 	turn_indicator_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	turn_indicator_label.add_theme_font_size_override("font_size", 20)
+	turn_indicator_label.add_theme_font_size_override("font_size", 26)
 	turn_indicator_label.custom_minimum_size.y = 30
 	main_vbox.add_child(turn_indicator_label)
 
 	# ── Opponent HP ──
 	opponent_hp_label = Label.new()
 	opponent_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	opponent_hp_label.add_theme_font_size_override("font_size", 28)
+	opponent_hp_label.add_theme_font_size_override("font_size", 34)
 	opponent_hp_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
 	main_vbox.add_child(opponent_hp_label)
 
@@ -143,7 +143,7 @@ func _build_ui() -> void:
 
 	phase_label = Label.new()
 	phase_label.text = "フェーズ: メイン1"
-	phase_label.add_theme_font_size_override("font_size", 32)
+	phase_label.add_theme_font_size_override("font_size", 38)
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	phase_bar.add_child(phase_label)
 
@@ -165,7 +165,7 @@ func _build_ui() -> void:
 
 	var dice_title := Label.new()
 	dice_title.text = "ダイス"
-	dice_title.add_theme_font_size_override("font_size", 22)
+	dice_title.add_theme_font_size_override("font_size", 26)
 	dice_title.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8))
 	dice_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dice_vbox.add_child(dice_title)
@@ -186,7 +186,7 @@ func _build_ui() -> void:
 	end_turn_btn = Button.new()
 	end_turn_btn.text = "ターン\n終了"
 	end_turn_btn.custom_minimum_size = Vector2(165, 80)
-	end_turn_btn.add_theme_font_size_override("font_size", 24)
+	end_turn_btn.add_theme_font_size_override("font_size", 28)
 	end_turn_btn.pressed.connect(_on_end_turn)
 	btn_col.add_child(end_turn_btn)
 	end_turn_btn.visible = false
@@ -194,7 +194,7 @@ func _build_ui() -> void:
 	next_phase_btn = Button.new()
 	next_phase_btn.text = "次の\nフェーズへ"
 	next_phase_btn.custom_minimum_size = Vector2(165, 80)
-	next_phase_btn.add_theme_font_size_override("font_size", 24)
+	next_phase_btn.add_theme_font_size_override("font_size", 28)
 	next_phase_btn.pressed.connect(_on_end_phase)
 	btn_col.add_child(next_phase_btn)
 
@@ -202,7 +202,7 @@ func _build_ui() -> void:
 	surrender_btn = Button.new()
 	surrender_btn.text = "降参"
 	surrender_btn.custom_minimum_size = Vector2(130, 60)
-	surrender_btn.add_theme_font_size_override("font_size", 24)
+	surrender_btn.add_theme_font_size_override("font_size", 28)
 	surrender_btn.pressed.connect(_on_surrender)
 	surrender_btn.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	surrender_btn.position = Vector2(-140, 10)
@@ -256,14 +256,14 @@ func _build_ui() -> void:
 	# ── Player HP ──
 	player_hp_label = Label.new()
 	player_hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	player_hp_label.add_theme_font_size_override("font_size", 28)
+	player_hp_label.add_theme_font_size_override("font_size", 34)
 	player_hp_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
 	main_vbox.add_child(player_hp_label)
 
 	# ── Mana display ──
 	mana_label = Label.new()
 	mana_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_label.add_theme_font_size_override("font_size", 24)
+	mana_label.add_theme_font_size_override("font_size", 30)
 	mana_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
 	main_vbox.add_child(mana_label)
 
@@ -284,33 +284,45 @@ func _build_ui() -> void:
 # ── Dice Preview Panel ──
 	dice_preview_panel = PanelContainer.new()
 	var dp_style := StyleBoxFlat.new()
-	dp_style.bg_color = Color(0.1, 0.1, 0.18, 0.9)
-	dp_style.corner_radius_top_left = 8
-	dp_style.corner_radius_top_right = 8
-	dp_style.corner_radius_bottom_left = 8
-	dp_style.corner_radius_bottom_right = 8
-	dp_style.border_width_left = 1
-	dp_style.border_width_right = 1
-	dp_style.border_width_top = 1
-	dp_style.border_width_bottom = 1
-	dp_style.border_color = Color(1, 0.9, 0.3, 0.5)
+	dp_style.bg_color = Color(0.08, 0.08, 0.16, 0.95)
+	dp_style.set_corner_radius_all(12)
+	dp_style.border_width_left = 2
+	dp_style.border_width_right = 2
+	dp_style.border_width_top = 2
+	dp_style.border_width_bottom = 2
+	dp_style.border_color = Color(1, 0.85, 0.2, 0.7)
+	dp_style.content_margin_left = 16
+	dp_style.content_margin_right = 16
+	dp_style.content_margin_top = 10
+	dp_style.content_margin_bottom = 10
 	dice_preview_panel.add_theme_stylebox_override("panel", dp_style)
 	main_vbox.add_child(dice_preview_panel)
+
+	var dp_vbox := VBoxContainer.new()
+	dp_vbox.add_theme_constant_override("separation", 6)
+	dice_preview_panel.add_child(dp_vbox)
+
+	var dp_title := Label.new()
+	dp_title.text = "-- ダイス予測 --"
+	dp_title.add_theme_font_size_override("font_size", 24)
+	dp_title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	dp_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	dp_vbox.add_child(dp_title)
 
 	dice_preview_label = RichTextLabel.new()
 	dice_preview_label.bbcode_enabled = true
 	dice_preview_label.fit_content = true
 	dice_preview_label.scroll_active = false
-	dice_preview_label.add_theme_font_size_override("normal_font_size", 17)
+	dice_preview_label.add_theme_font_size_override("normal_font_size", 28)
 	dice_preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dice_preview_panel.add_child(dice_preview_label)
+	dp_vbox.add_child(dice_preview_label)
 
 		# ── Log (small, at bottom) ──
 	log_label = RichTextLabel.new()
 	log_label.bbcode_enabled = true
 	log_label.scroll_following = true
 	log_label.custom_minimum_size.y = 150
-	log_label.add_theme_font_size_override("normal_font_size", 20)
+	log_label.add_theme_font_size_override("normal_font_size", 24)
 	main_vbox.add_child(log_label)
 
 	# ── Phase transition overlay ──
@@ -385,8 +397,8 @@ func _update_dice_preview() -> void:
 			sign = "+"
 		elif score < 0:
 			color = "red"
-		text += "[b]%d[/b]:[color=%s]%s%d[/color] " % [dice_val, color, sign, score]
-	dice_preview_label.text = text
+		text += "[b]%d[/b]:[color=%s]%s%d[/color]   " % [dice_val, color, sign, score]
+	dice_preview_label.text = "[center]" + text + "[/center]"
 
 func _simulate_battle(dice_val: int) -> Array:
 	var p_cards := []

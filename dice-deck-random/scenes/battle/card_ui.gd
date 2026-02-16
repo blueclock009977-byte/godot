@@ -58,7 +58,7 @@ func _ready() -> void:
 	# Mana cost (top)
 	mana_cost_label = Label.new()
 	mana_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_cost_label.add_theme_font_size_override("font_size", 22)
+	mana_cost_label.add_theme_font_size_override("font_size", 26)
 	mana_cost_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
 	mana_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(mana_cost_label)
@@ -73,7 +73,7 @@ func _ready() -> void:
 	# Card name
 	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 22)
 	name_label.clip_text = true
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
@@ -81,7 +81,7 @@ func _ready() -> void:
 	# Attack dice
 	attack_dice_label = Label.new()
 	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	attack_dice_label.add_theme_font_size_override("font_size", 20)
+	attack_dice_label.add_theme_font_size_override("font_size", 24)
 	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(attack_dice_label)
@@ -102,7 +102,7 @@ func _ready() -> void:
 	hp_label = Label.new()
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_label.add_theme_font_size_override("font_size", 24)
+	hp_label.add_theme_font_size_override("font_size", 28)
 	hp_label.add_theme_color_override("font_color", Color.WHITE)
 	hp_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -121,7 +121,7 @@ func _ready() -> void:
 	atk_label = Label.new()
 	atk_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	atk_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	atk_label.add_theme_font_size_override("font_size", 24)
+	atk_label.add_theme_font_size_override("font_size", 28)
 	atk_label.add_theme_color_override("font_color", Color.WHITE)
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
