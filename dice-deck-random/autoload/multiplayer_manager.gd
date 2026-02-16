@@ -13,6 +13,7 @@ var room_code: String = ""
 var is_host: bool = false  # player1 = host
 var my_player_number: int = 0  # 1 or 2
 var opponent_id: String = ""
+var opponent_name: String = ""
 var is_in_room: bool = false
 
 var _poll_timer: Timer
