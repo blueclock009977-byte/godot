@@ -53,7 +53,17 @@ jobs:
           # 2. Prevent new service worker registration
           sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' index.html
 
-          # 3. Add timestamp to all file references
+          # 3. Delete service worker files entirely
+          rm -f *.worker.js *.service.worker.js sw.js service-worker.js
+
+          # 4. Nuke any remaining SW registration calls in all JS files
+          for f in *.js; do
+            if [ -f "$f" ]; then
+              sed -i "s/serviceWorker/____disabled____/g" "$f"
+            fi
+          done
+
+          # 5. Add timestamp to all file references
           for f in *.js *.wasm *.pck; do
             if [ -f "$f" ]; then
               sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
