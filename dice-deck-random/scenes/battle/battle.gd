@@ -367,62 +367,93 @@ func _update_all_ui() -> void:
 	# Dice preview
 	_update_dice_preview()
 
+
 func _update_dice_preview() -> void:
-	# Show only during Main phases on player turn
 	var show := is_player_turn and not is_animating and not game_over and (current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2)
 	dice_preview_panel.visible = show
 	if not show:
 		return
 
-	var text := "[b][color=yellow]ダイス予測[/color][/b]\n"
+	var text := "[b][color=yellow]ダイス予測(相手HPへ/自分HPへ)[/color][/b]\n"
 	for dice_val in range(1, 7):
-		var my_attackers := []
-		var opp_attackers := []
-
-		# Check player cards
-		for slot in player_slots:
-			if slot.card_ui != null and dice_val in slot.card_ui.card_data.attack_dice:
-				my_attackers.append(slot.card_ui)
-
-		# Check opponent cards
-		for slot in opponent_slots:
-			if slot.card_ui != null and dice_val in slot.card_ui.card_data.attack_dice:
-				opp_attackers.append(slot.card_ui)
-
-		var my_str := ""
-		if my_attackers.size() > 0:
-			var names := []
-			for card_ui in my_attackers:
-				names.append("%s(ATK%d)" % [card_ui.card_data.card_name, card_ui.current_atk])
-			my_str = "[color=green]" + ", ".join(PackedStringArray(names)) + "[/color]"
-		else:
-			my_str = "[color=gray]-[/color]"
-
-		var opp_str := ""
-		if opp_attackers.size() > 0:
-			var names := []
-			for card_ui in opp_attackers:
-				names.append("%s(ATK%d)" % [card_ui.card_data.card_name, card_ui.current_atk])
-			opp_str = "[color=red]" + ", ".join(PackedStringArray(names)) + "[/color]"
-		else:
-			opp_str = "[color=gray]-[/color]"
-
-		# Advantage indicator
-		var my_total_atk := 0
-		for card_ui in my_attackers:
-			my_total_atk += card_ui.current_atk
-		var opp_total_atk := 0
-		for card_ui in opp_attackers:
-			opp_total_atk += card_ui.current_atk
-		var indicator := ""
-		if my_total_atk > 0 and opp_total_atk == 0:
-			indicator = " [color=green]>>HP![/color]"
-		elif my_total_atk == 0 and opp_total_atk > 0:
-			indicator = " [color=red]<<HP![/color]"
-
-		text += "[b]%d[/b]: %s vs %s%s\n" % [dice_val, my_str, opp_str, indicator]
-
+		var result := _simulate_battle(dice_val)
+		var to_opp: int = result[0]
+		var to_me: int = result[1]
+		var color := "gray"
+		if to_opp > 0 and to_opp > to_me:
+			color = "green"
+		elif to_me > 0 and to_me > to_opp:
+			color = "red"
+		elif to_opp > 0 or to_me > 0:
+			color = "yellow"
+		text += "[b]%d[/b]:[color=%s]%d/%d[/color] " % [dice_val, color, to_opp, to_me]
 	dice_preview_label.text = text
+
+func _simulate_battle(dice_val: int) -> Array:
+	var p_cards := []
+	var o_cards := []
+	for i in range(6):
+		var ps: FieldSlot = player_slots[i]
+		if ps and not ps.is_empty():
+			p_cards.append({"atk": ps.card_ui.current_atk, "hp": ps.card_ui.current_hp, "lane": ps.lane, "is_front": ps.is_front_row, "dice": ps.card_ui.card_data.attack_dice, "idx": i})
+		var os: FieldSlot = opponent_slots[i]
+		if os and not os.is_empty():
+			o_cards.append({"atk": os.card_ui.current_atk, "hp": os.card_ui.current_hp, "lane": os.lane, "is_front": os.is_front_row, "dice": os.card_ui.card_data.attack_dice, "idx": i})
+
+	var turn_cards: Array
+	var def_cards: Array
+	if is_player_turn:
+		turn_cards = p_cards
+		def_cards = o_cards
+	else:
+		turn_cards = o_cards
+		def_cards = p_cards
+
+	var dmg_to_opp := 0
+	var dmg_to_me := 0
+
+	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in turn_cards:
+		if card["hp"] <= 0:
+			continue
+		if dice_val not in card["dice"]:
+			continue
+		var target = _sim_find_target(card, def_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+
+	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in def_cards:
+		if card["hp"] <= 0:
+			continue
+		if dice_val not in card["dice"]:
+			continue
+		var target = _sim_find_target(card, turn_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+
+	return [dmg_to_opp, dmg_to_me]
+
+func _sim_find_target(attacker: Dictionary, defenders: Array):
+	var lane: int = attacker["lane"]
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
+			return d
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
+			return d
+	return null
+
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
