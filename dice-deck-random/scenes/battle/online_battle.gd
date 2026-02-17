@@ -763,11 +763,9 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			current_phase = Phase.DRAW
 			_update_all_ui()
 			await _show_phase_banner("ドロー & 1マナ回復", Color(0.5, 0.8, 1.0), 0.5)
-			_player_draw_card()
 			_opponent_draw_card()
-			player_mana = mini(player_mana + 1, player_max_mana)
 			opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
-			_log("両者カードをドロー。1マナ回復。")
+			_log("相手がカードをドロー。1マナ回復。")
 			current_phase = Phase.MAIN2
 			_clear_selection()
 			_update_all_ui()
