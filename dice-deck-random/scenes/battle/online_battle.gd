@@ -61,7 +61,11 @@ var log_label: RichTextLabel
 var phase_overlay: ColorRect
 var phase_overlay_label: Label
 var turn_indicator_label: Label
+var dice_preview_panel: PanelContainer
+var dice_preview_label: RichTextLabel
 var center_info: HBoxContainer
+var card_preview_overlay: ColorRect
+var card_preview_container: CenterContainer
 
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
@@ -289,6 +293,43 @@ func _build_ui() -> void:
 	hand_scroll.add_child(player_hand_container)
 
 	# Log
+# ── Dice Preview Panel ──
+	dice_preview_panel = PanelContainer.new()
+	var dp_style := StyleBoxFlat.new()
+	dp_style.bg_color = Color(0.08, 0.08, 0.16, 0.95)
+	dp_style.set_corner_radius_all(12)
+	dp_style.border_width_left = 2
+	dp_style.border_width_right = 2
+	dp_style.border_width_top = 2
+	dp_style.border_width_bottom = 2
+	dp_style.border_color = Color(1, 0.85, 0.2, 0.7)
+	dp_style.content_margin_left = 16
+	dp_style.content_margin_right = 16
+	dp_style.content_margin_top = 10
+	dp_style.content_margin_bottom = 10
+	dice_preview_panel.add_theme_stylebox_override("panel", dp_style)
+	main_vbox.add_child(dice_preview_panel)
+
+	var dp_vbox := VBoxContainer.new()
+	dp_vbox.add_theme_constant_override("separation", 6)
+	dice_preview_panel.add_child(dp_vbox)
+
+	var dp_title := Label.new()
+	dp_title.text = "ダイス予測"
+	dp_title.add_theme_font_size_override("font_size", 24)
+	dp_title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	dp_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	dp_vbox.add_child(dp_title)
+
+	dice_preview_label = RichTextLabel.new()
+	dice_preview_label.bbcode_enabled = true
+	dice_preview_label.fit_content = true
+	dice_preview_label.scroll_active = false
+	dice_preview_label.add_theme_font_size_override("normal_font_size", 28)
+	dice_preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dp_vbox.add_child(dice_preview_label)
+
+	# Log
 	log_label = RichTextLabel.new()
 	log_label.bbcode_enabled = true
 	log_label.scroll_following = true
@@ -311,6 +352,19 @@ func _build_ui() -> void:
 	phase_overlay_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	phase_overlay_label.add_theme_font_size_override("font_size", 56)
 	phase_overlay.add_child(phase_overlay_label)
+
+	# ── Card Preview Overlay ──
+	card_preview_overlay = ColorRect.new()
+	card_preview_overlay.color = Color(0, 0, 0, 0.7)
+	card_preview_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	card_preview_overlay.visible = false
+	card_preview_overlay.z_index = 90
+	add_child(card_preview_overlay)
+	card_preview_container = CenterContainer.new()
+	card_preview_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.add_child(card_preview_container)
+	card_preview_overlay.gui_input.connect(_on_preview_overlay_input)
 
 func _update_all_ui() -> void:
 	var my_name := GameManager.user_name if GameManager.user_name != "" else "自分"
@@ -350,6 +404,103 @@ func _update_all_ui() -> void:
 		dice_label.text = "-"
 	_update_opponent_hand_display()
 	_update_hand_highlights()
+	# Dice preview
+	_update_dice_preview()
+
+func _update_dice_preview() -> void:
+	var show := not game_over
+	dice_preview_panel.visible = show
+	if not show:
+		return
+
+	var text := ""
+	for dice_val in range(1, 7):
+		var result := _simulate_battle(dice_val)
+		var score: int = result[0] - result[1]
+		var color := "gray"
+		var sign := ""
+		if score > 0:
+			color = "green"
+			sign = "+"
+		elif score < 0:
+			color = "red"
+		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
+	dice_preview_label.text = text
+
+func _simulate_battle(dice_val: int) -> Array:
+	var p_cards := []
+	var o_cards := []
+	for i in range(6):
+		var ps: FieldSlot = player_slots[i]
+		if ps and not ps.is_empty():
+			p_cards.append({"atk": ps.card_ui.current_atk, "hp": ps.card_ui.current_hp, "lane": ps.lane, "is_front": ps.is_front_row, "dice": ps.card_ui.card_data.attack_dice, "idx": i})
+		var os: FieldSlot = opponent_slots[i]
+		if os and not os.is_empty():
+			o_cards.append({"atk": os.card_ui.current_atk, "hp": os.card_ui.current_hp, "lane": os.lane, "is_front": os.is_front_row, "dice": os.card_ui.card_data.attack_dice, "idx": i})
+
+	var turn_cards: Array
+	var def_cards: Array
+	if is_player_turn:
+		turn_cards = p_cards
+		def_cards = o_cards
+	else:
+		turn_cards = o_cards
+		def_cards = p_cards
+
+	var dmg_to_opp := 0
+	var dmg_to_me := 0
+
+	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in turn_cards:
+		if card["hp"] <= 0:
+			continue
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
+			continue
+		var target = _sim_find_target(card, def_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
+
+	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in def_cards:
+		if card["hp"] <= 0:
+			continue
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
+			continue
+		var target = _sim_find_target(card, turn_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
+
+	return [dmg_to_opp, dmg_to_me]
+
+func _sim_find_target(attacker: Dictionary, defenders: Array):
+	var lane: int = attacker["lane"]
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
+			return d
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
+			return d
+	return null
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
@@ -525,15 +676,10 @@ func _on_end_phase() -> void:
 			await _show_phase_banner("ドロー & 1マナ回復", Color(0.5, 0.8, 1.0), 0.5)
 			_player_draw_card()
 			_opponent_draw_card()
-			await _send_action({"type": "draw"})
-			_log("両者カードをドロー。")
-			# Main2
-			_player_draw_card()
-			_opponent_draw_card()
 			player_mana = mini(player_mana + 1, player_max_mana)
 			opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
 			await _send_action({"type": "draw"})
-			_log("両者カードをドロー。1マナ回復。")
+			_log("カードを1枚ドロー。1マナ回復。")
 			# Main2
 			current_phase = Phase.MAIN2
 			_clear_selection()
@@ -737,7 +883,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 					return
 		elif target_slot:
 			var def_card: CardUI = target_slot.card_ui
-			_log("%s → %s -%d" % [atk_name, def_card.card_data.card_name, damage])
+			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
 			await _animate_attack(card_ui, def_card)
 			def_card.play_damage_flash()
 			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
@@ -820,9 +966,10 @@ func _player_draw_card() -> void:
 	var card_data: CardData = player_deck.pop_front()
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	player_hand_container.add_child(card_ui)
-	card_ui.setup(card_data)
+	card_ui.setup(card_data, 120, 170)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
 	player_hand.append(card_ui)
 	_update_all_ui()
 
@@ -917,11 +1064,9 @@ func _on_player_slot_clicked(slot: FieldSlot) -> void:
 			slot.card_ui.set_selected(true)
 			slot.card_ui.set_movable(true)
 			select_mode = SelectMode.MOVE_SELECT_SLOT
-			var adjacent := _get_adjacent_slots(slot.slot_index)
-			for adj_idx in adjacent:
-				var adj_slot: FieldSlot = player_slots[adj_idx]
-				if adj_slot and adj_slot.is_empty():
-					adj_slot.set_highlighted(true)
+			for s in player_slots:
+				if s and s.is_empty():
+					s.set_highlighted(true)
 		else:
 			_clear_selection()
 
@@ -947,11 +1092,14 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	player_hand.erase(card_ui)
 	card_ui.card_clicked.disconnect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.disconnect(_on_hand_card_drag_ended)
+	if card_ui.card_long_pressed.is_connected(_on_hand_card_long_pressed):
+		card_ui.card_long_pressed.disconnect(_on_hand_card_long_pressed)
 	card_ui.set_selected(false)
 	card_ui.set_summonable(false)
 	if card_ui.get_parent():
 		card_ui.get_parent().remove_child(card_ui)
 	card_ui.reset_position()
+	card_ui.set_card_size(175, 250)
 	slot.place_card(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
 	_clear_selection()
@@ -993,6 +1141,31 @@ func _on_opponent_disconnected() -> void:
 	GameManager.battle_result = "win"
 	await get_tree().create_timer(2.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
+
+func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
+	_show_card_preview(card_ui)
+
+func _show_card_preview(card_ui: CardUI) -> void:
+	for child in card_preview_container.get_children():
+		child.queue_free()
+	var preview := CARD_UI_SCENE.instantiate() as CardUI
+	card_preview_container.add_child(preview)
+	preview.setup(card_ui.card_data, 300, 420)
+	preview.current_hp = card_ui.current_hp
+	preview.current_atk = card_ui.current_atk
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card_preview_overlay.visible = true
+
+func _hide_card_preview() -> void:
+	card_preview_overlay.visible = false
+	for child in card_preview_container.get_children():
+		child.queue_free()
+
+func _on_preview_overlay_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_hide_card_preview()
+	if event is InputEventScreenTouch and event.pressed:
+		_hide_card_preview()
 
 func _on_surrender() -> void:
 	if game_over:
