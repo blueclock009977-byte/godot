@@ -206,6 +206,16 @@ func _poll_room() -> void:
 			else:
 				break
 
+	# Check opponent heartbeat
+	var opp_key := "player2" if is_host else "player1"
+	var hb_result := await FirebaseManager.get_data("rooms/%s/%s/last_seen" % [room_code, opp_key])
+	if hb_result.code == 200 and hb_result.data != null:
+		var last_seen: float = float(hb_result.data)
+		var now := Time.get_unix_time_from_system()
+		if now - last_seen > HEARTBEAT_TIMEOUT:
+			opponent_disconnected.emit()
+			_polling = false
+			return
 	_polling = false
 
 func get_room_data() -> Dictionary:
