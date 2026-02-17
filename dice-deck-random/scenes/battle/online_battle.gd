@@ -774,6 +774,7 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			_game_end(true)
 
 func _opponent_summon(card_id: int, slot_idx: int) -> void:
+	_log("[color=gray]DEBUG: opponent_summon id=%d slot=%d hand=%d[/color]" % [card_id, slot_idx, opponent_hand_count])
 	# Find card in opponent deck (they drew it) - for display only
 	var card_data := CardDatabase.get_card_by_id(card_id)
 	if not card_data:
@@ -784,6 +785,9 @@ func _opponent_summon(card_id: int, slot_idx: int) -> void:
 
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	var slot: FieldSlot = opponent_slots[slot_idx]
+	if not slot or not slot.is_empty():
+		_log("[color=red]ERROR: slot %d is not empty or null[/color]" % slot_idx)
+		return
 	slot.place_card(card_ui)
 	card_ui.setup(data_copy)
 	_log("相手が %s を召喚" % data_copy.card_name)
