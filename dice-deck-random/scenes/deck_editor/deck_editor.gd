@@ -126,6 +126,7 @@ func _ready() -> void:
 	main_vbox.add_child(pool_scroll)
 
 	pool_grid = VBoxContainer.new()
+	pool_grid.custom_minimum_size.x = 920
 	pool_grid.add_theme_constant_override("separation", 6)
 	pool_scroll.add_child(pool_grid)
 
@@ -278,6 +279,7 @@ func _add_pool_card(card: CardData) -> void:
 	# 3枚ごとに新しい行を作成
 	if cards_in_row == 0 or cards_in_row >= CARDS_PER_ROW:
 		current_row = HBoxContainer.new()
+		current_row.custom_minimum_size = Vector2(920, 450)
 		current_row.add_theme_constant_override("separation", 6)
 		pool_grid.add_child(current_row)
 		cards_in_row = 0
