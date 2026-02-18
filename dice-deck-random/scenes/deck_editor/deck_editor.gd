@@ -118,7 +118,7 @@ func _ready() -> void:
 	# Pool scroll with card grid
 	var pool_scroll := ScrollContainer.new()
 	pool_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	pool_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	pool_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	pool_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	main_vbox.add_child(pool_scroll)
 
@@ -127,6 +127,7 @@ func _ready() -> void:
 	pool_grid.add_theme_constant_override("h_separation", 6)
 	pool_grid.add_theme_constant_override("v_separation", 6)
 	pool_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	pool_grid.custom_minimum_size.x = 762
 	pool_scroll.add_child(pool_grid)
 
 	# Bottom buttons
