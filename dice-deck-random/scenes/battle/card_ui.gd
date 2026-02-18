@@ -105,6 +105,8 @@ func _ready() -> void:
 	effect_text_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
 	effect_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
 	effect_text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	effect_text_label.max_lines_visible = 2
+	effect_text_label.clip_text = true
 	effect_text_label.visible = false
 	vbox.add_child(effect_text_label)
 
