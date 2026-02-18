@@ -242,11 +242,11 @@ func _update_pool_display() -> void:
 func _add_pool_card(card: CardData) -> void:
 	var wrapper := VBoxContainer.new()
 	wrapper.add_theme_constant_override("separation", 2)
-	wrapper.custom_minimum_size = Vector2(300, 450)
 
 	# CardUIを固定サイズのコンテナでラップ
 	var card_container := Control.new()
 	card_container.custom_minimum_size = Vector2(300, 420)
+	card_container.size = Vector2(300, 420)
 	card_container.clip_contents = true
 	var card_ui: CardUI = CardUIScene.instantiate()
 	card_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
