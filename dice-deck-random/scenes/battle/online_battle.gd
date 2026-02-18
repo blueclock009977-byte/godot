@@ -702,16 +702,9 @@ func _end_turn() -> void:
 	_clear_selection()
 	_update_all_ui()
 	await _show_phase_banner("ターン終了", Color(0.6, 0.6, 0.6), 0.5)
-	# ターン終了時効果
 	_process_turn_end_effects(is_player_turn)
 	is_player_turn = not is_player_turn
 	_start_turn()
-
-func _process_turn_end_effects(is_player: bool) -> void:
-	var context := _get_effect_context()
-	var results: Array = EffectManager.process_turn_end_effects(is_player, context)
-	for result in results:
-		_apply_effect_result(result, is_player)
 
 # ═══════════════════════════════════════════
 # SEND ACTIONS TO FIREBASE
