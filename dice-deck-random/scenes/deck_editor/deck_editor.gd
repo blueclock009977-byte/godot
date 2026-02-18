@@ -126,7 +126,7 @@ func _ready() -> void:
 	pool_grid.columns = 3
 	pool_grid.add_theme_constant_override("h_separation", 6)
 	pool_grid.add_theme_constant_override("v_separation", 6)
-	pool_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pool_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	pool_scroll.add_child(pool_grid)
 
 	# Bottom buttons

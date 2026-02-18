@@ -371,6 +371,8 @@ func set_card_size(w: float, h: float) -> void:
 	var s := minf(sx, sy)
 	custom_minimum_size = Vector2(w, h)
 	size = Vector2(w, h)
+	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	mana_cost_label.add_theme_font_size_override("font_size", int(26 * s))
 	name_label.add_theme_font_size_override("font_size", int(22 * s))
 	attack_dice_label.add_theme_font_size_override("font_size", int(24 * s))
