@@ -13,6 +13,7 @@ var cost_buttons: Array[Button] = []
 var color_buttons: Array[Button] = []
 var current_cost_filter: int = 0  # 0=all
 var current_color_filter: int = -1  # -1=all, 0=GRAY, 1=BLUE, 2=GREEN, 3=BLACK
+var slot_dialog: Control
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -147,10 +148,10 @@ func _ready() -> void:
 	btn_row.add_child(clear_btn)
 
 	var save_btn := Button.new()
-	save_btn.text = "保存"
+	save_btn.text = "保存/読込"
 	save_btn.custom_minimum_size = Vector2(140, 55)
 	save_btn.add_theme_font_size_override("font_size", 20)
-	save_btn.pressed.connect(_on_save)
+	save_btn.pressed.connect(_show_slot_dialog)
 	btn_row.add_child(save_btn)
 
 	# Load existing deck
@@ -363,3 +364,140 @@ func _on_save() -> void:
 		popup.dialog_text = "デッキは%d枚必要です！ (現在: %d枚)" % [MAX_DECK_SIZE, deck.size()]
 		add_child(popup)
 		popup.popup_centered()
+
+# === SLOT DIALOG ===
+
+func _show_slot_dialog() -> void:
+	if slot_dialog:
+		slot_dialog.queue_free()
+
+	# オーバーレイ
+	slot_dialog = ColorRect.new()
+	slot_dialog.color = Color(0, 0, 0, 0.7)
+	slot_dialog.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	slot_dialog.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(slot_dialog)
+
+	# ダイアログ本体
+	var panel := PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.custom_minimum_size = Vector2(400, 500)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.15, 0.15, 0.2)
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	style.border_width_left = 2
+	style.border_width_right = 2
+	style.border_width_top = 2
+	style.border_width_bottom = 2
+	style.border_color = Color(0.4, 0.6, 0.8)
+	panel.add_theme_stylebox_override("panel", style)
+	slot_dialog.add_child(panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	panel.add_child(vbox)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 15)
+	margin.add_theme_constant_override("margin_right", 15)
+	margin.add_theme_constant_override("margin_top", 15)
+	margin.add_theme_constant_override("margin_bottom", 15)
+	panel.add_child(margin)
+
+	var inner_vbox := VBoxContainer.new()
+	inner_vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(inner_vbox)
+
+	# タイトル
+	var title := Label.new()
+	title.text = "デッキスロット"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
+	inner_vbox.add_child(title)
+
+	# スロット一覧をロード
+	_load_slot_buttons(inner_vbox)
+
+	# 閉じるボタン
+	var close_btn := Button.new()
+	close_btn.text = "閉じる"
+	close_btn.custom_minimum_size = Vector2(120, 45)
+	close_btn.add_theme_font_size_override("font_size", 18)
+	close_btn.pressed.connect(func(): slot_dialog.queue_free(); slot_dialog = null)
+	inner_vbox.add_child(close_btn)
+
+func _load_slot_buttons(parent: VBoxContainer) -> void:
+	# スロット情報を取得（非同期）
+	var slots_info := await GameManager.get_all_deck_slots()
+
+	for i in range(GameManager.MAX_DECK_SLOTS):
+		var hbox := HBoxContainer.new()
+		hbox.add_theme_constant_override("separation", 10)
+		hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		parent.add_child(hbox)
+
+		# スロット番号とカード枚数
+		var label := Label.new()
+		var count: int = slots_info.get(i, 0)
+		if count > 0:
+			label.text = "スロット %d (%d枚)" % [i + 1, count]
+			label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))
+		else:
+			label.text = "スロット %d (空)" % [i + 1]
+			label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		label.custom_minimum_size.x = 150
+		label.add_theme_font_size_override("font_size", 18)
+		hbox.add_child(label)
+
+		# 保存ボタン
+		var save_btn := Button.new()
+		save_btn.text = "保存"
+		save_btn.custom_minimum_size = Vector2(70, 35)
+		save_btn.add_theme_font_size_override("font_size", 16)
+		save_btn.pressed.connect(_save_to_slot.bind(i))
+		hbox.add_child(save_btn)
+
+		# 読込ボタン
+		var load_btn := Button.new()
+		load_btn.text = "読込"
+		load_btn.custom_minimum_size = Vector2(70, 35)
+		load_btn.add_theme_font_size_override("font_size", 16)
+		load_btn.disabled = count == 0
+		load_btn.pressed.connect(_load_from_slot.bind(i))
+		hbox.add_child(load_btn)
+
+func _save_to_slot(slot: int) -> void:
+	if deck.size() != MAX_DECK_SIZE:
+		_show_message("エラー", "デッキは%d枚必要です！ (現在: %d枚)" % [MAX_DECK_SIZE, deck.size()])
+		return
+	await GameManager.save_deck_to_slot(slot, deck)
+	GameManager.player_deck = deck.duplicate()
+	_show_message("保存完了", "スロット %d に保存しました！" % [slot + 1])
+	if slot_dialog:
+		slot_dialog.queue_free()
+		slot_dialog = null
+
+func _load_from_slot(slot: int) -> void:
+	var loaded := await GameManager.load_deck_from_slot(slot)
+	if loaded.size() == 0:
+		_show_message("エラー", "デッキを読み込めませんでした")
+		return
+	deck = loaded
+	GameManager.player_deck = deck.duplicate()
+	_update_deck_display()
+	_update_pool_display()
+	_show_message("読込完了", "スロット %d から読み込みました！ (%d枚)" % [slot + 1, deck.size()])
+	if slot_dialog:
+		slot_dialog.queue_free()
+		slot_dialog = null
+
+func _show_message(title_text: String, message: String) -> void:
+	var popup := AcceptDialog.new()
+	popup.title = title_text
+	popup.dialog_text = message
+	add_child(popup)
+	popup.popup_centered()
