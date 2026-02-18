@@ -372,11 +372,15 @@ func get_deck_color(deck: Array) -> CardData.ColorType:
 
 func get_initial_hand_size(deck: Array) -> int:
 	"""デッキの色数に応じた初期手札枚数を取得
-	0〜1色=4枚、2色=3枚、3色以上=2枚"""
+	0〜1色=4枚、2色=3枚、3色=2枚、4色=1枚、5色以上=0枚"""
 	var color_count := get_deck_colors(deck).size()
 	if color_count <= 1:
 		return 4
 	elif color_count == 2:
 		return 3
-	else:
+	elif color_count == 3:
 		return 2
+	elif color_count == 4:
+		return 1
+	else:
+		return 0
