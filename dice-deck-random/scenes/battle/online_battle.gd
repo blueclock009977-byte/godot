@@ -9,7 +9,7 @@ const CARD_UI_SCENE := preload("res://scenes/battle/card_ui.tscn")
 const FIELD_SLOT_SCENE := preload("res://scenes/battle/field_slot.tscn")
 const MAX_HP := 20
 const MAX_MANA_CAP := 5
-const STARTING_HAND := 5
+const DEFAULT_STARTING_HAND := 4  # 0〜1色デッキ用
 const MOVE_COST := 1
 
 enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
@@ -588,10 +588,15 @@ func _start_game() -> void:
 	else:
 		await _show_phase_banner("オンラインバトル！\nあなたは後攻です", Color(1.0, 0.7, 0.3), 1.2)
 
-	# Draw starting hands
-	for i in range(STARTING_HAND):
-		_player_draw_card()
-		_opponent_draw_card()
+	# Draw starting hands (based on deck color count)
+	var player_hand_size := CardDatabase.get_initial_hand_size(player_deck)
+	var opponent_hand_size := CardDatabase.get_initial_hand_size(opponent_deck)
+	_log("[color=gray]初期手札: 自分%d枚, 相手%d枚[/color]" % [player_hand_size, opponent_hand_size])
+	for i in range(max(player_hand_size, opponent_hand_size)):
+		if i < player_hand_size:
+			_player_draw_card()
+		if i < opponent_hand_size:
+			_opponent_draw_card()
 
 	_update_all_ui()
 	_start_turn()
