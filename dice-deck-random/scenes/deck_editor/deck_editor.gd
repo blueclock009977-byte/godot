@@ -263,17 +263,6 @@ func _add_pool_card(card: CardData) -> void:
 
 	wrapper.add_child(card_ui)
 	wrapper.add_child(count_label)
-	# 効果説明を表示
-	if card.has_effect():
-		var effect_label := Label.new()
-		effect_label.text = EffectManager.get_effect_description(card.effect_id)
-		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		effect_label.add_theme_font_size_override("font_size", 18)
-		effect_label.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
-		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-		effect_label.custom_minimum_size.x = 300
-		wrapper.add_child(effect_label)
-
 	# Click to add
 	card_ui.card_clicked.connect(func(_c: CardUI): _add_card_to_deck(card))
 	card_ui.card_long_pressed.connect(func(_c: CardUI): _show_card_preview(card_ui))

@@ -98,14 +98,6 @@ func _ready() -> void:
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
 
-	# Attack dice
-	attack_dice_label = Label.new()
-	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	attack_dice_label.add_theme_font_size_override("font_size", 32)
-	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
-	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(attack_dice_label)
-
 	# Effect text
 	effect_text_label = Label.new()
 	effect_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -115,6 +107,14 @@ func _ready() -> void:
 	effect_text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	effect_text_label.visible = false
 	vbox.add_child(effect_text_label)
+
+	# Attack dice
+	attack_dice_label = Label.new()
+	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	attack_dice_label.add_theme_font_size_override("font_size", 32)
+	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
+	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(attack_dice_label)
 	# Bottom row: HP / ATK
 	var bottom_row := HBoxContainer.new()
 	bottom_row.add_theme_constant_override("separation", 0)
