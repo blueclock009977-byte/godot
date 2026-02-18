@@ -21,6 +21,7 @@ GameManager="*res://autoload/game_manager.gd"
 CardDatabase="*res://autoload/card_database.gd"
 FirebaseManager="*res://autoload/firebase_manager.gd"
 MultiplayerManager="*res://autoload/multiplayer_manager.gd"
+EffectManager="*res://autoload/effect_manager.gd"
 
 [display]
 

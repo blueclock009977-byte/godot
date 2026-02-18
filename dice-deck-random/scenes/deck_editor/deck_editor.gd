@@ -8,8 +8,11 @@ var deck: Array[CardData] = []
 var deck_grid: HBoxContainer
 var pool_grid: GridContainer
 var deck_count_label: Label
-var tab_buttons: Array[Button] = []
+var deck_color_label: Label
+var cost_buttons: Array[Button] = []
+var color_buttons: Array[Button] = []
 var current_cost_filter: int = 0  # 0=all
+var current_color_filter: int = -1  # -1=all, 0=GRAY, 1=BLUE, 2=GREEN, 3=BLACK
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -23,7 +26,7 @@ func _ready() -> void:
 	main_vbox.offset_right = -10
 	main_vbox.offset_top = 10
 	main_vbox.offset_bottom = -10
-	main_vbox.add_theme_constant_override("separation", 6)
+	main_vbox.add_theme_constant_override("separation", 4)
 	add_child(main_vbox)
 
 	# Header
@@ -35,13 +38,22 @@ func _ready() -> void:
 	main_vbox.add_child(header)
 
 	# === YOUR DECK SECTION ===
+	var deck_info := HBoxContainer.new()
+	deck_info.alignment = BoxContainer.ALIGNMENT_CENTER
+	deck_info.add_theme_constant_override("separation", 20)
+	main_vbox.add_child(deck_info)
+
 	deck_count_label = Label.new()
-	deck_count_label.add_theme_font_size_override("font_size", 22)
+	deck_count_label.add_theme_font_size_override("font_size", 20)
 	deck_count_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1))
-	main_vbox.add_child(deck_count_label)
+	deck_info.add_child(deck_count_label)
+
+	deck_color_label = Label.new()
+	deck_color_label.add_theme_font_size_override("font_size", 20)
+	deck_info.add_child(deck_color_label)
 
 	var deck_panel := PanelContainer.new()
-	deck_panel.custom_minimum_size.y = 300
+	deck_panel.custom_minimum_size.y = 280
 	var deck_style := StyleBoxFlat.new()
 	deck_style.bg_color = Color(0.12, 0.12, 0.18)
 	deck_style.corner_radius_top_left = 8
@@ -57,31 +69,48 @@ func _ready() -> void:
 	deck_panel.add_child(deck_scroll)
 
 	deck_grid = HBoxContainer.new()
-	deck_grid.add_theme_constant_override("separation", 6)
+	deck_grid.add_theme_constant_override("separation", 4)
 	deck_scroll.add_child(deck_grid)
 
 	# === CARD POOL SECTION ===
 	var pool_header := Label.new()
-	pool_header.text = "カード一覧 (タップで追加)"
-	pool_header.add_theme_font_size_override("font_size", 20)
+	pool_header.text = "カード一覧"
+	pool_header.add_theme_font_size_override("font_size", 18)
 	pool_header.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
 	main_vbox.add_child(pool_header)
 
-	# Cost filter tabs
-	var tab_row := HBoxContainer.new()
-	tab_row.add_theme_constant_override("separation", 6)
-	tab_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	main_vbox.add_child(tab_row)
+	# Color filter tabs
+	var color_row := HBoxContainer.new()
+	color_row.add_theme_constant_override("separation", 4)
+	color_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	main_vbox.add_child(color_row)
 
-	var filter_labels := ["全て", "1コスト", "2コスト", "3コスト", "4コスト", "5コスト"]
-	for i in range(filter_labels.size()):
+	var color_labels := ["全て", "グレー", "青", "緑", "黒"]
+	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3)]
+	for i in range(color_labels.size()):
 		var btn := Button.new()
-		btn.text = filter_labels[i]
-		btn.custom_minimum_size = Vector2(80, 45)
-		btn.add_theme_font_size_override("font_size", 18)
-		btn.pressed.connect(_on_filter_pressed.bind(i))
-		tab_row.add_child(btn)
-		tab_buttons.append(btn)
+		btn.text = color_labels[i]
+		btn.custom_minimum_size = Vector2(70, 40)
+		btn.add_theme_font_size_override("font_size", 16)
+		btn.pressed.connect(_on_color_filter_pressed.bind(i - 1))  # -1=all, 0=GRAY, 1=BLUE...
+		color_row.add_child(btn)
+		color_buttons.append(btn)
+
+	# Cost filter tabs
+	var cost_row := HBoxContainer.new()
+	cost_row.add_theme_constant_override("separation", 4)
+	cost_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	main_vbox.add_child(cost_row)
+
+	var cost_labels := ["全て", "1", "2", "3", "4", "5"]
+	for i in range(cost_labels.size()):
+		var btn := Button.new()
+		btn.text = cost_labels[i]
+		btn.custom_minimum_size = Vector2(55, 35)
+		btn.add_theme_font_size_override("font_size", 16)
+		btn.pressed.connect(_on_cost_filter_pressed.bind(i))
+		cost_row.add_child(btn)
+		cost_buttons.append(btn)
 
 	# Pool scroll with card grid
 	var pool_scroll := ScrollContainer.new()
@@ -92,8 +121,8 @@ func _ready() -> void:
 
 	pool_grid = GridContainer.new()
 	pool_grid.columns = 5
-	pool_grid.add_theme_constant_override("h_separation", 8)
-	pool_grid.add_theme_constant_override("v_separation", 8)
+	pool_grid.add_theme_constant_override("h_separation", 6)
+	pool_grid.add_theme_constant_override("v_separation", 6)
 	pool_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pool_scroll.add_child(pool_grid)
 
@@ -105,22 +134,22 @@ func _ready() -> void:
 
 	var back_btn := Button.new()
 	back_btn.text = "戻る"
-	back_btn.custom_minimum_size = Vector2(160, 60)
-	back_btn.add_theme_font_size_override("font_size", 22)
+	back_btn.custom_minimum_size = Vector2(140, 55)
+	back_btn.add_theme_font_size_override("font_size", 20)
 	back_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
 	btn_row.add_child(back_btn)
 
 	var clear_btn := Button.new()
 	clear_btn.text = "全削除"
-	clear_btn.custom_minimum_size = Vector2(160, 60)
-	clear_btn.add_theme_font_size_override("font_size", 22)
+	clear_btn.custom_minimum_size = Vector2(140, 55)
+	clear_btn.add_theme_font_size_override("font_size", 20)
 	clear_btn.pressed.connect(_on_clear)
 	btn_row.add_child(clear_btn)
 
 	var save_btn := Button.new()
 	save_btn.text = "保存"
-	save_btn.custom_minimum_size = Vector2(160, 60)
-	save_btn.add_theme_font_size_override("font_size", 22)
+	save_btn.custom_minimum_size = Vector2(140, 55)
+	save_btn.add_theme_font_size_override("font_size", 20)
 	save_btn.pressed.connect(_on_save)
 	btn_row.add_child(save_btn)
 
@@ -135,25 +164,48 @@ func _ready() -> void:
 
 # === FILTER ===
 
-func _on_filter_pressed(cost_index: int) -> void:
+func _on_cost_filter_pressed(cost_index: int) -> void:
 	current_cost_filter = cost_index
 	_update_pool_display()
 	_update_filter_buttons()
 
+func _on_color_filter_pressed(color_index: int) -> void:
+	current_color_filter = color_index
+	_update_pool_display()
+	_update_filter_buttons()
+
 func _update_filter_buttons() -> void:
-	for i in range(tab_buttons.size()):
-		var btn := tab_buttons[i]
+	# Cost buttons
+	for i in range(cost_buttons.size()):
+		var btn := cost_buttons[i]
 		var style := StyleBoxFlat.new()
 		if i == current_cost_filter:
 			style.bg_color = Color(0.3, 0.3, 0.5)
-			style.border_width_bottom = 3
+			style.border_width_bottom = 2
 			style.border_color = Color(1, 0.9, 0.3)
 		else:
 			style.bg_color = Color(0.15, 0.15, 0.2)
-		style.corner_radius_top_left = 6
-		style.corner_radius_top_right = 6
-		style.corner_radius_bottom_left = 6
-		style.corner_radius_bottom_right = 6
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
+		btn.add_theme_stylebox_override("normal", style)
+
+	# Color buttons
+	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3)]
+	for i in range(color_buttons.size()):
+		var btn := color_buttons[i]
+		var style := StyleBoxFlat.new()
+		if i == current_color_filter + 1:  # +1 because -1=all maps to index 0
+			style.bg_color = color_colors[i].lightened(0.2)
+			style.border_width_bottom = 2
+			style.border_color = Color(1, 0.9, 0.3)
+		else:
+			style.bg_color = color_colors[i].darkened(0.3)
+		style.corner_radius_top_left = 4
+		style.corner_radius_top_right = 4
+		style.corner_radius_bottom_left = 4
+		style.corner_radius_bottom_right = 4
 		btn.add_theme_stylebox_override("normal", style)
 
 # === POOL DISPLAY ===
@@ -164,7 +216,11 @@ func _update_pool_display() -> void:
 
 	var cards := CardDatabase.get_all_cards()
 	for card in cards:
+		# Cost filter
 		if current_cost_filter > 0 and card.mana_cost != current_cost_filter:
+			continue
+		# Color filter
+		if current_color_filter >= 0 and int(card.color_type) != current_color_filter:
 			continue
 		_add_pool_card(card)
 
@@ -174,21 +230,22 @@ func _add_pool_card(card: CardData) -> void:
 
 	var card_ui: CardUI = CardUIScene.instantiate()
 	card_ui.setup(card)
-	card_ui.custom_minimum_size = Vector2(185, 260)
+	card_ui.custom_minimum_size = Vector2(175, 250)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
 	var count_label := Label.new()
 	count_label.text = "%d / %d" % [count, MAX_COPIES]
 	count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	count_label.add_theme_font_size_override("font_size", 16)
+	count_label.add_theme_font_size_override("font_size", 14)
 	if count >= MAX_COPIES:
 		count_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
 	else:
 		count_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 
-	# Grey out if max copies
-	if count >= MAX_COPIES:
+	# Check if can add this card
+	var can_add := _can_add_card(card)
+	if count >= MAX_COPIES or not can_add:
 		card_ui.modulate = Color(0.5, 0.5, 0.5, 0.7)
 
 	wrapper.add_child(card_ui)
@@ -199,10 +256,26 @@ func _add_pool_card(card: CardData) -> void:
 
 	pool_grid.add_child(wrapper)
 
-func _add_card_to_deck(card: CardData) -> void:
+func _get_deck_color() -> CardData.ColorType:
+	for card in deck:
+		if card.color_type != CardData.ColorType.GRAY:
+			return card.color_type
+	return CardData.ColorType.GRAY
+
+func _can_add_card(card: CardData) -> bool:
 	if deck.size() >= MAX_DECK_SIZE:
-		return
+		return false
 	if _count_in_deck(card.id) >= MAX_COPIES:
+		return false
+	# 1色制限: グレー以外のカードは、既にデッキにある色と同じでなければならない
+	if card.color_type != CardData.ColorType.GRAY:
+		var deck_color := _get_deck_color()
+		if deck_color != CardData.ColorType.GRAY and deck_color != card.color_type:
+			return false
+	return true
+
+func _add_card_to_deck(card: CardData) -> void:
+	if not _can_add_card(card):
 		return
 	deck.append(card.duplicate_card())
 	_update_deck_display()
@@ -222,7 +295,7 @@ func _update_deck_display() -> void:
 		var card: CardData = deck[i]
 		var card_ui: CardUI = CardUIScene.instantiate()
 		card_ui.setup(card)
-		card_ui.custom_minimum_size = Vector2(175, 250)
+		card_ui.custom_minimum_size = Vector2(160, 230)
 
 		# Click to remove
 		var idx := i
@@ -230,11 +303,30 @@ func _update_deck_display() -> void:
 
 		deck_grid.add_child(card_ui)
 
-	deck_count_label.text = "デッキ: %d / %d (タップで削除)" % [deck.size(), MAX_DECK_SIZE]
+	deck_count_label.text = "デッキ: %d / %d" % [deck.size(), MAX_DECK_SIZE]
 	if deck.size() == MAX_DECK_SIZE:
 		deck_count_label.add_theme_color_override("font_color", Color(0.3, 1, 0.3))
 	else:
 		deck_count_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1))
+
+	# Show deck color
+	var deck_color := _get_deck_color()
+	if deck_color == CardData.ColorType.GRAY:
+		deck_color_label.text = "色: なし"
+		deck_color_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+	else:
+		var color_names := {
+			CardData.ColorType.BLUE: "青",
+			CardData.ColorType.GREEN: "緑",
+			CardData.ColorType.BLACK: "黒",
+		}
+		var color_colors := {
+			CardData.ColorType.BLUE: Color(0.3, 0.5, 0.9),
+			CardData.ColorType.GREEN: Color(0.3, 0.8, 0.3),
+			CardData.ColorType.BLACK: Color(0.6, 0.4, 0.6),
+		}
+		deck_color_label.text = "色: %s" % color_names.get(deck_color, "?")
+		deck_color_label.add_theme_color_override("font_color", color_colors.get(deck_color, Color.WHITE))
 
 func _remove_card_from_deck(index: int) -> void:
 	if index >= 0 and index < deck.size():

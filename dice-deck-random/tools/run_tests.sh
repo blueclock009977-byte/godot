@@ -23,7 +23,7 @@ assert_ok() {
 echo ""
 echo "--- Card Data Integrity ---"
 CARD_DEFS=$(grep -cP '^\s+\[\d+,' "$PROJECT_DIR/autoload/card_database.gd" || echo "0")
-assert_ok "CardDatabase has exactly 20 cards (found $CARD_DEFS)" "[ $CARD_DEFS -eq 20 ]"
+assert_ok "CardDatabase has at least 20 cards (found $CARD_DEFS)" "[ $CARD_DEFS -ge 20 ]"
 assert_ok "CardData has atk field" "grep -q 'var atk' $PROJECT_DIR/cards/card_data.gd"
 assert_ok "CardData has hp field" "grep -q 'var hp' $PROJECT_DIR/cards/card_data.gd"
 assert_ok "CardData has attack_dice field" "grep -q 'var attack_dice' $PROJECT_DIR/cards/card_data.gd"
@@ -61,8 +61,10 @@ done
 echo ""
 echo "--- Point Budget Validation ---"
 BUDGET_OUTPUT=$(perl -ne '
-    if (/^\s+\[(\d+),\s*"([^"]+)",\s*(\d+),\s*(\d+),\s*(\d+),\s*\[([^\]]*)\]/) {
+    # gray_defsセクション内のバニラカードのみチェック（ID 0-19）
+    if (/^\s+\[(\d+),\s*"([^"]+)",\s*(\d+),\s*(\d+),\s*(\d+),\s*\[([^\]]*)\]\],?$/) {
         my ($id, $name, $cost, $atk, $hp, $dice_str) = ($1, $2, $3, $4, $5, $6);
+        next if $id >= 20; # 効果カードはスキップ
         my @dice = split /,\s*/, $dice_str;
         my $dice_count = scalar @dice;
         my $total = $atk + $hp + $dice_count;
