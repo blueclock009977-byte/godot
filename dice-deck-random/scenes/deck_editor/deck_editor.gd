@@ -6,7 +6,10 @@ const CardUIScene := preload("res://scenes/battle/card_ui.tscn")
 
 var deck: Array[CardData] = []
 var deck_grid: HBoxContainer
-var pool_grid: GridContainer
+var pool_grid: VBoxContainer
+var current_row: HBoxContainer
+var cards_in_row: int = 0
+const CARDS_PER_ROW := 3
 var deck_count_label: Label
 var deck_color_label: Label
 var cost_buttons: Array[Button] = []
@@ -122,12 +125,8 @@ func _ready() -> void:
 	pool_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	main_vbox.add_child(pool_scroll)
 
-	pool_grid = GridContainer.new()
-	pool_grid.columns = 3
-	pool_grid.add_theme_constant_override("h_separation", 6)
-	pool_grid.add_theme_constant_override("v_separation", 6)
-	pool_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	pool_grid.custom_minimum_size.x = 912
+	pool_grid = VBoxContainer.new()
+	pool_grid.add_theme_constant_override("separation", 6)
 	pool_scroll.add_child(pool_grid)
 
 	# Bottom buttons
@@ -228,6 +227,7 @@ func _update_filter_buttons() -> void:
 func _update_pool_display() -> void:
 	for child in pool_grid.get_children():
 		child.queue_free()
+	cards_in_row = 0
 
 	var cards := CardDatabase.get_all_cards()
 	for card in cards:
@@ -270,7 +270,14 @@ func _add_pool_card(card: CardData) -> void:
 	card_ui.card_clicked.connect(func(_c: CardUI): _add_card_to_deck(card))
 	card_ui.card_long_pressed.connect(func(_c: CardUI): _show_card_preview(card_ui))
 
-	pool_grid.add_child(wrapper)
+	# 3枚ごとに新しい行を作成
+	if cards_in_row == 0 or cards_in_row >= CARDS_PER_ROW:
+		current_row = HBoxContainer.new()
+		current_row.add_theme_constant_override("separation", 6)
+		pool_grid.add_child(current_row)
+		cards_in_row = 0
+	current_row.add_child(wrapper)
+	cards_in_row += 1
 
 func _get_deck_color() -> CardData.ColorType:
 	for card in deck:
