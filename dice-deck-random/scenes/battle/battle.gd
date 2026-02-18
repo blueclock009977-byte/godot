@@ -510,7 +510,7 @@ func _update_hand_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
 	for card_ui in player_hand:
 		if card_ui is CardUI:
-			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and card_ui.card_data.mana_cost <= player_mana and _has_empty_player_slot()
+			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and _has_empty_player_slot()
 			card_ui.set_summonable(can_summon)
 	# Field cards: glow if movable (in main phase, has mana, has empty slot)
 	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and _has_empty_player_slot()
@@ -683,6 +683,12 @@ func _do_dice_and_battle() -> void:
 	# Roll dice with animation
 	current_dice = await _animate_dice_roll()
 	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
+
+	# ダイスブロック効果をチェック
+	if _is_dice_blocked(current_dice, is_player_turn):
+		_log("[color=purple]ダイス%dは相手の効果でブロックされた！[/color]" % current_dice)
+	if _is_dice_blocked(current_dice, not is_player_turn):
+		_log("[color=purple]相手のダイス%dは自分の効果でブロックされた！[/color]" % current_dice)
 	_update_all_ui()
 
 	# Turn player's cards attack first
@@ -715,7 +721,10 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		if not slot or slot.is_empty():
 			continue
 		var card_ui: CardUI = slot.card_ui
-		if current_dice not in card_ui.card_data.attack_dice:
+		var effective_dice := _get_effective_attack_dice(card_ui, attacker_is_player)
+		if _is_dice_blocked(current_dice, attacker_is_player):
+			continue
+		if current_dice not in effective_dice:
 			continue
 
 		var lane: int = slot.lane
@@ -746,6 +755,9 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 
 		var atk_name := card_ui.card_data.card_name
 		var damage: int = card_ui.current_atk
+		# 常時効果によるATK修正
+		var atk_mod := EffectManager.get_constant_atk_modifier(card_ui, attacker_is_player, _get_effect_context())
+		damage += atk_mod
 		var defender_ui = target_slot.card_ui if target_slot else null
 		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
 		if atk_effect.has("atk_bonus"):
@@ -1003,7 +1015,8 @@ func _get_adjacent_slots(idx: int) -> Array[int]:
 	return result
 
 func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
-	player_mana -= card_ui.card_data.mana_cost
+	var effective_cost := _get_effective_summon_cost(card_ui)
+	player_mana -= effective_cost
 	# Remove from hand
 	player_hand.erase(card_ui)
 	card_ui.card_clicked.disconnect(_on_hand_card_clicked)
@@ -1017,7 +1030,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.reset_position()
 	card_ui.set_card_size(175, 250)
 	slot.place_card(card_ui)
-	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
+	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, effective_cost])
 	_process_summon_effect(card_ui, true)
 	_clear_selection()
 	_update_all_ui()
@@ -1277,3 +1290,32 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 				_opponent_draw_card()
 
 	_update_all_ui()
+
+func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
+	var dice := card_ui.card_data.attack_dice.duplicate()
+	var context := _get_effect_context()
+	var modifier := EffectManager.get_dice_modifier(is_player, context)
+
+	# 追加ダイスを加える
+	for d in modifier.get("extra_dice", []):
+		if d not in dice:
+			dice.append(d)
+
+	# ブロックされたダイスを除く（このカードからは攻撃できない、ではなく相手のダイスがブロックされる）
+	# ここでは自分のダイスをブロックする敵の効果を適用
+	# 相手の効果でブロックされているダイスは、相手のターンで自分が攻撃できない
+	# 今のところはシンプルに自分が攻撃する時は相手のblocked_diceを適用
+
+	return dice
+
+func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
+	var context := _get_effect_context()
+	# 相手の効果を取得（自分のダイスがブロックされているか）
+	var enemy_modifier := EffectManager.get_dice_modifier(not is_player, context)
+	return dice_value in enemy_modifier.get("blocked_dice", [])
+
+func _get_effective_summon_cost(card_ui: CardUI) -> int:
+	var base_cost: int = card_ui.card_data.mana_cost
+	var context := _get_effect_context()
+	var modifier: int = EffectManager.get_summon_cost_modifier(true, context)  # プレイヤー視点
+	return maxi(1, base_cost + modifier)  # 最低1コスト
