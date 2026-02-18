@@ -14,6 +14,8 @@ var color_buttons: Array[Button] = []
 var current_cost_filter: int = 0  # 0=all
 var current_color_filter: int = -1  # -1=all, 0=GRAY, 1=BLUE, 2=GREEN, 3=BLACK
 var slot_dialog: Control
+var card_preview_overlay: ColorRect
+var card_preview_container: CenterContainer
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -54,7 +56,7 @@ func _ready() -> void:
 	deck_info.add_child(deck_color_label)
 
 	var deck_panel := PanelContainer.new()
-	deck_panel.custom_minimum_size.y = 280
+	deck_panel.custom_minimum_size.y = 300
 	var deck_style := StyleBoxFlat.new()
 	deck_style.bg_color = Color(0.12, 0.12, 0.18)
 	deck_style.corner_radius_top_left = 8
@@ -121,7 +123,7 @@ func _ready() -> void:
 	main_vbox.add_child(pool_scroll)
 
 	pool_grid = GridContainer.new()
-	pool_grid.columns = 5
+	pool_grid.columns = 4
 	pool_grid.add_theme_constant_override("h_separation", 6)
 	pool_grid.add_theme_constant_override("v_separation", 6)
 	pool_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -162,6 +164,17 @@ func _ready() -> void:
 	_update_pool_display()
 	_update_deck_display()
 	_update_filter_buttons()
+	# カードプレビューオーバーレイ作成
+	card_preview_overlay = ColorRect.new()
+	card_preview_overlay.color = Color(0, 0, 0, 0.8)
+	card_preview_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.visible = false
+	card_preview_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	card_preview_overlay.gui_input.connect(_on_preview_overlay_input)
+	add_child(card_preview_overlay)
+	card_preview_container = CenterContainer.new()
+	card_preview_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_preview_overlay.add_child(card_preview_container)
 
 # === FILTER ===
 
@@ -231,7 +244,7 @@ func _add_pool_card(card: CardData) -> void:
 
 	var card_ui: CardUI = CardUIScene.instantiate()
 	card_ui.setup(card)
-	card_ui.custom_minimum_size = Vector2(175, 250)
+	card_ui.custom_minimum_size = Vector2(200, 285)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -254,6 +267,7 @@ func _add_pool_card(card: CardData) -> void:
 
 	# Click to add
 	card_ui.card_clicked.connect(func(_c: CardUI): _add_card_to_deck(card))
+	card_ui.card_long_pressed.connect(func(_c: CardUI): _show_card_preview(card_ui))
 
 	pool_grid.add_child(wrapper)
 
@@ -296,12 +310,13 @@ func _update_deck_display() -> void:
 		var card: CardData = deck[i]
 		var card_ui: CardUI = CardUIScene.instantiate()
 		card_ui.setup(card)
-		card_ui.custom_minimum_size = Vector2(160, 230)
+		card_ui.custom_minimum_size = Vector2(180, 260)
 
 		# Click to remove
 		var idx := i
 		card_ui.card_clicked.connect(func(_c: CardUI): _remove_card_from_deck(idx))
 
+		card_ui.card_long_pressed.connect(func(_c: CardUI): _show_card_preview(card_ui))
 		deck_grid.add_child(card_ui)
 
 	deck_count_label.text = "デッキ: %d / %d" % [deck.size(), MAX_DECK_SIZE]
@@ -501,3 +516,44 @@ func _show_message(title_text: String, message: String) -> void:
 	popup.dialog_text = message
 	add_child(popup)
 	popup.popup_centered()
+
+# === CARD PREVIEW ===
+
+func _show_card_preview(card_ui: CardUI) -> void:
+	for child in card_preview_container.get_children():
+		child.queue_free()
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 10)
+	card_preview_container.add_child(vbox)
+
+	var preview := CardUIScene.instantiate() as CardUI
+	vbox.add_child(preview)
+	preview.setup(card_ui.card_data, 300, 420)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# 効果説明を表示
+	if card_ui.card_data.has_effect():
+		var effect_label := Label.new()
+		var effect_desc := EffectManager.get_effect_description(card_ui.card_data.effect_id)
+		effect_label.text = effect_desc
+		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		effect_label.add_theme_font_size_override("font_size", 24)
+		effect_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		effect_label.custom_minimum_size.x = 300
+		vbox.add_child(effect_label)
+
+	card_preview_overlay.visible = true
+
+func _hide_card_preview() -> void:
+	card_preview_overlay.visible = false
+	for child in card_preview_container.get_children():
+		child.queue_free()
+
+func _on_preview_overlay_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_hide_card_preview()
+	if event is InputEventScreenTouch and event.pressed:
+		_hide_card_preview()
