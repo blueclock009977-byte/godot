@@ -123,7 +123,7 @@ func _ready() -> void:
 	main_vbox.add_child(pool_scroll)
 
 	pool_grid = GridContainer.new()
-	pool_grid.columns = 4
+	pool_grid.columns = 3
 	pool_grid.add_theme_constant_override("h_separation", 6)
 	pool_grid.add_theme_constant_override("v_separation", 6)
 	pool_grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -244,7 +244,7 @@ func _add_pool_card(card: CardData) -> void:
 
 	var card_ui: CardUI = CardUIScene.instantiate()
 	card_ui.setup(card)
-	card_ui.custom_minimum_size = Vector2(200, 285)
+	card_ui.custom_minimum_size = Vector2(240, 340)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -264,6 +264,16 @@ func _add_pool_card(card: CardData) -> void:
 
 	wrapper.add_child(card_ui)
 	wrapper.add_child(count_label)
+	# 効果説明を表示
+	if card.has_effect():
+		var effect_label := Label.new()
+		effect_label.text = EffectManager.get_effect_description(card.effect_id)
+		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		effect_label.add_theme_font_size_override("font_size", 14)
+		effect_label.add_theme_color_override("font_color", Color(1, 0.85, 0.4))
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		effect_label.custom_minimum_size.x = 230
+		wrapper.add_child(effect_label)
 
 	# Click to add
 	card_ui.card_clicked.connect(func(_c: CardUI): _add_card_to_deck(card))
