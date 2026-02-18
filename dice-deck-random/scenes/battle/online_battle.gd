@@ -521,7 +521,7 @@ func _update_hand_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
 	for card_ui in player_hand:
 		if card_ui is CardUI:
-			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and card_ui.card_data.mana_cost <= player_mana and _has_empty_player_slot()
+			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and _has_empty_player_slot()
 			card_ui.set_summonable(can_summon)
 
 func _has_empty_player_slot() -> bool:
@@ -793,6 +793,8 @@ func _opponent_summon(card_id: int, slot_idx: int) -> void:
 	slot.place_card(card_ui)
 	card_ui.setup(data_copy)
 	_log("相手が %s を召喚" % data_copy.card_name)
+	# 相手の召喚時効果を発動
+	_process_summon_effect(card_ui, false)
 	_update_all_ui()
 
 func _opponent_move(from_idx: int, to_idx: int) -> void:
@@ -1051,7 +1053,7 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if select_mode == SelectMode.SUMMON_SELECT_SLOT and selected_hand_card == card_ui:
 		_clear_selection()
 		return
-	if card_ui.card_data.mana_cost > player_mana:
+	if _get_effective_summon_cost(card_ui) > player_mana:
 		_log("マナが足りない！")
 		return
 	if not _has_empty_player_slot():
@@ -1072,7 +1074,7 @@ func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		card_ui.reset_position()
 		return
-	if card_ui.card_data.mana_cost > player_mana:
+	if _get_effective_summon_cost(card_ui) > player_mana:
 		card_ui.reset_position()
 		return
 	for slot in player_slots:
@@ -1319,6 +1321,8 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 		for i in range(result["draw"]):
 			if is_player:
 				_player_draw_card()
+			else:
+				_opponent_draw_card()
 
 	_update_all_ui()
 

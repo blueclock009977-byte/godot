@@ -920,7 +920,7 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 		return
 
 	# Check if affordable
-	if card_ui.card_data.mana_cost > player_mana:
+	if _get_effective_summon_cost(card_ui) > player_mana:
 		_log("マナが足りない！")
 		return
 	if not _has_empty_player_slot():
@@ -943,7 +943,7 @@ func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		card_ui.reset_position()
 		return
-	if card_ui.card_data.mana_cost > player_mana:
+	if _get_effective_summon_cost(card_ui) > player_mana:
 		card_ui.reset_position()
 		return
 
