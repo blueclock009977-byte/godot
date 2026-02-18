@@ -56,7 +56,7 @@ func _generate_card_pool() -> void:
 		for v in d[5]:
 			dice.append(v)
 		card.attack_dice = dice
-		card.color = card_colors[d[0] % card_colors.size()]
+		card.color = Color(0.5, 0.5, 0.55)
 		card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][d[0] % 10]
 		card_pool.append(card)
 
