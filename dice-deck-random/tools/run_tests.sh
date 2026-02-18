@@ -22,7 +22,7 @@ assert_ok() {
 
 echo ""
 echo "--- Card Data Integrity ---"
-CARD_DEFS=$(grep -cP '^\s+\[\d+,' "$PROJECT_DIR/autoload/card_database.gd" || echo "0")
+CARD_DEFS=$(grep -cE '^\s+\[[0-9]+,' "$PROJECT_DIR/autoload/card_database.gd" || echo "0")
 assert_ok "CardDatabase has at least 20 cards (found $CARD_DEFS)" "[ $CARD_DEFS -ge 20 ]"
 assert_ok "CardData has atk field" "grep -q 'var atk' $PROJECT_DIR/cards/card_data.gd"
 assert_ok "CardData has hp field" "grep -q 'var hp' $PROJECT_DIR/cards/card_data.gd"

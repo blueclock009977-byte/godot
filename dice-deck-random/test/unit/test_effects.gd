@@ -109,6 +109,119 @@ func test_effect_count() -> void:
 	assert_true(count >= 50, "Should have at least 50 effects registered, got %d" % count)
 
 # ═══════════════════════════════════════════
+# Phase 3: 効果処理結果テスト
+# ═══════════════════════════════════════════
+
+func test_summon_effect_mana_green_001() -> void:
+	# green_001: 登場時マナ+1
+	var mock_card_ui = _create_mock_card_ui("green_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("mana", 0), 1, "green_001 should give mana +1")
+
+func test_summon_effect_mana_green_004() -> void:
+	# green_004: 登場時マナ+2
+	var mock_card_ui = _create_mock_card_ui("green_004")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("mana", 0), 2, "green_004 should give mana +2")
+
+func test_summon_effect_self_damage_black() -> void:
+	# black_001: 登場時自分HP-1
+	var mock_card_ui = _create_mock_card_ui("black_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("self_damage", 0), 1, "black_001 should deal 1 self damage")
+
+func test_summon_effect_draw_blue_014() -> void:
+	# blue_014: 登場時1枚ドロー
+	var mock_card_ui = _create_mock_card_ui("blue_014")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("draw", 0), 1, "blue_014 should draw 1 card")
+
+func test_summon_effect_draw_and_damage_black_014() -> void:
+	# black_014: 登場時自分HP-2, 1枚ドロー
+	var mock_card_ui = _create_mock_card_ui("black_014")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("self_damage", 0), 2, "black_014 should deal 2 self damage")
+	assert_eq(result.get("draw", 0), 1, "black_014 should draw 1 card")
+
+func test_attack_effect_direct_damage_blue_012() -> void:
+	# blue_012: 攻撃時追加で相手HP-1
+	var attacker = _create_mock_card_ui("blue_012")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(result.get("direct_damage", 0), 1, "blue_012 should deal 1 direct damage")
+
+func test_attack_effect_mana_green_010() -> void:
+	# green_010: 攻撃時マナ+1
+	var attacker = _create_mock_card_ui("green_010")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(result.get("mana", 0), 1, "green_010 should give mana +1 on attack")
+
+func test_attack_effect_lifesteal_black_007() -> void:
+	# black_007: 攻撃時与ダメ分自身HP回復
+	var attacker = _create_mock_card_ui("black_007")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_true(result.get("lifesteal", false), "black_007 should have lifesteal")
+
+func test_death_effect_mana_green_002() -> void:
+	# green_002: 死亡時マナ+1
+	var mock_card_ui = _create_mock_card_ui("green_002")
+	var context := _create_empty_context()
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_eq(result.get("mana", 0), 1, "green_002 should give mana +1 on death")
+
+func test_death_effect_spawn_token_black_006() -> void:
+	# black_006: 死亡時トークン召喚
+	var mock_card_ui = _create_mock_card_ui("black_006")
+	var context := _create_empty_context()
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_true(result.has("spawn_token"), "black_006 should spawn token on death")
+	var token = result.get("spawn_token", {})
+	assert_eq(token.get("atk", 0), 2, "Token should have 2 ATK")
+	assert_eq(token.get("hp", 0), 2, "Token should have 2 HP")
+
+func test_defense_effect_half_damage_blue_006() -> void:
+	# blue_006: 防御時被ダメージ半減
+	var defender = _create_mock_card_ui("blue_006")
+	var context := _create_empty_context()
+	var result := EffectManager.process_defense_effect(defender, 10, true, context)
+	assert_eq(result.get("final_damage", 10), 5, "blue_006 should halve damage")
+
+func test_defense_effect_mana_on_damage_green_012() -> void:
+	# green_012: 被ダメージ時マナ+1
+	var defender = _create_mock_card_ui("green_012")
+	var context := _create_empty_context()
+	var result := EffectManager.process_defense_effect(defender, 5, true, context)
+	assert_eq(result.get("mana", 0), 1, "green_012 should give mana +1 on defense")
+
+func test_no_effect_vanilla_card() -> void:
+	# バニラカードは効果なし
+	var mock_card_ui = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.size(), 0, "Vanilla card should have no summon effect")
+
+func test_multiple_cost_modifiers() -> void:
+	# 複数のgreen_006が場にいる場合
+	var slot1 = _create_mock_slot("green_006")
+	var slot2 = _create_mock_slot("green_006")
+	var context := {
+		"player_slots": [slot1, slot2, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var modifier := EffectManager.get_summon_cost_modifier(true, context)
+	assert_eq(modifier, -2, "Two green_006 should reduce cost by 2")
+
+# ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
 
@@ -120,6 +233,21 @@ func _create_mock_slot(effect_id: String):
 	mock_slot.card_ui.card_data.effect_id = effect_id
 	mock_slot._is_empty = false
 	return mock_slot
+
+func _create_mock_card_ui(effect_id: String):
+	# モックCardUIを作成
+	var mock = MockCardUI.new()
+	mock.card_data = MockCardData.new()
+	mock.card_data.effect_id = effect_id
+	mock.card_data.card_name = "TestCard_" + effect_id
+	return mock
+
+func _create_empty_context() -> Dictionary:
+	return {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+		"current_dice": 1
+	}
 
 # モッククラス
 class MockFieldSlot:
