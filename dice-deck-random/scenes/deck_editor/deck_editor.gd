@@ -246,7 +246,6 @@ func _add_pool_card(card: CardData) -> void:
 	wrapper.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 
 	var card_ui: CardUI = CardUIScene.instantiate()
-	card_ui.setup(card, 300, 420)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -265,6 +264,7 @@ func _add_pool_card(card: CardData) -> void:
 		card_ui.modulate = Color(0.5, 0.5, 0.5, 0.7)
 
 	wrapper.add_child(card_ui)
+	card_ui.setup(card, 300, 420)  # add_child後にsetupを呼ぶ
 	wrapper.add_child(count_label)
 	# Click to add
 	card_ui.card_clicked.connect(func(_c: CardUI): _add_card_to_deck(card))
