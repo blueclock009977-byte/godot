@@ -127,7 +127,7 @@ func _ready() -> void:
 	pool_grid.add_theme_constant_override("h_separation", 6)
 	pool_grid.add_theme_constant_override("v_separation", 6)
 	pool_grid.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	pool_grid.custom_minimum_size.x = 912
+	pool_grid.custom_minimum_size.x = 762
 	pool_scroll.add_child(pool_grid)
 
 	# Bottom buttons
@@ -242,10 +242,10 @@ func _update_pool_display() -> void:
 func _add_pool_card(card: CardData) -> void:
 	var wrapper := VBoxContainer.new()
 	wrapper.add_theme_constant_override("separation", 2)
-	wrapper.custom_minimum_size = Vector2(300, 450)
+	wrapper.custom_minimum_size = Vector2(250, 380)
 
 	var card_ui: CardUI = CardUIScene.instantiate()
-	card_ui.setup(card, 300, 420)
+	card_ui.setup(card, 250, 350)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
