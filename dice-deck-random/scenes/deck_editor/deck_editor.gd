@@ -243,8 +243,7 @@ func _add_pool_card(card: CardData) -> void:
 	wrapper.add_theme_constant_override("separation", 2)
 
 	var card_ui: CardUI = CardUIScene.instantiate()
-	card_ui.setup(card)
-	card_ui.custom_minimum_size = Vector2(320, 450)
+	card_ui.setup(card, 320, 450)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -319,8 +318,7 @@ func _update_deck_display() -> void:
 	for i in range(deck.size()):
 		var card: CardData = deck[i]
 		var card_ui: CardUI = CardUIScene.instantiate()
-		card_ui.setup(card)
-		card_ui.custom_minimum_size = Vector2(180, 260)
+		card_ui.setup(card, 180, 260)
 
 		# Click to remove
 		var idx := i
