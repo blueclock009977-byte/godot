@@ -35,6 +35,7 @@ var hp_badge: Panel
 var hp_label: Label
 var atk_badge: Panel
 var atk_label: Label
+var status_label: Label
 var glow_tween: Tween
 var long_press_timer: Timer
 var long_press_fired: bool = false
@@ -144,6 +145,15 @@ func _ready() -> void:
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	atk_badge.add_child(atk_label)
+	# 状態異常アイコン（右上に表示）
+	status_label = Label.new()
+	status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	status_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	status_label.add_theme_font_size_override("font_size", 20)
+	status_label.position = Vector2(size.x - 30, 5)
+	status_label.size = Vector2(25, 25)
+	status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(status_label)
 	# setup()がツリー参加前に呼ばれた場合に描画
 	if card_data:
 		_update_display()
@@ -200,10 +210,24 @@ func _update_display() -> void:
 
 	hp_badge.visible = true
 	atk_badge.visible = true
+	# HP表示（減少で赤く）
 	hp_label.text = "%d" % current_hp
+	var hp_color := Color(0.15, 0.55, 0.15)
+	if card_data and current_hp < card_data.hp:
+		hp_color = Color(0.8, 0.3, 0.3)  # ダメージで赤
+	_update_badge_style(hp_badge, hp_color)
+
+	# ATK表示（増加で黄、減少で青）
 	atk_label.text = "%d" % current_atk
-	_update_badge_style(hp_badge, Color(0.15, 0.55, 0.15))
-	_update_badge_style(atk_badge, Color(0.7, 0.15, 0.15))
+	var atk_color := Color(0.7, 0.15, 0.15)
+	if base_atk > 0:
+		if current_atk > base_atk:
+			atk_color = Color(1.0, 0.7, 0.2)  # バフで黄
+			atk_label.text = "%d+" % current_atk
+		elif current_atk < base_atk:
+			atk_color = Color(0.3, 0.3, 0.8)  # デバフで青
+			atk_label.text = "%d-" % current_atk
+	_update_badge_style(atk_badge, atk_color)
 
 	# Border
 	var border_color: Color
@@ -418,10 +442,19 @@ func heal(amount: int) -> void:
 	_update_display()
 
 func _update_status_display() -> void:
-	# 状態異常の視覚的表示（凍結=青、毒=緑）
+	# 状態異常の視覚的表示
+	var status_text := ""
 	if has_status(1):  # FROZEN
 		modulate = Color(0.6, 0.8, 1.0)
+		status_text += "*"  # 凍結マーク
 	elif has_status(2):  # POISON
 		modulate = Color(0.7, 1.0, 0.7)
+		status_text += "+"  # 毒マーク
 	else:
 		modulate = Color.WHITE
+
+	# 状態異常アイコン表示
+	if status_label:
+		status_label.text = status_text
+		if status_text != "":
+			status_label.add_theme_color_override("font_color", Color(1, 1, 0))  # 黄色
