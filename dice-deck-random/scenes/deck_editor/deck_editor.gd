@@ -243,7 +243,7 @@ func _add_pool_card(card: CardData) -> void:
 	wrapper.add_theme_constant_override("separation", 2)
 
 	var card_ui: CardUI = CardUIScene.instantiate()
-	card_ui.setup(card, 320, 960)
+	card_ui.setup(card, 300, 420)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
