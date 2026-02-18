@@ -20,6 +20,12 @@ var press_start_pos: Vector2 = Vector2.ZERO
 var original_position: Vector2 = Vector2.ZERO
 const DRAG_THRESHOLD := 30.0
 
+# 状態異常システム
+var status_effects: Dictionary = {}  # StatusEffect -> remaining turns
+var base_atk: int = 0  # 元のATK
+var atk_modifier: int = 0  # ATK修正値
+var has_revived: bool = false  # 復活済みフラグ
+
 var background: Panel
 var mana_cost_label: Label
 var image_area: Panel
@@ -145,7 +151,11 @@ func _ready() -> void:
 func setup(data: CardData, card_w: float = 175.0, card_h: float = 250.0) -> void:
 	card_data = data
 	current_hp = data.hp
+	base_atk = data.atk
 	current_atk = data.atk
+	atk_modifier = 0
+	status_effects = {}
+	has_revived = false
 	if is_inside_tree():
 		set_card_size(card_w, card_h)
 		_update_display()
@@ -367,3 +377,51 @@ func play_damage_flash() -> void:
 	var tween := create_tween()
 	tween.tween_property(self, "modulate", Color(1, 0.3, 0.3), 0.08)
 	tween.tween_property(self, "modulate", Color.WHITE, 0.15)
+# 状態異常関連の変数と関数を追加（CardUI末尾に追加）
+
+# ═══════════════════════════════════════════
+# 状態異常システム
+# ═══════════════════════════════════════════
+
+
+func apply_status(status: int, turns: int) -> void:
+	# status: EffectManager.StatusEffect
+	status_effects[status] = turns
+	_update_status_display()
+
+func has_status(status: int) -> bool:
+	return status_effects.has(status) and status_effects[status] > 0
+
+func remove_status(status: int) -> void:
+	status_effects.erase(status)
+	_update_status_display()
+
+func tick_status_effects() -> void:
+	var to_remove := []
+	for status in status_effects:
+		status_effects[status] -= 1
+		if status_effects[status] <= 0:
+			to_remove.append(status)
+	for status in to_remove:
+		status_effects.erase(status)
+	_update_status_display()
+
+func modify_atk(amount: int) -> void:
+	atk_modifier += amount
+	current_atk = maxi(0, base_atk + atk_modifier)
+	_update_display()
+
+func heal(amount: int) -> void:
+	current_hp += amount
+	if card_data:
+		current_hp = mini(current_hp, card_data.hp)  # 最大HPを超えない
+	_update_display()
+
+func _update_status_display() -> void:
+	# 状態異常の視覚的表示（凍結=青、毒=緑）
+	if has_status(1):  # FROZEN
+		modulate = Color(0.6, 0.8, 1.0)
+	elif has_status(2):  # POISON
+		modulate = Color(0.7, 1.0, 0.7)
+	else:
+		modulate = Color.WHITE

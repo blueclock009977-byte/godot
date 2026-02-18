@@ -607,6 +607,7 @@ func _start_turn() -> void:
 
 	var skip_dice_draw := is_first_player_turn1 or is_second_player_turn1
 
+	_process_turn_start_effects(is_player_turn)
 	current_phase = Phase.MAIN1
 	_update_all_ui()
 
@@ -670,6 +671,7 @@ func _end_turn() -> void:
 	_clear_selection()
 	_update_all_ui()
 	await _show_phase_banner("ターン終了", Color(0.6, 0.6, 0.6), 0.5)
+	_process_turn_end_effects(is_player_turn)
 	is_player_turn = not is_player_turn
 	_start_turn()
 
@@ -744,6 +746,10 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 
 		var atk_name := card_ui.card_data.card_name
 		var damage: int = card_ui.current_atk
+		var defender_ui = target_slot.card_ui if target_slot else null
+		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
+		if atk_effect.has("atk_bonus"):
+			damage += atk_effect["atk_bonus"]
 
 		# Highlight attacker briefly
 		card_ui.modulate = Color(1.5, 1.2, 0.5)
@@ -774,10 +780,12 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			await _animate_attack(card_ui, def_card)
 			def_card.play_damage_flash()
 			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
-			var remaining := def_card.take_damage(damage)
+			var final_damage := _process_defense_effect(def_card, damage, not attacker_is_player)
+			var remaining := def_card.take_damage(final_damage)
 			if remaining <= 0:
 				_log("[color=gray]%s 破壊！[/color]" % def_card.card_data.card_name)
 				await def_card.play_destroy_animation()
+				_process_death_effect(def_card, not attacker_is_player)
 				target_slot.remove_card()
 				def_card.queue_free()
 
@@ -1010,6 +1018,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.set_card_size(175, 250)
 	slot.place_card(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, card_ui.card_data.mana_cost])
+	_process_summon_effect(card_ui, true)
 	_clear_selection()
 	_update_all_ui()
 
@@ -1028,6 +1037,7 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 	await get_tree().create_timer(0.5).timeout
 
 	# Main Phase 1 - Summon
+	_process_turn_start_effects(is_player_turn)
 	current_phase = Phase.MAIN1
 	_update_all_ui()
 	await _show_phase_banner("メイン1", Color(0.3, 1.0, 0.5), 0.5)
@@ -1159,3 +1169,111 @@ func _on_surrender() -> void:
 	_log("[color=red]降参しました。[/color]")
 	await get_tree().create_timer(1.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
+
+# ═══════════════════════════════════════════
+# 効果処理
+# ═══════════════════════════════════════════
+
+func _get_effect_context() -> Dictionary:
+	return {
+		"player_slots": player_slots,
+		"opponent_slots": opponent_slots,
+		"current_dice": current_dice
+	}
+
+func _process_summon_effect(card_ui: CardUI, is_player: bool) -> void:
+	if not card_ui.card_data.has_effect():
+		return
+	var context := _get_effect_context()
+	var result: Dictionary = EffectManager.process_summon_effect(card_ui, is_player, context)
+	_apply_effect_result(result, is_player)
+
+func _process_attack_effect(attacker_ui: CardUI, defender_ui, is_player: bool) -> Dictionary:
+	if not attacker_ui.card_data.has_effect():
+		return {}
+	var context := _get_effect_context()
+	var result: Dictionary = EffectManager.process_attack_effect(attacker_ui, defender_ui, is_player, context)
+	_apply_effect_result(result, is_player)
+	return result
+
+func _process_death_effect(card_ui: CardUI, is_player: bool) -> Dictionary:
+	if not card_ui.card_data.has_effect():
+		return {}
+	var context := _get_effect_context()
+	var result: Dictionary = EffectManager.process_death_effect(card_ui, is_player, context)
+	_apply_effect_result(result, is_player)
+	return result
+
+func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) -> int:
+	if not defender_ui.card_data.has_effect():
+		return damage
+	var context := _get_effect_context()
+	var result: Dictionary = EffectManager.process_defense_effect(defender_ui, damage, is_player, context)
+	_apply_effect_result(result, is_player)
+	return result.get("final_damage", damage)
+
+func _process_turn_start_effects(is_player: bool) -> void:
+	var context := _get_effect_context()
+	var results: Array = EffectManager.process_turn_start_effects(is_player, context)
+	for result in results:
+		_apply_effect_result(result, is_player)
+
+func _process_turn_end_effects(is_player: bool) -> void:
+	var context := _get_effect_context()
+	var results: Array = EffectManager.process_turn_end_effects(is_player, context)
+	for result in results:
+		_apply_effect_result(result, is_player)
+
+func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
+	if result.is_empty():
+		return
+
+	# ログ出力
+	if result.has("log"):
+		_log(result["log"])
+
+	# マナ増加
+	if result.has("mana"):
+		if is_player:
+			player_mana = mini(player_mana + result["mana"], player_max_mana)
+		else:
+			opponent_mana = mini(opponent_mana + result["mana"], opponent_max_mana)
+
+	# マナ全回復
+	if result.has("mana_full"):
+		if is_player:
+			player_mana = player_max_mana
+		else:
+			opponent_mana = opponent_max_mana
+
+	# 自分へのダメージ
+	if result.has("self_damage"):
+		if is_player:
+			player_hp -= result["self_damage"]
+			if player_hp <= 0:
+				_game_end(false)
+		else:
+			opponent_hp -= result["self_damage"]
+			if opponent_hp <= 0:
+				_game_end(true)
+
+	# 相手への直接ダメージ
+	if result.has("direct_damage"):
+		if is_player:
+			opponent_hp -= result["direct_damage"]
+			if opponent_hp <= 0:
+				_game_end(true)
+		else:
+			player_hp -= result["direct_damage"]
+			if player_hp <= 0:
+				_game_end(false)
+
+	# ドロー
+	if result.has("draw"):
+		for i in range(result["draw"]):
+			if is_player:
+				_player_draw_card()
+			else:
+				_opponent_draw_card()
+
+	_update_all_ui()
