@@ -275,7 +275,7 @@ func _build_ui() -> void:
 	mana_label = Label.new()
 	mana_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mana_label.add_theme_font_size_override("font_size", 24)
-	mana_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
+	mana_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 	main_vbox.add_child(mana_label)
 
 	# Player hand
@@ -584,7 +584,7 @@ func _start_game() -> void:
 	_log("[color=yellow]オンラインゲーム開始！ %s が先行です。[/color]" % ("自分" if is_player_first else "相手"))
 
 	if is_player_first:
-		await _show_phase_banner("オンラインバトル！\nあなたは先行です", Color(0.4, 0.7, 1.0), 1.2)
+		await _show_phase_banner("オンラインバトル！\nあなたは先行です", Color(0.3, 1.0, 0.5), 1.2)
 	else:
 		await _show_phase_banner("オンラインバトル！\nあなたは後攻です", Color(1.0, 0.7, 0.3), 1.2)
 
@@ -644,7 +644,7 @@ func _start_turn() -> void:
 	_update_all_ui()
 
 	if is_player_turn:
-		await _show_phase_banner("自分のターン", Color(0.4, 0.7, 1.0), 0.6)
+		await _show_phase_banner("自分のターン", Color(0.3, 1.0, 0.5), 0.6)
 		# Player input enabled - wait for actions
 	else:
 		await _show_phase_banner("相手のターン", Color(1.0, 0.4, 0.4), 0.6)
@@ -679,7 +679,7 @@ func _on_end_phase() -> void:
 			# Draw
 			current_phase = Phase.DRAW
 			_update_all_ui()
-			await _show_phase_banner("ドロー & 1マナ回復", Color(0.4, 0.7, 1.0), 0.5)
+			await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
 			_player_draw_card()
 			_opponent_draw_card()
 			player_mana = mini(player_mana + 1, player_max_mana)
@@ -690,7 +690,7 @@ func _on_end_phase() -> void:
 			current_phase = Phase.MAIN2
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("メインフェイズ2", Color(0.4, 0.7, 1.0), 0.5)
+			await _show_phase_banner("メインフェイズ2", Color(0.3, 1.0, 0.5), 0.5)
 	elif current_phase == Phase.MAIN2:
 		await _send_action({"type": "end_phase", "phase": "main2"})
 		_end_turn()
@@ -769,14 +769,14 @@ func _execute_opponent_action(action: Dictionary) -> void:
 		"draw":
 			current_phase = Phase.DRAW
 			_update_all_ui()
-			await _show_phase_banner("ドロー & 1マナ回復", Color(0.4, 0.7, 1.0), 0.5)
+			await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
 			_opponent_draw_card()
 			opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
 			_log("相手がカードをドロー。1マナ回復。")
 			current_phase = Phase.MAIN2
 			_clear_selection()
 			_update_all_ui()
-			await _show_phase_banner("メインフェイズ2", Color(0.4, 0.7, 1.0), 0.5)
+			await _show_phase_banner("メインフェイズ2", Color(0.3, 1.0, 0.5), 0.5)
 		"surrender":
 			_game_end(true)
 
