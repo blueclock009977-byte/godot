@@ -244,7 +244,12 @@ func _add_pool_card(card: CardData) -> void:
 	wrapper.add_theme_constant_override("separation", 2)
 	wrapper.custom_minimum_size = Vector2(300, 450)
 
+	# CardUIを固定サイズのコンテナでラップ
+	var card_container := Control.new()
+	card_container.custom_minimum_size = Vector2(300, 420)
+	card_container.clip_contents = true
 	var card_ui: CardUI = CardUIScene.instantiate()
+	card_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -262,7 +267,8 @@ func _add_pool_card(card: CardData) -> void:
 	if count >= MAX_COPIES or not can_add:
 		card_ui.modulate = Color(0.5, 0.5, 0.5, 0.7)
 
-	wrapper.add_child(card_ui)
+	card_container.add_child(card_ui)
+	wrapper.add_child(card_container)
 	card_ui.setup(card, 300, 420)  # add_child後にsetupを呼ぶ
 	wrapper.add_child(count_label)
 	# Click to add
