@@ -36,6 +36,7 @@ var hp_label: Label
 var atk_badge: Panel
 var atk_label: Label
 var status_label: Label
+var effect_text_label: Label
 var glow_tween: Tween
 var long_press_timer: Timer
 var long_press_fired: bool = false
@@ -77,7 +78,7 @@ func _ready() -> void:
 	# Mana cost (top)
 	mana_cost_label = Label.new()
 	mana_cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	mana_cost_label.add_theme_font_size_override("font_size", 26)
+	mana_cost_label.add_theme_font_size_override("font_size", 30)
 	mana_cost_label.add_theme_color_override("font_color", Color(0.4, 0.7, 1.0))
 	mana_cost_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(mana_cost_label)
@@ -92,7 +93,7 @@ func _ready() -> void:
 	# Card name
 	name_label = Label.new()
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 22)
+	name_label.add_theme_font_size_override("font_size", 26)
 	name_label.clip_text = true
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(name_label)
@@ -100,11 +101,20 @@ func _ready() -> void:
 	# Attack dice
 	attack_dice_label = Label.new()
 	attack_dice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	attack_dice_label.add_theme_font_size_override("font_size", 24)
+	attack_dice_label.add_theme_font_size_override("font_size", 32)
 	attack_dice_label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.5))
 	attack_dice_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(attack_dice_label)
 
+	# Effect text
+	effect_text_label = Label.new()
+	effect_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	effect_text_label.add_theme_font_size_override("font_size", 20)
+	effect_text_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4))
+	effect_text_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	effect_text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	effect_text_label.visible = false
+	vbox.add_child(effect_text_label)
 	# Bottom row: HP / ATK
 	var bottom_row := HBoxContainer.new()
 	bottom_row.add_theme_constant_override("separation", 0)
@@ -121,7 +131,7 @@ func _ready() -> void:
 	hp_label = Label.new()
 	hp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hp_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	hp_label.add_theme_font_size_override("font_size", 28)
+	hp_label.add_theme_font_size_override("font_size", 32)
 	hp_label.add_theme_color_override("font_color", Color.WHITE)
 	hp_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	hp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -140,7 +150,7 @@ func _ready() -> void:
 	atk_label = Label.new()
 	atk_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	atk_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	atk_label.add_theme_font_size_override("font_size", 28)
+	atk_label.add_theme_font_size_override("font_size", 32)
 	atk_label.add_theme_color_override("font_color", Color.WHITE)
 	atk_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	atk_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -207,6 +217,12 @@ func _update_display() -> void:
 	for d in card_data.attack_dice:
 		a_dice += "[%d]" % d
 	attack_dice_label.text = a_dice if a_dice != "" else "-"
+	# Effect text
+	if card_data.has_effect() and effect_text_label:
+		effect_text_label.text = EffectManager.get_effect_description(card_data.effect_id)
+		effect_text_label.visible = true
+	elif effect_text_label:
+		effect_text_label.visible = false
 
 	hp_badge.visible = true
 	atk_badge.visible = true
