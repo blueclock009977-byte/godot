@@ -502,6 +502,37 @@ func test_death_effect_freeze_purple_005() -> void:
 	assert_eq(enemy1.card_ui._status, EffectManager.StatusEffect.FROZEN, "purple_005 should freeze enemy on death")
 
 # ═══════════════════════════════════════════
+# Phase 7: 効果発動スモークテスト（発動有無の見える化）
+# ═══════════════════════════════════════════
+
+func test_smoke_effects_trigger_on_each_timing() -> void:
+	# ON_SUMMON
+	var summon_card = _create_mock_card_ui("green_001")
+	var summon_result: Dictionary = EffectManager.process_summon_effect(summon_card, true, _create_empty_context())
+	assert_eq(summon_result.get("mana", 0), 1, "ON_SUMMON effect should trigger")
+
+	# ON_ATTACK
+	var atk_card = _create_mock_card_ui("blue_012")
+	var atk_result: Dictionary = EffectManager.process_attack_effect(atk_card, _create_mock_card_ui(""), true, _create_empty_context())
+	assert_eq(atk_result.get("direct_damage", 0), 1, "ON_ATTACK effect should trigger")
+
+	# ON_DEATH
+	var death_card = _create_mock_card_ui("green_002")
+	var death_result: Dictionary = EffectManager.process_death_effect(death_card, true, _create_empty_context())
+	assert_eq(death_result.get("mana", 0), 1, "ON_DEATH effect should trigger")
+
+	# ON_DEFENSE
+	var def_card = _create_mock_card_ui("yellow_004")
+	var def_result: Dictionary = EffectManager.process_defense_effect(def_card, 5, true, _create_empty_context())
+	assert_eq(def_result.get("final_damage", 5), 4, "ON_DEFENSE effect should trigger")
+
+func test_smoke_summon_effect_returns_log_as_activation_evidence() -> void:
+	var summon_card = _create_mock_card_ui("green_001")
+	var result: Dictionary = EffectManager.process_summon_effect(summon_card, true, _create_empty_context())
+	assert_true(result.has("log"), "Summon effect should return log when triggered")
+	assert_eq(result.get("mana", 0), 1, "green_001 activation result should include mana +1")
+
+# ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
 
