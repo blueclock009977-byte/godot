@@ -460,15 +460,6 @@ func _on_end_turn() -> void:
 	if current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2:
 		_end_turn()
 
-func _end_turn() -> void:
-	current_phase = Phase.END
-	_clear_selection()
-	_update_all_ui()
-	await _show_phase_banner("ターン終了", Color(0.6, 0.6, 0.6), 0.5)
-	_process_turn_end_effects(is_player_turn)
-	is_player_turn = not is_player_turn
-	_start_turn()
-
 # ═══════════════════════════════════════════
 # DICE & BATTLE
 # ═══════════════════════════════════════════
