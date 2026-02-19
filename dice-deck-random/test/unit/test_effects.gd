@@ -694,6 +694,18 @@ func test_smoke_summon_effect_returns_log_as_activation_evidence() -> void:
 	assert_true(result.has("log"), "Summon effect should return log when triggered")
 	assert_eq(result.get("mana", 0), 1, "green_001 activation result should include mana +1")
 
+func test_attack_effect_emits_effect_triggered_signal() -> void:
+	watch_signals(EffectManager)
+	var attacker = _create_mock_card_ui("green_010")
+	EffectManager.process_attack_effect(attacker, _create_mock_card_ui(""), true, _create_empty_context())
+	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Attack timing effect should emit effect_triggered once")
+
+func test_death_effect_emits_effect_triggered_signal() -> void:
+	watch_signals(EffectManager)
+	var dead_card = _create_mock_card_ui("green_002")
+	EffectManager.process_death_effect(dead_card, true, _create_empty_context())
+	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Death timing effect should emit effect_triggered once")
+
 func test_detect_unimplemented_on_summon_effect_ids() -> void:
 	# ON_SUMMONの効果IDで、処理が未実装のものを検出する
 	var context := {

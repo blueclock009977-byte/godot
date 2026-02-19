@@ -454,9 +454,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 			result["heal_player"] = 6
 			result["log"] = "[color=white]%s の効果: 自分HP+6[/color]" % card_name
 
-	if result.has("log"):
-		effect_triggered.emit(effect_id, card_ui, null)
-
+	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
 	return result
 
 ## 攻撃時効果を処理
@@ -566,6 +564,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 				ally.heal(1)
 			result["log"] = "[color=white]%s の効果: 味方全体HP+1[/color]" % card_name
 
+	_emit_effect_trigger_if_logged(effect_id, attacker_ui, defender_ui, result)
 	return result
 
 ## 死亡時効果を処理
@@ -691,6 +690,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 				target.heal(99)
 				result["log"] = "[color=white]%s の効果: %s のHP全回復[/color]" % [card_name, target.card_data.card_name]
 
+	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
 	return result
 
 ## 防御時効果を処理
@@ -734,6 +734,7 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 				result["shield_consumed"] = true
 				result["log"] = "[color=white]%s の効果: ダメージ無効[/color]" % card_name
 
+	_emit_effect_trigger_if_logged(effect_id, defender_ui, null, result)
 	return result
 
 ## ターン開始時効果を処理
@@ -965,6 +966,10 @@ func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
 
 func _make_effect_log(color: String, card_name: String, message: String) -> String:
 	return "[color=%s]%s の効果: %s[/color]" % [color, card_name, message]
+
+func _emit_effect_trigger_if_logged(effect_id: String, source_card, target, result: Dictionary) -> void:
+	if result.has("log"):
+		effect_triggered.emit(effect_id, source_card, target)
 
 func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
 	if not target or amount <= 0:
