@@ -871,8 +871,12 @@ func _process_turn_timing_effects(slots: Array, is_player: bool, context: Dictio
 func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 	var slots: Array = _get_slots_by_owner(is_player, context)
 	var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_START)
+	_append_poison_tick_results(slots, results)
+	return results
 
-	# 毒ダメージ処理
+## ターン終了時効果を処理
+func _append_poison_tick_results(slots: Array, results: Array) -> void:
+	# 毒ダメージ処理（ターン開始時）
 	for slot in slots:
 		var card_ui = _get_effect_card_from_slot(slot)
 		if not card_ui:
@@ -884,9 +888,6 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 			_emit_effect_trigger_if_logged("status_poison", card_ui, null, poison_result)
 			results.append(poison_result)
 
-	return results
-
-## ターン終了時効果を処理
 func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
 	var slots: Array = _get_slots_by_owner(is_player, context)
 	var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_END)

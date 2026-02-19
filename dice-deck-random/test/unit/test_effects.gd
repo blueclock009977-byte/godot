@@ -1324,6 +1324,14 @@ func test_timing_dispatcher_helpers_cover_all_event_routes() -> void:
 	assert_ne(script_text.find("Timing.TURN_END:\n\t\t\treturn _dispatch_timing_turn_end(is_player, context)"), -1,
 		"process_timing_event should delegate TURN_END routing to helper")
 
+func test_turn_start_poison_tick_processing_is_extracted_to_helper() -> void:
+	# 次のリファクタ候補: ターン開始時の毒処理を専用helperへ分離
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _append_poison_tick_results"), -1,
+		"effect_manager should define _append_poison_tick_results helper")
+	assert_ne(script_text.find("_append_poison_tick_results(slots, results)"), -1,
+		"process_turn_start_effects should delegate poison tick loop to helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
