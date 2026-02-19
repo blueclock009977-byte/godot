@@ -28,3 +28,10 @@ static func get_phase_name(phase: Phase) -> String:
 		Phase.MAIN2: return "メイン2"
 		Phase.END: return "終了"
 		_: return "?"
+
+## 配列をArray[CardData]型に変換（battle/online_battle共通）
+static func to_card_data_array(arr: Array) -> Array[CardData]:
+	var result: Array[CardData] = []
+	for item in arr:
+		result.append(item)
+	return result

@@ -615,10 +615,7 @@ func _shuffle_with_rng(arr: Array, rng: RandomNumberGenerator) -> void:
 		arr[j] = tmp
 
 func _to_card_data_array(arr: Array) -> Array[CardData]:
-	var result: Array[CardData] = []
-	for item in arr:
-		result.append(item)
-	return result
+	return BattleConstants.to_card_data_array(arr)
 
 # ═══════════════════════════════════════════
 # TURN FLOW
