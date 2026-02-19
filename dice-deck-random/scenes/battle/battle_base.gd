@@ -546,19 +546,7 @@ func _shake_node(node: Control) -> void:
 	tween.tween_property(node, "position", orig_pos, 0.04)
 
 func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
-	var popup := Label.new()
-	popup.text = "-%d" % amount
-	popup.add_theme_font_size_override("font_size", 32)
-	popup.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	popup.global_position = pos
-	popup.z_index = 200
-	popup.top_level = true
-	add_child(popup)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(popup, "global_position:y", pos.y - 60, 0.6)
-	tween.tween_property(popup, "modulate:a", 0.0, 0.6)
-	tween.finished.connect(func(): popup.queue_free())
+	BattleConstants.spawn_damage_popup(self, pos, amount)
 
 ## ダイスロールアニメーション（共通実装）
 ## target < 0: ランダム値を生成, target >= 1: 指定値を使用
