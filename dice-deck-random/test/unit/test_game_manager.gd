@@ -71,3 +71,28 @@ func test_save_deck_to_slot_rejects_slot_too_large() -> void:
 func test_valid_slot_range() -> void:
 	for slot in range(GameManager.MAX_DECK_SLOTS):
 		assert_true(slot >= 0 and slot < GameManager.MAX_DECK_SLOTS, "Slot %d should be valid" % slot)
+
+# ==============================================================================
+# Deck Slot Response Parsing Tests
+# ==============================================================================
+func test_extract_slot_counts_from_dictionary_response() -> void:
+	var raw := {
+		"0": [1, 2, 3],
+		"2": [4, 5],
+		"5": null,
+	}
+	var slots: Dictionary = GameManager.call("_extract_slot_counts", raw)
+	assert_eq(slots.get(0, -1), 3, "Dictionary key '0' should map to 3 cards")
+	assert_eq(slots.get(2, -1), 2, "Dictionary key '2' should map to 2 cards")
+	assert_false(slots.has(5), "Null slot data should be ignored")
+
+func test_extract_slot_counts_from_array_response() -> void:
+	var raw := [
+		[1, 2, 3, 4],
+		null,
+		[10, 11],
+	]
+	var slots: Dictionary = GameManager.call("_extract_slot_counts", raw)
+	assert_eq(slots.get(0, -1), 4, "Array index 0 should map to 4 cards")
+	assert_eq(slots.get(2, -1), 2, "Array index 2 should map to 2 cards")
+	assert_false(slots.has(1), "Null array entries should be ignored")

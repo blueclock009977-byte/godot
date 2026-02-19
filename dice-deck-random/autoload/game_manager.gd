@@ -93,6 +93,24 @@ func load_deck_from_slot(slot: int) -> Array:
 			deck.append(card.duplicate_card())
 	return deck
 
+func _extract_slot_counts(raw_data: Variant) -> Dictionary:
+	"""Firebaseのdecksレスポンスから {slot_index: card_count} を抽出する。"""
+	var slots := {}
+
+	if raw_data is Dictionary:
+		for key in raw_data:
+			var ids = raw_data[key]
+			if ids is Array and ids.size() > 0:
+				slots[int(key)] = ids.size()
+	elif raw_data is Array:
+		# Firebaseは数値キー(0..N)が連番だとArrayで返すことがある
+		for i in range(min(raw_data.size(), MAX_DECK_SLOTS)):
+			var ids = raw_data[i]
+			if ids is Array and ids.size() > 0:
+				slots[i] = ids.size()
+
+	return slots
+
 func get_all_deck_slots() -> Dictionary:
 	"""全スロットのデッキ情報を取得（スロット番号 -> カード枚数）"""
 	if user_name == "":
@@ -100,13 +118,7 @@ func get_all_deck_slots() -> Dictionary:
 	var result := await FirebaseManager.get_data("users/%s/decks" % user_name)
 	if result.code != 200 or result.data == null:
 		return {}
-	var slots := {}
-	if result.data is Dictionary:
-		for key in result.data:
-			var ids = result.data[key]
-			if ids is Array:
-				slots[int(key)] = ids.size()
-	return slots
+	return _extract_slot_counts(result.data)
 
 func delete_deck_slot(slot: int) -> void:
 	if user_name == "" or slot < 0 or slot >= MAX_DECK_SLOTS:
