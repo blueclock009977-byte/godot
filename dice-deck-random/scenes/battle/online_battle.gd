@@ -5,12 +5,13 @@ extends Control
 ## MY turn: input enabled, actions sent to Firebase.
 ## OPPONENT turn: input disabled, actions received from Firebase.
 
-const CARD_UI_SCENE := preload("res://scenes/battle/card_ui.tscn")
-const FIELD_SLOT_SCENE := preload("res://scenes/battle/field_slot.tscn")
-const MAX_HP := 20
-const MAX_MANA_CAP := 5
-const DEFAULT_STARTING_HAND := 4  # 0〜1色デッキ用
-const MOVE_COST := 1
+# ─── Constants (from BattleConstants) ───
+const CARD_UI_SCENE := preload(BattleConstants.CARD_UI_SCENE_PATH)
+const FIELD_SLOT_SCENE := preload(BattleConstants.FIELD_SLOT_SCENE_PATH)
+const MAX_HP := BattleConstants.MAX_HP
+const MAX_MANA_CAP := BattleConstants.MAX_MANA_CAP
+const DEFAULT_STARTING_HAND := BattleConstants.DEFAULT_STARTING_HAND
+const MOVE_COST := BattleConstants.MOVE_COST
 
 enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
 enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
@@ -904,7 +905,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		if target_is_player_hp:
 			if attacker_is_player:
 				_log("[color=lime]%s → 相手HPに%dダメージ！[/color]" % [atk_name, damage])
-				await _animate_attack(card_ui, opponent_hp_label)
+				await BattleUtils.animate_attack(self, card_ui, opponent_hp_label)
 				_spawn_damage_popup(opponent_hp_label.global_position + Vector2(50, 0), damage)
 				_shake_node(opponent_hp_label)
 				opponent_hp -= damage
@@ -913,7 +914,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 					return
 			else:
 				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
-				await _animate_attack(card_ui, player_hp_label)
+				await BattleUtils.animate_attack(self, card_ui, player_hp_label)
 				_spawn_damage_popup(player_hp_label.global_position + Vector2(50, 0), damage)
 				_shake_node(player_hp_label)
 				player_hp -= damage
@@ -923,7 +924,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		elif target_slot:
 			var def_card: CardUI = target_slot.card_ui
 			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
-			await _animate_attack(card_ui, def_card)
+			await BattleUtils.animate_attack(self, card_ui, def_card)
 			def_card.play_damage_flash()
 			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
 			# 防御時効果
@@ -960,21 +961,6 @@ func _animate_dice_roll_to(target: int) -> int:
 	dice_label.add_theme_font_size_override("font_size", 36)
 	await get_tree().create_timer(0.3).timeout
 	return target
-
-func _animate_attack(card_ui: CardUI, target_node: Control) -> void:
-	var orig := card_ui.global_position
-	var target_center := target_node.global_position + target_node.size / 2
-	var card_center := orig + card_ui.size / 2
-	var direction := (target_center - card_center).normalized()
-	var lunge_distance := card_center.distance_to(target_center) * 0.4
-	lunge_distance = clampf(lunge_distance, 30.0, 200.0)
-	var lunge_pos := orig + direction * lunge_distance
-	card_ui.z_index = 50
-	var tween := create_tween()
-	tween.tween_property(card_ui, "global_position", lunge_pos, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween.tween_property(card_ui, "global_position", orig, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	await tween.finished
-	card_ui.z_index = 1
 
 func _shake_node(node: Control) -> void:
 	BattleUtils.shake_node(self, node)
