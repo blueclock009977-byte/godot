@@ -196,18 +196,24 @@ func _poll_room() -> void:
 		return
 	_polling = true
 
-	# Check for opponent join (host waiting)
-	if is_host:
-		var room_result := await FirebaseManager.get_data("rooms/%s" % room_code)
-		if room_result.code == 200 and room_result.data != null:
-			var data: Dictionary = room_result.data
-			if data.get("status") == "playing" and data.get("player2") != null:
-				if opponent_id == "":
-					opponent_id = data["player2"]["id"]
-					opponent_name = data["player2"].get("name", "")
-					opponent_joined.emit()
-			if data.get("status") == "finished":
-				_emit_opponent_disconnected_once()
+	# Check room state first (both host and guest)
+	var room_result := await FirebaseManager.get_data("rooms/%s" % room_code)
+	if room_result.code != 200 or room_result.data == null or room_result.data is not Dictionary:
+		_emit_opponent_disconnected_once()
+		_polling = false
+		return
+	var room_data: Dictionary = room_result.data
+	if room_data.get("status") == "finished":
+		_emit_opponent_disconnected_once()
+		_polling = false
+		return
+
+	# Host waits for player2 join
+	if is_host and room_data.get("status") == "playing" and room_data.get("player2") != null:
+		if opponent_id == "":
+			opponent_id = room_data["player2"]["id"]
+			opponent_name = room_data["player2"].get("name", "")
+			opponent_joined.emit()
 
 	# Check for new actions
 	var actions_result := await FirebaseManager.get_data("rooms/%s/actions" % room_code)

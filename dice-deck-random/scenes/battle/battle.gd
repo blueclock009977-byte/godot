@@ -568,7 +568,7 @@ func _end_turn() -> void:
 func _do_dice_and_battle() -> void:
 	is_animating = true
 	# Roll dice with animation
-	current_dice = await _animate_dice_roll()
+	current_dice = await BattleUtils.animate_dice_roll(self, dice_label)
 	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
 
 	# ダイスブロック効果をチェック
@@ -691,10 +691,6 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		card_ui.modulate = Color.WHITE
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
-
-func _animate_dice_roll() -> int:
-	current_dice = await BattleUtils.animate_dice_roll(self, dice_label)
-	return current_dice
 
 # ═══════════════════════════════════════════
 # DRAW

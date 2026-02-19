@@ -731,7 +731,7 @@ func _opponent_move(from_idx: int, to_idx: int) -> void:
 # ═══════════════════════════════════════════
 func _do_dice_and_battle(dice_val: int) -> void:
 	is_animating = true
-	current_dice = await _animate_dice_roll_to(dice_val)
+	current_dice = await BattleUtils.animate_dice_roll(self, dice_label, dice_val)
 	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
 
 	# ダイスブロック効果をチェック
@@ -859,9 +859,6 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		card_ui.modulate = Color.WHITE
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
-
-func _animate_dice_roll_to(target: int) -> int:
-	return await BattleUtils.animate_dice_roll(self, dice_label, target)
 
 # ═══════════════════════════════════════════
 # DRAW
