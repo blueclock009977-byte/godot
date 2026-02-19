@@ -35,3 +35,17 @@ static func to_card_data_array(arr: Array) -> Array[CardData]:
 	for item in arr:
 		result.append(item)
 	return result
+
+## バトルシミュレーション用：攻撃対象を検索（battle/online_battle共通）
+## attacker: {"lane": int, ...}, defenders: [{"hp": int, "lane": int, "is_front": bool, ...}, ...]
+static func sim_find_target(attacker: Dictionary, defenders: Array):
+	var lane: int = attacker["lane"]
+	# 同レーン前列を優先
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
+			return d
+	# 同レーン後列
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
+			return d
+	return null

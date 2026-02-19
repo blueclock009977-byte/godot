@@ -493,14 +493,7 @@ func _simulate_battle(dice_val: int) -> Array:
 	return [dmg_to_opp, dmg_to_me]
 
 func _sim_find_target(attacker: Dictionary, defenders: Array):
-	var lane: int = attacker["lane"]
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
-			return d
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
-			return d
-	return null
+	return BattleConstants.sim_find_target(attacker, defenders)
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
