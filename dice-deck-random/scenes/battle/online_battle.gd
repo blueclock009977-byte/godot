@@ -1287,8 +1287,7 @@ func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
 
 func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
 	var context := _get_effect_context()
-	var enemy_modifier := EffectManager.get_dice_modifier(not is_player, context)
-	return dice_value in enemy_modifier.get("blocked_dice", [])
+	return BattleUtils.is_dice_blocked(dice_value, is_player, context)
 
 func _get_effective_summon_cost(card_ui: CardUI) -> int:
 	var context := _get_effect_context()

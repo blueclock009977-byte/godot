@@ -89,6 +89,13 @@ static func get_effective_summon_cost(card_ui: CardUI, context: Dictionary) -> i
 	var modifier: int = EffectManager.get_summon_cost_modifier(true, context)
 	return maxi(1, base_cost + modifier)
 
+## Check if a dice value is blocked by enemy effects
+## is_player: true if checking for player's dice being blocked
+## context: the effect context dictionary from _get_effect_context()
+static func is_dice_blocked(dice_value: int, is_player: bool, context: Dictionary) -> bool:
+	var enemy_modifier := EffectManager.get_dice_modifier(not is_player, context)
+	return dice_value in enemy_modifier.get("blocked_dice", [])
+
 ## Simulate battle to calculate expected damage for each side
 ## Returns [dmg_to_opp, dmg_to_me] (damage predictions)
 static func simulate_battle(dice_val: int, player_slots: Array, opponent_slots: Array, is_player_turn: bool) -> Array:
