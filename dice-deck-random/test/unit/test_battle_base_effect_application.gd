@@ -31,6 +31,28 @@ func test_apply_effect_result_heal_player_full_sets_owner_to_max_hp() -> void:
 	assert_eq(battle.opponent_hp, 7, "heal_player_full should not affect opponent HP")
 	battle.free()
 
+func test_apply_effect_result_heal_player_applies_to_opponent_side_when_is_player_false() -> void:
+	var battle := TestBattleBase.new()
+	battle.player_hp = 10
+	battle.opponent_hp = 9
+
+	battle._apply_effect_result({"heal_player": 3}, false)
+
+	assert_eq(battle.player_hp, 10, "heal_player should not affect player side when is_player is false")
+	assert_eq(battle.opponent_hp, 12, "heal_player should increase opponent owner HP")
+	battle.free()
+
+func test_apply_effect_result_heal_player_full_applies_to_opponent_side_when_is_player_false() -> void:
+	var battle := TestBattleBase.new()
+	battle.player_hp = 10
+	battle.opponent_hp = 2
+
+	battle._apply_effect_result({"heal_player_full": true}, false)
+
+	assert_eq(battle.player_hp, 10, "heal_player_full should not affect player side when is_player is false")
+	assert_eq(battle.opponent_hp, BattleConstants.MAX_HP, "heal_player_full should restore opponent owner to max HP")
+	battle.free()
+
 func test_apply_effect_result_direct_damage_triggers_game_end() -> void:
 	var battle := TestBattleBase.new()
 	battle.opponent_hp = 1

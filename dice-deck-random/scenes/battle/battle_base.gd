@@ -236,16 +236,10 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 		_apply_hp_damage_to_opponent(is_player, result["direct_damage"])
 
 	if result.has("heal_player"):
-		if is_player:
-			player_hp = mini(MAX_HP, player_hp + result["heal_player"])
-		else:
-			opponent_hp = mini(MAX_HP, opponent_hp + result["heal_player"])
+		_apply_hp_heal_to_owner(is_player, result["heal_player"])
 
 	if result.has("heal_player_full"):
-		if is_player:
-			player_hp = MAX_HP
-		else:
-			opponent_hp = MAX_HP
+		_restore_owner_hp_to_max(is_player)
 
 	if result.has("draw"):
 		for i in range(result["draw"]):
@@ -283,6 +277,20 @@ func _apply_hp_damage_to_opponent(is_player: bool, amount: int) -> void:
 		player_hp -= amount
 		if player_hp <= 0:
 			_game_end(false)
+
+func _apply_hp_heal_to_owner(is_player: bool, amount: int) -> void:
+	if amount <= 0:
+		return
+	if is_player:
+		player_hp = mini(MAX_HP, player_hp + amount)
+	else:
+		opponent_hp = mini(MAX_HP, opponent_hp + amount)
+
+func _restore_owner_hp_to_max(is_player: bool) -> void:
+	if is_player:
+		player_hp = MAX_HP
+	else:
+		opponent_hp = MAX_HP
 
 # ═══════════════════════════════════════════
 # CARD DRAW
