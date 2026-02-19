@@ -332,31 +332,8 @@ func _update_all_ui() -> void:
 	# Dice preview
 	_update_dice_preview()
 
-
-func _update_dice_preview() -> void:
-	dice_preview_panel.visible = not game_over
-	if game_over:
-		return
-	var results := []
-	for dice_val in range(1, 7):
-		results.append(BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn))
-	dice_preview_label.text = BattleUtils.build_dice_preview_text(results)
-
-
 func _update_opponent_hand_display() -> void:
 	BattleUtils.update_opponent_hand_display(opponent_hand_container, opponent_hand.size())
-
-func _update_hand_highlights() -> void:
-	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
-	for card_ui in player_hand:
-		if card_ui is CardUI:
-			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and BattleUtils.has_empty_slot(player_slots)
-			card_ui.set_summonable(can_summon)
-	# Field cards: glow if movable (in main phase, has mana, has empty slot)
-	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and BattleUtils.has_empty_slot(player_slots)
-	for slot in player_slots:
-		if slot and not slot.is_empty():
-			slot.card_ui.set_movable(can_move)
 
 # ═══════════════════════════════════════════
 # GAME START
@@ -899,7 +876,3 @@ func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
 func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
 	var context := _get_effect_context()
 	return BattleUtils.is_dice_blocked(dice_value, is_player, context)
-
-func _get_effective_summon_cost(card_ui: CardUI) -> int:
-	var context := _get_effect_context()
-	return BattleUtils.get_effective_summon_cost(card_ui, context)
