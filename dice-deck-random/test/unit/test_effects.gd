@@ -1143,6 +1143,18 @@ func test_turn_start_self_heal_helper_is_shared_for_blue_010_and_green_003() -> 
 	assert_ne(script_text.find("_apply_self_heal_effect(card_ui, result, \"green\", card_name, 1)"), -1,
 		"green_003 should delegate to self-heal helper")
 
+func test_summon_mana_gain_helper_is_shared_for_green_001_004_008() -> void:
+	# 次の段階リファクタ: 登場時の単純マナ加算+ログ生成を1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_mana_gain_effect"), -1,
+		"effect_manager should define _apply_mana_gain_effect")
+	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 1)"), -1,
+		"green_001 should delegate to mana-gain helper")
+	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 2)"), -1,
+		"green_004 should delegate to mana-gain helper")
+	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 3)"), -1,
+		"green_008 should delegate to mana-gain helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

@@ -289,16 +289,13 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = "[color=cyan]%s の効果: 敵全体を凍結[/color]" % card_name
 
 		"green_001":  # 登場時:マナ+1
-			result["mana"] = 1
-			result["log"] = _make_effect_log("green", card_name, "マナ+1")
+			_apply_mana_gain_effect(result, "green", card_name, 1)
 
 		"green_004":  # 登場時:マナ+2
-			result["mana"] = 2
-			result["log"] = _make_effect_log("green", card_name, "マナ+2")
+			_apply_mana_gain_effect(result, "green", card_name, 2)
 
 		"green_008":  # 登場時:マナ+3
-			result["mana"] = 3
-			result["log"] = "[color=green]%s の効果: マナ+3[/color]" % card_name
+			_apply_mana_gain_effect(result, "green", card_name, 3)
 
 		"green_011":  # 登場時:味方1体HP+2
 			var target = _get_random_ally(is_player, context)
@@ -1003,6 +1000,12 @@ func _apply_self_heal_effect(card_ui, result: Dictionary, color: String, card_na
 		return
 	card_ui.heal(amount)
 	result["log"] = _make_effect_log(color, card_name, "自身HP+%d" % amount)
+
+func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	result["mana"] = amount
+	result["log"] = _make_effect_log(color, card_name, "マナ+%d" % amount)
 
 func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)
