@@ -121,6 +121,17 @@ static func simulate_battle(dice_val: int, player_slots: Array, opponent_slots: 
 	var dmg_to_opp := 0
 	var dmg_to_me := 0
 
+	# Local helper lambda (to avoid static self-reference parse error)
+	var find_target := func(attacker: Dictionary, defenders: Array):
+		var lane: int = attacker["lane"]
+		for d in defenders:
+			if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
+				return d
+		for d in defenders:
+			if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
+				return d
+		return null
+
 	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
 	for card in turn_cards:
 		if card["hp"] <= 0:
@@ -128,7 +139,7 @@ static func simulate_battle(dice_val: int, player_slots: Array, opponent_slots: 
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = sim_find_target(card, def_cards)
+		var target = find_target.call(card, def_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_opp += card["atk"]
@@ -148,7 +159,7 @@ static func simulate_battle(dice_val: int, player_slots: Array, opponent_slots: 
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = sim_find_target(card, turn_cards)
+		var target = find_target.call(card, turn_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_me += card["atk"]
@@ -184,3 +195,16 @@ static func create_card_back_style() -> StyleBoxFlat:
 	style.corner_radius_bottom_left = 4
 	style.corner_radius_bottom_right = 4
 	return style
+
+## マナ表示文字列を生成（●=使用可能、○=最大まで、·=上限超過分）
+## max_mana_cap: マナの絶対上限（デフォルト10）
+static func build_mana_string(current_mana: int, max_mana: int, max_mana_cap: int = 10) -> String:
+	var mana_str := ""
+	for i in range(max_mana_cap):
+		if i < current_mana:
+			mana_str += "●"
+		elif i < max_mana:
+			mana_str += "○"
+		else:
+			mana_str += "·"
+	return mana_str

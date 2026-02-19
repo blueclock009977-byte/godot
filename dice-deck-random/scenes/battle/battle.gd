@@ -359,14 +359,7 @@ func _build_ui() -> void:
 func _update_all_ui() -> void:
 	player_hp_label.text = "HP 自分: %d" % player_hp
 	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
-	var mana_str := ""
-	for i in range(MAX_MANA_CAP):
-		if i < player_mana:
-			mana_str += "●"
-		elif i < player_max_mana:
-			mana_str += "○"
-		else:
-			mana_str += "·"
+	var mana_str := BattleUtils.build_mana_string(player_mana, player_max_mana, MAX_MANA_CAP)
 	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
 	var phase_names := {Phase.MAIN1: "メイン1", Phase.DICE: "ダイス", Phase.DRAW: "ドロー&1マナ回復", Phase.MAIN2: "メイン2", Phase.END: "終了"}
 	var whose := "自分" if is_player_turn else "相手"
