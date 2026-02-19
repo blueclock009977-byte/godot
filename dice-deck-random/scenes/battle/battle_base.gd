@@ -230,24 +230,22 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 			opponent_mana = opponent_max_mana
 
 	if result.has("self_damage"):
-		if is_player:
-			player_hp -= result["self_damage"]
-			if player_hp <= 0:
-				_game_end(false)
-		else:
-			opponent_hp -= result["self_damage"]
-			if opponent_hp <= 0:
-				_game_end(true)
+		_apply_hp_damage_to_owner(is_player, result["self_damage"])
 
 	if result.has("direct_damage"):
+		_apply_hp_damage_to_opponent(is_player, result["direct_damage"])
+
+	if result.has("heal_player"):
 		if is_player:
-			opponent_hp -= result["direct_damage"]
-			if opponent_hp <= 0:
-				_game_end(true)
+			player_hp = mini(MAX_HP, player_hp + result["heal_player"])
 		else:
-			player_hp -= result["direct_damage"]
-			if player_hp <= 0:
-				_game_end(false)
+			opponent_hp = mini(MAX_HP, opponent_hp + result["heal_player"])
+
+	if result.has("heal_player_full"):
+		if is_player:
+			player_hp = MAX_HP
+		else:
+			opponent_hp = MAX_HP
 
 	if result.has("draw"):
 		for i in range(result["draw"]):
@@ -261,6 +259,30 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 			_destroy_card_ui_immediate(target)
 
 	_update_all_ui()
+
+func _apply_hp_damage_to_owner(is_player: bool, amount: int) -> void:
+	if amount <= 0:
+		return
+	if is_player:
+		player_hp -= amount
+		if player_hp <= 0:
+			_game_end(false)
+	else:
+		opponent_hp -= amount
+		if opponent_hp <= 0:
+			_game_end(true)
+
+func _apply_hp_damage_to_opponent(is_player: bool, amount: int) -> void:
+	if amount <= 0:
+		return
+	if is_player:
+		opponent_hp -= amount
+		if opponent_hp <= 0:
+			_game_end(true)
+	else:
+		player_hp -= amount
+		if player_hp <= 0:
+			_game_end(false)
 
 # ═══════════════════════════════════════════
 # CARD DRAW
