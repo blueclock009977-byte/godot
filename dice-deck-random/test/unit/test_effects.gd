@@ -404,6 +404,17 @@ func test_summon_effect_yellow_003() -> void:
 	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
 	assert_eq(result.get("draw", 0), 2, "yellow_003 should draw 2 cards")
 
+func test_summon_effect_yellow_009_uses_unified_log_format() -> void:
+	var mock_card_ui = _create_mock_card_ui("yellow_009")
+	var ally = _create_mock_slot_with_ui("")
+	var context := {
+		"player_slots": [ally, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	var expected := EffectManager._make_effect_log("yellow", mock_card_ui.card_data.card_name, "%sのATK+2" % ally.card_ui.card_data.card_name)
+	assert_eq(result.get("log", ""), expected, "yellow_009 should use shared log helper format")
+
 func test_summon_effect_white_001() -> void:
 	# white_001: 登場時自分HP+2
 	var mock_card_ui = _create_mock_card_ui("white_001")
@@ -1423,6 +1434,16 @@ func test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_ef
 		"blue_001 and blue_009 should delegate to targeted ATK modifier helper")
 	assert_ne(script_text.find("_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, \"purple\", \"のATK-2\")"), -1,
 		"black_013 should delegate to targeted ATK modifier helper")
+
+func test_specific_target_atk_modifier_helper_is_shared_for_attack_and_summon_effects() -> void:
+	# 次の段階リファクタ: 指定対象ATK増減+ログ生成を1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_specific_target_atk_modifier_effect"), -1,
+		"effect_manager should define _apply_specific_target_atk_modifier_effect")
+	assert_ne(script_text.find("_apply_specific_target_atk_modifier_effect(target, 2, result, card_name, \"yellow\", \" のATK+2\")"), -1,
+		"yellow_009 should delegate to specific-target atk modifier helper")
+	assert_ne(script_text.find("_apply_specific_target_atk_modifier_effect(defender_ui, -2, result, card_name, \"magenta\", \"のATK-2\")"), -1,
+		"purple_002 should delegate to specific-target atk modifier helper")
 
 func test_turn_start_self_heal_helper_is_shared_for_blue_010_and_green_003() -> void:
 	# 次の段階リファクタ: ターン開始時の自身回復+ログ生成を1ヘルパーへ統一

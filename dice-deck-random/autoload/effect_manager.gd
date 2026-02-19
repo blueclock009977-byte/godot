@@ -467,9 +467,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"yellow_009":  # 登場時:味方1体ATK+2
 			var target = _get_random_ally(is_player, context)
-			if target:
-				target.modify_atk(2)
-				result["log"] = "[color=yellow]%s の効果: %s のATK+2[/color]" % [card_name, target.card_data.card_name]
+			_apply_specific_target_atk_modifier_effect(target, 2, result, card_name, "yellow", "のATK+2")
 
 		"yellow_013":  # 登場時:味方全体ATK+1,HP+1
 			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, "yellow", "味方全体ATK+1,HP+1")
@@ -614,9 +612,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		# 紫カード攻撃時効果
 		# ═══════════════════════════════════════════
 		"purple_002":  # 攻撃時:対象ATK-2(永続)
-			if defender_ui:
-				defender_ui.modify_atk(-2)
-				result["log"] = "[color=magenta]%s の効果: %s のATK-2[/color]" % [card_name, defender_ui.card_data.card_name]
+			_apply_specific_target_atk_modifier_effect(defender_ui, -2, result, card_name, "magenta", "のATK-2")
 
 		"purple_007":  # 攻撃時:対象のダイス2つ無効化
 			if defender_ui:
@@ -1136,7 +1132,10 @@ func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount:
 
 func _apply_targeted_atk_modifier_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)
-	if not target:
+	_apply_specific_target_atk_modifier_effect(target, amount, result, card_name, color, suffix)
+
+func _apply_specific_target_atk_modifier_effect(target, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
+	if not target or amount == 0:
 		return
 	target.modify_atk(amount)
 	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
