@@ -1,5 +1,6 @@
 extends Control
 
+var deck_status_label: Label
 var status_label: Label
 var room_code_display: Label
 var main_menu: VBoxContainer
@@ -34,6 +35,13 @@ func _build_ui() -> void:
 	title.add_theme_font_size_override("font_size", 42)
 	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	root_vbox.add_child(title)
+
+	# Deck status
+	deck_status_label = Label.new()
+	_update_deck_status()
+	deck_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	deck_status_label.add_theme_font_size_override("font_size", 20)
+	root_vbox.add_child(deck_status_label)
 
 	# Status
 	status_label = Label.new()
@@ -305,3 +313,14 @@ func _on_back() -> void:
 	if MultiplayerManager.is_in_room:
 		await MultiplayerManager.leave_room()
 	GameManager.change_scene("res://scenes/title/title_screen.tscn")
+
+func _update_deck_status() -> void:
+	if GameManager.player_deck.size() == 0:
+		deck_status_label.text = "デッキ: 未設定"
+		deck_status_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+	elif GameManager.current_deck_slot >= 0:
+		deck_status_label.text = "デッキ: スロット %d" % (GameManager.current_deck_slot + 1)
+		deck_status_label.add_theme_color_override("font_color", Color(0.4, 1, 0.6))
+	else:
+		deck_status_label.text = "デッキ: 設定済み (%d枚)" % GameManager.player_deck.size()
+		deck_status_label.add_theme_color_override("font_color", Color(0.4, 1, 0.6))

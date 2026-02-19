@@ -6,6 +6,7 @@ var current_state: GameState = GameState.TITLE
 var player_deck: Array = []
 var battle_result: String = ""
 var user_name: String = ""
+var current_deck_slot: int = -1  # -1 = デッキ未設定
 
 func _ready() -> void:
 	_load_user_name()

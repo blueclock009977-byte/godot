@@ -91,8 +91,8 @@ func _ready() -> void:
 	color_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_vbox.add_child(color_row)
 
-	var color_labels := ["全て", "グレー", "青", "緑", "黒"]
-	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3)]
+	var color_labels := ["全て", "グレー", "青", "緑", "黒", "赤", "黄", "紫", "白"]
+	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3), Color(0.9, 0.4, 0.3), Color(0.9, 0.8, 0.2), Color(0.6, 0.3, 0.7), Color(0.9, 0.9, 0.9)]
 	for i in range(color_labels.size()):
 		var btn := Button.new()
 		btn.text = color_labels[i]
@@ -207,7 +207,7 @@ func _update_filter_buttons() -> void:
 		btn.add_theme_stylebox_override("normal", style)
 
 	# Color buttons
-	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3)]
+	var color_colors := [Color(0.5, 0.5, 0.5), Color(0.5, 0.5, 0.55), Color(0.3, 0.5, 0.9), Color(0.3, 0.8, 0.3), Color(0.3, 0.2, 0.3), Color(0.9, 0.4, 0.3), Color(0.9, 0.8, 0.2), Color(0.6, 0.3, 0.7), Color(0.9, 0.9, 0.9)]
 	for i in range(color_buttons.size()):
 		var btn := color_buttons[i]
 		var style := StyleBoxFlat.new()
@@ -500,6 +500,7 @@ func _save_to_slot(slot: int) -> void:
 		return
 	await GameManager.save_deck_to_slot(slot, deck)
 	GameManager.player_deck = deck.duplicate()
+	GameManager.current_deck_slot = slot
 	_show_message("保存完了", "スロット %d に保存しました！" % [slot + 1])
 	if slot_dialog:
 		slot_dialog.queue_free()
@@ -512,6 +513,7 @@ func _load_from_slot(slot: int) -> void:
 		return
 	deck = loaded
 	GameManager.player_deck = deck.duplicate()
+	GameManager.current_deck_slot = slot
 	_update_deck_display()
 	_update_pool_display()
 	_show_message("読込完了", "スロット %d から読み込みました！ (%d枚)" % [slot + 1, deck.size()])
