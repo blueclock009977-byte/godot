@@ -362,6 +362,10 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 		# ═══════════════════════════════════════════
 		# 紫カード登場時効果
 		# ═══════════════════════════════════════════
+		"purple_001":  # 登場時:敵1体のダイス1つ無効化
+			result["disable_dice"] = 1
+			result["log"] = "[color=magenta]%s の効果: 敵1体のダイス1つ無効[/color]" % card_name
+
 		"purple_003":  # 登場時:相手の手札1枚破棄
 			result["discard_opponent"] = 1
 			result["log"] = "[color=magenta]%s の効果: 相手手札1枚破棄[/color]" % card_name

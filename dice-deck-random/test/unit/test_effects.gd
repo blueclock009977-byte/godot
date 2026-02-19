@@ -461,6 +461,13 @@ func test_summon_effect_freeze_all_blue_018() -> void:
 	assert_eq(enemy1.card_ui._status, EffectManager.StatusEffect.FROZEN, "blue_018 should freeze enemy1")
 	assert_eq(enemy2.card_ui._status, EffectManager.StatusEffect.FROZEN, "blue_018 should freeze enemy2")
 
+func test_summon_effect_purple_001() -> void:
+	# purple_001: 登場時敵1体のダイス1つ無効化
+	var mock_card_ui = _create_mock_card_ui("purple_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("disable_dice", 0), 1, "purple_001 should disable 1 enemy dice")
+
 func test_summon_effect_freeze_one_purple_009() -> void:
 	# purple_009: 登場時敵1体を2ターン凍結
 	var mock_card_ui = _create_mock_card_ui("purple_009")
@@ -531,6 +538,24 @@ func test_smoke_summon_effect_returns_log_as_activation_evidence() -> void:
 	var result: Dictionary = EffectManager.process_summon_effect(summon_card, true, _create_empty_context())
 	assert_true(result.has("log"), "Summon effect should return log when triggered")
 	assert_eq(result.get("mana", 0), 1, "green_001 activation result should include mana +1")
+
+func test_detect_unimplemented_on_summon_effect_ids() -> void:
+	# ON_SUMMONの効果IDで、処理が未実装のものを検出する
+	var context := {
+		"player_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"opponent_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"current_dice": 1
+	}
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.ON_SUMMON:
+			continue
+		var result: Dictionary = EffectManager.process_summon_effect(_create_mock_card_ui(effect_id), true, context)
+		if result.size() == 0:
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "ON_SUMMON未実装: %s" % [", ".join(missing)])
 
 # ═══════════════════════════════════════════
 # ヘルパー関数
