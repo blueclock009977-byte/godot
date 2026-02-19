@@ -34,6 +34,16 @@
 - 構文チェック: `bash tools/check_syntax.sh` 通過
 - GUT: 全件通過（283/283）
 
+## Step 4: ターン処理の入口欠損耐性を追加（発動漏れ防止）
+- 追加テスト: `test_turn_start_effects_skips_malformed_slot_and_continues`
+- 再現内容: 先頭スロットが壊れている（`is_empty=false` かつ `card_ui=null`）と、後続カードのターン開始効果まで巻き込んで停止し得る
+- 修正:
+  - `_get_effect_card_from_slot(slot)` を追加（`slot/card_ui/card_data` の妥当性を一元判定）
+  - `process_turn_start_effects` の効果走査・毒処理で共通ガードを使用
+  - `process_turn_end_effects` の効果走査・凍結tickでも同ガードを使用
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（291/291）
+
 ## 次リファクタリング候補（着手開始）
 - 候補: ターン開始/終了処理の共通ループ化
-- 着手メモ: `process_turn_start_effects` と `process_turn_end_effects` の走査・emit・append部分が重複しているため、共通ヘルパー抽出を次Stepで実施予定
+- 着手メモ: `_get_effect_card_from_slot` を導入済み。次Stepで「走査→effect取得→emit/append」の骨格をヘルパー化し、match本体だけを差し替える設計に着手する

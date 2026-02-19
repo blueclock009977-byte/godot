@@ -504,6 +504,20 @@ func test_turn_start_effects_multiple_cards() -> void:
 	var results: Array = EffectManager.process_turn_start_effects(true, context)
 	assert_eq(results.size(), 2, "Should have 2 turn start effect results")
 
+func test_turn_start_effects_skips_malformed_slot_and_continues() -> void:
+	# 先頭スロットが壊れていても後続カードの効果発動が漏れないこと
+	var malformed_slot = MockFieldSlot.new()
+	malformed_slot._is_empty = false
+	malformed_slot.card_ui = null
+	var valid_slot = _create_mock_slot("green_009")
+	var context := {
+		"player_slots": [malformed_slot, valid_slot, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Malformed slot should be skipped and valid slot effect should still trigger")
+	assert_eq(results[0].get("mana", 0), 1, "green_009 should still give mana +1")
+
 func test_turn_start_no_effect_vanilla() -> void:
 	# バニラカードは効果なし
 	var mock_slot = _create_mock_slot("")
