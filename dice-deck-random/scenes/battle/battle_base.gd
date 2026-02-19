@@ -229,11 +229,24 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 	_update_all_ui()
 
 # ═══════════════════════════════════════════
-# STUBS (override in subclasses)
+# CARD DRAW
 # ═══════════════════════════════════════════
 func _player_draw_card() -> void:
-	pass
+	if player_deck.is_empty():
+		return
+	var card_data: CardData = player_deck.pop_front()
+	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
+	player_hand_container.add_child(card_ui)
+	card_ui.setup(card_data, 120)
+	card_ui.card_clicked.connect(_on_hand_card_clicked)
+	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
+	player_hand.append(card_ui)
+	_update_all_ui()
 
+# ═══════════════════════════════════════════
+# STUBS (override in subclasses)
+# ═══════════════════════════════════════════
 func _opponent_draw_card() -> void:
 	pass
 
@@ -241,4 +254,13 @@ func _game_end(_win: bool) -> void:
 	pass
 
 func _update_all_ui() -> void:
+	pass
+
+func _on_hand_card_clicked(_card_ui: CardUI) -> void:
+	pass
+
+func _on_hand_card_drag_ended(_card_ui: CardUI, _drop_pos: Vector2) -> void:
+	pass
+
+func _on_hand_card_long_pressed(_card_ui: CardUI) -> void:
 	pass
