@@ -768,44 +768,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
 
-func _animate_attack(card_ui: CardUI, target_node: Control) -> void:
-	var orig := card_ui.global_position
-	var target_center := target_node.global_position + target_node.size / 2
-	var card_center := orig + card_ui.size / 2
-	var direction := (target_center - card_center).normalized()
-	var lunge_distance := card_center.distance_to(target_center) * 0.4
-	lunge_distance = clampf(lunge_distance, 30.0, 200.0)
-	var lunge_pos := orig + direction * lunge_distance
-	card_ui.z_index = 50
-	var tween := create_tween()
-	tween.tween_property(card_ui, "global_position", lunge_pos, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween.tween_property(card_ui, "global_position", orig, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	await tween.finished
-	card_ui.z_index = 1
-
-func _shake_node(node: Control) -> void:
-	var orig_pos := node.position
-	var tween := create_tween()
-	tween.tween_property(node, "position", orig_pos + Vector2(8, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(-8, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(5, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(-5, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos, 0.04)
-
-func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
-	var popup := Label.new()
-	popup.text = "-%d" % amount
-	popup.add_theme_font_size_override("font_size", 32)
-	popup.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
-	popup.global_position = pos
-	popup.z_index = 200
-	popup.top_level = true
-	add_child(popup)
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(popup, "global_position:y", pos.y - 60, 0.6)
-	tween.tween_property(popup, "modulate:a", 0.0, 0.6)
-	tween.finished.connect(func(): popup.queue_free())
+# _animate_attack(), _shake_node(), _spawn_damage_popup() は BattleBase で共通実装済み
 
 # ═══════════════════════════════════════════
 # DRAW
