@@ -3,6 +3,8 @@ extends GutTest
 class TestBattleBase extends BattleBase:
 	var game_end_called: bool = false
 	var game_end_win: bool = false
+	var destroyed_slot = null
+	var destroyed_owner_is_player: bool = false
 
 	func _update_all_ui() -> void:
 		pass
@@ -10,6 +12,16 @@ class TestBattleBase extends BattleBase:
 	func _game_end(win: bool) -> void:
 		game_end_called = true
 		game_end_win = win
+
+	func _destroy_card_in_slot(target_slot, is_player_owner: bool) -> void:
+		destroyed_slot = target_slot
+		destroyed_owner_is_player = is_player_owner
+
+class DummySlot:
+	var _empty: bool = false
+
+	func is_empty() -> bool:
+		return _empty
 
 func test_apply_effect_result_heal_player_applies_to_owner_hp() -> void:
 	var battle := TestBattleBase.new()
@@ -71,4 +83,24 @@ func test_apply_effect_result_self_damage_triggers_game_end() -> void:
 
 	assert_true(battle.game_end_called, "lethal self_damage should trigger game end")
 	assert_false(battle.game_end_win, "player lethal self_damage should be loss")
+	battle.free()
+
+func test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot() -> void:
+	var battle := TestBattleBase.new()
+	var slot := DummySlot.new()
+
+	var handled: bool = await battle._apply_attack_effect_pre_damage({"instant_kill": true}, slot, true)
+
+	assert_true(handled, "instant_kill should be handled before normal damage step")
+	assert_eq(battle.destroyed_slot, slot, "instant_kill should destroy current target slot")
+	assert_false(battle.destroyed_owner_is_player, "attacker is player so destroyed card should be opponent-owned")
+	battle.free()
+
+func test_apply_attack_effect_pre_damage_returns_false_without_target() -> void:
+	var battle := TestBattleBase.new()
+
+	var handled: bool = await battle._apply_attack_effect_pre_damage({"instant_kill": true}, null, true)
+
+	assert_false(handled, "instant_kill without slot should be ignored safely")
+	assert_null(battle.destroyed_slot, "no target means destroy should not be called")
 	battle.free()

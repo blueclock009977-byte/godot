@@ -143,74 +143,57 @@ func _get_effect_context() -> Dictionary:
 # ═══════════════════════════════════════════
 # EFFECT PROCESSING
 # ═══════════════════════════════════════════
-func _process_summon_effect(card_ui: CardUI, is_player: bool) -> void:
-	if not card_ui.card_data.has_effect():
-		return
-	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_SUMMON, {
-		"card_ui": card_ui,
-		"is_player": is_player,
-		"context": context
-	})
+func _run_timing_event_with_context(timing: int, payload: Dictionary):
+	var event_payload := payload.duplicate(true)
+	event_payload["context"] = _get_effect_context()
+	return EffectManager.process_timing_event(timing, event_payload)
+
+func _process_single_card_timing_effect(timing: int, card_ui: CardUI, is_player: bool, payload: Dictionary, default_result: Dictionary = {}) -> Dictionary:
+	if not card_ui or not card_ui.card_data or not card_ui.card_data.has_effect():
+		return default_result.duplicate(true)
+	var event_payload := payload.duplicate(true)
+	event_payload["is_player"] = is_player
+	var result: Dictionary = _run_timing_event_with_context(timing, event_payload)
 	_apply_effect_result(result, is_player)
+	return result
+
+func _process_turn_timing_effects(timing: int, is_player: bool) -> void:
+	var results: Array = _run_timing_event_with_context(timing, {
+		"is_player": is_player
+	})
+	for result in results:
+		_apply_effect_result(result, is_player)
+
+func _process_summon_effect(card_ui: CardUI, is_player: bool) -> void:
+	_process_single_card_timing_effect(EffectManager.Timing.ON_SUMMON, card_ui, is_player, {
+		"card_ui": card_ui
+	})
 
 func _process_attack_effect(attacker_ui: CardUI, defender_ui, is_player: bool) -> Dictionary:
-	if not attacker_ui.card_data.has_effect():
-		return {}
-	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {
+	return _process_single_card_timing_effect(EffectManager.Timing.ON_ATTACK, attacker_ui, is_player, {
 		"attacker_ui": attacker_ui,
-		"defender_ui": defender_ui,
-		"is_player": is_player,
-		"context": context
+		"defender_ui": defender_ui
 	})
-	_apply_effect_result(result, is_player)
-	return result
 
 func _process_death_effect(card_ui: CardUI, is_player: bool) -> Dictionary:
-	if not card_ui.card_data.has_effect():
-		return {}
-	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
-		"card_ui": card_ui,
-		"is_player": is_player,
-		"context": context
+	return _process_single_card_timing_effect(EffectManager.Timing.ON_DEATH, card_ui, is_player, {
+		"card_ui": card_ui
 	})
-	_apply_effect_result(result, is_player)
-	return result
 
 func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) -> Dictionary:
-	if not defender_ui.card_data.has_effect():
-		return {"final_damage": damage}
-	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+	var result: Dictionary = _process_single_card_timing_effect(EffectManager.Timing.ON_DEFENSE, defender_ui, is_player, {
 		"defender_ui": defender_ui,
-		"damage": damage,
-		"is_player": is_player,
-		"context": context
-	})
-	_apply_effect_result(result, is_player)
+		"damage": damage
+	}, {"final_damage": damage})
 	if not result.has("final_damage"):
 		result["final_damage"] = damage
 	return result
 
 func _process_turn_start_effects(is_player: bool) -> void:
-	var context := _get_effect_context()
-	var results: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_START, {
-		"is_player": is_player,
-		"context": context
-	})
-	for result in results:
-		_apply_effect_result(result, is_player)
+	_process_turn_timing_effects(EffectManager.Timing.TURN_START, is_player)
 
 func _process_turn_end_effects(is_player: bool) -> void:
-	var context := _get_effect_context()
-	var results: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_END, {
-		"is_player": is_player,
-		"context": context
-	})
-	for result in results:
-		_apply_effect_result(result, is_player)
+	_process_turn_timing_effects(EffectManager.Timing.TURN_END, is_player)
 
 func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 	if result.is_empty():
@@ -359,6 +342,14 @@ func _do_dice_and_battle(dice_val: int = -1) -> void:
 # ═══════════════════════════════════════════
 # ATTACK RESOLUTION
 # ═══════════════════════════════════════════
+func _apply_attack_effect_pre_damage(atk_effect: Dictionary, target_slot, attacker_is_player: bool) -> bool:
+	if not atk_effect.get("instant_kill", false):
+		return false
+	if not target_slot or target_slot.is_empty():
+		return false
+	await _destroy_card_in_slot(target_slot, not attacker_is_player)
+	return true
+
 func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_player: bool) -> void:
 	for i in range(6):
 		var slot: FieldSlot = attacker_slots[i]
@@ -406,6 +397,11 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
 		if atk_effect.has("atk_bonus"):
 			damage += atk_effect["atk_bonus"]
+		if await _apply_attack_effect_pre_damage(atk_effect, target_slot, attacker_is_player):
+			card_ui.modulate = Color.WHITE
+			_update_all_ui()
+			await get_tree().create_timer(0.2).timeout
+			continue
 		if not is_instance_valid(card_ui) or card_ui.current_hp <= 0:
 			continue
 		if target_slot and not target_slot.is_empty() and target_slot.card_ui.current_hp <= 0:

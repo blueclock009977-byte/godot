@@ -220,6 +220,14 @@ func test_attack_effect_black_016_halves_odd_hp_and_marks_destroy_on_hp1() -> vo
 	assert_eq(result["destroy_targets"].size(), 1, "black_016 should mark exactly one destroyed defender")
 	assert_eq(result["destroy_targets"][0], defender, "black_016 should mark defender as destroyed target")
 
+func test_attack_effect_blue_017_sets_instant_kill_for_low_hp_target() -> void:
+	var attacker = _create_mock_card_ui("blue_017")
+	var defender = _create_mock_card_ui("")
+	defender.current_hp = 5
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_true(result.get("instant_kill", false), "blue_017 should produce instant_kill flag for HP5以下 target")
+
 func test_death_effect_red_014_marks_destroy_target_when_hp_zero() -> void:
 	var mock_card_ui = _create_mock_card_ui("red_014")
 	var enemy_slot = _create_mock_slot_with_ui("")
