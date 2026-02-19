@@ -319,20 +319,16 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 			result["log"] = "[color=green]%s の効果: 味方全体HP+2[/color]" % card_name
 
 		"black_001":  # 登場時:自分HP-1
-			result["self_damage"] = 1
-			result["log"] = "[color=purple]%s の効果: 自分HP-1[/color]" % card_name
+			_apply_self_damage_effect(result, card_name, 1)
 
 		"black_003":  # 登場時:自分HP-2
-			result["self_damage"] = 2
-			result["log"] = "[color=purple]%s の効果: 自分HP-2[/color]" % card_name
+			_apply_self_damage_effect(result, card_name, 2)
 
 		"black_005":  # 登場時:自分HP-3
-			result["self_damage"] = 3
-			result["log"] = "[color=purple]%s の効果: 自分HP-3[/color]" % card_name
+			_apply_self_damage_effect(result, card_name, 3)
 
 		"black_008":  # 登場時:自分HP-5
-			result["self_damage"] = 5
-			result["log"] = "[color=purple]%s の効果: 自分HP-5[/color]" % card_name
+			_apply_self_damage_effect(result, card_name, 5)
 
 		"black_014":  # 登場時:自分HP-2,カード1枚ドロー
 			result["self_damage"] = 2
@@ -340,8 +336,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 			result["log"] = "[color=purple]%s の効果: 自分HP-2, 1枚ドロー[/color]" % card_name
 
 		"black_017":  # 登場時:自分HP-4
-			result["self_damage"] = 4
-			result["log"] = "[color=purple]%s の効果: 自分HP-4[/color]" % card_name
+			_apply_self_damage_effect(result, card_name, 4)
 
 		# ═══════════════════════════════════════════
 		# 赤カード登場時効果
@@ -1013,6 +1008,10 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 		result["destroy_targets"] = result.get("destroy_targets", [])
 		if target not in result["destroy_targets"]:
 			result["destroy_targets"].append(target)
+
+func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
+	result["self_damage"] = amount
+	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
 	for target in targets:

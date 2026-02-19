@@ -1026,6 +1026,22 @@ func test_aoe_damage_helper_is_shared_for_death_damage_effects() -> void:
 	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 2, result, card_name, \"red\", \"敵全体HP-2\")"), -1,
 		"red_006 should delegate to shared AOE helper")
 
+func test_self_damage_helper_is_shared_for_black_summon_effects() -> void:
+	# 次の段階リファクタ: 自傷+ログ生成を1ヘルパーで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_self_damage_effect"), -1,
+		"effect_manager should define _apply_self_damage_effect")
+	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 1)"), -1,
+		"black_001 should delegate to shared self-damage helper")
+	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 2)"), -1,
+		"black_003 should delegate to shared self-damage helper")
+	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 3)"), -1,
+		"black_005 should delegate to shared self-damage helper")
+	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 5)"), -1,
+		"black_008 should delegate to shared self-damage helper")
+	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 4)"), -1,
+		"black_017 should delegate to shared self-damage helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
