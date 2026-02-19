@@ -349,10 +349,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"red_003":  # 登場時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				_apply_damage_and_mark_destroy(enemy, 1, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=red]%s の効果: 敵全体にHP-1[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 1, result, card_name, "red", "敵全体HP-1")
 
 		"red_007":  # 登場時:味方全体ATK+1
 			var allies = _get_all_allies(is_player, context)
@@ -365,10 +362,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"red_015":  # 登場時:敵全体HP-2
 			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				_apply_damage_and_mark_destroy(enemy, 2, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=red]%s の効果: 敵全体にHP-2[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 2, result, card_name, "red", "敵全体HP-2")
 
 		# ═══════════════════════════════════════════
 		# 黄カード登場時効果
