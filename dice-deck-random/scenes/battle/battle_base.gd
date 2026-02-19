@@ -438,23 +438,32 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			BattleUtils.spawn_damage_popup(self, def_card.global_position + Vector2(40, 0), damage)
 			var defense_result: Dictionary = _process_defense_effect(def_card, damage, not attacker_is_player)
 			var final_damage: int = defense_result.get("final_damage", damage)
-			var remaining: int = def_card.take_damage(final_damage)
-			if remaining <= 0:
-				await _destroy_card_in_slot(target_slot, not attacker_is_player)
+			await _apply_card_damage_and_handle_destroy(def_card, final_damage, not attacker_is_player)
 
 			if defense_result.get("reflect", false):
 				var reflected_damage: int = max(0, final_damage)
 				if reflected_damage > 0 and card_ui and card_ui.current_hp > 0:
 					_log("[color=yellow]%s の反射: %s に%dダメージ[/color]" % [def_card.card_data.card_name, atk_name, reflected_damage])
-					var attacker_slot: FieldSlot = _find_slot_by_card_ui(card_ui)
-					if attacker_slot and not attacker_slot.is_empty():
-						var attacker_remaining: int = card_ui.take_damage(reflected_damage)
-						if attacker_remaining <= 0:
-							await _destroy_card_in_slot(attacker_slot, attacker_is_player)
+					await _apply_card_damage_and_handle_destroy(card_ui, reflected_damage, attacker_is_player)
 
 		card_ui.modulate = Color.WHITE
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
+
+func _apply_card_damage_and_handle_destroy(card_ui, damage: int, is_player_owner: bool) -> bool:
+	if not card_ui or damage <= 0:
+		return false
+	var remaining_hp: int = card_ui.take_damage(damage)
+	if remaining_hp > 0:
+		return false
+	var owner_slot = null
+	if card_ui is CardUI:
+		owner_slot = _find_slot_by_card_ui(card_ui)
+	if owner_slot and not owner_slot.is_empty():
+		await _destroy_card_in_slot(owner_slot, is_player_owner)
+	elif card_ui is CardUI:
+		_destroy_card_ui_immediate(card_ui)
+	return true
 
 func _destroy_card_in_slot(target_slot: FieldSlot, is_player_owner: bool) -> void:
 	if not target_slot or target_slot.is_empty():

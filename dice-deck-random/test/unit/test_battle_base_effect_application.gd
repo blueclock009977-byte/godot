@@ -5,6 +5,7 @@ class TestBattleBase extends BattleBase:
 	var game_end_win: bool = false
 	var destroyed_slot = null
 	var destroyed_owner_is_player: bool = false
+	var destroyed_ui = null
 
 	func _update_all_ui() -> void:
 		pass
@@ -17,8 +18,21 @@ class TestBattleBase extends BattleBase:
 		destroyed_slot = target_slot
 		destroyed_owner_is_player = is_player_owner
 
+	func _destroy_card_ui_immediate(card_ui) -> void:
+		destroyed_ui = card_ui
+
+	func _find_slot_by_card_ui(card_ui):
+		for slot in player_slots:
+			if slot and not slot.is_empty() and slot.card_ui == card_ui:
+				return slot
+		for slot in opponent_slots:
+			if slot and not slot.is_empty() and slot.card_ui == card_ui:
+				return slot
+		return null
+
 class DummySlot:
 	var _empty: bool = false
+	var card_ui = null
 
 	func is_empty() -> bool:
 		return _empty
@@ -85,6 +99,22 @@ func test_apply_effect_result_self_damage_triggers_game_end() -> void:
 	assert_false(battle.game_end_win, "player lethal self_damage should be loss")
 	battle.free()
 
+func test_battle_base_uses_unified_single_card_timing_entry_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("func _process_single_card_timing_effect") >= 0, "BattleBase should define a unified single-card timing helper")
+	assert_true(script_text.find("Timing.ON_SUMMON") >= 0, "ON_SUMMON should route through unified helper")
+	assert_true(script_text.find("Timing.ON_ATTACK") >= 0, "ON_ATTACK should route through unified helper")
+	assert_true(script_text.find("Timing.ON_DEATH") >= 0, "ON_DEATH should route through unified helper")
+	assert_true(script_text.find("Timing.ON_DEFENSE") >= 0, "ON_DEFENSE should route through unified helper")
+
+func test_battle_base_uses_unified_turn_timing_entry_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("func _process_turn_timing_effects") >= 0, "BattleBase should define a unified turn timing helper")
+	assert_true(script_text.find("Timing.TURN_START") >= 0, "TURN_START should route through unified helper")
+	assert_true(script_text.find("Timing.TURN_END") >= 0, "TURN_END should route through unified helper")
+
 func test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot() -> void:
 	var battle := TestBattleBase.new()
 	var slot := DummySlot.new()
@@ -103,4 +133,32 @@ func test_apply_attack_effect_pre_damage_returns_false_without_target() -> void:
 
 	assert_false(handled, "instant_kill without slot should be ignored safely")
 	assert_null(battle.destroyed_slot, "no target means destroy should not be called")
+	battle.free()
+
+func test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal() -> void:
+	var battle := TestBattleBase.new()
+	var card := CardUI.new()
+	card.current_hp = 1
+	var slot := DummySlot.new()
+	slot.card_ui = card
+	battle.player_slots = [slot]
+	battle.opponent_slots = []
+
+	var destroyed: bool = await battle._apply_card_damage_and_handle_destroy(card, 1, true)
+
+	assert_true(destroyed, "lethal damage should return destroyed=true")
+	assert_eq(battle.destroyed_slot, slot, "lethal damage should use slot destruction path")
+	assert_eq(battle.destroyed_ui, null, "slot path should not call immediate destroy")
+	battle.free()
+
+func test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage() -> void:
+	var battle := TestBattleBase.new()
+	var card := CardUI.new()
+	card.current_hp = 3
+
+	var destroyed: bool = await battle._apply_card_damage_and_handle_destroy(card, 1, true)
+
+	assert_false(destroyed, "non-lethal damage should not destroy card")
+	assert_eq(card.current_hp, 2, "non-lethal damage should still reduce HP")
+	assert_eq(battle.destroyed_slot, null, "non-lethal damage should not call slot destroy")
 	battle.free()
