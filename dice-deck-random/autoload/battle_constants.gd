@@ -62,3 +62,12 @@ static func create_card_back() -> Panel:
 	style.corner_radius_bottom_right = 4
 	card_back.add_theme_stylebox_override("panel", style)
 	return card_back
+
+## Fisher-Yates シャッフル（シード指定RNG版）
+## オンライン対戦で両プレイヤーが同じ順序でシャッフルするために使用
+static func shuffle_with_rng(arr: Array, rng: RandomNumberGenerator) -> void:
+	for i in range(arr.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var tmp = arr[i]
+		arr[i] = arr[j]
+		arr[j] = tmp

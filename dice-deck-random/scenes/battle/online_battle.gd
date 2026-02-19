@@ -554,8 +554,8 @@ func _start_game() -> void:
 	rng.seed = seed_val
 
 	# Shuffle both decks with shared RNG
-	_shuffle_with_rng(player_deck, rng)
-	_shuffle_with_rng(opponent_deck, rng)
+	BattleConstants.shuffle_with_rng(player_deck, rng)
+	BattleConstants.shuffle_with_rng(opponent_deck, rng)
 
 	# Player 1 goes first
 	is_player_first = (my_player_number == 1)
@@ -587,13 +587,6 @@ func room_code_to_seed(code: String) -> int:
 	for i in range(code.length()):
 		h = h * 31 + code.unicode_at(i)
 	return h
-
-func _shuffle_with_rng(arr: Array, rng: RandomNumberGenerator) -> void:
-	for i in range(arr.size() - 1, 0, -1):
-		var j := rng.randi_range(0, i)
-		var tmp = arr[i]
-		arr[i] = arr[j]
-		arr[j] = tmp
 
 # ═══════════════════════════════════════════
 # TURN FLOW
