@@ -115,6 +115,12 @@ func test_battle_base_uses_unified_turn_timing_entry_helper() -> void:
 	assert_true(script_text.find("Timing.TURN_START") >= 0, "TURN_START should route through unified helper")
 	assert_true(script_text.find("Timing.TURN_END") >= 0, "TURN_END should route through unified helper")
 
+func test_battle_base_ally_death_reaction_uses_unified_timing_entry_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("_run_timing_event_with_context") >= 0 and script_text.find("Timing.ON_DEATH") >= 0, "ally death reactions should route through unified timing entry helper")
+	assert_true(script_text.find("\"ally_died\": true") >= 0, "ally death reactions should pass ally_died context through shared event helper")
+
 func test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot() -> void:
 	var battle := TestBattleBase.new()
 	var slot := DummySlot.new()
