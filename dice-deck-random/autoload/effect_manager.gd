@@ -808,9 +808,7 @@ func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, 
 		# 紫カードターン終了時効果
 		"purple_008":  # ターン終了時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=magenta]%s の効果: 敵全体HP-1[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 1, result, card_name, "magenta", "敵全体HP-1")
 
 		# 白カードターン終了時効果
 		"white_010":  # ターン終了時:自分HP+2

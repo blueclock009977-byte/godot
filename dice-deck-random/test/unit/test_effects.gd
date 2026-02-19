@@ -1025,6 +1025,8 @@ func test_aoe_damage_helper_is_shared_for_death_damage_effects() -> void:
 		"black_018 should delegate to shared AOE helper")
 	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 2, result, card_name, \"red\", \"敵全体HP-2\")"), -1,
 		"red_006 should delegate to shared AOE helper")
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 1, result, card_name, \"magenta\", \"敵全体HP-1\")"), -1,
+		"purple_008 should delegate to shared AOE helper")
 
 func test_self_damage_helper_is_shared_for_black_summon_effects() -> void:
 	# 次の段階リファクタ: 自傷+ログ生成を1ヘルパーで統一
