@@ -1,72 +1,16 @@
-extends Control
+extends BattleBase
 
 ## Online multiplayer battle controller.
-## Fork of battle.gd adapted for Firebase-synced 1v1 play.
+## Extends BattleBase for shared battle logic.
 ## MY turn: input enabled, actions sent to Firebase.
 ## OPPONENT turn: input disabled, actions received from Firebase.
 
-# ─── Constants (from BattleConstants) ───
-const CARD_UI_SCENE := preload(BattleConstants.CARD_UI_SCENE_PATH)
-const FIELD_SLOT_SCENE := preload(BattleConstants.FIELD_SLOT_SCENE_PATH)
-const MAX_HP := BattleConstants.MAX_HP
-const MAX_MANA_CAP := BattleConstants.MAX_MANA_CAP
-const DEFAULT_STARTING_HAND := BattleConstants.DEFAULT_STARTING_HAND
-const MOVE_COST := BattleConstants.MOVE_COST
-
-const Phase := BattleConstants.Phase
-const SelectMode := BattleConstants.SelectMode
-
-# ─── Game State ───
-var player_hp: int = MAX_HP
-var opponent_hp: int = MAX_HP
-var player_mana: int = 0
-var player_max_mana: int = 0
-var opponent_mana: int = 0
-var opponent_max_mana: int = 0
-var player_deck: Array[CardData] = []
-var opponent_deck: Array[CardData] = []
-var player_hand: Array = []
-var opponent_hand_count: int = 0
-var current_dice: int = 0
-var turn_number: int = 0
-var is_player_turn: bool = true
-var is_player_first: bool = true
-var current_phase: Phase = Phase.MAIN1
-var select_mode: SelectMode = SelectMode.NONE
-var selected_hand_card: CardUI = null
-var selected_field_card: CardUI = null
-var selected_field_slot: FieldSlot = null
-var is_animating: bool = false
-var game_over: bool = false
-
-# ─── Online-specific ───
+# ─── Online-specific State ───
 var my_player_number: int = 0  # 1 or 2
+var opponent_hand_count: int = 0  # Track opponent hand size (can't see their cards)
 var _waiting_for_opponent: bool = false
 var _action_queue: Array[Dictionary] = []
 var _processing_actions: bool = false
-
-# ─── UI References ───
-var player_slots: Array = []
-var opponent_slots: Array = []
-var player_hand_container: HBoxContainer
-var opponent_hand_container: HBoxContainer
-var player_hp_label: Label
-var opponent_hp_label: Label
-var mana_label: Label
-var phase_label: Label
-var dice_label: Label
-var end_turn_btn: Button
-var next_phase_btn: Button
-var surrender_btn: Button
-var log_label: RichTextLabel
-var phase_overlay: ColorRect
-var phase_overlay_label: Label
-var turn_indicator_label: Label
-var dice_preview_panel: PanelContainer
-var dice_preview_label: RichTextLabel
-var center_info: HBoxContainer
-var card_preview_overlay: ColorRect
-var card_preview_container: CenterContainer
 
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
@@ -549,7 +493,7 @@ func _start_game() -> void:
 
 	# Use room data seed for shuffle consistency
 	# Both players need same shuffle. Use room code as seed.
-	var seed_val: int = room_code_to_seed(MultiplayerManager.room_code)
+	var seed_val: int = MultiplayerManager.room_code_to_seed(MultiplayerManager.room_code)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
 
@@ -581,12 +525,6 @@ func _start_game() -> void:
 
 	_update_all_ui()
 	_start_turn()
-
-func room_code_to_seed(code: String) -> int:
-	var h: int = 0
-	for i in range(code.length()):
-		h = h * 31 + code.unicode_at(i)
-	return h
 
 # ═══════════════════════════════════════════
 # TURN FLOW
