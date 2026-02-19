@@ -241,3 +241,47 @@ static func show_phase_banner(owner: Node, overlay: Control, label: Label, text:
 	tween.tween_property(overlay, "modulate:a", 0.0, 0.2)
 	tween.tween_callback(func(): overlay.visible = false)
 	await tween.finished
+
+## カードプレビューを表示
+## container: プレビューを追加するコンテナ
+## overlay: オーバーレイ（表示/非表示）
+## card_ui_scene: CardUIのPackedScene
+## source_card: 元のカードUI
+static func show_card_preview(container: Control, overlay: Control, card_ui_scene: PackedScene, source_card) -> void:
+	# 古いプレビューをクリア
+	for child in container.get_children():
+		child.queue_free()
+
+	# コンテナを作成
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 10)
+	container.add_child(vbox)
+
+	# 大きなプレビューカードを作成
+	var preview = card_ui_scene.instantiate()
+	vbox.add_child(preview)
+	preview.setup(source_card.card_data, 300)
+	preview.current_hp = source_card.current_hp
+	preview.current_atk = source_card.current_atk
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# 効果説明を表示
+	if source_card.card_data.has_effect():
+		var effect_label := Label.new()
+		var effect_desc := EffectManager.get_effect_description(source_card.card_data.effect_id)
+		effect_label.text = effect_desc
+		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		effect_label.add_theme_font_size_override("font_size", 24)
+		effect_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
+		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+		effect_label.custom_minimum_size.x = 300
+		vbox.add_child(effect_label)
+
+	overlay.visible = true
+
+## カードプレビューを非表示
+static func hide_card_preview(container: Control, overlay: Control) -> void:
+	overlay.visible = false
+	for child in container.get_children():
+		child.queue_free()

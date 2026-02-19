@@ -988,42 +988,10 @@ func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
 	_show_card_preview(card_ui)
 
 func _show_card_preview(card_ui: CardUI) -> void:
-	# Clear old preview
-	for child in card_preview_container.get_children():
-		child.queue_free()
-
-	# コンテナを作成
-	var vbox := VBoxContainer.new()
-	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override("separation", 10)
-	card_preview_container.add_child(vbox)
-
-	# Create large preview card
-	var preview := CARD_UI_SCENE.instantiate() as CardUI
-	vbox.add_child(preview)
-	preview.setup(card_ui.card_data, 300)
-	preview.current_hp = card_ui.current_hp
-	preview.current_atk = card_ui.current_atk
-	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# 効果説明を表示
-	if card_ui.card_data.has_effect():
-		var effect_label := Label.new()
-		var effect_desc := EffectManager.get_effect_description(card_ui.card_data.effect_id)
-		effect_label.text = effect_desc
-		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		effect_label.add_theme_font_size_override("font_size", 24)
-		effect_label.add_theme_color_override("font_color", Color(1, 0.9, 0.5))
-		effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD
-		effect_label.custom_minimum_size.x = 300
-		vbox.add_child(effect_label)
-
-	card_preview_overlay.visible = true
+	BattleUtils.show_card_preview(card_preview_container, card_preview_overlay, CARD_UI_SCENE, card_ui)
 
 func _hide_card_preview() -> void:
-	card_preview_overlay.visible = false
-	for child in card_preview_container.get_children():
-		child.queue_free()
+	BattleUtils.hide_card_preview(card_preview_container, card_preview_overlay)
 
 func _on_preview_overlay_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
