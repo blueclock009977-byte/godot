@@ -461,46 +461,6 @@ func _on_end_turn() -> void:
 		_end_turn()
 
 # ═══════════════════════════════════════════
-# DICE & BATTLE
-# ═══════════════════════════════════════════
-func _do_dice_and_battle() -> void:
-	is_animating = true
-	# Roll dice with animation
-	current_dice = await BattleUtils.animate_dice_roll(self, dice_label)
-	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
-
-	# ダイスブロック効果をチェック
-	if _is_dice_blocked(current_dice, is_player_turn):
-		_log("[color=purple]ダイス%dは相手の効果でブロックされた！[/color]" % current_dice)
-	if _is_dice_blocked(current_dice, not is_player_turn):
-		_log("[color=purple]相手のダイス%dは自分の効果でブロックされた！[/color]" % current_dice)
-	_update_all_ui()
-
-	# Turn player's cards attack first
-	var turn_slots: Array
-	var def_slots: Array
-	if is_player_turn:
-		turn_slots = player_slots
-		def_slots = opponent_slots
-	else:
-		turn_slots = opponent_slots
-		def_slots = player_slots
-
-	# Attack in slot order 0→1→2→3→4→5
-	await _resolve_attacks(turn_slots, def_slots, is_player_turn)
-	if game_over:
-		is_animating = false
-		return
-
-	# Surviving defender's cards attack
-	await _resolve_attacks(def_slots, turn_slots, not is_player_turn)
-	if game_over:
-		is_animating = false
-		return
-
-	is_animating = false
-
-# ═══════════════════════════════════════════
 # DRAW (override _opponent_draw_card from BattleBase)
 # ═══════════════════════════════════════════
 func _opponent_draw_card() -> void:
