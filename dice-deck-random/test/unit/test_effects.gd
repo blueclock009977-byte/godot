@@ -315,6 +315,110 @@ func test_cost_modifier_purple_004() -> void:
 	assert_eq(modifier, 1, "purple_004 should increase player summon cost by 1")
 
 # ═══════════════════════════════════════════
+# Phase 5: ターン開始/終了効果テスト
+# ═══════════════════════════════════════════
+
+func test_turn_start_effects_mana_green_009() -> void:
+	# green_009: ターン開始時マナ+1
+	var mock_slot = _create_mock_slot("green_009")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn start effect result")
+	assert_eq(results[0].get("mana", 0), 1, "green_009 should give mana +1 at turn start")
+
+func test_turn_start_effects_draw_yellow_005() -> void:
+	# yellow_005: ターン開始時カード1枚ドロー
+	var mock_slot = _create_mock_slot("yellow_005")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn start effect result")
+	assert_eq(results[0].get("draw", 0), 1, "yellow_005 should draw 1 card at turn start")
+
+func test_turn_start_effects_heal_player_white_003() -> void:
+	# white_003: ターン開始時自分HP+1
+	var mock_slot = _create_mock_slot("white_003")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn start effect result")
+	assert_eq(results[0].get("heal_player", 0), 1, "white_003 should heal player 1 HP at turn start")
+
+func test_turn_start_effects_self_heal_blue_010() -> void:
+	# blue_010: ターン開始時自身HP+1
+	var mock_slot = _create_mock_slot("blue_010")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn start effect result")
+	# blue_010はcard_ui.heal(1)を直接呼ぶのでlogのみ返る
+	assert_true(results[0].has("log"), "blue_010 should have log")
+
+func test_turn_start_effects_atk_up_red_010() -> void:
+	# red_010: ターン開始時自身ATK+1
+	var mock_slot = _create_mock_slot("red_010")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn start effect result")
+	# red_010はcard_ui.modify_atk(1)を直接呼ぶのでlogのみ返る
+	assert_true(results[0].has("log"), "red_010 should have log")
+
+func test_turn_end_effects_mana_yellow_010() -> void:
+	# yellow_010: ターン終了時マナ+1
+	var mock_slot = _create_mock_slot("yellow_010")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_end_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn end effect result")
+	assert_eq(results[0].get("mana", 0), 1, "yellow_010 should give mana +1 at turn end")
+
+func test_turn_end_effects_heal_player_white_010() -> void:
+	# white_010: ターン終了時自分HP+2
+	var mock_slot = _create_mock_slot("white_010")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_end_effects(true, context)
+	assert_eq(results.size(), 1, "Should have 1 turn end effect result")
+	assert_eq(results[0].get("heal_player", 0), 2, "white_010 should heal player 2 HP at turn end")
+
+func test_turn_start_effects_multiple_cards() -> void:
+	# 複数カードの効果が同時に発動するか
+	var slot1 = _create_mock_slot("green_009")  # マナ+1
+	var slot2 = _create_mock_slot("yellow_005")  # 1枚ドロー
+	var context := {
+		"player_slots": [slot1, slot2, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 2, "Should have 2 turn start effect results")
+
+func test_turn_start_no_effect_vanilla() -> void:
+	# バニラカードは効果なし
+	var mock_slot = _create_mock_slot("")
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	assert_eq(results.size(), 0, "Vanilla card should have no turn start effect")
+
+# ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
 
@@ -354,10 +458,38 @@ class MockCardUI:
 	var card_data = null
 	var current_atk: int = 1
 	var current_hp: int = 1
+	var _status: int = 0  # StatusEffect.NONE
+	var shield_used: bool = false
+	var healed_amount: int = 0
+	var atk_modified: int = 0
+	var damage_taken: int = 0
+	
+	func heal(amount: int) -> void:
+		healed_amount += amount
+		current_hp += amount
+	
+	func modify_atk(delta: int) -> void:
+		atk_modified += delta
+		current_atk += delta
+	
+	func take_damage(amount: int) -> void:
+		damage_taken += amount
+		current_hp -= amount
+	
+	func has_status(status: int) -> bool:
+		return _status == status
+	
+	func apply_status(status: int, _duration: int) -> void:
+		_status = status
+	
+	func tick_status_effects() -> void:
+		# モックなので何もしない
+		pass
 
 class MockCardData:
 	var effect_id: String = ""
 	var card_name: String = "MockCard"
+	var mana_cost: int = 1
 
 	func has_effect() -> bool:
 		return effect_id != ""
