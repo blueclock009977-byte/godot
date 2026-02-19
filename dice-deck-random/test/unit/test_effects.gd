@@ -697,6 +697,12 @@ func test_summon_effect_clear_status_white_013() -> void:
 	assert_eq(ally1.card_ui._status, 0, "white_013 should clear ally1 status")
 	assert_eq(ally2.card_ui._status, 0, "white_013 should clear ally2 status")
 
+func test_summon_effect_clear_status_white_013_uses_unified_log_format() -> void:
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("\"white_013\""), -1, "white_013 summon handler should exist")
+	assert_ne(script_text.find("_make_effect_log(\"white\", card_name, \"味方全体の状態異常解除\")"), -1,
+		"white_013 should use shared log helper for unified formatting")
+
 func test_death_effect_freeze_purple_005() -> void:
 	# purple_005: 死亡時敵1体を凍結
 	var mock_card_ui = _create_mock_card_ui("purple_005")

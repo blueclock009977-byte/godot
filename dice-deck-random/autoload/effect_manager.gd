@@ -526,7 +526,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			var allies = _get_all_allies(is_player, context)
 			for ally in allies:
 				ally.clear_status_effects()
-			result["log"] = "[color=white]%s の効果: 味方全体の状態異常解除[/color]" % card_name
+			result["log"] = _make_effect_log("white", card_name, "味方全体の状態異常解除")
 
 		"white_015":  # 登場時:自分HP+6
 			_apply_player_heal_effect(result, "white", card_name, 6)
