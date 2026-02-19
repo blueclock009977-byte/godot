@@ -512,6 +512,25 @@ func test_death_effect_freeze_purple_005() -> void:
 # Phase 7: 効果発動スモークテスト（発動有無の見える化）
 # ═══════════════════════════════════════════
 
+func test_process_timing_event_dispatch_on_summon() -> void:
+	var summon_card = _create_mock_card_ui("green_001")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_SUMMON, {
+		"card_ui": summon_card,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("mana", 0), 1, "Dispatcher should route ON_SUMMON to summon handler")
+
+func test_process_timing_event_dispatch_on_attack() -> void:
+	var atk_card = _create_mock_card_ui("blue_012")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {
+		"attacker_ui": atk_card,
+		"defender_ui": _create_mock_card_ui(""),
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("direct_damage", 0), 1, "Dispatcher should route ON_ATTACK to attack handler")
+
 func test_smoke_effects_trigger_on_each_timing() -> void:
 	# ON_SUMMON
 	var summon_card = _create_mock_card_ui("green_001")

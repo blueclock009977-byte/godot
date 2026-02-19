@@ -147,14 +147,23 @@ func _process_summon_effect(card_ui: CardUI, is_player: bool) -> void:
 	if not card_ui.card_data.has_effect():
 		return
 	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_summon_effect(card_ui, is_player, context)
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_SUMMON, {
+		"card_ui": card_ui,
+		"is_player": is_player,
+		"context": context
+	})
 	_apply_effect_result(result, is_player)
 
 func _process_attack_effect(attacker_ui: CardUI, defender_ui, is_player: bool) -> Dictionary:
 	if not attacker_ui.card_data.has_effect():
 		return {}
 	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_attack_effect(attacker_ui, defender_ui, is_player, context)
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {
+		"attacker_ui": attacker_ui,
+		"defender_ui": defender_ui,
+		"is_player": is_player,
+		"context": context
+	})
 	_apply_effect_result(result, is_player)
 	return result
 
@@ -162,7 +171,11 @@ func _process_death_effect(card_ui: CardUI, is_player: bool) -> Dictionary:
 	if not card_ui.card_data.has_effect():
 		return {}
 	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_death_effect(card_ui, is_player, context)
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
+		"card_ui": card_ui,
+		"is_player": is_player,
+		"context": context
+	})
 	_apply_effect_result(result, is_player)
 	return result
 
@@ -170,19 +183,30 @@ func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) 
 	if not defender_ui.card_data.has_effect():
 		return damage
 	var context := _get_effect_context()
-	var result: Dictionary = EffectManager.process_defense_effect(defender_ui, damage, is_player, context)
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+		"defender_ui": defender_ui,
+		"damage": damage,
+		"is_player": is_player,
+		"context": context
+	})
 	_apply_effect_result(result, is_player)
 	return result.get("final_damage", damage)
 
 func _process_turn_start_effects(is_player: bool) -> void:
 	var context := _get_effect_context()
-	var results: Array = EffectManager.process_turn_start_effects(is_player, context)
+	var results: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_START, {
+		"is_player": is_player,
+		"context": context
+	})
 	for result in results:
 		_apply_effect_result(result, is_player)
 
 func _process_turn_end_effects(is_player: bool) -> void:
 	var context := _get_effect_context()
-	var results: Array = EffectManager.process_turn_end_effects(is_player, context)
+	var results: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_END, {
+		"is_player": is_player,
+		"context": context
+	})
 	for result in results:
 		_apply_effect_result(result, is_player)
 
@@ -346,6 +370,12 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
 		if atk_effect.has("atk_bonus"):
 			damage += atk_effect["atk_bonus"]
+		if target_slot and not target_slot.is_empty() and target_slot.card_ui.current_hp <= 0:
+			await _destroy_card_in_slot(target_slot, not attacker_is_player)
+			card_ui.modulate = Color.WHITE
+			_update_all_ui()
+			await get_tree().create_timer(0.2).timeout
+			continue
 
 		# Highlight attacker briefly
 		card_ui.modulate = Color(1.5, 1.2, 0.5)
@@ -379,15 +409,21 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			var final_damage := _process_defense_effect(def_card, damage, not attacker_is_player)
 			var remaining := def_card.take_damage(final_damage)
 			if remaining <= 0:
-				_log("[color=gray]%s 破壊！[/color]" % def_card.card_data.card_name)
-				await def_card.play_destroy_animation()
-				_process_death_effect(def_card, not attacker_is_player)
-				target_slot.remove_card()
-				def_card.queue_free()
+				await _destroy_card_in_slot(target_slot, not attacker_is_player)
 
 		card_ui.modulate = Color.WHITE
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
+
+func _destroy_card_in_slot(target_slot: FieldSlot, is_player_owner: bool) -> void:
+	if not target_slot or target_slot.is_empty():
+		return
+	var card_ui: CardUI = target_slot.card_ui
+	_log("[color=gray]%s 破壊！[/color]" % card_ui.card_data.card_name)
+	await card_ui.play_destroy_animation()
+	_process_death_effect(card_ui, is_player_owner)
+	target_slot.remove_card()
+	card_ui.queue_free()
 
 # ═══════════════════════════════════════════
 # TURN END (shared)

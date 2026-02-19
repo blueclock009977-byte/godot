@@ -187,12 +187,42 @@ func has_timing(effect_id: String, timing: Timing) -> bool:
 # 効果処理
 # ═══════════════════════════════════════════
 
+func _can_process_effect(effect_id: String, timing: Timing) -> bool:
+	if effect_id == "":
+		return false
+	return has_timing(effect_id, timing)
+
+func process_timing_event(timing: Timing, payload: Dictionary):
+	match timing:
+		Timing.ON_SUMMON:
+			return process_summon_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
+		Timing.ON_ATTACK:
+			return process_attack_effect(
+				payload.get("attacker_ui"),
+				payload.get("defender_ui", null),
+				payload.get("is_player", true),
+				payload.get("context", {})
+			)
+		Timing.ON_DEATH:
+			return process_death_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
+		Timing.ON_DEFENSE:
+			return process_defense_effect(
+				payload.get("defender_ui"),
+				payload.get("damage", 0),
+				payload.get("is_player", true),
+				payload.get("context", {})
+			)
+		Timing.TURN_START:
+			return process_turn_start_effects(payload.get("is_player", true), payload.get("context", {}))
+		Timing.TURN_END:
+			return process_turn_end_effects(payload.get("is_player", true), payload.get("context", {}))
+		_:
+			return {}
+
 ## 登場時効果を処理
 func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
 	var effect_id: String = card_ui.card_data.effect_id
-	if effect_id == "":
-		return {}
-	if not has_timing(effect_id, Timing.ON_SUMMON):
+	if not _can_process_effect(effect_id, Timing.ON_SUMMON):
 		return {}
 
 	var result := {}
@@ -432,9 +462,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
 	var effect_id: String = attacker_ui.card_data.effect_id
-	if effect_id == "":
-		return {}
-	if not has_timing(effect_id, Timing.ON_ATTACK):
+	if not _can_process_effect(effect_id, Timing.ON_ATTACK):
 		return {}
 
 	var result := {}
@@ -543,9 +571,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 ## 死亡時効果を処理
 func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
 	var effect_id: String = card_ui.card_data.effect_id
-	if effect_id == "":
-		return {}
-	if not has_timing(effect_id, Timing.ON_DEATH):
+	if not _can_process_effect(effect_id, Timing.ON_DEATH):
 		return {}
 
 	var result := {}
@@ -674,9 +700,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
 	var effect_id: String = defender_ui.card_data.effect_id
-	if effect_id == "":
-		return {"final_damage": damage}
-	if not has_timing(effect_id, Timing.ON_DEFENSE):
+	if not _can_process_effect(effect_id, Timing.ON_DEFENSE):
 		return {"final_damage": damage}
 
 	var result := {"final_damage": damage}
@@ -725,9 +749,7 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 		if slot and not slot.is_empty():
 			var card_ui = slot.card_ui
 			var effect_id: String = card_ui.card_data.effect_id
-			if effect_id == "":
-				continue
-			if not has_timing(effect_id, Timing.TURN_START):
+			if not _can_process_effect(effect_id, Timing.TURN_START):
 				continue
 
 			var card_name: String = card_ui.card_data.card_name
@@ -789,9 +811,7 @@ func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
 		if slot and not slot.is_empty():
 			var card_ui = slot.card_ui
 			var effect_id: String = card_ui.card_data.effect_id
-			if effect_id == "":
-				continue
-			if not has_timing(effect_id, Timing.TURN_END):
+			if not _can_process_effect(effect_id, Timing.TURN_END):
 				continue
 
 			var card_name: String = card_ui.card_data.card_name
