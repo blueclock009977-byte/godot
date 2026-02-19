@@ -225,3 +225,19 @@ static func build_dice_preview_text(results: Array) -> String:
 			color = "red"
 		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign_str, score]
 	return text
+
+## フェーズバナーを表示（アニメーション付き）
+## owner: create_tween()を呼ぶためのノード
+## overlay: バナーのコンテナ（ColorRect等）
+## label: テキスト表示用Label
+static func show_phase_banner(owner: Node, overlay: Control, label: Label, text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
+	label.text = text
+	label.add_theme_color_override("font_color", banner_color)
+	overlay.modulate = Color(1, 1, 1, 0)
+	overlay.visible = true
+	var tween := owner.create_tween()
+	tween.tween_property(overlay, "modulate:a", 1.0, 0.15)
+	tween.tween_interval(duration)
+	tween.tween_property(overlay, "modulate:a", 0.0, 0.2)
+	tween.tween_callback(func(): overlay.visible = false)
+	await tween.finished

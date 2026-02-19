@@ -433,16 +433,7 @@ func _log(text: String) -> void:
 	log_label.append_text(text + "\n")
 
 func _show_phase_banner(text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
-	phase_overlay_label.text = text
-	phase_overlay_label.add_theme_color_override("font_color", banner_color)
-	phase_overlay.modulate = Color(1, 1, 1, 0)
-	phase_overlay.visible = true
-	var tween := create_tween()
-	tween.tween_property(phase_overlay, "modulate:a", 1.0, 0.15)
-	tween.tween_interval(duration)
-	tween.tween_property(phase_overlay, "modulate:a", 0.0, 0.2)
-	tween.tween_callback(func(): phase_overlay.visible = false)
-	await tween.finished
+	await BattleUtils.show_phase_banner(self, phase_overlay, phase_overlay_label, text, banner_color, duration)
 
 # ═══════════════════════════════════════════
 # GAME START
