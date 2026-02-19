@@ -81,3 +81,10 @@ static func has_empty_slot(slots: Array) -> bool:
 		if slot and slot.is_empty():
 			return true
 	return false
+
+## Calculate effective summon cost with modifiers
+## context: the effect context dictionary from _get_effect_context()
+static func get_effective_summon_cost(card_ui: CardUI, context: Dictionary) -> int:
+	var base_cost: int = card_ui.card_data.mana_cost
+	var modifier: int = EffectManager.get_summon_cost_modifier(true, context)
+	return maxi(1, base_cost + modifier)

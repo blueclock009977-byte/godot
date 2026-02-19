@@ -504,7 +504,7 @@ func _save_to_slot(slot: int) -> void:
 		_show_message("エラー", "保存に失敗しました。通信エラーの可能性があります")
 		return
 	GameManager.player_deck = deck.duplicate()
-	GameManager.current_deck_slot = slot
+	GameManager.save_current_deck_slot(slot)
 	_show_message("保存完了", "スロット %d に保存しました！" % [slot + 1])
 	if slot_dialog:
 		slot_dialog.queue_free()
@@ -517,7 +517,7 @@ func _load_from_slot(slot: int) -> void:
 		return
 	deck = loaded
 	GameManager.player_deck = deck.duplicate()
-	GameManager.current_deck_slot = slot
+	GameManager.save_current_deck_slot(slot)
 	_update_deck_display()
 	_update_pool_display()
 	_show_message("読込完了", "スロット %d から読み込みました！ (%d枚)" % [slot + 1, deck.size()])

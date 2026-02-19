@@ -1308,7 +1308,5 @@ func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
 	return dice_value in enemy_modifier.get("blocked_dice", [])
 
 func _get_effective_summon_cost(card_ui: CardUI) -> int:
-	var base_cost: int = card_ui.card_data.mana_cost
 	var context := _get_effect_context()
-	var modifier: int = EffectManager.get_summon_cost_modifier(true, context)
-	return maxi(1, base_cost + modifier)
+	return BattleUtils.get_effective_summon_cost(card_ui, context)
