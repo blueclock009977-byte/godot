@@ -222,3 +222,13 @@ func test_attack_resolution_uses_shared_hp_damage_helper_for_direct_hits() -> vo
 	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
 	assert_ne(script_text.find("_apply_hp_damage_to_opponent(attacker_is_player, damage)"), -1,
 		"BattleBase should route direct attack damage via shared HP damage helper")
+
+func test_attack_resolution_applies_lifesteal_post_damage_hook() -> void:
+	# 回帰テスト: black_007 の lifesteal フラグが捨てられず、戦闘後処理に接続されること
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("func _apply_attack_effect_post_damage"), -1,
+		"BattleBase should define post-damage attack-effect hook")
+	assert_ne(script_text.find("_apply_attack_effect_post_damage(atk_effect, card_ui, final_damage)"), -1,
+		"BattleBase should call post-damage hook after defender damage is applied")
+	assert_ne(script_text.find("if atk_effect.get(\"lifesteal\", false):"), -1,
+		"BattleBase post-damage hook should apply lifesteal when flagged")

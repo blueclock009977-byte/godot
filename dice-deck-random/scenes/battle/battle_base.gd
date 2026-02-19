@@ -350,6 +350,15 @@ func _apply_attack_effect_pre_damage(atk_effect: Dictionary, target_slot, attack
 	await _destroy_card_in_slot(target_slot, not attacker_is_player)
 	return true
 
+func _apply_attack_effect_post_damage(atk_effect: Dictionary, attacker_ui: CardUI, dealt_damage: int) -> void:
+	if dealt_damage <= 0 or not attacker_ui or not is_instance_valid(attacker_ui):
+		return
+	if attacker_ui.current_hp <= 0:
+		return
+	if atk_effect.get("lifesteal", false):
+		attacker_ui.heal(dealt_damage)
+		_log("[color=purple]%s の吸血: HP+%d[/color]" % [attacker_ui.card_data.card_name, dealt_damage])
+
 func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_player: bool) -> void:
 	for i in range(6):
 		var slot: FieldSlot = attacker_slots[i]
@@ -439,6 +448,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			var defense_result: Dictionary = _process_defense_effect(def_card, damage, not attacker_is_player)
 			var final_damage: int = defense_result.get("final_damage", damage)
 			await _apply_card_damage_and_handle_destroy(def_card, final_damage, not attacker_is_player)
+			_apply_attack_effect_post_damage(atk_effect, card_ui, final_damage)
 
 			if defense_result.get("reflect", false):
 				var reflected_damage: int = max(0, final_damage)
