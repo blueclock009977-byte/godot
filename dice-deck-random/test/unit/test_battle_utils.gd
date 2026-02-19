@@ -152,3 +152,56 @@ func test_build_dice_preview_text_format():
 	assert_true("[color=red]-2" in text, "Dice 2 should show red -2")
 	assert_true("[color=gray]0" in text, "Dice 3 should show gray 0")
 	assert_true("[color=green]+4" in text, "Dice 4 should show green +4")
+
+
+## has_empty_slot tests
+## Note: has_empty_slot checks slot.is_empty() for non-null slots.
+## In production, slots are FieldSlot objects. For testing, we use mock objects.
+
+class MockSlot:
+	var _is_empty: bool
+	func _init(empty: bool) -> void:
+		_is_empty = empty
+	func is_empty() -> bool:
+		return _is_empty
+
+func test_has_empty_slot_all_empty():
+	var slots := [MockSlot.new(true), MockSlot.new(true), MockSlot.new(true), MockSlot.new(true), MockSlot.new(true), MockSlot.new(true)]
+	assert_true(BattleUtils.has_empty_slot(slots), "All empty slots")
+
+func test_has_empty_slot_all_filled():
+	var slots := [MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(false)]
+	assert_false(BattleUtils.has_empty_slot(slots), "All filled = no empty")
+
+func test_has_empty_slot_mixed():
+	var slots := [MockSlot.new(false), MockSlot.new(true), MockSlot.new(false), MockSlot.new(true), MockSlot.new(false), MockSlot.new(true)]
+	assert_true(BattleUtils.has_empty_slot(slots), "Mixed = has empty")
+
+func test_has_empty_slot_one_empty():
+	var slots := [MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(false), MockSlot.new(true)]
+	assert_true(BattleUtils.has_empty_slot(slots), "Five filled, one empty = has empty")
+
+func test_has_empty_slot_null_treated_as_occupied():
+	# null slots are skipped by the condition (slot and slot.is_empty())
+	var slots := [null, null, MockSlot.new(true), null, null, null]
+	assert_true(BattleUtils.has_empty_slot(slots), "One MockSlot empty among nulls")
+
+
+## is_dice_blocked tests
+## Note: is_dice_blocked uses EffectManager.get_dice_modifier internally,
+## which requires player_slots and opponent_slots with card_ui objects.
+## For simplicity, we test with empty slots (no blocking effects).
+
+func _make_empty_slots_context() -> Dictionary:
+	# Both sides empty = no blocking effects
+	return {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null]
+	}
+
+func test_is_dice_blocked_empty_context():
+	var context := _make_empty_slots_context()
+	# With no cards on field, no dice should be blocked
+	assert_false(BattleUtils.is_dice_blocked(1, true, context), "Dice 1 not blocked (empty)")
+	assert_false(BattleUtils.is_dice_blocked(6, true, context), "Dice 6 not blocked (empty)")
+	assert_false(BattleUtils.is_dice_blocked(3, false, context), "Opponent dice 3 not blocked (empty)")
