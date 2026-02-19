@@ -560,6 +560,34 @@ func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
 	tween.tween_property(popup, "modulate:a", 0.0, 0.6)
 	tween.finished.connect(func(): popup.queue_free())
 
+## ダイスロールアニメーション（共通実装）
+## target < 0: ランダム値を生成, target >= 1: 指定値を使用
+func _animate_dice_roll(target: int = -1) -> int:
+	var final: int
+	if target < 0:
+		final = randi() % 6 + 1
+	else:
+		final = target
+	dice_label.add_theme_font_size_override("font_size", 40)
+	for i in range(12):
+		current_dice = randi() % 6 + 1
+		dice_label.text = "%d" % current_dice
+		dice_label.pivot_offset = dice_label.size / 2
+		if i % 2 == 0:
+			dice_label.scale = Vector2(1.2, 1.2)
+		else:
+			dice_label.scale = Vector2(0.9, 0.9)
+		await get_tree().create_timer(0.04 + i * 0.025).timeout
+	current_dice = final
+	dice_label.text = "%d" % current_dice
+	var tween := create_tween()
+	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
+	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
+	await tween.finished
+	dice_label.add_theme_font_size_override("font_size", 36)
+	await get_tree().create_timer(0.3).timeout
+	return final
+
 # ═══════════════════════════════════════════
 # BATTLE RESOLUTION
 # ═══════════════════════════════════════════
