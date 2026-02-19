@@ -973,6 +973,22 @@ func test_turn_timing_effect_helper_has_single_definition_and_uses_prepare_guard
 	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, timing)"), -1,
 		"_process_turn_timing_effects should use _prepare_timing_effect guard")
 
+func test_target_collection_helper_is_shared_by_ally_enemy_getters() -> void:
+	# 段階リファクタ: 対象取得(敵/味方・単体/複数)を1ヘルパーで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _collect_targets"), -1,
+		"effect_manager should define _collect_targets")
+	assert_ne(script_text.find("func _pick_random_target"), -1,
+		"effect_manager should define _pick_random_target")
+	assert_ne(script_text.find("return _pick_random_target(_collect_targets(is_player, context, true))"), -1,
+		"_get_random_enemy should delegate to shared helpers")
+	assert_ne(script_text.find("return _collect_targets(is_player, context, true)"), -1,
+		"_get_all_enemies should delegate to shared helper")
+	assert_ne(script_text.find("return _pick_random_target(_collect_targets(is_player, context, false))"), -1,
+		"_get_random_ally should delegate to shared helpers")
+	assert_ne(script_text.find("return _collect_targets(is_player, context, false)"), -1,
+		"_get_all_allies should delegate to shared helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

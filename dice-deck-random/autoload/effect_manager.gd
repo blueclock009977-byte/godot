@@ -1037,41 +1037,36 @@ func _get_effect_card_from_slot(slot):
 		return null
 	return card_ui
 
+func _collect_targets(is_player: bool, context: Dictionary, for_enemy: bool) -> Array:
+	var slots: Array
+	if for_enemy:
+		slots = context["opponent_slots"] if is_player else context["player_slots"]
+	else:
+		slots = context["player_slots"] if is_player else context["opponent_slots"]
+
+	var targets := []
+	for slot in slots:
+		var card_ui = _get_effect_card_from_slot(slot)
+		if card_ui:
+			targets.append(card_ui)
+	return targets
+
+func _pick_random_target(targets: Array):
+	if targets.size() == 0:
+		return null
+	return targets[randi() % targets.size()]
+
 func _get_random_enemy(is_player: bool, context: Dictionary):
-	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
-	var enemies := []
-	for slot in enemy_slots:
-		if slot and not slot.is_empty():
-			enemies.append(slot.card_ui)
-	if enemies.size() > 0:
-		return enemies[randi() % enemies.size()]
-	return null
+	return _pick_random_target(_collect_targets(is_player, context, true))
 
 func _get_all_enemies(is_player: bool, context: Dictionary) -> Array:
-	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
-	var enemies := []
-	for slot in enemy_slots:
-		if slot and not slot.is_empty():
-			enemies.append(slot.card_ui)
-	return enemies
+	return _collect_targets(is_player, context, true)
 
 func _get_random_ally(is_player: bool, context: Dictionary):
-	var ally_slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
-	var allies := []
-	for slot in ally_slots:
-		if slot and not slot.is_empty():
-			allies.append(slot.card_ui)
-	if allies.size() > 0:
-		return allies[randi() % allies.size()]
-	return null
+	return _pick_random_target(_collect_targets(is_player, context, false))
 
 func _get_all_allies(is_player: bool, context: Dictionary) -> Array:
-	var ally_slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
-	var allies := []
-	for slot in ally_slots:
-		if slot and not slot.is_empty():
-			allies.append(slot.card_ui)
-	return allies
+	return _collect_targets(is_player, context, false)
 
 func _find_slot_for_card(card_ui, slots: Array):
 	for slot in slots:
