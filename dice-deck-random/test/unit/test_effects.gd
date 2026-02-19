@@ -799,6 +799,17 @@ func test_process_timing_event_dispatch_on_turn_end() -> void:
 	assert_eq(result.size(), 1, "Dispatcher should route TURN_END to turn-end handler")
 	assert_eq(result[0].get("mana", 0), 1, "TURN_END dispatcher should preserve handler result")
 
+func test_process_timing_event_dispatch_on_turn_end_with_turn_end_card_ui_alias() -> void:
+	# 再現: TURN_END の event payload が turn_end_card_ui の場合、単体ディスパッチされず効果漏れする
+	var card_ui = _create_mock_card_ui("yellow_010")
+	var result: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_END, {
+		"turn_end_card_ui": card_ui,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.size(), 1, "TURN_END should accept turn_end_card_ui payload alias for single-card dispatch")
+	assert_eq(result[0].get("mana", 0), 1, "TURN_END turn_end_card_ui alias should dispatch effect_id handler")
+
 func test_process_timing_event_missing_required_payload_is_safe() -> void:
 	var summon_result = EffectManager.process_timing_event(EffectManager.Timing.ON_SUMMON, {
 		"is_player": true,
