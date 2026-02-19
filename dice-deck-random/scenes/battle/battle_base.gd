@@ -245,6 +245,110 @@ func _player_draw_card() -> void:
 	_update_all_ui()
 
 # ═══════════════════════════════════════════
+# DICE & ATTACK HELPERS
+# ═══════════════════════════════════════════
+func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
+	var context := _get_effect_context()
+	return BattleUtils.get_effective_attack_dice(card_ui, is_player, context)
+
+func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
+	var context := _get_effect_context()
+	return BattleUtils.is_dice_blocked(dice_value, is_player, context)
+
+# ═══════════════════════════════════════════
+# ATTACK RESOLUTION
+# ═══════════════════════════════════════════
+func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_player: bool) -> void:
+	for i in range(6):
+		var slot: FieldSlot = attacker_slots[i]
+		if not slot or slot.is_empty():
+			continue
+		var card_ui: CardUI = slot.card_ui
+		var effective_dice := _get_effective_attack_dice(card_ui, attacker_is_player)
+		if _is_dice_blocked(current_dice, attacker_is_player):
+			continue
+		if current_dice not in effective_dice:
+			continue
+
+		var lane: int = slot.lane
+		var is_front: bool = slot.is_front_row
+
+		# Find target
+		var target_slot: FieldSlot = null
+		var target_is_player_hp := false
+
+		if is_front:
+			var enemy_front: FieldSlot = defender_slots[lane]
+			var enemy_back: FieldSlot = defender_slots[lane + 3]
+			if enemy_front and not enemy_front.is_empty():
+				target_slot = enemy_front
+			elif enemy_back and not enemy_back.is_empty():
+				target_slot = enemy_back
+			else:
+				target_is_player_hp = true
+		else:
+			var enemy_front: FieldSlot = defender_slots[lane]
+			var enemy_back: FieldSlot = defender_slots[lane + 3]
+			if enemy_front and not enemy_front.is_empty():
+				target_slot = enemy_front
+			elif enemy_back and not enemy_back.is_empty():
+				target_slot = enemy_back
+			else:
+				target_is_player_hp = true
+
+		var atk_name := card_ui.card_data.card_name
+		var damage: int = card_ui.current_atk
+		# 常時効果によるATK修正
+		var atk_mod := EffectManager.get_constant_atk_modifier(card_ui, attacker_is_player, _get_effect_context())
+		damage += atk_mod
+		var defender_ui = target_slot.card_ui if target_slot else null
+		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
+		if atk_effect.has("atk_bonus"):
+			damage += atk_effect["atk_bonus"]
+
+		# Highlight attacker briefly
+		card_ui.modulate = Color(1.5, 1.2, 0.5)
+		await get_tree().create_timer(0.2).timeout
+
+		if target_is_player_hp:
+			if attacker_is_player:
+				_log("[color=lime]%s → 相手HPに%dダメージ！[/color]" % [atk_name, damage])
+				await BattleUtils.animate_attack(self, card_ui, opponent_hp_label)
+				BattleUtils.spawn_damage_popup(self, opponent_hp_label.global_position + Vector2(50, 0), damage)
+				BattleUtils.shake_node(self, opponent_hp_label)
+				opponent_hp -= damage
+				if opponent_hp <= 0:
+					_game_end(true)
+					return
+			else:
+				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
+				await BattleUtils.animate_attack(self, card_ui, player_hp_label)
+				BattleUtils.spawn_damage_popup(self, player_hp_label.global_position + Vector2(50, 0), damage)
+				BattleUtils.shake_node(self, player_hp_label)
+				player_hp -= damage
+				if player_hp <= 0:
+					_game_end(false)
+					return
+		elif target_slot:
+			var def_card: CardUI = target_slot.card_ui
+			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
+			await BattleUtils.animate_attack(self, card_ui, def_card)
+			def_card.play_damage_flash()
+			BattleUtils.spawn_damage_popup(self, def_card.global_position + Vector2(40, 0), damage)
+			var final_damage := _process_defense_effect(def_card, damage, not attacker_is_player)
+			var remaining := def_card.take_damage(final_damage)
+			if remaining <= 0:
+				_log("[color=gray]%s 破壊！[/color]" % def_card.card_data.card_name)
+				await def_card.play_destroy_animation()
+				_process_death_effect(def_card, not attacker_is_player)
+				target_slot.remove_card()
+				def_card.queue_free()
+
+		card_ui.modulate = Color.WHITE
+		_update_all_ui()
+		await get_tree().create_timer(0.3).timeout
+
+# ═══════════════════════════════════════════
 # STUBS (override in subclasses)
 # ═══════════════════════════════════════════
 func _opponent_draw_card() -> void:
