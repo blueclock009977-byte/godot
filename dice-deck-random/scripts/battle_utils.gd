@@ -1,6 +1,15 @@
 class_name BattleUtils
 ## Shared utility functions for battle.gd and online_battle.gd
 
+static func shake_node(parent: Control, node: Control) -> void:
+	var orig_pos := node.position
+	var tween := parent.create_tween()
+	tween.tween_property(node, "position", orig_pos + Vector2(8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos, 0.04)
+
 static func spawn_damage_popup(parent: Control, pos: Vector2, amount: int) -> void:
 	var popup := Label.new()
 	popup.text = "-%d" % amount

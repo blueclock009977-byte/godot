@@ -843,13 +843,7 @@ func _animate_attack(card_ui: CardUI, target_node: Control) -> void:
 	card_ui.z_index = 1
 
 func _shake_node(node: Control) -> void:
-	var orig_pos := node.position
-	var tween := create_tween()
-	tween.tween_property(node, "position", orig_pos + Vector2(8, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(-8, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(5, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos + Vector2(-5, 0), 0.04)
-	tween.tween_property(node, "position", orig_pos, 0.04)
+	BattleUtils.shake_node(self, node)
 
 func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
 	BattleUtils.spawn_damage_popup(self, pos, amount)
