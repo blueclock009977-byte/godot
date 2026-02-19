@@ -272,13 +272,13 @@ func _add_pool_card(card: CardData) -> void:
 	# 3枚ごとに新しい行を作成
 	if cards_in_row == 0 or cards_in_row >= CARDS_PER_ROW:
 		current_row = HBoxContainer.new()
-		current_row.custom_minimum_size = Vector2(920, 500)
+		current_row.custom_minimum_size = Vector2(920, 510)
 		current_row.add_theme_constant_override("separation", 6)
 		pool_grid.add_child(current_row)
 		cards_in_row = 0
 	current_row.add_child(wrapper)
 	# シーンツリーに入った後にsetupを呼ぶ
-	card_ui.setup(card, 300, 460)
+	card_ui.setup(card, 300)
 	cards_in_row += 1
 
 func _get_deck_color() -> CardData.ColorType:
@@ -319,7 +319,7 @@ func _update_deck_display() -> void:
 	for i in range(deck.size()):
 		var card: CardData = deck[i]
 		var card_ui: CardUI = CardUIScene.instantiate()
-		card_ui.setup(card, 180, 290)
+		card_ui.setup(card, 180)
 
 		# Click to remove
 		var idx := i
@@ -545,7 +545,7 @@ func _show_card_preview(card_ui: CardUI) -> void:
 
 	var preview := CardUIScene.instantiate() as CardUI
 	vbox.add_child(preview)
-	preview.setup(card_ui.card_data, 300, 460)
+	preview.setup(card_ui.card_data, 300)
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# 効果説明を表示

@@ -13,8 +13,10 @@ var background: Panel
 var is_highlighted: bool = false
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(185, 260)
-	size = Vector2(185, 260)
+	var card_w := CardUI.BASE_WIDTH + 10  # カード幅 + マージン
+	var card_h := card_w * CardUI.CARD_RATIO
+	custom_minimum_size = Vector2(card_w, card_h)
+	size = Vector2(card_w, card_h)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 	background = Panel.new()

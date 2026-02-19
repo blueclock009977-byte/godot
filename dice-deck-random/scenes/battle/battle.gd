@@ -881,7 +881,7 @@ func _player_draw_card() -> void:
 	var card_data: CardData = player_deck.pop_front()
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	player_hand_container.add_child(card_ui)
-	card_ui.setup(card_data, 120, 190)
+	card_ui.setup(card_data, 120)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
 	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
@@ -1033,7 +1033,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	if card_ui.get_parent():
 		card_ui.get_parent().remove_child(card_ui)
 	card_ui.reset_position()
-	card_ui.set_card_size(175, 280)
+	card_ui.set_card_size(175)
 	slot.place_card(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, effective_cost])
 	_process_summon_effect(card_ui, true)
@@ -1168,7 +1168,7 @@ func _show_card_preview(card_ui: CardUI) -> void:
 	# Create large preview card
 	var preview := CARD_UI_SCENE.instantiate() as CardUI
 	vbox.add_child(preview)
-	preview.setup(card_ui.card_data, 300, 460)
+	preview.setup(card_ui.card_data, 300)
 	preview.current_hp = card_ui.current_hp
 	preview.current_atk = card_ui.current_atk
 	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE

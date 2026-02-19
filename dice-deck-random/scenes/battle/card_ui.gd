@@ -41,12 +41,13 @@ var glow_tween: Tween
 var long_press_timer: Timer
 var long_press_fired: bool = false
 
+const CARD_RATIO := 1.6  # 縦/横の比率
 const BASE_WIDTH := 175.0
-const BASE_HEIGHT := 250.0
+const BASE_HEIGHT := 280.0  # 175 * 1.6
 
 func _ready() -> void:
-	custom_minimum_size = Vector2(175, 250)
-	size = Vector2(175, 250)
+	custom_minimum_size = Vector2(BASE_WIDTH, BASE_HEIGHT)
+	size = Vector2(BASE_WIDTH, BASE_HEIGHT)
 
 	long_press_timer = Timer.new()
 	long_press_timer.one_shot = true
@@ -171,7 +172,7 @@ func _ready() -> void:
 	if card_data:
 		_update_display()
 
-func setup(data: CardData, card_w: float = 175.0, card_h: float = 250.0) -> void:
+func setup(data: CardData, card_w: float = BASE_WIDTH) -> void:
 	card_data = data
 	current_hp = data.hp
 	base_atk = data.atk
@@ -180,7 +181,7 @@ func setup(data: CardData, card_w: float = 175.0, card_h: float = 250.0) -> void
 	status_effects = {}
 	has_revived = false
 	if is_inside_tree():
-		set_card_size(card_w, card_h)
+		set_card_size(card_w)
 		_update_display()
 
 func _update_display() -> void:
@@ -366,10 +367,9 @@ func _gui_input(event: InputEvent) -> void:
 			is_pressing = false
 			accept_event()
 
-func set_card_size(w: float, h: float) -> void:
-	var sx := w / BASE_WIDTH
-	var sy := h / BASE_HEIGHT
-	var s := minf(sx, sy)
+func set_card_size(w: float) -> void:
+	var h := w * CARD_RATIO
+	var s := w / BASE_WIDTH
 	custom_minimum_size = Vector2(w, h)
 	size = Vector2(w, h)
 	size_flags_horizontal = Control.SIZE_SHRINK_CENTER
