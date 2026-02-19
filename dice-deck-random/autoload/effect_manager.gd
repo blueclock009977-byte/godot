@@ -27,6 +27,11 @@ const TIMING_PAYLOAD_KEYS := {
 	Timing.TURN_END: {"is_player": ["is_player"], "context": ["context"]}
 }
 
+const TIMING_DISPATCHER_METHODS := {
+	Timing.ON_SUMMON: "_dispatch_timing_on_summon",
+	Timing.ON_ATTACK: "_dispatch_timing_on_attack"
+}
+
 # 効果定義データ
 var effect_definitions: Dictionary = {}
 
@@ -291,6 +296,14 @@ func _dispatch_timing_turn_end(is_player: bool, context: Dictionary):
 		return single_result
 	return process_turn_end_effects(is_player, context)
 
+func _dispatch_timing_via_method_table(timing: Timing, payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):
+	var method_name: String = TIMING_DISPATCHER_METHODS.get(timing, "")
+	if method_name == "" or not has_method(method_name):
+		return null
+	if timing == Timing.ON_ATTACK:
+		return call(method_name, payload, aliases, is_player, context)
+	return call(method_name, payload, is_player, context)
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
 	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
@@ -302,11 +315,11 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 			context = context.duplicate(true)
 			context["_timing_single_card_ui"] = timing_card_ui
 
+	var table_dispatched = _dispatch_timing_via_method_table(timing, payload, aliases, is_player, context)
+	if table_dispatched != null:
+		return table_dispatched
+
 	match timing:
-		Timing.ON_SUMMON:
-			return _dispatch_timing_on_summon(payload, is_player, context)
-		Timing.ON_ATTACK:
-			return _dispatch_timing_on_attack(payload, aliases, is_player, context)
 		Timing.ON_DEATH:
 			return _dispatch_timing_on_death(payload, is_player, context)
 		Timing.ON_DEFENSE:

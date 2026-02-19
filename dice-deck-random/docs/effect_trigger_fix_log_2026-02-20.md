@@ -102,6 +102,16 @@
 - 構文チェック: `bash tools/check_syntax.sh` 通過
 - GUT: 全件通過（341/341）
 
+## Step 9: process_timing_event のON_SUMMON/ON_ATTACKを method table dispatch に段階移行
+- 追加テスト: `test_timing_dispatch_method_table_routes_summon_and_attack`
+- 初回結果: 既存の文字列依存テストが旧 `match` 分岐前提で失敗
+- 修正:
+  - `TIMING_DISPATCHER_METHODS` を追加（ON_SUMMON/ON_ATTACK のみ段階移行）
+  - `_dispatch_timing_via_method_table(...)` を追加し、`process_timing_event` 先頭で table route を評価
+  - 既存の dispatcher helper 検証テストを「直接分岐 or method table どちらでも可」に更新
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（350/350）
+
 ## 次リファクタリング候補
-- 候補: `process_timing_event` の `match timing` 自体を `Dictionary<Timing, Callable>` 方式へ段階移行
-- 最小着手案: まず ON_SUMMON/ON_ATTACK の2件だけ `TIMING_DISPATCHERS` で解決し、既存 helper を backend として再利用
+- 候補: `process_timing_event` の残り timing（ON_DEATH/ON_DEFENSE/TURN_START/TURN_END）も method table 経由へ移行
+- 最小着手案: 次回は ON_DEATH だけ table 化し、fallback `match` は当面維持して差分を最小化

@@ -711,6 +711,34 @@ func test_process_timing_event_dispatch_on_attack_with_generic_card_ui() -> void
 	})
 	assert_eq(result.get("direct_damage", 0), 1, "ON_ATTACK should accept unified card_ui payload")
 
+func test_timing_dispatch_method_table_routes_summon_and_attack() -> void:
+	var summon_result = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.ON_SUMMON,
+		{"card_ui": _create_mock_card_ui("green_001")},
+		{},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(summon_result.get("mana", 0), 1, "method table should route ON_SUMMON through summon dispatcher")
+
+	var attack_result = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.ON_ATTACK,
+		{"attacker_ui": _create_mock_card_ui("blue_012"), "defender_ui": _create_mock_card_ui("")},
+		{"defender_ui": ["defender_ui"]},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(attack_result.get("direct_damage", 0), 1, "method table should route ON_ATTACK through attack dispatcher")
+
+	var no_route = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.ON_DEATH,
+		{"card_ui": _create_mock_card_ui("green_002")},
+		{},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(no_route, null, "method table should return null for timings not yet migrated")
+
 func test_process_timing_event_dispatch_on_death() -> void:
 	var death_card = _create_mock_card_ui("green_002")
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
@@ -1322,8 +1350,10 @@ func test_timing_dispatcher_helper_handles_on_summon_route() -> void:
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _dispatch_timing_on_summon"), -1,
 		"effect_manager should define _dispatch_timing_on_summon helper")
-	assert_ne(script_text.find("Timing.ON_SUMMON:\n\t\t\treturn _dispatch_timing_on_summon(payload, is_player, context)"), -1,
-		"process_timing_event should delegate ON_SUMMON routing to helper")
+	assert_true(
+		script_text.find("Timing.ON_SUMMON:\n\t\t\treturn _dispatch_timing_on_summon(payload, is_player, context)") != -1
+		or script_text.find("_dispatch_timing_via_method_table") != -1,
+		"process_timing_event should delegate ON_SUMMON routing via helper (direct or method table)")
 	assert_ne(script_text.find("func _dispatch_timing_on_summon(payload: Dictionary, is_player: bool, context: Dictionary):"), -1,
 		"ON_SUMMON dispatcher helper should preserve typed routing signature")
 
@@ -1332,8 +1362,10 @@ func test_timing_dispatcher_helper_handles_on_attack_route() -> void:
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _dispatch_timing_on_attack"), -1,
 		"effect_manager should define _dispatch_timing_on_attack helper")
-	assert_ne(script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)"), -1,
-		"process_timing_event should delegate ON_ATTACK routing to helper")
+	assert_true(
+		script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)") != -1
+		or script_text.find("_dispatch_timing_via_method_table") != -1,
+		"process_timing_event should delegate ON_ATTACK routing via helper (direct or method table)")
 	assert_ne(script_text.find("func _dispatch_timing_on_attack(payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):"), -1,
 		"ON_ATTACK dispatcher helper should preserve typed routing signature")
 
@@ -1350,8 +1382,10 @@ func test_timing_dispatcher_helpers_cover_all_event_routes() -> void:
 		"effect_manager should define _dispatch_timing_turn_start helper")
 	assert_ne(script_text.find("func _dispatch_timing_turn_end"), -1,
 		"effect_manager should define _dispatch_timing_turn_end helper")
-	assert_ne(script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)"), -1,
-		"process_timing_event should delegate ON_ATTACK routing to helper")
+	assert_true(
+		script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)") != -1
+		or script_text.find("_dispatch_timing_via_method_table") != -1,
+		"process_timing_event should delegate ON_ATTACK routing via helper (direct or method table)")
 	assert_ne(script_text.find("Timing.ON_DEATH:\n\t\t\treturn _dispatch_timing_on_death(payload, is_player, context)"), -1,
 		"process_timing_event should delegate ON_DEATH routing to helper")
 	assert_ne(script_text.find("Timing.ON_DEFENSE:\n\t\t\treturn _dispatch_timing_on_defense(payload, aliases, is_player, context)"), -1,
