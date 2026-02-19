@@ -788,6 +788,15 @@ func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, 
 
 	return result
 
+func _dispatch_turn_timing_effect(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String, timing: Timing) -> Dictionary:
+	match timing:
+		Timing.TURN_START:
+			return _build_turn_start_effect_result(effect_id, card_ui, is_player, context, card_name)
+		Timing.TURN_END:
+			return _build_turn_end_effect_result(effect_id, card_ui, is_player, context, card_name)
+		_:
+			return {}
+
 func _process_turn_timing_effects(slots: Array, is_player: bool, context: Dictionary, timing: Timing) -> Array:
 	var results := []
 	for slot in slots:
@@ -801,13 +810,7 @@ func _process_turn_timing_effects(slots: Array, is_player: bool, context: Dictio
 
 		var effect_id: String = prepared.get("effect_id", "")
 		var card_name: String = prepared.get("card_name", "")
-		var result := {}
-
-		match timing:
-			Timing.TURN_START:
-				result = _build_turn_start_effect_result(effect_id, card_ui, is_player, context, card_name)
-			Timing.TURN_END:
-				result = _build_turn_end_effect_result(effect_id, card_ui, is_player, context, card_name)
+		var result := _dispatch_turn_timing_effect(effect_id, card_ui, is_player, context, card_name, timing)
 
 		if result.size() > 0:
 			_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)

@@ -1155,6 +1155,14 @@ func test_summon_mana_gain_helper_is_shared_for_green_001_004_008() -> void:
 	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 3)"), -1,
 		"green_008 should delegate to mana-gain helper")
 
+func test_turn_dispatch_helper_exists_and_is_used_for_start_end() -> void:
+	# 次の段階リファクタ: TURN_START/TURN_END のdispatchを1関数に集約
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_turn_timing_effect"), -1,
+		"effect_manager should define _dispatch_turn_timing_effect helper")
+	assert_ne(script_text.find("var result := _dispatch_turn_timing_effect(effect_id, card_ui, is_player, context, card_name, timing)"), -1,
+		"_process_turn_timing_effects should route via unified turn dispatch helper")
+
 func test_summon_enemy_aoe_atk_debuff_helper_is_shared_for_blue_004_007() -> void:
 	# 次の段階リファクタ: 敵全体ATKデバフ+ログ生成を1ヘルパーへ統一
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
