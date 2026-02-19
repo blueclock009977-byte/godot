@@ -266,36 +266,41 @@ func _dispatch_timing_on_defense(payload: Dictionary, aliases: Dictionary, is_pl
 		context
 	)
 
-func _dispatch_timing_turn_start(payload: Dictionary, is_player: bool, context: Dictionary):
-	var card_ui = _resolve_timing_card_ui(Timing.TURN_START, payload)
-	if card_ui:
-		var prepared := _prepare_timing_effect(card_ui, Timing.TURN_START)
-		if not prepared.get("ok", false):
-			return []
-		var single_result := _dispatch_turn_timing_effect(prepared.get("effect_id", ""), card_ui, is_player, context, prepared.get("card_name", ""), Timing.TURN_START)
-		if single_result.size() == 0:
-			return []
-		_emit_effect_trigger_if_logged(prepared.get("effect_id", ""), card_ui, null, single_result)
-		return [single_result]
+func _try_dispatch_single_turn_timing_effect(timing: Timing, is_player: bool, context: Dictionary):
+	var card_ui = context.get("_timing_single_card_ui", null)
+	if not card_ui:
+		return []
+	var prepared := _prepare_timing_effect(card_ui, timing)
+	if not prepared.get("ok", false):
+		return []
+	var single_result := _dispatch_turn_timing_effect(prepared.get("effect_id", ""), card_ui, is_player, context, prepared.get("card_name", ""), timing)
+	if single_result.size() == 0:
+		return []
+	_emit_effect_trigger_if_logged(prepared.get("effect_id", ""), card_ui, null, single_result)
+	return [single_result]
+
+func _dispatch_timing_turn_start(is_player: bool, context: Dictionary):
+	var single_result: Array = _try_dispatch_single_turn_timing_effect(Timing.TURN_START, is_player, context)
+	if single_result.size() > 0:
+		return single_result
 	return process_turn_start_effects(is_player, context)
 
-func _dispatch_timing_turn_end(payload: Dictionary, is_player: bool, context: Dictionary):
-	var card_ui = _resolve_timing_card_ui(Timing.TURN_END, payload)
-	if card_ui:
-		var prepared := _prepare_timing_effect(card_ui, Timing.TURN_END)
-		if not prepared.get("ok", false):
-			return []
-		var single_result := _dispatch_turn_timing_effect(prepared.get("effect_id", ""), card_ui, is_player, context, prepared.get("card_name", ""), Timing.TURN_END)
-		if single_result.size() == 0:
-			return []
-		_emit_effect_trigger_if_logged(prepared.get("effect_id", ""), card_ui, null, single_result)
-		return [single_result]
+func _dispatch_timing_turn_end(is_player: bool, context: Dictionary):
+	var single_result: Array = _try_dispatch_single_turn_timing_effect(Timing.TURN_END, is_player, context)
+	if single_result.size() > 0:
+		return single_result
 	return process_turn_end_effects(is_player, context)
 
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
 	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
 	var context: Dictionary = _resolve_timing_payload_value(payload, aliases.get("context", ["context"]), {})
+
+	if timing in [Timing.TURN_START, Timing.TURN_END]:
+		var timing_card_ui = _resolve_timing_card_ui(timing, payload)
+		if timing_card_ui:
+			context = context.duplicate(true)
+			context["_timing_single_card_ui"] = timing_card_ui
 
 	match timing:
 		Timing.ON_SUMMON:
@@ -307,9 +312,9 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 		Timing.ON_DEFENSE:
 			return _dispatch_timing_on_defense(payload, aliases, is_player, context)
 		Timing.TURN_START:
-			return _dispatch_timing_turn_start(payload, is_player, context)
+			return _dispatch_timing_turn_start(is_player, context)
 		Timing.TURN_END:
-			return _dispatch_timing_turn_end(payload, is_player, context)
+			return _dispatch_timing_turn_end(is_player, context)
 		_:
 			return {}
 
