@@ -736,8 +736,7 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 			_apply_self_heal_effect(card_ui, result, "green", card_name, 1)
 
 		"green_009":  # ターン開始時:マナ+1
-			result["mana"] = 1
-			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			_apply_mana_gain_effect(result, "green", card_name, 1)
 
 		# 赤カードターン開始時効果
 		"red_010":  # ターン開始時:自身ATK+1
@@ -773,8 +772,7 @@ func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, 
 
 		# 黄カードターン終了時効果
 		"yellow_010":  # ターン終了時:マナ+1
-			result["mana"] = 1
-			result["log"] = "[color=yellow]%s の効果: マナ+1[/color]" % card_name
+			_apply_mana_gain_effect(result, "yellow", card_name, 1)
 
 		# 紫カードターン終了時効果
 		"purple_008":  # ターン終了時:敵全体HP-1

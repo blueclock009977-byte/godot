@@ -1155,6 +1155,16 @@ func test_summon_mana_gain_helper_is_shared_for_green_001_004_008() -> void:
 	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 3)"), -1,
 		"green_008 should delegate to mana-gain helper")
 
+func test_turn_mana_gain_helper_is_shared_for_green_009_and_yellow_010() -> void:
+	# 次の段階リファクタ: TURN_START/TURN_END の単純マナ加算+ログ生成を共通ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_mana_gain_effect"), -1,
+		"effect_manager should define _apply_mana_gain_effect")
+	assert_ne(script_text.find("\"green_009\":  # ターン開始時:マナ+1\n\t\t\t_apply_mana_gain_effect(result, \"green\", card_name, 1)"), -1,
+		"green_009 should delegate to mana-gain helper")
+	assert_ne(script_text.find("\"yellow_010\":  # ターン終了時:マナ+1\n\t\t\t_apply_mana_gain_effect(result, \"yellow\", card_name, 1)"), -1,
+		"yellow_010 should delegate to mana-gain helper")
+
 func test_turn_dispatch_helper_exists_and_is_used_for_start_end() -> void:
 	# 次の段階リファクタ: TURN_START/TURN_END のdispatchを1関数に集約
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
