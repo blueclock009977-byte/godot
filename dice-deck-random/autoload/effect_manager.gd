@@ -392,7 +392,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			for enemy in enemies:
 				enemy.apply_status(StatusEffect.FROZEN, 1)
 			if enemies.size() > 0:
-				result["log"] = "[color=cyan]%s の効果: 敵全体を凍結[/color]" % card_name
+				result["log"] = _make_effect_log("cyan", card_name, "敵全体を凍結")
 
 		"green_001":  # 登場時:マナ+1
 			_apply_mana_gain_effect(result, "green", card_name, 1)
