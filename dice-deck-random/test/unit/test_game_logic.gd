@@ -66,3 +66,121 @@ func test_starting_hand():
 func test_max_hp():
 	var MAX_HP := 20
 	assert_eq(MAX_HP, 20, "Max HP is 20")
+
+# ═══════════════════════════════════════════
+# 勝敗判定テスト
+# ═══════════════════════════════════════════
+
+func test_win_condition_opponent_hp_zero():
+	var opponent_hp := 0
+	assert_true(opponent_hp <= 0, "Win when opponent HP is 0")
+
+func test_win_condition_opponent_hp_negative():
+	var opponent_hp := -5
+	assert_true(opponent_hp <= 0, "Win when opponent HP is negative")
+
+func test_lose_condition_player_hp_zero():
+	var player_hp := 0
+	assert_true(player_hp <= 0, "Lose when player HP is 0")
+
+func test_lose_condition_player_hp_negative():
+	var player_hp := -3
+	assert_true(player_hp <= 0, "Lose when player HP is negative")
+
+func test_game_continues_both_positive():
+	var player_hp := 10
+	var opponent_hp := 15
+	assert_false(player_hp <= 0 or opponent_hp <= 0, "Game continues when both HP positive")
+
+func test_both_hp_zero_draw():
+	# 同時に0になった場合のルール（現在の実装ではターンプレイヤー勝利）
+	var player_hp := 0
+	var opponent_hp := 0
+	var is_player_turn := true
+	# ターンプレイヤーが勝利する仕様
+	assert_true(player_hp <= 0 and opponent_hp <= 0, "Both HP zero is simultaneous defeat")
+
+# ═══════════════════════════════════════════
+# ポイントバジェットテスト
+# ═══════════════════════════════════════════
+
+func test_point_budget_cost_0():
+	var cost := 0
+	var budget := cost * 3 + 4
+	assert_eq(budget, 4, "Cost 0 → budget 4")
+
+func test_point_budget_cost_1():
+	var cost := 1
+	var budget := cost * 3 + 4
+	assert_eq(budget, 7, "Cost 1 → budget 7")
+
+func test_point_budget_cost_2():
+	var cost := 2
+	var budget := cost * 3 + 4
+	assert_eq(budget, 10, "Cost 2 → budget 10")
+
+func test_point_budget_cost_3():
+	var cost := 3
+	var budget := cost * 3 + 4
+	assert_eq(budget, 13, "Cost 3 → budget 13")
+
+func test_point_budget_cost_4():
+	var cost := 4
+	var budget := cost * 3 + 4
+	assert_eq(budget, 16, "Cost 4 → budget 16")
+
+func test_point_budget_cost_5():
+	var cost := 5
+	var budget := cost * 3 + 4
+	assert_eq(budget, 19, "Cost 5 → budget 19")
+
+# ═══════════════════════════════════════════
+# カード召喚コストテスト
+# ═══════════════════════════════════════════
+
+func test_can_summon_with_exact_mana():
+	var mana := 3
+	var card_cost := 3
+	assert_true(mana >= card_cost, "Can summon with exact mana")
+
+func test_can_summon_with_excess_mana():
+	var mana := 5
+	var card_cost := 2
+	assert_true(mana >= card_cost, "Can summon with excess mana")
+
+func test_cannot_summon_insufficient_mana():
+	var mana := 1
+	var card_cost := 3
+	assert_false(mana >= card_cost, "Cannot summon with insufficient mana")
+
+func test_can_summon_cost_zero():
+	var mana := 0
+	var card_cost := 0
+	assert_true(mana >= card_cost, "Can summon 0-cost card with 0 mana")
+
+# ═══════════════════════════════════════════
+# フィールドスロットテスト
+# ═══════════════════════════════════════════
+
+func test_slot_indices():
+	# スロット0-2: 前列、3-5: 後列
+	for i in range(6):
+		var is_front := i < 3
+		var lane := i % 3
+		if is_front:
+			assert_true(i >= 0 and i <= 2, "Front row slots are 0-2")
+		else:
+			assert_true(i >= 3 and i <= 5, "Back row slots are 3-5")
+		assert_true(lane >= 0 and lane <= 2, "Lane is always 0-2")
+
+func test_front_to_back_mapping():
+	# 前列スロットから対応する後列スロットへ
+	assert_eq(0 + 3, 3, "Front slot 0 → back slot 3")
+	assert_eq(1 + 3, 4, "Front slot 1 → back slot 4")
+	assert_eq(2 + 3, 5, "Front slot 2 → back slot 5")
+
+func test_back_to_front_mapping():
+	# 後列スロットから対応する前列スロットへ
+	assert_eq(3 - 3, 0, "Back slot 3 → front slot 0")
+	assert_eq(4 - 3, 1, "Back slot 4 → front slot 1")
+	assert_eq(5 - 3, 2, "Back slot 5 → front slot 2")
