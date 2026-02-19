@@ -179,7 +179,7 @@ func _get_deck_ids() -> Array:
 		for card in GameManager.player_deck:
 			ids.append(card.id)
 	else:
-		var deck := CardDatabase.build_random_deck()
+		var deck := CardDatabase.build_random_battle_deck()
 		for card in deck:
 			ids.append(card.id)
 	return ids

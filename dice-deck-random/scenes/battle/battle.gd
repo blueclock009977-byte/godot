@@ -20,8 +20,8 @@ func _start_game() -> void:
 		for card in GameManager.player_deck:
 			player_deck.append(card.duplicate_card())
 	else:
-		player_deck = CardDatabase.build_random_deck()
-	opponent_deck = CardDatabase.build_random_deck()
+		player_deck = CardDatabase.build_random_battle_deck()
+	opponent_deck = CardDatabase.build_random_battle_deck()
 	player_deck.shuffle()
 	opponent_deck.shuffle()
 

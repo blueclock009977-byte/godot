@@ -48,7 +48,7 @@ func _start_game() -> void:
 		for card in GameManager.player_deck:
 			player_deck.append(card.duplicate_card())
 	else:
-		player_deck = CardDatabase.build_random_deck()
+		player_deck = CardDatabase.build_random_battle_deck()
 
 	# Load opponent deck from Firebase
 	var opp_deck_ids := await MultiplayerManager.get_opponent_deck()
@@ -58,7 +58,7 @@ func _start_game() -> void:
 		if card:
 			opponent_deck.append(card.duplicate_card())
 	if opponent_deck.size() < 20:
-		opponent_deck = CardDatabase.build_random_deck()
+		opponent_deck = CardDatabase.build_random_battle_deck()
 
 	# Use room data seed for shuffle consistency
 	# Both players need same shuffle. Use room code as seed.

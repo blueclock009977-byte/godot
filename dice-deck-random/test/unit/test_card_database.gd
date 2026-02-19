@@ -54,6 +54,27 @@ func test_build_random_deck():
 	var deck := CardDatabase.build_random_deck()
 	assert_eq(deck.size(), 20, "Random deck should have 20 cards")
 
+func test_build_random_battle_deck_follows_rules():
+	var deck := CardDatabase.build_random_battle_deck()
+	assert_eq(deck.size(), 20, "Battle random deck should have 20 cards")
+
+	var color_counts := {}
+	var id_counts := {}
+	for card in deck:
+		color_counts[card.color_type] = color_counts.get(card.color_type, 0) + 1
+		id_counts[card.id] = id_counts.get(card.id, 0) + 1
+
+	# グレー以外は1色のみ
+	var non_gray_colors := 0
+	for color in color_counts.keys():
+		if int(color) != CardData.ColorType.GRAY and int(color_counts[color]) > 0:
+			non_gray_colors += 1
+	assert_eq(non_gray_colors, 1, "Battle random deck should contain exactly one non-gray color")
+
+	# 同名2枚まで
+	for card_id in id_counts.keys():
+		assert_lte(int(id_counts[card_id]), 2, "Card ID %d should appear at most 2 copies" % int(card_id))
+
 func test_each_color_has_20_cards():
 	# 各色のカード枚数をカウント
 	var color_counts := {}

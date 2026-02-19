@@ -343,8 +343,43 @@ func to_card_data_array(arr: Array) -> Array[CardData]:
 		result.append(item)
 	return result
 
+func _get_non_gray_colors() -> Array:
+	var colors: Array = []
+	for card in card_pool:
+		if card.color_type == CardData.ColorType.GRAY:
+			continue
+		if card.color_type not in colors:
+			colors.append(card.color_type)
+	return colors
+
+func build_random_battle_deck() -> Array[CardData]:
+	"""バトル用のランダムデッキを生成。
+	ルール: 20枚、同名2枚まで、グレー+ランダム1色のみ。"""
+	var deck: Array[CardData] = []
+	var non_gray_colors := _get_non_gray_colors()
+	if non_gray_colors.is_empty():
+		return build_random_deck()
+
+	var selected_color = non_gray_colors[randi() % non_gray_colors.size()]
+	var candidates: Array[CardData] = []
+	for card in card_pool:
+		if card.color_type == CardData.ColorType.GRAY or card.color_type == selected_color:
+			# 同名2枚まで
+			candidates.append(card)
+			candidates.append(card)
+
+	candidates.shuffle()
+	for i in range(mini(20, candidates.size())):
+		deck.append(candidates[i].duplicate_card())
+
+	# 何らかの理由で不足した場合の保険
+	if deck.size() < 20:
+		return build_random_deck()
+
+	return deck
+
 func build_random_deck() -> Array[CardData]:
-	"""ランダムなデッキを生成（テスト用）"""
+	"""ランダムなデッキを生成（汎用/テスト用）"""
 	var deck: Array[CardData] = []
 	var all_cards := get_all_cards()
 	all_cards.shuffle()
