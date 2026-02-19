@@ -1,0 +1,1040 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
+   at: GDScript::reload (res://test/unit/test_battle_sim.gd:40)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
+   at: GDScript::reload (res://test/unit/test_battle_sim.gd:59)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_battle_sim.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[WARNING]:  Ignoring script res://test/unit/test_battle_sim.gd because it does not extend GutTest
+[ERROR]:  Could not find script:  test_scene_transitions.gd
+
+
+res://test/unit/test_card_database.gd
+* test_card_pool_has_20_cards
+    [Failed]:  [160] expected to equal [20]:  CardDatabase should have 20 cards
+      at line 4
+* test_all_cards_have_valid_cost
+* test_all_cards_have_positive_hp
+* test_all_cards_have_non_negative_atk
+* test_all_cards_have_attack_dice
+* test_all_dice_values_valid
+* test_all_cards_have_unique_ids
+* test_point_budget
+    [Failed]:  [5] expected to equal [6]:  スライム budget: atk(1)+hp(2)+dice(2)=5 should be 6
+      at line 37
+    [Failed]:  [5] expected to equal [6]:  ゴブリン budget: atk(2)+hp(1)+dice(2)=5 should be 6
+      at line 37
+    [Failed]:  [8] expected to equal [9]:  シールドナイト budget: atk(2)+hp(4)+dice(2)=8 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  スカウト budget: atk(1)+hp(1)+dice(4)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [9]:  ウォリアー budget: atk(3)+hp(3)+dice(2)=8 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [9]:  アサシン budget: atk(4)+hp(2)+dice(2)=8 should be 9
+      at line 37
+    [Failed]:  [10] expected to equal [12]:  フォートレス budget: atk(2)+hp(5)+dice(3)=10 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [12]:  ストライカー budget: atk(5)+hp(2)+dice(3)=10 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [12]:  パラディン budget: atk(4)+hp(3)+dice(3)=10 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [12]:  バーサーカー budget: atk(6)+hp(1)+dice(3)=10 should be 12
+      at line 37
+    [Failed]:  [13] expected to equal [15]:  アイアンゴーレム budget: atk(2)+hp(8)+dice(3)=13 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [15]:  ブレードマスター budget: atk(4)+hp(4)+dice(4)=12 should be 15
+      at line 37
+    [Failed]:  [13] expected to equal [15]:  ドラゴンナイト budget: atk(6)+hp(4)+dice(3)=13 should be 15
+      at line 37
+    [Failed]:  [13] expected to equal [15]:  ウォーロード budget: atk(5)+hp(5)+dice(3)=13 should be 15
+      at line 37
+    [Failed]:  [15] expected to equal [18]:  タイタン budget: atk(3)+hp(8)+dice(4)=15 should be 18
+      at line 37
+    [Failed]:  [16] expected to equal [18]:  ドラゴン budget: atk(6)+hp(7)+dice(3)=16 should be 18
+      at line 37
+    [Failed]:  [15] expected to equal [18]:  デスブリンガー budget: atk(8)+hp(3)+dice(4)=15 should be 18
+      at line 37
+    [Failed]:  [15] expected to equal [18]:  エンシェント budget: atk(5)+hp(6)+dice(4)=15 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  氷の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [3] expected to equal [6]:  フロストバット budget: atk(1)+hp(1)+dice(1)=3 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  氷のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  霜の妖精 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  水の使い budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  霧の狼 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  氷の彫刻家 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  海のスライム budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  氷結の騎士 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  深海魚 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  吹雪の魔術師 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  氷の壁 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  吹雪のドラゴン budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  海神の守護者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  海賊船長 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  北風の精 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  氷帝 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  凍てつく巨人 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  氷山 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  絶対零度 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  森の妖精 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  若木のトレント budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  花のスプライト budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  種まき budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  草原の狩人 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  花の精 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  蔦の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  木こりオーク budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  森の守護者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  大樹の戦士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  ドリアードの巫女 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  森の巨人 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  エルフの賢者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  古代樹 budget: atk(1)+hp(6)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  春風の使者 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  苔の巨人 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  森林王 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  世界樹の化身 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  大地の精霊 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  生命の木 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  呪いの人形 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  疫病ネズミ budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [8] expected to equal [9]:  影の暗殺者 budget: atk(4)+hp(2)+dice(2)=8 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  毒蛇 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  ゾンビ budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  闇の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [11] expected to equal [12]:  堕天使 budget: atk(5)+hp(4)+dice(2)=11 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  死霊術師 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  骸骨剣士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [12]:  悪魔の契約者 budget: atk(4)+hp(4)+dice(2)=10 should be 12
+      at line 37
+    [Failed]:  [13] expected to equal [15]:  漆黒の騎士 budget: atk(5)+hp(5)+dice(3)=13 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  吸血鬼 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  ダークナイト budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  死神 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [16] expected to equal [18]:  魔王の影 budget: atk(7)+hp(6)+dice(3)=16 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  深淵の王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [15] expected to equal [18]:  堕落の竜 budget: atk(6)+hp(6)+dice(3)=15 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  暗黒神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  火の精霊 budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  炎のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  火花インプ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  溶岩スライム budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  炎の戦士 budget: atk(3)+hp(1)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  火炎魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  バーニングナイト budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  火の鳥 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  炎の騎士 budget: atk(4)+hp(2)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  ファイアドラゴン budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  溶岩巨人 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  業火の魔人 budget: atk(4)+hp(2)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  炎帝 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  フェニックス budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  地獄の番犬 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  火山龍 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  炎神 budget: atk(5)+hp(4)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  メテオドラゴン budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  灼熱の魔王 budget: atk(5)+hp(4)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  太陽神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  光の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  聖なる小鳥 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  祝福のスプライト budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  星の欠片 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  光の戦士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  癒しの天使 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  守護の騎士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  光のスライム budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  聖騎士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  光の魔術師 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  天使 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  希望の使者 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  大天使 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  光の龍 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  聖者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  祝福の精霊王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  光神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  天空龍 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  希望の女神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  太陽の化身 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  闇の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  呪いのコウモリ budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  影のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  夜の蝶 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  闇の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  呪術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  影の狼 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  夢魔 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  闇の騎士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  呪いの魔女 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  影の龍 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  悪夢の使者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  闇の王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  呪いの竜 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  影の支配者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  悪夢の王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  闇神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  呪いの神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  影の帝王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  虚無の王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  聖なる精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  癒しの光 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  守護の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [4] expected to equal [6]:  祈りの天使 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  白の戦士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  癒しの騎士 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  聖なる盾 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [6] expected to equal [9]:  祝福の僧侶 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  聖騎士団長 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  癒しの天使長 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  聖なる守護者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [8] expected to equal [12]:  祈りの巫女 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  大聖騎士 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  神聖龍 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  復活の天使 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [10] expected to equal [15]:  聖域の守護者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  聖神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  神聖の化身 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  復活の女神 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+      at line 37
+    [Failed]:  [12] expected to equal [18]:  光の創造主 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+      at line 37
+* test_get_card_by_id
+* test_get_card_by_invalid_id
+* test_build_random_deck
+9/11 passed.
+
+
+res://test/unit/test_effects.gd
+* test_effect_manager_exists
+* test_effect_definitions_registered
+* test_blue_effects_registered
+* test_green_effects_registered
+* test_black_effects_registered
+* test_get_effect_description
+* test_get_effect_timing
+* test_has_timing
+* test_unknown_effect
+* test_dice_modifier_blue_002
+* test_dice_modifier_black_009
+* test_summon_cost_modifier_green_006
+* test_all_timings_covered
+* test_effect_count
+* test_summon_effect_mana_green_001
+* test_summon_effect_mana_green_004
+* test_summon_effect_self_damage_black
+* test_summon_effect_draw_blue_014
+* test_summon_effect_draw_and_damage_black_014
+* test_attack_effect_direct_damage_blue_012
+* test_attack_effect_mana_green_010
+* test_attack_effect_lifesteal_black_007
+* test_death_effect_mana_green_002
+* test_death_effect_spawn_token_black_006
+* test_defense_effect_half_damage_blue_006
+* test_defense_effect_mana_on_damage_green_012
+* test_no_effect_vanilla_card
+* test_multiple_cost_modifiers
+28/28 passed.
+
+
+res://test/unit/test_game_logic.gd
+* test_mana_cap
+* test_mana_recovery_in_draw_phase
+* test_damage_calculation
+* test_lane_assignment
+* test_first_player_turn1_skips_dice
+* test_second_player_turn1_no_skip
+* test_move_cost
+* test_deck_size
+* test_starting_hand
+* test_max_hp
+10/10 passed.
+
+
+res://test/unit/test_scene_transitions.gd
+* test_title_to_lobby_transition
+    タイトル画面ロード成功
+* test_lobby_scene_load
+    ロビー画面ロード成功
+* test_online_battle_scene_load
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:9)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Preloaded path must be a constant string.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:9)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "CARD_UI_SCENE" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:9)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "CARD_UI_SCENE" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:9)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Preloaded path must be a constant string.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "FIELD_SLOT_SCENE" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "FIELD_SLOT_SCENE" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:11)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "MAX_HP" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:11)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "MAX_HP" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:11)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:12)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "MAX_MANA_CAP" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:12)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "MAX_MANA_CAP" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:12)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:13)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "DEFAULT_STARTING_HAND" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:13)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "DEFAULT_STARTING_HAND" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:13)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Identifier "BattleConstants" not declared in the current scope.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:14)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Assigned value for constant "MOVE_COST" isn't a constant expression.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:14)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "MOVE_COST" constant because the value doesn't have a set type.
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:14)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot assign a value of type "null" as "int".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:20)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot assign a value of type "null" as "int".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:21)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot pass a value of type "null" as "int".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:629)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+SCRIPT ERROR: Parse Error: Cannot pass a value of type "null" as "int".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:633)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+ERROR: Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+    オンラインバトル画面ロード成功
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [2] <engine-2>Parse Error: Preloaded path must be a constant string.
+    [3] <engine-2>Parse Error: Assigned value for constant "CARD_UI_SCENE" isn't a constant expression.
+    [4] <engine-2>Parse Error: Cannot infer the type of "CARD_UI_SCENE" constant because the value doesn't have a set type.
+    [5] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [6] <engine-2>Parse Error: Preloaded path must be a constant string.
+    [7] <engine-2>Parse Error: Assigned value for constant "FIELD_SLOT_SCENE" isn't a constant expression.
+    [8] <engine-2>Parse Error: Cannot infer the type of "FIELD_SLOT_SCENE" constant because the value doesn't have a set type.
+    [9] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [10] <engine-2>Parse Error: Assigned value for constant "MAX_HP" isn't a constant expression.
+    [11] <engine-2>Parse Error: Cannot infer the type of "MAX_HP" constant because the value doesn't have a set type.
+    [12] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [13] <engine-2>Parse Error: Assigned value for constant "MAX_MANA_CAP" isn't a constant expression.
+    [14] <engine-2>Parse Error: Cannot infer the type of "MAX_MANA_CAP" constant because the value doesn't have a set type.
+    [15] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [16] <engine-2>Parse Error: Assigned value for constant "DEFAULT_STARTING_HAND" isn't a constant expression.
+    [17] <engine-2>Parse Error: Cannot infer the type of "DEFAULT_STARTING_HAND" constant because the value doesn't have a set type.
+    [18] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [19] <engine-2>Parse Error: Assigned value for constant "MOVE_COST" isn't a constant expression.
+    [20] <engine-2>Parse Error: Cannot infer the type of "MOVE_COST" constant because the value doesn't have a set type.
+    [21] <engine-2>Parse Error: Cannot assign a value of type "null" as "int".
+    [22] <engine-2>Parse Error: Cannot assign a value of type "null" as "int".
+    [23] <engine-2>Parse Error: Cannot pass a value of type "null" as "int".
+    [24] <engine-2>Parse Error: Cannot pass a value of type "null" as "int".
+    [25] <engine-0>Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+      at line 43
+[WARNING]:  Test script has 2 unfreed children.  Increase log level for more details.
+2/3 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+res://test/unit/test_card_database.gd
+- test_card_pool_has_20_cards
+    [Failed]:  [160] expected to equal [20]:  CardDatabase should have 20 cards
+          at line 4
+- test_point_budget
+    [Failed]:  [5] expected to equal [6]:  スライム budget: atk(1)+hp(2)+dice(2)=5 should be 6
+          at line 37
+    [Failed]:  [5] expected to equal [6]:  ゴブリン budget: atk(2)+hp(1)+dice(2)=5 should be 6
+          at line 37
+    [Failed]:  [8] expected to equal [9]:  シールドナイト budget: atk(2)+hp(4)+dice(2)=8 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  スカウト budget: atk(1)+hp(1)+dice(4)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [9]:  ウォリアー budget: atk(3)+hp(3)+dice(2)=8 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [9]:  アサシン budget: atk(4)+hp(2)+dice(2)=8 should be 9
+          at line 37
+    [Failed]:  [10] expected to equal [12]:  フォートレス budget: atk(2)+hp(5)+dice(3)=10 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [12]:  ストライカー budget: atk(5)+hp(2)+dice(3)=10 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [12]:  パラディン budget: atk(4)+hp(3)+dice(3)=10 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [12]:  バーサーカー budget: atk(6)+hp(1)+dice(3)=10 should be 12
+          at line 37
+    [Failed]:  [13] expected to equal [15]:  アイアンゴーレム budget: atk(2)+hp(8)+dice(3)=13 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [15]:  ブレードマスター budget: atk(4)+hp(4)+dice(4)=12 should be 15
+          at line 37
+    [Failed]:  [13] expected to equal [15]:  ドラゴンナイト budget: atk(6)+hp(4)+dice(3)=13 should be 15
+          at line 37
+    [Failed]:  [13] expected to equal [15]:  ウォーロード budget: atk(5)+hp(5)+dice(3)=13 should be 15
+          at line 37
+    [Failed]:  [15] expected to equal [18]:  タイタン budget: atk(3)+hp(8)+dice(4)=15 should be 18
+          at line 37
+    [Failed]:  [16] expected to equal [18]:  ドラゴン budget: atk(6)+hp(7)+dice(3)=16 should be 18
+          at line 37
+    [Failed]:  [15] expected to equal [18]:  デスブリンガー budget: atk(8)+hp(3)+dice(4)=15 should be 18
+          at line 37
+    [Failed]:  [15] expected to equal [18]:  エンシェント budget: atk(5)+hp(6)+dice(4)=15 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  氷の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [3] expected to equal [6]:  フロストバット budget: atk(1)+hp(1)+dice(1)=3 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  氷のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  霜の妖精 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  水の使い budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  霧の狼 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  氷の彫刻家 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  海のスライム budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  氷結の騎士 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  深海魚 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  吹雪の魔術師 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  氷の壁 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  吹雪のドラゴン budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  海神の守護者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  海賊船長 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  北風の精 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  氷帝 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  凍てつく巨人 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  氷山 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  絶対零度 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  森の妖精 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  若木のトレント budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  花のスプライト budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  種まき budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  草原の狩人 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  花の精 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  蔦の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  木こりオーク budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  森の守護者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  大樹の戦士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  ドリアードの巫女 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  森の巨人 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  エルフの賢者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  古代樹 budget: atk(1)+hp(6)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  春風の使者 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  苔の巨人 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  森林王 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  世界樹の化身 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  大地の精霊 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  生命の木 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  呪いの人形 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  疫病ネズミ budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [8] expected to equal [9]:  影の暗殺者 budget: atk(4)+hp(2)+dice(2)=8 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  毒蛇 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  ゾンビ budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  闇の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [11] expected to equal [12]:  堕天使 budget: atk(5)+hp(4)+dice(2)=11 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  死霊術師 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  骸骨剣士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [12]:  悪魔の契約者 budget: atk(4)+hp(4)+dice(2)=10 should be 12
+          at line 37
+    [Failed]:  [13] expected to equal [15]:  漆黒の騎士 budget: atk(5)+hp(5)+dice(3)=13 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  吸血鬼 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  ダークナイト budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  死神 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [16] expected to equal [18]:  魔王の影 budget: atk(7)+hp(6)+dice(3)=16 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  深淵の王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [15] expected to equal [18]:  堕落の竜 budget: atk(6)+hp(6)+dice(3)=15 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  暗黒神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  火の精霊 budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  炎のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  火花インプ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  溶岩スライム budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  炎の戦士 budget: atk(3)+hp(1)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  火炎魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  バーニングナイト budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  火の鳥 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  炎の騎士 budget: atk(4)+hp(2)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  ファイアドラゴン budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  溶岩巨人 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  業火の魔人 budget: atk(4)+hp(2)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  炎帝 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  フェニックス budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  地獄の番犬 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  火山龍 budget: atk(4)+hp(3)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  炎神 budget: atk(5)+hp(4)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  メテオドラゴン budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  灼熱の魔王 budget: atk(5)+hp(4)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  太陽神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  光の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  聖なる小鳥 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  祝福のスプライト budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  星の欠片 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  光の戦士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  癒しの天使 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  守護の騎士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  光のスライム budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  聖騎士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  光の魔術師 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  天使 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  希望の使者 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  大天使 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  光の龍 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  聖者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  祝福の精霊王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  光神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  天空龍 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  希望の女神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  太陽の化身 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  闇の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  呪いのコウモリ budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  影のネズミ budget: atk(2)+hp(1)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  夜の蝶 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  闇の魔術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  呪術師 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  影の狼 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  夢魔 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  闇の騎士 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  呪いの魔女 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  影の龍 budget: atk(3)+hp(3)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  悪夢の使者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  闇の王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  呪いの竜 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  影の支配者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  悪夢の王 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  闇神 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  呪いの神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  影の帝王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  虚無の王 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  聖なる精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  癒しの光 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  守護の精霊 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [4] expected to equal [6]:  祈りの天使 budget: atk(1)+hp(2)+dice(1)=4 should be 6
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  白の戦士 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  癒しの騎士 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  聖なる盾 budget: atk(1)+hp(3)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [6] expected to equal [9]:  祝福の僧侶 budget: atk(2)+hp(2)+dice(2)=6 should be 9
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  聖騎士団長 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  癒しの天使長 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  聖なる守護者 budget: atk(2)+hp(4)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [8] expected to equal [12]:  祈りの巫女 budget: atk(1)+hp(5)+dice(2)=8 should be 12
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  大聖騎士 budget: atk(3)+hp(4)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  神聖龍 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  復活の天使 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [10] expected to equal [15]:  聖域の守護者 budget: atk(2)+hp(5)+dice(3)=10 should be 15
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  聖神 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  神聖の化身 budget: atk(3)+hp(6)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  復活の女神 budget: atk(2)+hp(7)+dice(3)=12 should be 18
+          at line 37
+    [Failed]:  [12] expected to equal [18]:  光の創造主 budget: atk(4)+hp(5)+dice(3)=12 should be 18
+          at line 37
+
+res://test/unit/test_scene_transitions.gd
+- test_online_battle_scene_load
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [2] <engine-2>Parse Error: Preloaded path must be a constant string.
+    [3] <engine-2>Parse Error: Assigned value for constant "CARD_UI_SCENE" isn't a constant expression.
+    [4] <engine-2>Parse Error: Cannot infer the type of "CARD_UI_SCENE" constant because the value doesn't have a set type.
+    [5] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [6] <engine-2>Parse Error: Preloaded path must be a constant string.
+    [7] <engine-2>Parse Error: Assigned value for constant "FIELD_SLOT_SCENE" isn't a constant expression.
+    [8] <engine-2>Parse Error: Cannot infer the type of "FIELD_SLOT_SCENE" constant because the value doesn't have a set type.
+    [9] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [10] <engine-2>Parse Error: Assigned value for constant "MAX_HP" isn't a constant expression.
+    [11] <engine-2>Parse Error: Cannot infer the type of "MAX_HP" constant because the value doesn't have a set type.
+    [12] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [13] <engine-2>Parse Error: Assigned value for constant "MAX_MANA_CAP" isn't a constant expression.
+    [14] <engine-2>Parse Error: Cannot infer the type of "MAX_MANA_CAP" constant because the value doesn't have a set type.
+    [15] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [16] <engine-2>Parse Error: Assigned value for constant "DEFAULT_STARTING_HAND" isn't a constant expression.
+    [17] <engine-2>Parse Error: Cannot infer the type of "DEFAULT_STARTING_HAND" constant because the value doesn't have a set type.
+    [18] <engine-2>Parse Error: Identifier "BattleConstants" not declared in the current scope.
+    [19] <engine-2>Parse Error: Assigned value for constant "MOVE_COST" isn't a constant expression.
+    [20] <engine-2>Parse Error: Cannot infer the type of "MOVE_COST" constant because the value doesn't have a set type.
+    [21] <engine-2>Parse Error: Cannot assign a value of type "null" as "int".
+    [22] <engine-2>Parse Error: Cannot assign a value of type "null" as "int".
+    [23] <engine-2>Parse Error: Cannot pass a value of type "null" as "int".
+    [24] <engine-2>Parse Error: Cannot pass a value of type "null" as "int".
+    [25] <engine-0>Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+          at line 43
+
+Totals
+------
+Errors                1
+Warnings              2
+
+Scripts               4
+Tests                52
+Passing Tests        49
+Failing Tests         3
+Asserts           1254/1412
+Time              0.717s
+
+
+---- 3 failing tests ----
+

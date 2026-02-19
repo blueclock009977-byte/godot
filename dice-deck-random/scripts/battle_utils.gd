@@ -60,3 +60,17 @@ static func get_adjacent_slots(idx: int) -> Array[int]:
 	else:
 		result.append(idx - 3)
 	return result
+
+## Find target for attacker in battle simulation
+## Returns the defender dict to attack, or null for direct damage
+static func sim_find_target(attacker: Dictionary, defenders: Array):
+	var lane: int = attacker["lane"]
+	# First, look for front row defender in same lane
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
+			return d
+	# Then, look for back row defender in same lane
+	for d in defenders:
+		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
+			return d
+	return null
