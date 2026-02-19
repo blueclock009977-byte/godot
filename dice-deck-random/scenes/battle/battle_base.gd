@@ -256,6 +256,10 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 			else:
 				_opponent_draw_card()
 
+	if result.has("destroy_targets"):
+		for target in result["destroy_targets"]:
+			_destroy_card_ui_immediate(target)
+
 	_update_all_ui()
 
 # ═══════════════════════════════════════════
@@ -424,6 +428,28 @@ func _destroy_card_in_slot(target_slot: FieldSlot, is_player_owner: bool) -> voi
 	_process_death_effect(card_ui, is_player_owner)
 	target_slot.remove_card()
 	card_ui.queue_free()
+
+func _destroy_card_ui_immediate(card_ui: CardUI) -> void:
+	if not card_ui:
+		return
+	var owner_slot := _find_slot_by_card_ui(card_ui)
+	if owner_slot == null:
+		return
+	if owner_slot in player_slots:
+		_process_death_effect(card_ui, true)
+	else:
+		_process_death_effect(card_ui, false)
+	owner_slot.remove_card()
+	card_ui.queue_free()
+
+func _find_slot_by_card_ui(card_ui: CardUI) -> FieldSlot:
+	for slot in player_slots:
+		if slot and not slot.is_empty() and slot.card_ui == card_ui:
+			return slot
+	for slot in opponent_slots:
+		if slot and not slot.is_empty() and slot.card_ui == card_ui:
+			return slot
+	return null
 
 # ═══════════════════════════════════════════
 # TURN END (shared)

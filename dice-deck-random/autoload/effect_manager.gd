@@ -328,13 +328,13 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 		"red_001":  # 登場時:敵1体HP-2
 			var target = _get_random_enemy(is_player, context)
 			if target:
-				target.take_damage(2)
+				_apply_damage_and_mark_destroy(target, 2, result)
 				result["log"] = "[color=red]%s の効果: %s にHP-2[/color]" % [card_name, target.card_data.card_name]
 
 		"red_003":  # 登場時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
 			for enemy in enemies:
-				enemy.take_damage(1)
+				_apply_damage_and_mark_destroy(enemy, 1, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=red]%s の効果: 敵全体にHP-1[/color]" % card_name
 
@@ -347,13 +347,13 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 		"red_011":  # 登場時:敵1体HP-3
 			var target = _get_random_enemy(is_player, context)
 			if target:
-				target.take_damage(3)
+				_apply_damage_and_mark_destroy(target, 3, result)
 				result["log"] = "[color=red]%s の効果: %s にHP-3[/color]" % [card_name, target.card_data.card_name]
 
 		"red_015":  # 登場時:敵全体HP-2
 			var enemies = _get_all_enemies(is_player, context)
 			for enemy in enemies:
-				enemy.take_damage(2)
+				_apply_damage_and_mark_destroy(enemy, 2, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=red]%s の効果: 敵全体にHP-2[/color]" % card_name
 
@@ -965,6 +965,15 @@ func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
+
+func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
+	if not target or amount <= 0:
+		return
+	target.take_damage(amount)
+	if target.current_hp <= 0:
+		result["destroy_targets"] = result.get("destroy_targets", [])
+		if target not in result["destroy_targets"]:
+			result["destroy_targets"].append(target)
 
 func _get_random_enemy(is_player: bool, context: Dictionary):
 	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]

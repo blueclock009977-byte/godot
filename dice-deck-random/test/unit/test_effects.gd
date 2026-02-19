@@ -250,9 +250,21 @@ func test_summon_effect_red_001() -> void:
 	var mock_card_ui = _create_mock_card_ui("red_001")
 	var context := _create_empty_context()
 	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
-	# 敵がいない場合は効果なし、または target_enemy_damage
-	# result構造を確認（実装依存）
-	assert_true(result.has("target_enemy_damage") or result.size() == 0, "red_001 should have target_enemy_damage or be empty")
+	# 敵がいない場合は効果なし
+	assert_true(result.size() == 0, "red_001 should be empty when no enemies")
+
+func test_summon_effect_red_001_marks_destroy_target_when_hp_zero() -> void:
+	var mock_card_ui = _create_mock_card_ui("red_001")
+	var enemy_slot = _create_mock_slot_with_ui("")
+	enemy_slot.card_ui.current_hp = 2
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy_slot, null, null, null, null, null],
+		"current_dice": 1
+	}
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_true(result.has("destroy_targets"), "red_001 should mark destroy_targets when target HP <= 0")
+	assert_eq(result["destroy_targets"].size(), 1, "red_001 should mark exactly 1 destroyed target")
 
 func test_summon_effect_yellow_001() -> void:
 	# yellow_001: 登場時味方1体HP+2
