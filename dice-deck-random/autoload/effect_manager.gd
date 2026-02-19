@@ -772,8 +772,7 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_006":  # 防御時:被ダメージ半減
-			result["final_damage"] = int(damage / 2)
-			result["log"] = "[color=cyan]%s の効果: ダメージ半減[/color]" % card_name
+			_apply_final_damage_with_log(result, int(damage / 2), "cyan", card_name, "ダメージ半減")
 
 		"green_012":  # 被ダメージ時:マナ+1
 			result["mana"] = 1
@@ -783,8 +782,7 @@ func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_
 		# 黄カード防御時効果
 		# ═══════════════════════════════════════════
 		"yellow_004":  # 防御時:ダメージを1軽減
-			result["final_damage"] = max(0, damage - 1)
-			result["log"] = "[color=yellow]%s の効果: ダメージ1軽減[/color]" % card_name
+			_apply_final_damage_with_log(result, max(0, damage - 1), "yellow", card_name, "ダメージ1軽減")
 
 		"yellow_014":  # 防御時:攻撃者にダメージ反射
 			result["reflect"] = true
@@ -798,9 +796,8 @@ func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_
 			if "shield_used" in defender_ui:
 				already_used = defender_ui.shield_used
 			if not already_used:
-				result["final_damage"] = 0
+				_apply_final_damage_with_log(result, 0, "white", card_name, "ダメージ無効")
 				result["shield_consumed"] = true
-				result["log"] = "[color=white]%s の効果: ダメージ無効[/color]" % card_name
 
 func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String) -> Dictionary:
 	var result := {}
@@ -1077,6 +1074,10 @@ func _apply_player_heal_effect(result: Dictionary, color: String, card_name: Str
 		return
 	result["heal_player"] = amount
 	result["log"] = _make_effect_log(color, card_name, "自分HP+%d" % amount)
+
+func _apply_final_damage_with_log(result: Dictionary, final_damage: int, color: String, card_name: String, message: String) -> void:
+	result["final_damage"] = max(0, final_damage)
+	result["log"] = _make_effect_log(color, card_name, message)
 
 func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
 	if amount <= 0:

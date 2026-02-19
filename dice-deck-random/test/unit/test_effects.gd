@@ -1576,6 +1576,18 @@ func test_summon_yellow_013_uses_shared_aoe_atk_heal_helper() -> void:
 	assert_ne(script_text.find("_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, \"yellow\", \"味方全体ATK+1,HP+1\")"), -1,
 		"yellow_013 should delegate buff+heal to _apply_aoe_atk_and_heal_effect helper")
 
+func test_defense_final_damage_log_helper_is_shared_for_damage_reduction_effects() -> void:
+	# 次の小さなリファクタ候補: 防御時の最終ダメージ更新+ログを共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_final_damage_with_log"), -1,
+		"effect_manager should define _apply_final_damage_with_log helper")
+	assert_ne(script_text.find("_apply_final_damage_with_log(result, int(damage / 2), \"cyan\", card_name, \"ダメージ半減\")"), -1,
+		"blue_006 should delegate final damage update to shared helper")
+	assert_ne(script_text.find("_apply_final_damage_with_log(result, max(0, damage - 1), \"yellow\", card_name, \"ダメージ1軽減\")"), -1,
+		"yellow_004 should delegate final damage update to shared helper")
+	assert_ne(script_text.find("_apply_final_damage_with_log(result, 0, \"white\", card_name, \"ダメージ無効\")"), -1,
+		"white_005 should delegate final damage update to shared helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
