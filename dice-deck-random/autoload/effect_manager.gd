@@ -547,14 +547,10 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_003":  # 攻撃時:対象を凍結
-			if defender_ui:
-				defender_ui.apply_status(StatusEffect.FROZEN, 1)
-				result["log"] = "[color=cyan]%s の効果: %s を凍結[/color]" % [card_name, defender_ui.card_data.card_name]
+			_apply_status_effect_with_log(defender_ui, StatusEffect.FROZEN, 1, result, "cyan", card_name, "を凍結")
 
 		"blue_008":  # 攻撃時:対象を2ターン凍結
-			if defender_ui:
-				defender_ui.apply_status(StatusEffect.FROZEN, 2)
-				result["log"] = "[color=cyan]%s の効果: %s を2ターン凍結[/color]" % [card_name, defender_ui.card_data.card_name]
+			_apply_status_effect_with_log(defender_ui, StatusEffect.FROZEN, 2, result, "cyan", card_name, "を2ターン凍結")
 
 		"blue_012":  # 攻撃時:追加で相手HP-1
 			result["direct_damage"] = 1
@@ -570,9 +566,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
 
 		"black_004":  # 攻撃時:対象に毒
-			if defender_ui:
-				defender_ui.apply_status(StatusEffect.POISON, 99)
-				result["log"] = "[color=purple]%s の効果: %s に毒付与[/color]" % [card_name, defender_ui.card_data.card_name]
+			_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, "purple", card_name, "に毒付与")
 
 		"black_007":  # 攻撃時:与ダメ分自身HP回復
 			result["lifesteal"] = true
@@ -1089,6 +1083,11 @@ func _apply_draw_effect(result: Dictionary, color: String, card_name: String, am
 	result["draw"] = amount
 	result["log"] = _make_effect_log(color, card_name, "%d枚ドロー" % amount)
 
+func _apply_status_effect_with_log(target, status: StatusEffect, duration: int, result: Dictionary, color: String, card_name: String, suffix: String) -> void:
+	if not target:
+		return
+	target.apply_status(status, duration)
+	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
 
 func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)

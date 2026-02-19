@@ -1369,6 +1369,18 @@ func test_turn_start_poison_tick_processing_is_extracted_to_helper() -> void:
 	assert_ne(script_text.find("_append_poison_tick_results(slots, results)"), -1,
 		"process_turn_start_effects should delegate poison tick loop to helper")
 
+func test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects() -> void:
+	# 次のリファクタ候補: 状態異常付与（凍結/毒）を共通helperで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_status_effect_with_log"), -1,
+		"effect_manager should define _apply_status_effect_with_log helper")
+	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.FROZEN, 1, result, \"cyan\", card_name, \"を凍結\")"), -1,
+		"blue_003 should delegate status application to shared helper")
+	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.FROZEN, 2, result, \"cyan\", card_name, \"を2ターン凍結\")"), -1,
+		"blue_008 should delegate status application to shared helper")
+	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, \"purple\", card_name, \"に毒付与\")"), -1,
+		"black_004 should delegate status application to shared helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
