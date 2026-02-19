@@ -437,13 +437,7 @@ func _update_opponent_hand_display() -> void:
 	for i in range(opponent_hand_count):
 		var card_back := Panel.new()
 		card_back.custom_minimum_size = Vector2(40, 55)
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.3, 0.3, 0.4)
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_left = 4
-		style.corner_radius_bottom_right = 4
-		card_back.add_theme_stylebox_override("panel", style)
+		card_back.add_theme_stylebox_override("panel", BattleUtils.create_card_back_style())
 		opponent_hand_container.add_child(card_back)
 
 func _update_hand_highlights() -> void:

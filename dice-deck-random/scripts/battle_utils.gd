@@ -174,3 +174,13 @@ static func get_effective_attack_dice(card_ui, is_player: bool, context: Diction
 			dice.append(d)
 
 	return dice
+
+## カードバック用のスタイルを作成（敵の手札表示用）
+static func create_card_back_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.3, 0.3, 0.4)
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
+	return style
