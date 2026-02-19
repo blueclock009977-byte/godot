@@ -940,20 +940,7 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 # _is_input_allowed() は BattleBase で共通実装済み
 
-func _clear_selection() -> void:
-	if selected_hand_card:
-		selected_hand_card.set_selected(false)
-		selected_hand_card = null
-	if selected_field_card:
-		selected_field_card.set_selected(false)
-		selected_field_card.set_movable(false)
-		selected_field_card = null
-		selected_field_slot = null
-	select_mode = SelectMode.NONE
-	for slot in player_slots:
-		if slot:
-			slot.set_highlighted(false)
-	_update_hand_highlights()
+# _clear_selection() は BattleBase で共通実装済み
 
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if not _is_input_allowed():
