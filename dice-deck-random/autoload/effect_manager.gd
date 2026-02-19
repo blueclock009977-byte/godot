@@ -232,6 +232,13 @@ func _resolve_timing_payload_value(payload: Dictionary, keys: Array, default_val
 			return payload[key]
 	return default_value
 
+func _dispatch_timing_on_summon(payload: Dictionary, is_player: bool, context: Dictionary):
+	return process_summon_effect(
+		_resolve_timing_card_ui(Timing.ON_SUMMON, payload),
+		is_player,
+		context
+	)
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
 	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
@@ -239,11 +246,7 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 
 	match timing:
 		Timing.ON_SUMMON:
-			return process_summon_effect(
-				_resolve_timing_card_ui(timing, payload),
-				is_player,
-				context
-			)
+			return _dispatch_timing_on_summon(payload, is_player, context)
 		Timing.ON_ATTACK:
 			var defender_ui = _resolve_timing_payload_value(payload, aliases.get("defender_ui", ["defender_ui"]), null)
 			return process_attack_effect(

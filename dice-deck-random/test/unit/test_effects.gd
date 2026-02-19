@@ -1268,6 +1268,16 @@ func test_timing_payload_alias_table_is_used_by_resolvers() -> void:
 	assert_ne(script_text.find("TIMING_PAYLOAD_KEYS.get(timing, {})"), -1,
 		"process_timing_event should read payload aliases from TIMING_PAYLOAD_KEYS")
 
+func test_timing_dispatcher_helper_handles_on_summon_route() -> void:
+	# 次の段階リファクタ: ON_SUMMON の分岐を private dispatcher helper に切り出し
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_timing_on_summon"), -1,
+		"effect_manager should define _dispatch_timing_on_summon helper")
+	assert_ne(script_text.find("Timing.ON_SUMMON:\n\t\t\treturn _dispatch_timing_on_summon(payload, is_player, context)"), -1,
+		"process_timing_event should delegate ON_SUMMON routing to helper")
+	assert_ne(script_text.find("func _dispatch_timing_on_summon(payload: Dictionary, is_player: bool, context: Dictionary):"), -1,
+		"ON_SUMMON dispatcher helper should preserve typed routing signature")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
