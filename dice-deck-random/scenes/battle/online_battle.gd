@@ -1,16 +1,72 @@
-extends BattleBase
+extends Control
 
 ## Online multiplayer battle controller.
-## Extends BattleBase for shared battle logic.
+## Fork of battle.gd adapted for Firebase-synced 1v1 play.
 ## MY turn: input enabled, actions sent to Firebase.
 ## OPPONENT turn: input disabled, actions received from Firebase.
 
-# ─── Online-specific State ───
+# ─── Constants (from BattleConstants) ───
+const CARD_UI_SCENE := preload(BattleConstants.CARD_UI_SCENE_PATH)
+const FIELD_SLOT_SCENE := preload(BattleConstants.FIELD_SLOT_SCENE_PATH)
+const MAX_HP := BattleConstants.MAX_HP
+const MAX_MANA_CAP := BattleConstants.MAX_MANA_CAP
+const DEFAULT_STARTING_HAND := BattleConstants.DEFAULT_STARTING_HAND
+const MOVE_COST := BattleConstants.MOVE_COST
+
+const Phase := BattleConstants.Phase
+const SelectMode := BattleConstants.SelectMode
+
+# ─── Game State ───
+var player_hp: int = MAX_HP
+var opponent_hp: int = MAX_HP
+var player_mana: int = 0
+var player_max_mana: int = 0
+var opponent_mana: int = 0
+var opponent_max_mana: int = 0
+var player_deck: Array[CardData] = []
+var opponent_deck: Array[CardData] = []
+var player_hand: Array = []
+var opponent_hand_count: int = 0
+var current_dice: int = 0
+var turn_number: int = 0
+var is_player_turn: bool = true
+var is_player_first: bool = true
+var current_phase: Phase = Phase.MAIN1
+var select_mode: SelectMode = SelectMode.NONE
+var selected_hand_card: CardUI = null
+var selected_field_card: CardUI = null
+var selected_field_slot: FieldSlot = null
+var is_animating: bool = false
+var game_over: bool = false
+
+# ─── Online-specific ───
 var my_player_number: int = 0  # 1 or 2
-var opponent_hand_count: int = 0  # Track opponent hand size (can't see their cards)
 var _waiting_for_opponent: bool = false
 var _action_queue: Array[Dictionary] = []
 var _processing_actions: bool = false
+
+# ─── UI References ───
+var player_slots: Array = []
+var opponent_slots: Array = []
+var player_hand_container: HBoxContainer
+var opponent_hand_container: HBoxContainer
+var player_hp_label: Label
+var opponent_hp_label: Label
+var mana_label: Label
+var phase_label: Label
+var dice_label: Label
+var end_turn_btn: Button
+var next_phase_btn: Button
+var surrender_btn: Button
+var log_label: RichTextLabel
+var phase_overlay: ColorRect
+var phase_overlay_label: Label
+var turn_indicator_label: Label
+var dice_preview_panel: PanelContainer
+var dice_preview_label: RichTextLabel
+var center_info: HBoxContainer
+var card_preview_overlay: ColorRect
+var card_preview_container: CenterContainer
 
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
@@ -351,6 +407,91 @@ func _update_all_ui() -> void:
 	# Dice preview
 	_update_dice_preview()
 
+func _update_dice_preview() -> void:
+	var show := not game_over
+	dice_preview_panel.visible = show
+	if not show:
+		return
+
+	var text := ""
+	for dice_val in range(1, 7):
+		var result := _simulate_battle(dice_val)
+		var score: int = result[0] - result[1]
+		var color := "gray"
+		var sign := ""
+		if score > 0:
+			color = "green"
+			sign = "+"
+		elif score < 0:
+			color = "red"
+		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
+	dice_preview_label.text = text
+
+func _simulate_battle(dice_val: int) -> Array:
+	var p_cards := []
+	var o_cards := []
+	for i in range(6):
+		var ps: FieldSlot = player_slots[i]
+		if ps and not ps.is_empty():
+			p_cards.append({"atk": ps.card_ui.current_atk, "hp": ps.card_ui.current_hp, "lane": ps.lane, "is_front": ps.is_front_row, "dice": ps.card_ui.card_data.attack_dice, "idx": i})
+		var os: FieldSlot = opponent_slots[i]
+		if os and not os.is_empty():
+			o_cards.append({"atk": os.card_ui.current_atk, "hp": os.card_ui.current_hp, "lane": os.lane, "is_front": os.is_front_row, "dice": os.card_ui.card_data.attack_dice, "idx": i})
+
+	var turn_cards: Array
+	var def_cards: Array
+	if is_player_turn:
+		turn_cards = p_cards
+		def_cards = o_cards
+	else:
+		turn_cards = o_cards
+		def_cards = p_cards
+
+	var dmg_to_opp := 0
+	var dmg_to_me := 0
+
+	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in turn_cards:
+		if card["hp"] <= 0:
+			continue
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
+			continue
+		var target = BattleConstants.sim_find_target(card, def_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_opp += card["atk"]
+			else:
+				dmg_to_me += card["atk"]
+
+	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
+	for card in def_cards:
+		if card["hp"] <= 0:
+			continue
+		var dice_arr: Array = card["dice"]
+		if not dice_arr.has(dice_val):
+			continue
+		var target = BattleConstants.sim_find_target(card, turn_cards)
+		if target == null:
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
+		else:
+			target["hp"] -= card["atk"]
+			if is_player_turn:
+				dmg_to_me += card["atk"]
+			else:
+				dmg_to_opp += card["atk"]
+
+	return [dmg_to_opp, dmg_to_me]
+
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
 		child.queue_free()
@@ -408,7 +549,7 @@ func _start_game() -> void:
 
 	# Use room data seed for shuffle consistency
 	# Both players need same shuffle. Use room code as seed.
-	var seed_val: int = MultiplayerManager.room_code_to_seed(MultiplayerManager.room_code)
+	var seed_val: int = room_code_to_seed(MultiplayerManager.room_code)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val
 
@@ -440,6 +581,12 @@ func _start_game() -> void:
 
 	_update_all_ui()
 	_start_turn()
+
+func room_code_to_seed(code: String) -> int:
+	var h: int = 0
+	for i in range(code.length()):
+		h = h * 31 + code.unicode_at(i)
+	return h
 
 # ═══════════════════════════════════════════
 # TURN FLOW
@@ -639,7 +786,7 @@ func _opponent_move(from_idx: int, to_idx: int) -> void:
 # ═══════════════════════════════════════════
 func _do_dice_and_battle(dice_val: int) -> void:
 	is_animating = true
-	current_dice = await _animate_dice_roll(dice_val)
+	current_dice = await _animate_dice_roll_to(dice_val)
 	_log("[color=yellow]ダイス: %d[/color]" % current_dice)
 
 	# ダイスブロック効果をチェック
@@ -768,7 +915,64 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		_update_all_ui()
 		await get_tree().create_timer(0.3).timeout
 
-# _animate_attack(), _shake_node(), _spawn_damage_popup() は BattleBase で共通実装済み
+func _animate_dice_roll_to(target: int) -> int:
+	dice_label.add_theme_font_size_override("font_size", 40)
+	for i in range(12):
+		var fake := randi() % 6 + 1
+		dice_label.text = "%d" % fake
+		dice_label.pivot_offset = dice_label.size / 2
+		if i % 2 == 0:
+			dice_label.scale = Vector2(1.2, 1.2)
+		else:
+			dice_label.scale = Vector2(0.9, 0.9)
+		await get_tree().create_timer(0.04 + i * 0.025).timeout
+	dice_label.text = "%d" % target
+	var tween := create_tween()
+	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
+	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
+	await tween.finished
+	dice_label.add_theme_font_size_override("font_size", 36)
+	await get_tree().create_timer(0.3).timeout
+	return target
+
+func _animate_attack(card_ui: CardUI, target_node: Control) -> void:
+	var orig := card_ui.global_position
+	var target_center := target_node.global_position + target_node.size / 2
+	var card_center := orig + card_ui.size / 2
+	var direction := (target_center - card_center).normalized()
+	var lunge_distance := card_center.distance_to(target_center) * 0.4
+	lunge_distance = clampf(lunge_distance, 30.0, 200.0)
+	var lunge_pos := orig + direction * lunge_distance
+	card_ui.z_index = 50
+	var tween := create_tween()
+	tween.tween_property(card_ui, "global_position", lunge_pos, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	tween.tween_property(card_ui, "global_position", orig, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await tween.finished
+	card_ui.z_index = 1
+
+func _shake_node(node: Control) -> void:
+	var orig_pos := node.position
+	var tween := create_tween()
+	tween.tween_property(node, "position", orig_pos + Vector2(8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-8, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos + Vector2(-5, 0), 0.04)
+	tween.tween_property(node, "position", orig_pos, 0.04)
+
+func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
+	var popup := Label.new()
+	popup.text = "-%d" % amount
+	popup.add_theme_font_size_override("font_size", 32)
+	popup.add_theme_color_override("font_color", Color(1, 0.2, 0.2))
+	popup.global_position = pos
+	popup.z_index = 200
+	popup.top_level = true
+	add_child(popup)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(popup, "global_position:y", pos.y - 60, 0.6)
+	tween.tween_property(popup, "modulate:a", 0.0, 0.6)
+	tween.finished.connect(func(): popup.queue_free())
 
 # ═══════════════════════════════════════════
 # DRAW
@@ -796,9 +1000,24 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 # PLAYER INPUT
 # ═══════════════════════════════════════════
-# _is_input_allowed() は BattleBase で共通実装済み
+## 入力が許可されているかチェック（BattleBaseと共通化のため同名に統一）
+func _is_input_allowed() -> bool:
+	return is_player_turn and not is_animating and not game_over
 
-# _clear_selection() は BattleBase で共通実装済み
+func _clear_selection() -> void:
+	if selected_hand_card:
+		selected_hand_card.set_selected(false)
+		selected_hand_card = null
+	if selected_field_card:
+		selected_field_card.set_selected(false)
+		selected_field_card.set_movable(false)
+		selected_field_card = null
+		selected_field_slot = null
+	select_mode = SelectMode.NONE
+	for slot in player_slots:
+		if slot:
+			slot.set_highlighted(false)
+	_update_hand_highlights()
 
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if not _is_input_allowed():
