@@ -446,6 +446,8 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			def_card.play_damage_flash()
 			BattleUtils.spawn_damage_popup(self, def_card.global_position + Vector2(40, 0), damage)
 			var defense_result: Dictionary = _process_defense_effect(def_card, damage, not attacker_is_player)
+			if defense_result.get("shield_consumed", false) and "shield_used" in def_card:
+				def_card.shield_used = true
 			var final_damage: int = defense_result.get("final_damage", damage)
 			await _apply_card_damage_and_handle_destroy(def_card, final_damage, not attacker_is_player)
 			_apply_attack_effect_post_damage(atk_effect, card_ui, final_damage)

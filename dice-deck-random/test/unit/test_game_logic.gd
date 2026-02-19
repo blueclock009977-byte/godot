@@ -232,3 +232,11 @@ func test_attack_resolution_applies_lifesteal_post_damage_hook() -> void:
 		"BattleBase should call post-damage hook after defender damage is applied")
 	assert_ne(script_text.find("if atk_effect.get(\"lifesteal\", false):"), -1,
 		"BattleBase post-damage hook should apply lifesteal when flagged")
+
+func test_defense_resolution_consumes_one_time_shield_flag() -> void:
+	# 次のリファクタ着手: white_005 の shield_consumed を戦闘解決側で保持する
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("defense_result.get(\"shield_consumed\", false)"), -1,
+		"BattleBase should check shield_consumed flag from defense effects")
+	assert_ne(script_text.find("def_card.shield_used = true"), -1,
+		"BattleBase should persist one-time shield usage on defender card")
