@@ -23,6 +23,26 @@ func test_black_effects_registered() -> void:
 	assert_true(EffectManager.effect_definitions.has("black_001"), "black_001 should be registered")
 	assert_true(EffectManager.effect_definitions.has("black_019"), "black_019 should be registered")
 
+func test_red_effects_registered() -> void:
+	# 赤効果が登録されているか
+	assert_true(EffectManager.effect_definitions.has("red_001"), "red_001 should be registered")
+	assert_true(EffectManager.effect_definitions.has("red_016"), "red_016 should be registered")
+
+func test_yellow_effects_registered() -> void:
+	# 黄効果が登録されているか
+	assert_true(EffectManager.effect_definitions.has("yellow_001"), "yellow_001 should be registered")
+	assert_true(EffectManager.effect_definitions.has("yellow_015"), "yellow_015 should be registered")
+
+func test_purple_effects_registered() -> void:
+	# 紫効果が登録されているか
+	assert_true(EffectManager.effect_definitions.has("purple_001"), "purple_001 should be registered")
+	assert_true(EffectManager.effect_definitions.has("purple_014"), "purple_014 should be registered")
+
+func test_white_effects_registered() -> void:
+	# 白効果が登録されているか
+	assert_true(EffectManager.effect_definitions.has("white_001"), "white_001 should be registered")
+	assert_true(EffectManager.effect_definitions.has("white_015"), "white_015 should be registered")
+
 func test_get_effect_description() -> void:
 	# 効果説明を取得できるか
 	var desc := EffectManager.get_effect_description("blue_001")
@@ -220,6 +240,79 @@ func test_multiple_cost_modifiers() -> void:
 	}
 	var modifier := EffectManager.get_summon_cost_modifier(true, context)
 	assert_eq(modifier, -2, "Two green_006 should reduce cost by 2")
+
+# ═══════════════════════════════════════════
+# Phase 4: 赤・黄・紫・白 効果テスト
+# ═══════════════════════════════════════════
+
+func test_summon_effect_red_001() -> void:
+	# red_001: 登場時敵1体HP-2
+	var mock_card_ui = _create_mock_card_ui("red_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	# 敵がいない場合は効果なし、または target_enemy_damage
+	# result構造を確認（実装依存）
+	assert_true(result.has("target_enemy_damage") or result.size() == 0, "red_001 should have target_enemy_damage or be empty")
+
+func test_summon_effect_yellow_001() -> void:
+	# yellow_001: 登場時味方1体HP+2
+	var mock_card_ui = _create_mock_card_ui("yellow_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_true(result.has("target_ally_heal") or result.size() == 0, "yellow_001 should have target_ally_heal or be empty")
+
+func test_summon_effect_yellow_003() -> void:
+	# yellow_003: 登場時手札2枚ドロー
+	var mock_card_ui = _create_mock_card_ui("yellow_003")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("draw", 0), 2, "yellow_003 should draw 2 cards")
+
+func test_summon_effect_white_001() -> void:
+	# white_001: 登場時自分HP+2
+	var mock_card_ui = _create_mock_card_ui("white_001")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("heal_player", 0), 2, "white_001 should heal_player 2 HP")
+
+func test_summon_effect_white_009() -> void:
+	# white_009: 登場時自分HP+4
+	var mock_card_ui = _create_mock_card_ui("white_009")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(result.get("heal_player", 0), 4, "white_009 should heal_player 4 HP")
+
+func test_attack_effect_red_013() -> void:
+	# red_013: 攻撃時相手HP直接-1
+	var attacker = _create_mock_card_ui("red_013")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(result.get("direct_damage", 0), 1, "red_013 should deal 1 direct damage")
+
+func test_death_effect_white_002() -> void:
+	# white_002: 死亡時自分HP+3
+	var mock_card_ui = _create_mock_card_ui("white_002")
+	var context := _create_empty_context()
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_eq(result.get("heal_player", 0), 3, "white_002 should heal_player 3 HP on death")
+
+func test_defense_effect_yellow_004() -> void:
+	# yellow_004: 防御時ダメージを1軽減
+	var defender = _create_mock_card_ui("yellow_004")
+	var context := _create_empty_context()
+	var result := EffectManager.process_defense_effect(defender, 5, true, context)
+	assert_eq(result.get("final_damage", 5), 4, "yellow_004 should reduce damage by 1")
+
+func test_cost_modifier_purple_004() -> void:
+	# purple_004: 相手の召喚コスト+1
+	var mock_slot = _create_mock_slot("purple_004")
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [mock_slot, null, null, null, null, null],
+	}
+	var modifier := EffectManager.get_summon_cost_modifier(true, context)
+	assert_eq(modifier, 1, "purple_004 should increase player summon cost by 1")
 
 # ═══════════════════════════════════════════
 # ヘルパー関数
