@@ -1560,6 +1560,18 @@ func test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects() -
 	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, \"purple\", card_name, \"に毒付与\")"), -1,
 		"black_004 should delegate status application to shared helper")
 
+func test_death_freeze_effects_use_shared_status_helpers() -> void:
+	# 次の小さなリファクタ候補: 死亡時の凍結付与（単体/全体）も共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_targeted_status_effect"), -1,
+		"effect_manager should define _apply_targeted_status_effect helper")
+	assert_ne(script_text.find("func _apply_aoe_status_effect"), -1,
+		"effect_manager should define _apply_aoe_status_effect helper")
+	assert_ne(script_text.find("_apply_targeted_status_effect(is_player, context, StatusEffect.FROZEN, 1, result, card_name, \"magenta\", \"を凍結\")"), -1,
+		"purple_005 should delegate single-target freeze to shared helper")
+	assert_ne(script_text.find("_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 1, result, card_name, \"magenta\", \"敵全体を凍結\")"), -1,
+		"purple_011 should delegate aoe freeze to shared helper")
+
 func test_attack_direct_damage_logs_use_make_effect_log_helper() -> void:
 	# 次のリファクタ候補: ON_ATTACKの直接ダメージ系ログも共通ログhelperへ統一
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

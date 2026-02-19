@@ -725,17 +725,10 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 		# 紫カード死亡時効果
 		# ═══════════════════════════════════════════
 		"purple_005":  # 死亡時:敵1体を凍結
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				target.apply_status(StatusEffect.FROZEN, 1)
-				result["log"] = "[color=magenta]%s の効果: %s を凍結[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_status_effect(is_player, context, StatusEffect.FROZEN, 1, result, card_name, "magenta", "を凍結")
 
 		"purple_011":  # 死亡時:敵全体を凍結
-			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.apply_status(StatusEffect.FROZEN, 1)
-			if enemies.size() > 0:
-				result["log"] = "[color=magenta]%s の効果: 敵全体を凍結[/color]" % card_name
+			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 1, result, card_name, "magenta", "敵全体を凍結")
 
 		# ═══════════════════════════════════════════
 		# 白カード死亡時効果
@@ -1108,6 +1101,16 @@ func _apply_status_effect_with_log(target, status: StatusEffect, duration: int, 
 		return
 	target.apply_status(status, duration)
 	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
+
+func _apply_targeted_status_effect(is_player: bool, context: Dictionary, status: StatusEffect, duration: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
+	var target = _get_random_enemy(is_player, context)
+	_apply_status_effect_with_log(target, status, duration, result, color, card_name, suffix)
+
+func _apply_aoe_status_effect(targets: Array, status: StatusEffect, duration: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	for target in targets:
+		target.apply_status(status, duration)
+	if targets.size() > 0:
+		result["log"] = _make_effect_log(color, card_name, message)
 
 func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)
