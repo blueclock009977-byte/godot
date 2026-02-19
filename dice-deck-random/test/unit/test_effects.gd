@@ -1580,6 +1580,14 @@ func test_attack_direct_damage_logs_use_make_effect_log_helper() -> void:
 	assert_ne(script_text.find("_make_effect_log(\"red\", card_name, \"相手HP-1\")"), -1,
 		"red_013 should build log via _make_effect_log helper")
 
+func test_attack_instant_kill_effect_uses_shared_helper() -> void:
+	# 次の小さなリファクタ候補: 即破壊フラグ+ログ付与を共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_instant_kill_effect"), -1,
+		"effect_manager should define _apply_instant_kill_effect helper")
+	assert_ne(script_text.find("_apply_instant_kill_effect(defender_ui, result, \"cyan\", card_name, \"を即破壊\")"), -1,
+		"blue_017 should delegate instant-kill flag + log to shared helper")
+
 func test_death_mana_gain_effects_use_shared_mana_helper() -> void:
 	# 次の小さなリファクタ候補: 死亡時マナ獲得を共通helperへ統一
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

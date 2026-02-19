@@ -568,8 +568,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"blue_017":  # 攻撃時:HP5以下の対象を即破壊
 			if defender_ui and defender_ui.current_hp <= 5:
-				result["instant_kill"] = true
-				result["log"] = "[color=cyan]%s の効果: %s を即破壊[/color]" % [card_name, defender_ui.card_data.card_name]
+				_apply_instant_kill_effect(defender_ui, result, "cyan", card_name, "を即破壊")
 
 		"green_010":  # 攻撃時:マナ+1
 			_apply_mana_gain_effect(result, "green", card_name, 1)
@@ -1069,6 +1068,12 @@ func _apply_player_heal_effect(result: Dictionary, color: String, card_name: Str
 func _apply_final_damage_with_log(result: Dictionary, final_damage: int, color: String, card_name: String, message: String) -> void:
 	result["final_damage"] = max(0, final_damage)
 	result["log"] = _make_effect_log(color, card_name, message)
+
+func _apply_instant_kill_effect(target, result: Dictionary, color: String, card_name: String, suffix: String) -> void:
+	if target == null:
+		return
+	result["instant_kill"] = true
+	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
 
 func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
 	if amount <= 0:
