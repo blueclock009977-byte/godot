@@ -209,6 +209,19 @@ func test_death_effect_spawn_token_black_006() -> void:
 	assert_eq(token.get("atk", 0), 2, "Token should have 2 ATK")
 	assert_eq(token.get("hp", 0), 2, "Token should have 2 HP")
 
+func test_death_effect_black_002_marks_destroy_target_when_hp_zero() -> void:
+	var mock_card_ui = _create_mock_card_ui("black_002")
+	var enemy_slot = _create_mock_slot_with_ui("")
+	enemy_slot.card_ui.current_hp = 2
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy_slot, null, null, null, null, null],
+		"current_dice": 1
+	}
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_true(result.has("destroy_targets"), "black_002 should mark destroy_targets when target HP <= 0")
+	assert_eq(result["destroy_targets"].size(), 1, "black_002 should mark exactly 1 destroyed target")
+
 func test_defense_effect_half_damage_blue_006() -> void:
 	# blue_006: 防御時被ダメージ半減
 	var defender = _create_mock_card_ui("blue_006")
@@ -301,6 +314,15 @@ func test_attack_effect_red_013() -> void:
 	var context := _create_empty_context()
 	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
 	assert_eq(result.get("direct_damage", 0), 1, "red_013 should deal 1 direct damage")
+
+func test_attack_effect_red_002_marks_destroy_target_when_hp_zero() -> void:
+	var attacker = _create_mock_card_ui("red_002")
+	var defender = _create_mock_card_ui("")
+	defender.current_hp = 2
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_true(result.has("destroy_targets"), "red_002 should mark destroy_targets when target HP <= 0")
+	assert_eq(result["destroy_targets"].size(), 1, "red_002 should mark exactly 1 destroyed target")
 
 func test_death_effect_white_002() -> void:
 	# white_002: 死亡時自分HP+3

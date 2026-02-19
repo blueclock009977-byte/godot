@@ -266,7 +266,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 
 		"green_001":  # 登場時:マナ+1
 			result["mana"] = 1
-			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			result["log"] = _make_effect_log("green", card_name, "マナ+1")
 
 		"green_004":  # 登場時:マナ+2
 			result["mana"] = 2
@@ -517,7 +517,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 		# ═══════════════════════════════════════════
 		"red_002":  # 攻撃時:対象に追加2ダメージ
 			if defender_ui:
-				defender_ui.take_damage(2)
+				_apply_damage_and_mark_destroy(defender_ui, 2, result)
 				result["log"] = "[color=red]%s の効果: %s に追加2ダメージ[/color]" % [card_name, defender_ui.card_data.card_name]
 
 		"red_005":  # 攻撃時:自身ATK+1(永続)
@@ -599,7 +599,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 		"black_002":  # 死亡時:敵1体HP-2
 			var target = _get_random_enemy(is_player, context)
 			if target:
-				target.take_damage(2)
+				_apply_damage_and_mark_destroy(target, 2, result)
 				result["log"] = "[color=purple]%s の効果: %s にHP-2[/color]" % [card_name, target.card_data.card_name]
 
 		"black_006":  # 死亡時:トークン召喚
@@ -965,6 +965,9 @@ func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
+
+func _make_effect_log(color: String, card_name: String, message: String) -> String:
+	return "[color=%s]%s の効果: %s[/color]" % [color, card_name, message]
 
 func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
 	if not target or amount <= 0:
