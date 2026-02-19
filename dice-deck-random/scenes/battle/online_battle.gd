@@ -418,6 +418,11 @@ func _update_hand_highlights() -> void:
 		if card_ui is CardUI:
 			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and BattleUtils.has_empty_slot(player_slots)
 			card_ui.set_summonable(can_summon)
+	# Field cards: glow if movable (in main phase, has mana, has empty slot)
+	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and BattleUtils.has_empty_slot(player_slots)
+	for slot in player_slots:
+		if slot and not slot.is_empty():
+			slot.card_ui.set_movable(can_move)
 
 func _log(text: String) -> void:
 	log_label.append_text(text + "\n")
