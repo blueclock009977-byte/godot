@@ -146,7 +146,7 @@ func test_build_dice_preview_text_format():
 		[1, 3],   # dice 6: -2 score (red)
 	]
 	var text := BattleUtils.build_dice_preview_text(results)
-	
+
 	# Check that it contains the dice values and colored scores
 	assert_true("[color=green]+3" in text, "Dice 1 should show green +3")
 	assert_true("[color=red]-2" in text, "Dice 2 should show red -2")

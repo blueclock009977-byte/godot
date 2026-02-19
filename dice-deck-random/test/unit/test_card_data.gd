@@ -88,9 +88,9 @@ func test_duplicate_card_basic():
 	original.color_type = CardData.ColorType.RED
 	original.effect_id = "red_001"
 	original.icon_name = "test_icon"
-	
+
 	var copy := original.duplicate_card()
-	
+
 	assert_eq(copy.id, 42)
 	assert_eq(copy.card_name, "テストカード")
 	assert_eq(copy.mana_cost, 3)
@@ -104,9 +104,9 @@ func test_duplicate_card_basic():
 func test_duplicate_card_independent_arrays():
 	var original := CardData.new()
 	original.attack_dice = [1, 2, 3]
-	
+
 	var copy := original.duplicate_card()
-	
+
 	# 配列の変更が元に影響しないことを確認
 	copy.attack_dice.append(4)
 	assert_eq(original.attack_dice.size(), 3, "Original dice array should be unchanged")

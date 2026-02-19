@@ -517,7 +517,7 @@ func _get_ui_font_scale() -> float:
 # ═══════════════════════════════════════════
 func _build_ui() -> void:
 	var scale := _get_ui_font_scale()
-	
+
 	# Background
 	var bg := ColorRect.new()
 	bg.color = Color(0.08, 0.08, 0.12)

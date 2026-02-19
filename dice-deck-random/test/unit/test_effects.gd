@@ -557,30 +557,30 @@ class MockCardUI:
 	var healed_amount: int = 0
 	var atk_modified: int = 0
 	var damage_taken: int = 0
-	
+
 	func heal(amount: int) -> void:
 		healed_amount += amount
 		current_hp += amount
-	
+
 	func modify_atk(delta: int) -> void:
 		atk_modified += delta
 		current_atk += delta
-	
+
 	func take_damage(amount: int) -> void:
 		damage_taken += amount
 		current_hp -= amount
-	
+
 	func has_status(status: int) -> bool:
 		return _status == status
-	
+
 	func apply_status(status: int, duration: int) -> void:
 		_status = status
 		_status_duration = duration
-	
+
 	func clear_status_effects() -> void:
 		_status = 0
 		_status_duration = 0
-	
+
 	func tick_status_effects() -> void:
 		# モックなので何もしない
 		pass
