@@ -311,3 +311,15 @@ static func animate_dice_roll(owner: Node, dice_label: Label, target_value: int 
 	dice_label.add_theme_font_size_override("font_size", 36)
 	await owner.get_tree().create_timer(0.3).timeout
 	return final
+
+## 相手の手札表示を更新（カードバックを並べる）
+## container: 手札コンテナ（HBoxContainer等）
+## count: 手札の枚数
+static func update_opponent_hand_display(container: Container, count: int) -> void:
+	for child in container.get_children():
+		child.queue_free()
+	for i in range(count):
+		var card_back := Panel.new()
+		card_back.custom_minimum_size = Vector2(40, 55)
+		card_back.add_theme_stylebox_override("panel", BattleUtils.create_card_back_style())
+		container.add_child(card_back)

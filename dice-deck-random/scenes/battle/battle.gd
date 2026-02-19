@@ -401,13 +401,7 @@ func _simulate_battle(dice_val: int) -> Array:
 
 
 func _update_opponent_hand_display() -> void:
-	for child in opponent_hand_container.get_children():
-		child.queue_free()
-	for i in range(opponent_hand.size()):
-		var card_back := Panel.new()
-		card_back.custom_minimum_size = Vector2(40, 55)
-		card_back.add_theme_stylebox_override("panel", BattleUtils.create_card_back_style())
-		opponent_hand_container.add_child(card_back)
+	BattleUtils.update_opponent_hand_display(opponent_hand_container, opponent_hand.size())
 
 func _update_hand_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
