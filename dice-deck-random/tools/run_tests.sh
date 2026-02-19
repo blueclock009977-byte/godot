@@ -66,13 +66,15 @@ BUDGET_OUTPUT=$(perl -ne '
         my ($id, $name, $cost, $atk, $hp, $dice_str) = ($1, $2, $3, $4, $5, $6);
         next if $id >= 20; # 効果カードはスキップ
         my @dice = split /,\s*/, $dice_str;
-        my $dice_count = scalar @dice;
-        my $total = $atk + $hp + $dice_count;
-        my $expected = $cost * 3 + 3;
-        if ($total == $expected) {
-            print "PASS:$name (cost=$cost atk=$atk hp=$hp dice=$dice_count)\n";
+        my $faces = scalar @dice;
+        my $synergy = int(($atk * $faces) / 3);
+        my $score = 4*$hp + 3*$atk + 3*$faces + $synergy;
+        my $budget = 12 + 10*$cost;
+        my $diff = $score - $budget;
+        if (abs($diff) <= 1) {
+            print "PASS:$name (cost=$cost atk=$atk hp=$hp faces=$faces score=$score budget=$budget)\n";
         } else {
-            print "FAIL:$name (cost=$cost atk=$atk hp=$hp dice=$dice_count total=$total expected=$expected)\n";
+            print "FAIL:$name (cost=$cost atk=$atk hp=$hp faces=$faces score=$score budget=$budget diff=$diff)\n";
         }
     }
 ' "$PROJECT_DIR/autoload/card_database.gd")
