@@ -920,26 +920,50 @@ func test_detect_unimplemented_turn_end_effect_ids() -> void:
 func test_summon_effect_uses_prepare_helper_for_entry_guard() -> void:
 	# 段階リファクタ開始: ON_SUMMON の入口前処理を共通化
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
-	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, Timing.ON_SUMMON)"), -1,
-		"process_summon_effect should use _prepare_timing_effect")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_SUMMON)"), -1,
+		"process_summon_effect should use _process_single_card_timing_effect")
 
 func test_attack_effect_uses_prepare_helper_for_entry_guard() -> void:
 	# ON_ATTACK も共通入口ヘルパーに寄せる
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
-	assert_ne(script_text.find("var prepared := _prepare_timing_effect(attacker_ui, Timing.ON_ATTACK)"), -1,
-		"process_attack_effect should use _prepare_timing_effect")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(attacker_ui, Timing.ON_ATTACK)"), -1,
+		"process_attack_effect should use _process_single_card_timing_effect")
 
 func test_death_effect_uses_prepare_helper_for_entry_guard() -> void:
 	# ON_DEATH も共通入口ヘルパーに寄せる
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
-	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, Timing.ON_DEATH)"), -1,
-		"process_death_effect should use _prepare_timing_effect")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_DEATH)"), -1,
+		"process_death_effect should use _process_single_card_timing_effect")
 
 func test_defense_effect_uses_prepare_helper_for_entry_guard() -> void:
 	# ON_DEFENSE も共通入口ヘルパーに寄せる
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
-	assert_ne(script_text.find("var prepared := _prepare_timing_effect(defender_ui, Timing.ON_DEFENSE)"), -1,
-		"process_defense_effect should use _prepare_timing_effect")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(defender_ui, Timing.ON_DEFENSE, {\"final_damage\": damage})"), -1,
+		"process_defense_effect should use _process_single_card_timing_effect")
+
+func test_single_card_timing_effect_helper_is_used_for_all_single_card_timings() -> void:
+	# 段階リファクタ: 召喚/攻撃/死亡/防御の入口を1つのヘルパーで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _process_single_card_timing_effect"), -1,
+		"effect_manager should define _process_single_card_timing_effect")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_SUMMON)"), -1,
+		"process_summon_effect should route via unified single-card timing helper")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(attacker_ui, Timing.ON_ATTACK)"), -1,
+		"process_attack_effect should route via unified single-card timing helper")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_DEATH)"), -1,
+		"process_death_effect should route via unified single-card timing helper")
+	assert_ne(script_text.find("var prepared := _process_single_card_timing_effect(defender_ui, Timing.ON_DEFENSE, {\"final_damage\": damage})"), -1,
+		"process_defense_effect should route via unified single-card timing helper")
+
+func test_turn_timing_effect_helper_is_used_for_turn_start_and_end() -> void:
+	# 段階リファクタ: TURN_START/TURN_END の入口も1つのヘルパーで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _process_turn_timing_effects"), -1,
+		"effect_manager should define _process_turn_timing_effects")
+	assert_ne(script_text.find("var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_START)"), -1,
+		"process_turn_start_effects should route via unified turn timing helper")
+	assert_ne(script_text.find("var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_END)"), -1,
+		"process_turn_end_effects should route via unified turn timing helper")
 
 # ═══════════════════════════════════════════
 # ヘルパー関数

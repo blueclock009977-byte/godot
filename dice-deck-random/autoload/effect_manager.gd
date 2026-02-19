@@ -233,9 +233,15 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 		_:
 			return {}
 
+func _process_single_card_timing_effect(card_ui, timing: Timing, default_result: Dictionary = {}) -> Dictionary:
+	var prepared := _prepare_timing_effect(card_ui, timing)
+	if not prepared.get("ok", false):
+		return default_result.duplicate(true)
+	return prepared
+
 ## 登場時効果を処理
 func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	var prepared := _prepare_timing_effect(card_ui, Timing.ON_SUMMON)
+	var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_SUMMON)
 	if not prepared.get("ok", false):
 		return {}
 
@@ -474,7 +480,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	var prepared := _prepare_timing_effect(attacker_ui, Timing.ON_ATTACK)
+	var prepared := _process_single_card_timing_effect(attacker_ui, Timing.ON_ATTACK)
 	if not prepared.get("ok", false):
 		return {}
 
@@ -585,7 +591,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 
 ## 死亡時効果を処理
 func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	var prepared := _prepare_timing_effect(card_ui, Timing.ON_DEATH)
+	var prepared := _process_single_card_timing_effect(card_ui, Timing.ON_DEATH)
 	if not prepared.get("ok", false):
 		return {}
 
@@ -715,7 +721,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
-	var prepared := _prepare_timing_effect(defender_ui, Timing.ON_DEFENSE)
+	var prepared := _process_single_card_timing_effect(defender_ui, Timing.ON_DEFENSE, {"final_damage": damage})
 	if not prepared.get("ok", false):
 		return {"final_damage": damage}
 
@@ -758,60 +764,166 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 	_emit_effect_trigger_if_logged(effect_id, defender_ui, null, result)
 	return result
 
-## ターン開始時効果を処理
-func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
-	var results := []
-	var slots: Array = _get_slots_by_owner(is_player, context)
+func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String) -> Dictionary:
+	var result := {}
+	match effect_id:
+		"blue_010":  # ターン開始時:自身HP+1
+			card_ui.heal(1)
+			result["log"] = "[color=cyan]%s の効果: 自身HP+1[/color]" % card_name
 
+		"green_003":  # ターン開始時:自身HP+1
+			card_ui.heal(1)
+			result["log"] = "[color=green]%s の効果: 自身HP+1[/color]" % card_name
+
+		"green_009":  # ターン開始時:マナ+1
+			result["mana"] = 1
+			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+
+		# 赤カードターン開始時効果
+		"red_010":  # ターン開始時:自身ATK+1
+			card_ui.modify_atk(1)
+			result["log"] = "[color=red]%s の効果: 自身ATK+1[/color]" % card_name
+
+		# 黄カードターン開始時効果
+		"yellow_005":  # ターン開始時:カード1枚ドロー
+			result["draw"] = 1
+			result["log"] = "[color=yellow]%s の効果: 1枚ドロー[/color]" % card_name
+
+		"yellow_015":  # ターン開始時:味方1体HP+2
+			var target = _get_random_ally(is_player, context)
+			if target:
+				target.heal(2)
+				result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
+
+		# 白カードターン開始時効果
+		"white_003":  # ターン開始時:自分HP+1
+			result["heal_player"] = 1
+			result["log"] = "[color=white]%s の効果: 自分HP+1[/color]" % card_name
+
+	return result
+
+func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String) -> Dictionary:
+	var result := {}
+	match effect_id:
+		"green_016":  # ターン終了時:味方全体HP+1
+			var allies = _get_all_allies(is_player, context)
+			for ally in allies:
+				ally.heal(1)
+			result["log"] = "[color=green]%s の効果: 味方全体HP+1[/color]" % card_name
+
+		# 黄カードターン終了時効果
+		"yellow_010":  # ターン終了時:マナ+1
+			result["mana"] = 1
+			result["log"] = "[color=yellow]%s の効果: マナ+1[/color]" % card_name
+
+		# 紫カードターン終了時効果
+		"purple_008":  # ターン終了時:敵全体HP-1
+			var enemies = _get_all_enemies(is_player, context)
+			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
+			if enemies.size() > 0:
+				result["log"] = "[color=magenta]%s の効果: 敵全体HP-1[/color]" % card_name
+
+		# 白カードターン終了時効果
+		"white_010":  # ターン終了時:自分HP+2
+			result["heal_player"] = 2
+			result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
+
+	return result
+
+func _process_turn_timing_effects(slots: Array, is_player: bool, context: Dictionary, timing: Timing) -> Array:
+	var results := []
 	for slot in slots:
 		var card_ui = _get_effect_card_from_slot(slot)
 		if not card_ui:
 			continue
 
-		var effect_id: String = card_ui.card_data.effect_id
-		if not _can_process_effect(effect_id, Timing.TURN_START):
+		var prepared := _prepare_timing_effect(card_ui, timing)
+		if not prepared.get("ok", false):
 			continue
 
-		var card_name: String = card_ui.card_data.card_name
+		var effect_id: String = prepared.get("effect_id", "")
+		var card_name: String = prepared.get("card_name", "")
 		var result := {}
 
-		match effect_id:
-			"blue_010":  # ターン開始時:自身HP+1
-				card_ui.heal(1)
-				result["log"] = "[color=cyan]%s の効果: 自身HP+1[/color]" % card_name
-
-			"green_003":  # ターン開始時:自身HP+1
-				card_ui.heal(1)
-				result["log"] = "[color=green]%s の効果: 自身HP+1[/color]" % card_name
-
-			"green_009":  # ターン開始時:マナ+1
-				result["mana"] = 1
-				result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
-
-			# 赤カードターン開始時効果
-			"red_010":  # ターン開始時:自身ATK+1
-				card_ui.modify_atk(1)
-				result["log"] = "[color=red]%s の効果: 自身ATK+1[/color]" % card_name
-
-			# 黄カードターン開始時効果
-			"yellow_005":  # ターン開始時:カード1枚ドロー
-				result["draw"] = 1
-				result["log"] = "[color=yellow]%s の効果: 1枚ドロー[/color]" % card_name
-
-			"yellow_015":  # ターン開始時:味方1体HP+2
-				var target = _get_random_ally(is_player, context)
-				if target:
-					target.heal(2)
-					result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
-
-			# 白カードターン開始時効果
-			"white_003":  # ターン開始時:自分HP+1
-				result["heal_player"] = 1
-				result["log"] = "[color=white]%s の効果: 自分HP+1[/color]" % card_name
+		match timing:
+			Timing.TURN_START:
+				result = _build_turn_start_effect_result(effect_id, card_ui, is_player, context, card_name)
+			Timing.TURN_END:
+				result = _build_turn_end_effect_result(effect_id, card_ui, is_player, context, card_name)
 
 		if result.size() > 0:
 			_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
 			results.append(result)
+
+	return results
+
+func _process_turn_timing_effects(slots: Array, is_player: bool, context: Dictionary, timing: Timing) -> Array:
+	var results := []
+	for slot in slots:
+		var card_ui = _get_effect_card_from_slot(slot)
+		if not card_ui:
+			continue
+		var effect_id: String = card_ui.card_data.effect_id
+		if not _can_process_effect(effect_id, timing):
+			continue
+		var result := _resolve_turn_timing_effect(card_ui, effect_id, is_player, context, timing)
+		if result.size() > 0:
+			_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
+			results.append(result)
+	return results
+
+func _resolve_turn_timing_effect(card_ui, effect_id: String, is_player: bool, context: Dictionary, timing: Timing) -> Dictionary:
+	var card_name: String = card_ui.card_data.card_name
+	var result := {}
+	if timing == Timing.TURN_START:
+		match effect_id:
+			"blue_010":
+				card_ui.heal(1)
+				result["log"] = "[color=cyan]%s の効果: 自身HP+1[/color]" % card_name
+			"green_003":
+				card_ui.heal(1)
+				result["log"] = "[color=green]%s の効果: 自身HP+1[/color]" % card_name
+			"green_009":
+				result["mana"] = 1
+				result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			"red_010":
+				card_ui.modify_atk(1)
+				result["log"] = "[color=red]%s の効果: 自身ATK+1[/color]" % card_name
+			"yellow_005":
+				result["draw"] = 1
+				result["log"] = "[color=yellow]%s の効果: 1枚ドロー[/color]" % card_name
+			"yellow_015":
+				var target = _get_random_ally(is_player, context)
+				if target:
+					target.heal(2)
+					result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
+			"white_003":
+				result["heal_player"] = 1
+				result["log"] = "[color=white]%s の効果: 自分HP+1[/color]" % card_name
+	elif timing == Timing.TURN_END:
+		match effect_id:
+			"green_016":
+				var allies = _get_all_allies(is_player, context)
+				for ally in allies:
+					ally.heal(1)
+				result["log"] = "[color=green]%s の効果: 味方全体HP+1[/color]" % card_name
+			"yellow_010":
+				result["mana"] = 1
+				result["log"] = "[color=yellow]%s の効果: マナ+1[/color]" % card_name
+			"purple_008":
+				var enemies = _get_all_enemies(is_player, context)
+				_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
+				if enemies.size() > 0:
+					result["log"] = "[color=magenta]%s の効果: 敵全体HP-1[/color]" % card_name
+			"white_010":
+				result["heal_player"] = 2
+				result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
+	return result
+
+## ターン開始時効果を処理
+func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
+	var slots: Array = _get_slots_by_owner(is_player, context)
+	var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_START)
 
 	# 毒ダメージ処理
 	for slot in slots:
@@ -829,48 +941,8 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 
 ## ターン終了時効果を処理
 func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
-	var results := []
 	var slots: Array = _get_slots_by_owner(is_player, context)
-
-	for slot in slots:
-		var card_ui = _get_effect_card_from_slot(slot)
-		if not card_ui:
-			continue
-
-		var effect_id: String = card_ui.card_data.effect_id
-		if not _can_process_effect(effect_id, Timing.TURN_END):
-			continue
-
-		var card_name: String = card_ui.card_data.card_name
-		var result := {}
-
-		match effect_id:
-			"green_016":  # ターン終了時:味方全体HP+1
-				var allies = _get_all_allies(is_player, context)
-				for ally in allies:
-					ally.heal(1)
-				result["log"] = "[color=green]%s の効果: 味方全体HP+1[/color]" % card_name
-
-			# 黄カードターン終了時効果
-			"yellow_010":  # ターン終了時:マナ+1
-				result["mana"] = 1
-				result["log"] = "[color=yellow]%s の効果: マナ+1[/color]" % card_name
-
-			# 紫カードターン終了時効果
-			"purple_008":  # ターン終了時:敵全体HP-1
-				var enemies = _get_all_enemies(is_player, context)
-				_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
-				if enemies.size() > 0:
-					result["log"] = "[color=magenta]%s の効果: 敵全体HP-1[/color]" % card_name
-
-			# 白カードターン終了時効果
-			"white_010":  # ターン終了時:自分HP+2
-				result["heal_player"] = 2
-				result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
-
-		if result.size() > 0:
-			_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
-			results.append(result)
+	var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_END)
 
 	# 凍結ターン減少
 	for slot in slots:
