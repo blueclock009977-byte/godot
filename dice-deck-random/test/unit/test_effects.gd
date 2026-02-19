@@ -573,6 +573,76 @@ func test_detect_unimplemented_on_attack_effect_ids() -> void:
 
 	assert_eq(missing, [], "ON_ATTACK未実装: %s" % [", ".join(missing)])
 
+func test_detect_unimplemented_on_death_effect_ids() -> void:
+	# ON_DEATHの効果IDで、処理が未実装のものを検出する
+	# green_014 は「他の味方死亡時」トリガーのため除外
+	var context := {
+		"player_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"opponent_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"current_dice": 1
+	}
+	var exclude := {"green_014": true}
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.ON_DEATH:
+			continue
+		if exclude.has(effect_id):
+			continue
+		var result: Dictionary = EffectManager.process_death_effect(_create_mock_card_ui(effect_id), true, context)
+		if result.size() == 0:
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "ON_DEATH未実装: %s" % [", ".join(missing)])
+
+func test_detect_unimplemented_on_defense_effect_ids() -> void:
+	# ON_DEFENSEの効果IDで、処理が未実装のものを検出する
+	var context := _create_empty_context()
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.ON_DEFENSE:
+			continue
+		var result: Dictionary = EffectManager.process_defense_effect(_create_mock_card_ui(effect_id), 5, true, context)
+		if not result.has("log"):
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "ON_DEFENSE未実装: %s" % [", ".join(missing)])
+
+func test_detect_unimplemented_turn_start_effect_ids() -> void:
+	# TURN_STARTの効果IDで、処理が未実装のものを検出する
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.TURN_START:
+			continue
+		var context := {
+			"player_slots": [_create_mock_slot(effect_id), _create_mock_slot_with_ui(""), null, null, null, null],
+			"opponent_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		}
+		var results: Array = EffectManager.process_turn_start_effects(true, context)
+		if results.size() == 0:
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "TURN_START未実装: %s" % [", ".join(missing)])
+
+func test_detect_unimplemented_turn_end_effect_ids() -> void:
+	# TURN_ENDの効果IDで、処理が未実装のものを検出する
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.TURN_END:
+			continue
+		var context := {
+			"player_slots": [_create_mock_slot(effect_id), _create_mock_slot_with_ui(""), null, null, null, null],
+			"opponent_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		}
+		var results: Array = EffectManager.process_turn_end_effects(true, context)
+		if results.size() == 0:
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "TURN_END未実装: %s" % [", ".join(missing)])
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
@@ -626,6 +696,7 @@ class MockCardUI:
 	var _status: int = 0  # StatusEffect.NONE
 	var _status_duration: int = 0
 	var shield_used: bool = false
+	var has_revived: bool = false
 	var healed_amount: int = 0
 	var atk_modified: int = 0
 	var damage_taken: int = 0

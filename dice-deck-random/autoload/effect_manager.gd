@@ -706,7 +706,10 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 		# 白カード防御時効果
 		# ═══════════════════════════════════════════
 		"white_005":  # 防御時:ダメージ無効(1回のみ)
-			if not defender_ui.get("shield_used", false):
+			var already_used := false
+			if "shield_used" in defender_ui:
+				already_used = defender_ui.shield_used
+			if not already_used:
 				result["final_damage"] = 0
 				result["shield_consumed"] = true
 				result["log"] = "[color=white]%s の効果: ダメージ無効[/color]" % card_name
