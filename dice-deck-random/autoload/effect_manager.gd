@@ -480,11 +480,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = "[color=yellow]%s の効果: %s のATK+2[/color]" % [card_name, target.card_data.card_name]
 
 		"yellow_013":  # 登場時:味方全体ATK+1,HP+1
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.modify_atk(1)
-				ally.heal(1)
-			result["log"] = "[color=yellow]%s の効果: 味方全体ATK+1,HP+1[/color]" % card_name
+			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, "yellow", "味方全体ATK+1,HP+1")
 
 		# ═══════════════════════════════════════════
 		# 紫カード登場時効果
@@ -670,12 +666,10 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 			_apply_targeted_atk_modifier_effect(is_player, context, -1, result, card_name, "cyan", "のATK-1")
 
 		"green_002":  # 死亡時:マナ+1
-			result["mana"] = 1
-			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			_apply_mana_gain_effect(result, "green", card_name, 1)
 
 		"green_005":  # 死亡時:マナ+2
-			result["mana"] = 2
-			result["log"] = "[color=green]%s の効果: マナ+2[/color]" % card_name
+			_apply_mana_gain_effect(result, "green", card_name, 2)
 
 		"green_014":  # 味方死亡時:自身HP+2
 			if context.get("ally_died", false):

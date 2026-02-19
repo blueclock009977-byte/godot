@@ -1560,6 +1560,22 @@ func test_attack_direct_damage_logs_use_make_effect_log_helper() -> void:
 	assert_ne(script_text.find("_make_effect_log(\"red\", card_name, \"相手HP-1\")"), -1,
 		"red_013 should build log via _make_effect_log helper")
 
+func test_death_mana_gain_effects_use_shared_mana_helper() -> void:
+	# 次の小さなリファクタ候補: 死亡時マナ獲得を共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 1)"), -1,
+		"green_002 should delegate mana gain to _apply_mana_gain_effect helper")
+	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 2)"), -1,
+		"green_005 should delegate mana gain to _apply_mana_gain_effect helper")
+
+func test_summon_yellow_013_uses_shared_aoe_atk_heal_helper() -> void:
+	# 次の小さなリファクタ候補: 味方全体ATK+HP付与を共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_aoe_atk_and_heal_effect"), -1,
+		"effect_manager should define _apply_aoe_atk_and_heal_effect helper")
+	assert_ne(script_text.find("_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, \"yellow\", \"味方全体ATK+1,HP+1\")"), -1,
+		"yellow_013 should delegate buff+heal to _apply_aoe_atk_and_heal_effect helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
