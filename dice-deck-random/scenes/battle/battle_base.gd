@@ -78,14 +78,18 @@ func _log(msg: String) -> void:
 func _clear_selection() -> void:
 	if selected_hand_card and is_instance_valid(selected_hand_card):
 		selected_hand_card.set_selected(false)
+		selected_hand_card = null
 	if selected_field_card and is_instance_valid(selected_field_card):
 		selected_field_card.set_selected(false)
-	if selected_field_slot and is_instance_valid(selected_field_slot):
-		selected_field_slot.set_highlighted(false)
-	selected_hand_card = null
-	selected_field_card = null
-	selected_field_slot = null
+		selected_field_card.set_movable(false)
+		selected_field_card = null
+		selected_field_slot = null
 	select_mode = SelectMode.NONE
 	for slot in player_slots:
 		if is_instance_valid(slot):
 			slot.set_highlighted(false)
+	_update_hand_highlights()
+
+# Override in subclasses to update hand card highlights
+func _update_hand_highlights() -> void:
+	pass

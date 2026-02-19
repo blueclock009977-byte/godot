@@ -367,9 +367,6 @@ func _update_hand_highlights() -> void:
 		if slot and not slot.is_empty():
 			slot.card_ui.set_movable(can_move)
 
-func _log(text: String) -> void:
-	log_label.append_text(text + "\n")
-
 func _show_phase_banner(text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
 	await BattleUtils.show_phase_banner(self, phase_overlay, phase_overlay_label, text, banner_color, duration)
 
@@ -827,21 +824,6 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 func _is_my_input_allowed() -> bool:
 	return is_player_turn and not is_animating and not game_over
-
-func _clear_selection() -> void:
-	if selected_hand_card:
-		selected_hand_card.set_selected(false)
-		selected_hand_card = null
-	if selected_field_card:
-		selected_field_card.set_selected(false)
-		selected_field_card.set_movable(false)
-		selected_field_card = null
-		selected_field_slot = null
-	select_mode = SelectMode.NONE
-	for slot in player_slots:
-		if slot:
-			slot.set_highlighted(false)
-	_update_hand_highlights()
 
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if not _is_my_input_allowed():
