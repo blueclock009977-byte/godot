@@ -1183,21 +1183,8 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 	_update_all_ui()
 
 func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
-	var dice := card_ui.card_data.attack_dice.duplicate()
 	var context := _get_effect_context()
-	var modifier := EffectManager.get_dice_modifier(is_player, context)
-
-	# 追加ダイスを加える
-	for d in modifier.get("extra_dice", []):
-		if d not in dice:
-			dice.append(d)
-
-	# ブロックされたダイスを除く（このカードからは攻撃できない、ではなく相手のダイスがブロックされる）
-	# ここでは自分のダイスをブロックする敵の効果を適用
-	# 相手の効果でブロックされているダイスは、相手のターンで自分が攻撃できない
-	# 今のところはシンプルに自分が攻撃する時は相手のblocked_diceを適用
-
-	return dice
+	return BattleUtils.get_effective_attack_dice(card_ui, is_player, context)
 
 func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
 	var context := _get_effect_context()

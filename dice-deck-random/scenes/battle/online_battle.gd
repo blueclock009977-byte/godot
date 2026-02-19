@@ -1275,15 +1275,8 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 	_update_all_ui()
 
 func _get_effective_attack_dice(card_ui: CardUI, is_player: bool) -> Array:
-	var dice := card_ui.card_data.attack_dice.duplicate()
 	var context := _get_effect_context()
-	var modifier := EffectManager.get_dice_modifier(is_player, context)
-
-	for d in modifier.get("extra_dice", []):
-		if d not in dice:
-			dice.append(d)
-
-	return dice
+	return BattleUtils.get_effective_attack_dice(card_ui, is_player, context)
 
 func _is_dice_blocked(dice_value: int, is_player: bool) -> bool:
 	var context := _get_effect_context()

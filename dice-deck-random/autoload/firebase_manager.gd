@@ -60,6 +60,16 @@ func put_data(path: String, data: Variant) -> Dictionary:
 	req.queue_free()
 	return _parse_response(result)
 
+func post_data(path: String, data: Variant) -> Dictionary:
+	var req := _create_request()
+	var url := "%s/%s.json" % [FIREBASE_URL, path]
+	var body := JSON.stringify(data)
+	var headers := ["Content-Type: application/json"]
+	req.request(url, headers, HTTPClient.METHOD_POST, body)
+	var result: Array = await req.request_completed
+	req.queue_free()
+	return _parse_response(result)
+
 func patch_data(path: String, data: Dictionary) -> Dictionary:
 	var req := _create_request()
 	var url := "%s/%s.json" % [FIREBASE_URL, path]

@@ -17,7 +17,7 @@ var opponent_name: String = ""
 var is_in_room: bool = false
 
 var _poll_timer: Timer
-var _last_action_index: int = -1
+var _seen_action_ids: Dictionary = {}
 var _polling: bool = false
 var _my_room_created_at: float = 0.0
 var _heartbeat_timer: Timer
@@ -62,7 +62,6 @@ func create_room(deck_ids: Array) -> String:
 		},
 		"game_state": {},
 		"actions": {},
-		"last_action_index": -1,
 		"created_at": Time.get_unix_time_from_system()
 	}
 
@@ -70,7 +69,7 @@ func create_room(deck_ids: Array) -> String:
 	last_error = "HTTP %d" % result.code
 	if result.code == 200:
 		is_in_room = true
-		_last_action_index = -1
+		_seen_action_ids.clear()
 		_poll_timer.start()
 		_my_room_created_at = Time.get_unix_time_from_system()
 		room_created.emit(room_code)
@@ -113,7 +112,7 @@ func join_room(code: String, deck_ids: Array) -> bool:
 	})
 	if patch_result.code == 200:
 		is_in_room = true
-		_last_action_index = -1
+		_seen_action_ids.clear()
 		_poll_timer.start()
 		_heartbeat_timer.start()
 		# ホスト生存確認
@@ -159,7 +158,7 @@ func leave_room() -> void:
 	room_code = ""
 	opponent_id = ""
 	opponent_name = ""
-	_last_action_index = -1
+	_seen_action_ids.clear()
 	_opponent_disconnect_emitted = false
 
 # ─── Actions ───
@@ -171,25 +170,18 @@ func send_action(action: Dictionary) -> bool:
 	action["player"] = my_player_number
 	action["timestamp"] = Time.get_unix_time_from_system()
 
-	# Get current last_action_index, increment, write
-	var result := await FirebaseManager.get_data("rooms/%s/last_action_index" % room_code)
-	if result.code != 200:
-		last_error = "HTTP %d" % result.code
+	var post_action := await FirebaseManager.post_data("rooms/%s/actions" % room_code, action)
+	if post_action.code != 200:
+		last_error = "HTTP %d" % post_action.code
 		return false
-	var idx: int = -1
-	if result.data != null:
-		idx = int(result.data)
-	idx += 1
-
-	var put_action := await FirebaseManager.put_data("rooms/%s/actions/%d" % [room_code, idx], action)
-	if put_action.code != 200:
-		last_error = "HTTP %d" % put_action.code
+	if post_action.data == null or post_action.data is not Dictionary:
+		last_error = "invalid action post response"
 		return false
-	var put_index := await FirebaseManager.put_data("rooms/%s/last_action_index" % room_code, idx)
-	if put_index.code != 200:
-		last_error = "HTTP %d" % put_index.code
+	var action_id := str(post_action.data.get("name", ""))
+	if action_id == "":
+		last_error = "missing action id"
 		return false
-	_last_action_index = idx
+	_seen_action_ids[action_id] = true
 	return true
 
 func send_game_state(state: Dictionary) -> void:
@@ -218,20 +210,21 @@ func _poll_room() -> void:
 				_emit_opponent_disconnected_once()
 
 	# Check for new actions
-	var idx_result := await FirebaseManager.get_data("rooms/%s/last_action_index" % room_code)
-	if idx_result.code == 200 and idx_result.data != null:
-		var remote_idx: int = int(idx_result.data)
-		while _last_action_index < remote_idx:
-			var next_idx := _last_action_index + 1
-			var action_result := await FirebaseManager.get_data("rooms/%s/actions/%d" % [room_code, next_idx])
-			if action_result.code == 200 and action_result.data != null:
-				var action: Dictionary = action_result.data
+	var actions_result := await FirebaseManager.get_data("rooms/%s/actions" % room_code)
+	if actions_result.code == 200 and actions_result.data != null and actions_result.data is Dictionary:
+		var actions: Dictionary = actions_result.data
+		var action_ids := actions.keys()
+		action_ids.sort()
+		for action_id in action_ids:
+			var action_key := str(action_id)
+			if _seen_action_ids.has(action_key):
+				continue
+			_seen_action_ids[action_key] = true
+			var action = actions[action_id]
+			if action is Dictionary:
 				# Only emit actions from opponent
 				if int(action.get("player", 0)) != my_player_number:
 					action_received.emit(action)
-				_last_action_index = next_idx
-			else:
-				break
 
 	# Check opponent heartbeat
 	var opp_key := "player2" if is_host else "player1"

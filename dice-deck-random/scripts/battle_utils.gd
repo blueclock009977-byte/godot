@@ -84,7 +84,7 @@ static func has_empty_slot(slots: Array) -> bool:
 
 ## Calculate effective summon cost with modifiers
 ## context: the effect context dictionary from _get_effect_context()
-static func get_effective_summon_cost(card_ui: CardUI, context: Dictionary) -> int:
+static func get_effective_summon_cost(card_ui, context: Dictionary) -> int:
 	var base_cost: int = card_ui.card_data.mana_cost
 	var modifier: int = EffectManager.get_summon_cost_modifier(true, context)
 	return maxi(1, base_cost + modifier)
@@ -162,3 +162,15 @@ static func simulate_battle(dice_val: int, player_slots: Array, opponent_slots: 
 				dmg_to_opp += card["atk"]
 
 	return [dmg_to_opp, dmg_to_me]
+
+
+## 攻撃ダイスの修正適用後の値を取得（純粋関数）
+static func get_effective_attack_dice(card_ui, is_player: bool, context: Dictionary) -> Array:
+	var dice: Array = card_ui.card_data.attack_dice.duplicate()
+	var modifier := EffectManager.get_dice_modifier(is_player, context)
+
+	for d in modifier.get("extra_dice", []):
+		if d not in dice:
+			dice.append(d)
+
+	return dice
