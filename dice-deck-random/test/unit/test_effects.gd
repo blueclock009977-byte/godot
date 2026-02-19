@@ -406,6 +406,16 @@ func test_attack_effect_red_002_marks_destroy_target_when_hp_zero() -> void:
 	assert_true(result.has("destroy_targets"), "red_002 should mark destroy_targets when target HP <= 0")
 	assert_eq(result["destroy_targets"].size(), 1, "red_002 should mark exactly 1 destroyed target")
 
+func test_attack_effect_red_002_tracks_damaged_target_for_post_damage_finalize() -> void:
+	var attacker = _create_mock_card_ui("red_002")
+	var defender = _create_mock_card_ui("")
+	defender.current_hp = 3
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_true(result.has("damaged_targets"), "red_002 should record damaged_targets for centralized post-damage handling")
+	assert_eq(result["damaged_targets"].size(), 1, "red_002 should track exactly one damaged target")
+	assert_eq(result["damaged_targets"][0], defender, "red_002 damaged_targets should include defender")
+
 func test_death_effect_white_002() -> void:
 	# white_002: 死亡時自分HP+3
 	var mock_card_ui = _create_mock_card_ui("white_002")

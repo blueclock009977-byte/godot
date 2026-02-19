@@ -1071,17 +1071,24 @@ func _emit_effect_trigger_if_logged(effect_id: String, source_card, target, resu
 	if result.has("log"):
 		effect_triggered.emit(effect_id, source_card, target)
 
-func _mark_destroy_target(result: Dictionary, target) -> void:
+func _append_unique_target(result: Dictionary, key: String, target) -> void:
 	if not target:
 		return
-	result["destroy_targets"] = result.get("destroy_targets", [])
-	if target not in result["destroy_targets"]:
-		result["destroy_targets"].append(target)
+	result[key] = result.get(key, [])
+	if target not in result[key]:
+		result[key].append(target)
+
+func _track_damaged_target(result: Dictionary, target) -> void:
+	_append_unique_target(result, "damaged_targets", target)
+
+func _mark_destroy_target(result: Dictionary, target) -> void:
+	_append_unique_target(result, "destroy_targets", target)
 
 func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
 	if not target or amount <= 0:
 		return
 	target.take_damage(amount)
+	_track_damaged_target(result, target)
 	if target.current_hp <= 0:
 		_mark_destroy_target(result, target)
 
