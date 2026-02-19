@@ -314,6 +314,23 @@ func _dispatch_timing_via_method_table(timing: Timing, payload: Dictionary, alia
 		_:
 			return null
 
+func _dispatch_timing_via_fallback_match(timing: Timing, payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):
+	match timing:
+		Timing.ON_SUMMON:
+			return _dispatch_timing_on_summon(payload, is_player, context)
+		Timing.ON_ATTACK:
+			return _dispatch_timing_on_attack(payload, aliases, is_player, context)
+		Timing.ON_DEATH:
+			return _dispatch_timing_on_death(payload, is_player, context)
+		Timing.ON_DEFENSE:
+			return _dispatch_timing_on_defense(payload, aliases, is_player, context)
+		Timing.TURN_START:
+			return _dispatch_timing_turn_start(is_player, context)
+		Timing.TURN_END:
+			return _dispatch_timing_turn_end(is_player, context)
+		_:
+			return {}
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
 	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
@@ -329,17 +346,7 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 	if table_dispatched != null:
 		return table_dispatched
 
-	match timing:
-		Timing.ON_DEATH:
-			return _dispatch_timing_on_death(payload, is_player, context)
-		Timing.ON_DEFENSE:
-			return _dispatch_timing_on_defense(payload, aliases, is_player, context)
-		Timing.TURN_START:
-			return _dispatch_timing_turn_start(is_player, context)
-		Timing.TURN_END:
-			return _dispatch_timing_turn_end(is_player, context)
-		_:
-			return {}
+	return _dispatch_timing_via_fallback_match(timing, payload, aliases, is_player, context)
 
 func _process_single_card_timing_effect(card_ui, timing: Timing, default_result: Dictionary = {}) -> Dictionary:
 	var prepared := _prepare_timing_effect(card_ui, timing)

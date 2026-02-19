@@ -785,6 +785,25 @@ func test_timing_dispatch_method_table_routes_all_event_timings() -> void:
 	)
 	assert_eq(turn_end_result.size(), 1, "method table should route TURN_END through turn-end dispatcher")
 
+func test_dispatch_timing_via_fallback_match_covers_on_summon_and_on_attack() -> void:
+	var summon_result: Dictionary = EffectManager._dispatch_timing_via_fallback_match(
+		EffectManager.Timing.ON_SUMMON,
+		{"card_ui": _create_mock_card_ui("green_001")},
+		{},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(summon_result.get("mana", 0), 1, "fallback dispatcher should route ON_SUMMON")
+
+	var attack_result: Dictionary = EffectManager._dispatch_timing_via_fallback_match(
+		EffectManager.Timing.ON_ATTACK,
+		{"attacker_ui": _create_mock_card_ui("blue_012"), "defender_ui": _create_mock_card_ui("")},
+		{"defender_ui": ["defender_ui"]},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(attack_result.get("direct_damage", 0), 1, "fallback dispatcher should route ON_ATTACK")
+
 func test_process_timing_event_dispatch_on_death() -> void:
 	var death_card = _create_mock_card_ui("green_002")
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
