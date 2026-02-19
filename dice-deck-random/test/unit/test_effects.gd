@@ -1076,6 +1076,16 @@ func test_defense_effect_dispatcher_helper_is_used() -> void:
 	assert_ne(script_text.find("_dispatch_defense_effect(effect_id, defender_ui, damage, card_name, result)"), -1,
 		"process_defense_effect should delegate to _dispatch_defense_effect")
 
+func test_summon_targeted_damage_helper_is_shared_for_red_summon_effects() -> void:
+	# 次のリファクタ候補: ON_SUMMONの単体ダメージ+死亡判定+ログを1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_targeted_damage_effect"), -1,
+		"effect_manager should define _apply_targeted_damage_effect")
+	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 2, result, card_name, \"red\", \"にHP-2\")"), -1,
+		"red_001 should delegate to targeted damage helper")
+	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 3, result, card_name, \"red\", \"にHP-3\")"), -1,
+		"red_011 should delegate to targeted damage helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

@@ -348,10 +348,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		# 赤カード登場時効果
 		# ═══════════════════════════════════════════
 		"red_001":  # 登場時:敵1体HP-2
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				_apply_damage_and_mark_destroy(target, 2, result)
-				result["log"] = "[color=red]%s の効果: %s にHP-2[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "red", "にHP-2")
 
 		"red_003":  # 登場時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
@@ -367,10 +364,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = "[color=red]%s の効果: 味方全体ATK+1[/color]" % card_name
 
 		"red_011":  # 登場時:敵1体HP-3
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				_apply_damage_and_mark_destroy(target, 3, result)
-				result["log"] = "[color=red]%s の効果: %s にHP-3[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_damage_effect(is_player, context, 3, result, card_name, "red", "にHP-3")
 
 		"red_015":  # 登場時:敵全体HP-2
 			var enemies = _get_all_enemies(is_player, context)
@@ -1022,6 +1016,13 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
 	result["self_damage"] = amount
 	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
+
+func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
+	var target = _get_random_enemy(is_player, context)
+	if not target:
+		return
+	_apply_damage_and_mark_destroy(target, amount, result)
+	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
 	for target in targets:
