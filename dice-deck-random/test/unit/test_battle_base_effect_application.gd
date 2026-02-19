@@ -162,3 +162,11 @@ func test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage() -> vo
 	assert_eq(card.current_hp, 2, "non-lethal damage should still reduce HP")
 	assert_eq(battle.destroyed_slot, null, "non-lethal damage should not call slot destroy")
 	battle.free()
+
+func test_apply_effect_result_uses_destroy_targets_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("func _apply_destroy_targets_from_effect") >= 0,
+		"BattleBase should define destroy_targets helper for effect application")
+	assert_true(script_text.find("_apply_destroy_targets_from_effect(result)") >= 0,
+		"_apply_effect_result should delegate destroy_targets handling to helper")

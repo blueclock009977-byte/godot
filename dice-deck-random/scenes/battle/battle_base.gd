@@ -233,11 +233,15 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 			else:
 				_opponent_draw_card()
 
-	if result.has("destroy_targets"):
-		for target in result["destroy_targets"]:
-			_destroy_card_ui_immediate(target)
+	_apply_destroy_targets_from_effect(result)
 
 	_update_all_ui()
+
+func _apply_destroy_targets_from_effect(result: Dictionary) -> void:
+	if not result.has("destroy_targets"):
+		return
+	for target in result["destroy_targets"]:
+		_destroy_card_ui_immediate(target)
 
 func _apply_hp_damage_to_owner(is_player: bool, amount: int) -> void:
 	if amount <= 0:
