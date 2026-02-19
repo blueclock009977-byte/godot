@@ -21,10 +21,10 @@ func _generate_card_pool() -> void:
 	card_pool.clear()
 
 	# ═══════════════════════════════════════════
-	# バランス計算式（パパ合意）:
-	# budget = 16 + 16 * cost
-	# score = 8*HP + 5*ATK + 4*面数 + (ATK*面数)//3
-	# 効果カードは効果強度で予算補正
+	# バランス計算式（2026-02-20調整）:
+	# budget = 10 + 10 * cost
+	# score = 4*HP + 3*ATK + 2*面数 + (ATK*面数)//4
+	# 効果カードは効果強度で予算補正（強い効果は減算、デメリットは加算）
 	# ═══════════════════════════════════════════
 
 	# ═══════════════════════════════════════════
@@ -281,11 +281,11 @@ func _generate_card_pool() -> void:
 
 func _score_card(card: CardData) -> int:
 	var faces := card.attack_dice.size()
-	var synergy := (card.atk * faces) / 3
-	return 8 * card.hp + 5 * card.atk + 4 * faces + int(synergy)
+	var synergy := (card.atk * faces) / 4
+	return 4 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
 
 func _base_budget(cost: int) -> int:
-	return 16 + 16 * cost
+	return 10 + 10 * cost
 
 func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 	for _i in range(64):
@@ -296,15 +296,15 @@ func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 
 		if delta > 0:
 			# 予算不足: まずHPを上げ、次にATKで微調整
-			if delta >= 8:
+			if delta >= 4:
 				card.hp += 1
 			else:
 				card.atk += 1
 		else:
 			# 予算超過: まずHPを下げ、次にATKを下げる
-			if card.hp > 1 and -delta >= 8:
+			if card.hp > 1 and -delta >= 4:
 				card.hp -= 1
-			elif card.atk > 0 and -delta >= 5:
+			elif card.atk > 0 and -delta >= 3:
 				card.atk -= 1
 			elif card.hp > 1:
 				card.hp -= 1

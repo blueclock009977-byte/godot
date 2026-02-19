@@ -106,33 +106,33 @@ func test_both_hp_zero_draw():
 
 func test_point_budget_cost_0():
 	var cost := 0
-	var budget := 16 + cost * 16
-	assert_eq(budget, 16, "Cost 0 → budget 16")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 10, "Cost 0 → budget 10")
 
 func test_point_budget_cost_1():
 	var cost := 1
-	var budget := 16 + cost * 16
-	assert_eq(budget, 32, "Cost 1 → budget 32")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 20, "Cost 1 → budget 20")
 
 func test_point_budget_cost_2():
 	var cost := 2
-	var budget := 16 + cost * 16
-	assert_eq(budget, 48, "Cost 2 → budget 48")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 30, "Cost 2 → budget 30")
 
 func test_point_budget_cost_3():
 	var cost := 3
-	var budget := 16 + cost * 16
-	assert_eq(budget, 64, "Cost 3 → budget 64")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 40, "Cost 3 → budget 40")
 
 func test_point_budget_cost_4():
 	var cost := 4
-	var budget := 16 + cost * 16
-	assert_eq(budget, 80, "Cost 4 → budget 80")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 50, "Cost 4 → budget 50")
 
 func test_point_budget_cost_5():
 	var cost := 5
-	var budget := 16 + cost * 16
-	assert_eq(budget, 96, "Cost 5 → budget 96")
+	var budget := 10 + cost * 10
+	assert_eq(budget, 60, "Cost 5 → budget 60")
 
 # ═══════════════════════════════════════════
 # カード召喚コストテスト
