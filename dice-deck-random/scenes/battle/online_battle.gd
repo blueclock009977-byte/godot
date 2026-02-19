@@ -457,7 +457,7 @@ func _simulate_battle(dice_val: int) -> Array:
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = _sim_find_target(card, def_cards)
+		var target = BattleConstants.sim_find_target(card, def_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_opp += card["atk"]
@@ -477,7 +477,7 @@ func _simulate_battle(dice_val: int) -> Array:
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = _sim_find_target(card, turn_cards)
+		var target = BattleConstants.sim_find_target(card, turn_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_me += card["atk"]
@@ -491,9 +491,6 @@ func _simulate_battle(dice_val: int) -> Array:
 				dmg_to_opp += card["atk"]
 
 	return [dmg_to_opp, dmg_to_me]
-
-func _sim_find_target(attacker: Dictionary, defenders: Array):
-	return BattleConstants.sim_find_target(attacker, defenders)
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
