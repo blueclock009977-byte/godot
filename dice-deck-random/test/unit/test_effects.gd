@@ -1440,7 +1440,7 @@ func test_specific_target_atk_modifier_helper_is_shared_for_attack_and_summon_ef
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _apply_specific_target_atk_modifier_effect"), -1,
 		"effect_manager should define _apply_specific_target_atk_modifier_effect")
-	assert_ne(script_text.find("_apply_specific_target_atk_modifier_effect(target, 2, result, card_name, \"yellow\", \" のATK+2\")"), -1,
+	assert_ne(script_text.find("_apply_specific_target_atk_modifier_effect(target, 2, result, card_name, \"yellow\", \"のATK+2\")"), -1,
 		"yellow_009 should delegate to specific-target atk modifier helper")
 	assert_ne(script_text.find("_apply_specific_target_atk_modifier_effect(defender_ui, -2, result, card_name, \"magenta\", \"のATK-2\")"), -1,
 		"purple_002 should delegate to specific-target atk modifier helper")
@@ -1666,6 +1666,8 @@ func test_attack_direct_damage_logs_use_make_effect_log_helper() -> void:
 		"blue_012 should build log via _make_effect_log helper")
 	assert_ne(script_text.find("_make_effect_log(\"red\", card_name, \"相手HP-1\")"), -1,
 		"red_013 should build log via _make_effect_log helper")
+	assert_ne(script_text.find("_make_effect_log(\"red\", card_name, \"自身ATK+1\")"), -1,
+		"red_005 should build log via _make_effect_log helper")
 
 func test_attack_instant_kill_effect_uses_shared_helper() -> void:
 	# 次の小さなリファクタ候補: 即破壊フラグ+ログ付与を共通helperへ統一

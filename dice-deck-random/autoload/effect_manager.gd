@@ -591,7 +591,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"red_005":  # 攻撃時:自身ATK+1(永続)
 			attacker_ui.modify_atk(1)
-			result["log"] = "[color=red]%s の効果: 自身ATK+1[/color]" % card_name
+			result["log"] = _make_effect_log("red", card_name, "自身ATK+1")
 
 		"red_008":  # 攻撃時:2回攻撃
 			result["double_attack"] = true
