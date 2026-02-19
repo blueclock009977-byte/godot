@@ -263,8 +263,6 @@ func _add_pool_card(card: CardData) -> void:
 		card_ui.modulate = Color(0.5, 0.5, 0.5, 0.7)
 	
 	wrapper.add_child(card_ui)
-	card_ui.setup(card, 300, 420)
-	card_ui.custom_minimum_size = Vector2(300, 420)
 	wrapper.add_child(count_label)
 	
 	# Click to add
@@ -279,6 +277,8 @@ func _add_pool_card(card: CardData) -> void:
 		pool_grid.add_child(current_row)
 		cards_in_row = 0
 	current_row.add_child(wrapper)
+	# シーンツリーに入った後にsetupを呼ぶ
+	card_ui.setup(card, 300, 420)
 	cards_in_row += 1
 
 func _get_deck_color() -> CardData.ColorType:
