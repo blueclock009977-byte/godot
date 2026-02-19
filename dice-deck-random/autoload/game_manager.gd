@@ -54,6 +54,17 @@ func save_deck() -> void:
 func load_deck() -> void:
 	if user_name == "":
 		return
+
+	# 優先: 現在選択中スロットのデッキ
+	if current_deck_slot >= 0 and current_deck_slot < MAX_DECK_SLOTS:
+		var slot_deck := await load_deck_from_slot(current_deck_slot)
+		if slot_deck.size() > 0:
+			player_deck = slot_deck
+			return
+		# スロットが壊れている/空の場合は選択解除
+		save_current_deck_slot(-1)
+
+	# 互換性のため旧保存先(users/{name}/deck)をフォールバックで読む
 	var result := await FirebaseManager.get_data("users/%s/deck" % user_name)
 	if result.code != 200 or result.data == null:
 		return
