@@ -623,10 +623,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 					result["log"] = "[color=green]%s の効果: 味方死亡で自身HP+2[/color]" % card_name
 
 		"black_002":  # 死亡時:敵1体HP-2
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				_apply_damage_and_mark_destroy(target, 2, result)
-				result["log"] = "[color=purple]%s の効果: %s にHP-2[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "purple", "にHP-2")
 
 		"black_006":  # 死亡時:トークン召喚
 			result["spawn_token"] = {"atk": 2, "hp": 2}
@@ -664,10 +661,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 			result["log"] = "[color=red]%s の効果: 自爆!敵味方全体HP-2[/color]" % card_name
 
 		"red_014":  # 死亡時:敵1体HP-4
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				_apply_damage_and_mark_destroy(target, 4, result)
-				result["log"] = "[color=red]%s の効果: %s にHP-4[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_damage_effect(is_player, context, 4, result, card_name, "red", "にHP-4")
 
 		# ═══════════════════════════════════════════
 		# 黄カード死亡時効果
