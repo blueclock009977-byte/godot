@@ -794,9 +794,19 @@ func _update_all_ui() -> void:
 func _update_opponent_hand_display() -> void:
 	push_error("_update_opponent_hand_display must be implemented in subclass")
 
-## プレイヤーのカードドロー（サブクラスで実装）
+## プレイヤーのカードドロー（共通実装）
 func _player_draw_card() -> void:
-	push_error("_player_draw_card must be implemented in subclass")
+	if player_deck.is_empty():
+		return
+	var card_data: CardData = player_deck.pop_front()
+	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
+	player_hand_container.add_child(card_ui)
+	card_ui.setup(card_data, BattleConstants.CARD_SIZE_HAND)
+	card_ui.card_clicked.connect(_on_hand_card_clicked)
+	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
+	player_hand.append(card_ui)
+	_update_all_ui()
 
 ## 相手のカードドロー（サブクラスで実装）
 func _opponent_draw_card() -> void:
@@ -825,3 +835,11 @@ func _on_player_slot_clicked(_slot: FieldSlot) -> void:
 ## 相手スロットクリック（サブクラスで実装）
 func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
 	pass  # 多くの場合何もしない
+
+## 手札カードクリック（サブクラスで実装）
+func _on_hand_card_clicked(_card_ui: CardUI) -> void:
+	push_error("_on_hand_card_clicked must be implemented in subclass")
+
+## 手札カードドラッグ終了（サブクラスで実装）
+func _on_hand_card_drag_ended(_card_ui: CardUI, _drop_pos: Vector2) -> void:
+	push_error("_on_hand_card_drag_ended must be implemented in subclass")
