@@ -861,24 +861,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		await get_tree().create_timer(0.3).timeout
 
 func _animate_dice_roll_to(target: int) -> int:
-	dice_label.add_theme_font_size_override("font_size", 40)
-	for i in range(12):
-		var fake := randi() % 6 + 1
-		dice_label.text = "%d" % fake
-		dice_label.pivot_offset = dice_label.size / 2
-		if i % 2 == 0:
-			dice_label.scale = Vector2(1.2, 1.2)
-		else:
-			dice_label.scale = Vector2(0.9, 0.9)
-		await get_tree().create_timer(0.04 + i * 0.025).timeout
-	dice_label.text = "%d" % target
-	var tween := create_tween()
-	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
-	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
-	await tween.finished
-	dice_label.add_theme_font_size_override("font_size", 36)
-	await get_tree().create_timer(0.3).timeout
-	return target
+	return await BattleUtils.animate_dice_roll(self, dice_label, target)
 
 # ═══════════════════════════════════════════
 # DRAW

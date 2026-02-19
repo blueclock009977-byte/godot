@@ -285,3 +285,29 @@ static func hide_card_preview(container: Control, overlay: Control) -> void:
 	overlay.visible = false
 	for child in container.get_children():
 		child.queue_free()
+
+## ダイスロールアニメーション
+## owner: 呼び出し元Node（create_tween用）
+## dice_label: ダイス表示用Label
+## target_value: 目標値（-1の場合はランダム）
+## 戻り値: 最終的なダイスの値
+static func animate_dice_roll(owner: Node, dice_label: Label, target_value: int = -1) -> int:
+	var final := target_value if target_value > 0 else (randi() % 6 + 1)
+	dice_label.add_theme_font_size_override("font_size", 40)
+	for i in range(12):
+		var fake := randi() % 6 + 1
+		dice_label.text = "%d" % fake
+		dice_label.pivot_offset = dice_label.size / 2
+		if i % 2 == 0:
+			dice_label.scale = Vector2(1.2, 1.2)
+		else:
+			dice_label.scale = Vector2(0.9, 0.9)
+		await owner.get_tree().create_timer(0.04 + i * 0.025).timeout
+	dice_label.text = "%d" % final
+	var tween := owner.create_tween()
+	tween.tween_property(dice_label, "scale", Vector2(1.5, 1.5), 0.1)
+	tween.tween_property(dice_label, "scale", Vector2(1.0, 1.0), 0.15)
+	await tween.finished
+	dice_label.add_theme_font_size_override("font_size", 36)
+	await owner.get_tree().create_timer(0.3).timeout
+	return final
