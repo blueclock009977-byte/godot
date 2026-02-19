@@ -420,6 +420,49 @@ func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
 	_show_card_preview(card_ui)
 
 # ═══════════════════════════════════════════
+# HAND CARD INTERACTIONS
+# ═══════════════════════════════════════════
+func _on_hand_card_clicked(card_ui: CardUI) -> void:
+	if not _is_my_input_allowed():
+		return
+	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
+		return
+	if select_mode == SelectMode.SUMMON_SELECT_SLOT and selected_hand_card == card_ui:
+		_clear_selection()
+		return
+	if _get_effective_summon_cost(card_ui) > player_mana:
+		_log("マナが足りない！")
+		return
+	if not BattleUtils.has_empty_slot(player_slots):
+		_log("空きスロットがない！")
+		return
+	_clear_selection()
+	selected_hand_card = card_ui
+	card_ui.set_selected(true)
+	select_mode = SelectMode.SUMMON_SELECT_SLOT
+	for slot in player_slots:
+		if slot and slot.is_empty():
+			slot.set_highlighted(true)
+
+func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
+	if not _is_my_input_allowed():
+		card_ui.reset_position()
+		return
+	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
+		card_ui.reset_position()
+		return
+	if _get_effective_summon_cost(card_ui) > player_mana:
+		card_ui.reset_position()
+		return
+	for slot in player_slots:
+		if slot and slot.is_empty():
+			var slot_rect := Rect2(slot.global_position, slot.size)
+			if slot_rect.has_point(drop_pos):
+				_summon_card_to_slot(card_ui, slot)
+				return
+	card_ui.reset_position()
+
+# ═══════════════════════════════════════════
 # STUBS (override in subclasses)
 # ═══════════════════════════════════════════
 func _start_turn() -> void:
@@ -434,8 +477,5 @@ func _game_end(_win: bool) -> void:
 func _update_all_ui() -> void:
 	pass
 
-func _on_hand_card_clicked(_card_ui: CardUI) -> void:
-	pass
-
-func _on_hand_card_drag_ended(_card_ui: CardUI, _drop_pos: Vector2) -> void:
+func _summon_card_to_slot(_card_ui: CardUI, _slot: FieldSlot) -> void:
 	pass
