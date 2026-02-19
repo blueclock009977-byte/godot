@@ -185,7 +185,6 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 	await get_tree().create_timer(0.5).timeout
 
 	# Main Phase 1 - Summon
-	_process_turn_start_effects(is_player_turn)
 	current_phase = Phase.MAIN1
 	_update_all_ui()
 	await _show_phase_banner("メイン1", Color(0.3, 1.0, 0.5), 0.5)

@@ -191,3 +191,10 @@ func test_ai_summon_calls_summon_effect_processing() -> void:
 	var script_text := FileAccess.get_file_as_string(script_path)
 	assert_ne(script_text.find("_process_summon_effect(card_ui, false)"), -1,
 		"AI summon path should call _process_summon_effect(card_ui, false)")
+
+func test_turn_start_effects_are_not_double_processed_in_local_battle() -> void:
+	# リファクタリング回帰: ターン開始効果は _start_turn 側の1回だけに統一
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle.gd")
+	var marker := "_process_turn_start_effects(is_player_turn)"
+	assert_eq(script_text.count(marker), 1,
+		"Turn start effects should be triggered exactly once per turn in battle.gd")
