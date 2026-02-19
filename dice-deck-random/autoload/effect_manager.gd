@@ -422,8 +422,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		# 白カード登場時効果
 		# ═══════════════════════════════════════════
 		"white_001":  # 登場時:自分HP+2
-			result["heal_player"] = 2
-			result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 2)
 
 		"white_004":  # 登場時:味方全体HP+2
 			var allies = _get_all_allies(is_player, context)
@@ -436,8 +435,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = "[color=white]%s の効果: 墓地から1体復活[/color]" % card_name
 
 		"white_009":  # 登場時:自分HP+4
-			result["heal_player"] = 4
-			result["log"] = "[color=white]%s の効果: 自分HP+4[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 4)
 
 		"white_013":  # 登場時:味方全体の状態異常解除
 			var allies = _get_all_allies(is_player, context)
@@ -446,8 +444,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = "[color=white]%s の効果: 味方全体の状態異常解除[/color]" % card_name
 
 		"white_015":  # 登場時:自分HP+6
-			result["heal_player"] = 6
-			result["log"] = "[color=white]%s の効果: 自分HP+6[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 6)
 
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
@@ -665,8 +662,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 		# 白カード死亡時効果
 		# ═══════════════════════════════════════════
 		"white_002":  # 死亡時:自分HP+3
-			result["heal_player"] = 3
-			result["log"] = "[color=white]%s の効果: 自分HP+3[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 3)
 
 		"white_011":  # 死亡時:自分HP全回復
 			result["heal_player_full"] = true
@@ -756,8 +752,7 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 
 		# 白カードターン開始時効果
 		"white_003":  # ターン開始時:自分HP+1
-			result["heal_player"] = 1
-			result["log"] = "[color=white]%s の効果: 自分HP+1[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 1)
 
 	return result
 
@@ -781,8 +776,7 @@ func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, 
 
 		# 白カードターン終了時効果
 		"white_010":  # ターン終了時:自分HP+2
-			result["heal_player"] = 2
-			result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
+			_apply_player_heal_effect(result, "white", card_name, 2)
 
 	return result
 
@@ -993,6 +987,12 @@ func _apply_self_heal_effect(card_ui, result: Dictionary, color: String, card_na
 		return
 	card_ui.heal(amount)
 	result["log"] = _make_effect_log(color, card_name, "自身HP+%d" % amount)
+
+func _apply_player_heal_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	result["heal_player"] = amount
+	result["log"] = _make_effect_log(color, card_name, "自分HP+%d" % amount)
 
 func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
 	if amount <= 0:

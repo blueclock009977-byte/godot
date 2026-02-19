@@ -1183,6 +1183,24 @@ func test_summon_enemy_aoe_atk_debuff_helper_is_shared_for_blue_004_007() -> voi
 	assert_ne(script_text.find("_apply_enemy_aoe_atk_modifier_effect(is_player, context, -2, result, card_name, \"cyan\", \"敵全体のATK-2\")"), -1,
 		"blue_007 should delegate to enemy aoe atk modifier helper")
 
+func test_player_heal_helper_is_shared_for_white_heal_effects() -> void:
+	# 次の段階リファクタ: 自分HP回復系（登場/死亡/ターン）を1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_player_heal_effect"), -1,
+		"effect_manager should define _apply_player_heal_effect")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 2)"), -1,
+		"white_001 should delegate to player-heal helper")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 4)"), -1,
+		"white_009 should delegate to player-heal helper")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 6)"), -1,
+		"white_015 should delegate to player-heal helper")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 3)"), -1,
+		"white_002 should delegate to player-heal helper")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 1)"), -1,
+		"white_003 should delegate to player-heal helper")
+	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 2)"), -1,
+		"white_010 should delegate to player-heal helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
