@@ -402,24 +402,13 @@ func _update_all_ui() -> void:
 	_update_dice_preview()
 
 func _update_dice_preview() -> void:
-	var show := not game_over
-	dice_preview_panel.visible = show
-	if not show:
+	dice_preview_panel.visible = not game_over
+	if game_over:
 		return
-
-	var text := ""
+	var results := []
 	for dice_val in range(1, 7):
-		var result := _simulate_battle(dice_val)
-		var score: int = result[0] - result[1]
-		var color := "gray"
-		var sign := ""
-		if score > 0:
-			color = "green"
-			sign = "+"
-		elif score < 0:
-			color = "red"
-		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign, score]
-	dice_preview_label.text = text
+		results.append(_simulate_battle(dice_val))
+	dice_preview_label.text = BattleUtils.build_dice_preview_text(results)
 
 func _simulate_battle(dice_val: int) -> Array:
 	return BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn)

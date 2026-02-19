@@ -208,3 +208,20 @@ static func build_mana_string(current_mana: int, max_mana: int, max_mana_cap: in
 		else:
 			mana_str += "·"
 	return mana_str
+
+## ダイスプレビュー用リッチテキスト文字列を生成
+## results: 各ダイス値(1-6)のシミュレーション結果 [[dmg_to_opp, dmg_to_me], ...]
+static func build_dice_preview_text(results: Array) -> String:
+	var text := ""
+	for dice_val in range(1, 7):
+		var result = results[dice_val - 1]
+		var score: int = result[0] - result[1]
+		var color := "gray"
+		var sign_str := ""
+		if score > 0:
+			color = "green"
+			sign_str = "+"
+		elif score < 0:
+			color = "red"
+		text += "[font_size=48][b]%d[/b] : [color=%s]%s%d[/color][/font_size]     " % [dice_val, color, sign_str, score]
+	return text
