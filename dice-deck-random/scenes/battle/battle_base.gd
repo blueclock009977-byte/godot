@@ -151,12 +151,12 @@ func _run_timing_event_with_context(timing: int, payload: Dictionary, context_ov
 	event_payload["context"] = context
 	return EffectManager.process_timing_event(timing, event_payload)
 
-func _process_single_card_timing_effect(timing: int, card_ui: CardUI, is_player: bool, payload: Dictionary, default_result: Dictionary = {}) -> Dictionary:
+func _process_single_card_timing_effect(timing: int, card_ui: CardUI, is_player: bool, payload: Dictionary, default_result: Dictionary = {}, context_overrides: Dictionary = {}) -> Dictionary:
 	if not card_ui or not card_ui.card_data or not card_ui.card_data.has_effect():
 		return default_result.duplicate(true)
 	var event_payload := payload.duplicate(true)
 	event_payload["is_player"] = is_player
-	var result: Dictionary = _run_timing_event_with_context(timing, event_payload)
+	var result: Dictionary = _run_timing_event_with_context(timing, event_payload, context_overrides)
 	_apply_effect_result(result, is_player)
 	return result
 
@@ -515,14 +515,13 @@ func _process_ally_death_reactions(dead_card_ui: CardUI, is_player_owner: bool) 
 			continue
 		if not ally_card.card_data.has_effect():
 			continue
-		var result: Dictionary = _run_timing_event_with_context(EffectManager.Timing.ON_DEATH, {
+		_process_single_card_timing_effect(EffectManager.Timing.ON_DEATH, ally_card, is_player_owner, {
 			"card_ui": ally_card,
 			"is_player": is_player_owner
-		}, {
+		}, {}, {
 			"ally_died": true,
 			"dead_card_ui": dead_card_ui
 		})
-		_apply_effect_result(result, is_player_owner)
 
 func _find_slot_by_card_ui(card_ui: CardUI) -> FieldSlot:
 	for slot in player_slots:

@@ -121,6 +121,12 @@ func test_battle_base_ally_death_reaction_uses_unified_timing_entry_helper() -> 
 	assert_true(script_text.find("_run_timing_event_with_context") >= 0 and script_text.find("Timing.ON_DEATH") >= 0, "ally death reactions should route through unified timing entry helper")
 	assert_true(script_text.find("\"ally_died\": true") >= 0, "ally death reactions should pass ally_died context through shared event helper")
 
+func test_battle_base_ally_death_reaction_uses_single_card_timing_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("_process_single_card_timing_effect") >= 0 and script_text.find("EffectManager.Timing.ON_DEATH, ally_card, is_player_owner") >= 0,
+		"ally death reactions should use single-card timing helper to keep timing entrypoints unified")
+
 func test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot() -> void:
 	var battle := TestBattleBase.new()
 	var slot := DummySlot.new()
