@@ -93,3 +93,9 @@ func _clear_selection() -> void:
 # Override in subclasses to update hand card highlights
 func _update_hand_highlights() -> void:
 	pass
+
+# ═══════════════════════════════════════════
+# PHASE BANNER
+# ═══════════════════════════════════════════
+func _show_phase_banner(text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
+	await BattleUtils.show_phase_banner(self, phase_overlay, phase_overlay_label, text, banner_color, duration)

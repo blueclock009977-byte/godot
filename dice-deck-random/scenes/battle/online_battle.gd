@@ -367,9 +367,6 @@ func _update_hand_highlights() -> void:
 		if slot and not slot.is_empty():
 			slot.card_ui.set_movable(can_move)
 
-func _show_phase_banner(text: String, banner_color: Color = Color(1, 1, 1), duration: float = 0.8) -> void:
-	await BattleUtils.show_phase_banner(self, phase_overlay, phase_overlay_label, text, banner_color, duration)
-
 # ═══════════════════════════════════════════
 # GAME START
 # ═══════════════════════════════════════════
