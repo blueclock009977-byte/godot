@@ -66,13 +66,14 @@ func load_deck() -> void:
 
 const MAX_DECK_SLOTS := 10
 
-func save_deck_to_slot(slot: int, deck: Array) -> void:
+func save_deck_to_slot(slot: int, deck: Array) -> bool:
 	if user_name == "" or slot < 0 or slot >= MAX_DECK_SLOTS:
-		return
+		return false
 	var ids: Array[int] = []
 	for card in deck:
 		ids.append(card.id)
-	await FirebaseManager.put_data("users/%s/decks/%d" % [user_name, slot], ids)
+	var result := await FirebaseManager.put_data("users/%s/decks/%d" % [user_name, slot], ids)
+	return result.code == 200
 
 func load_deck_from_slot(slot: int) -> Array:
 	if user_name == "" or slot < 0 or slot >= MAX_DECK_SLOTS:

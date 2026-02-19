@@ -498,7 +498,10 @@ func _save_to_slot(slot: int) -> void:
 	if deck.size() != MAX_DECK_SIZE:
 		_show_message("エラー", "デッキは%d枚必要です！ (現在: %d枚)" % [MAX_DECK_SIZE, deck.size()])
 		return
-	await GameManager.save_deck_to_slot(slot, deck)
+	var success := await GameManager.save_deck_to_slot(slot, deck)
+	if not success:
+		_show_message("エラー", "保存に失敗しました。通信エラーの可能性があります")
+		return
 	GameManager.player_deck = deck.duplicate()
 	GameManager.current_deck_slot = slot
 	_show_message("保存完了", "スロット %d に保存しました！" % [slot + 1])
