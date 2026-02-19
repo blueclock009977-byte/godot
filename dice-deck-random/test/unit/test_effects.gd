@@ -493,6 +493,24 @@ func test_turn_start_no_effect_vanilla() -> void:
 	var results: Array = EffectManager.process_turn_start_effects(true, context)
 	assert_eq(results.size(), 0, "Vanilla card should have no turn start effect")
 
+func test_turn_start_poison_damage_marks_destroy_target_when_hp_zero() -> void:
+	var poisoned = _create_mock_slot_with_ui("")
+	poisoned.card_ui.current_hp = 1
+	poisoned.card_ui._status = EffectManager.StatusEffect.POISON
+	poisoned.card_ui._status_duration = 99
+	var context := {
+		"player_slots": [poisoned, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_start_effects(true, context)
+	var poison_result: Dictionary = {}
+	for r in results:
+		if r.get("log", "").find("毒で1ダメージ") != -1:
+			poison_result = r
+			break
+	assert_true(poison_result.has("destroy_targets"), "Poison tick should mark destroy_targets when HP <= 0")
+	assert_eq(poison_result["destroy_targets"].size(), 1, "Poison tick should mark exactly one destroyed target")
+
 # ═══════════════════════════════════════════
 # Phase 6: 状態異常テスト
 # ═══════════════════════════════════════════

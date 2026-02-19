@@ -793,8 +793,10 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 		if slot and not slot.is_empty():
 			var card_ui = slot.card_ui
 			if card_ui.has_status(StatusEffect.POISON):
-				card_ui.take_damage(1)
-				results.append({"log": "[color=purple]%s は毒で1ダメージ[/color]" % card_ui.card_data.card_name})
+				var poison_result := {}
+				_apply_damage_and_mark_destroy(card_ui, 1, poison_result)
+				poison_result["log"] = "[color=purple]%s は毒で1ダメージ[/color]" % card_ui.card_data.card_name
+				results.append(poison_result)
 
 	return results
 
