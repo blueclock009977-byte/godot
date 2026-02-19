@@ -1044,6 +1044,14 @@ func test_self_damage_helper_is_shared_for_black_summon_effects() -> void:
 	assert_ne(script_text.find("_apply_self_damage_effect(result, card_name, 4)"), -1,
 		"black_017 should delegate to shared self-damage helper")
 
+func test_summon_effect_dispatcher_helper_is_used() -> void:
+	# 次の段階リファクタ: ON_SUMMONのeffect_id分岐を専用ディスパッチ関数に隔離
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_summon_effect"), -1,
+		"effect_manager should define _dispatch_summon_effect")
+	assert_ne(script_text.find("_dispatch_summon_effect(effect_id, card_ui, is_player, context, card_name, result)"), -1,
+		"process_summon_effect should delegate to _dispatch_summon_effect")
+
 func test_attack_effect_dispatcher_helper_is_used() -> void:
 	# 次の段階リファクタ: ON_ATTACKのeffect_id分岐を専用ディスパッチ関数に隔離
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

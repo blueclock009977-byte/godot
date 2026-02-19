@@ -249,6 +249,12 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 	var result := {}
 	var card_name: String = prepared.get("card_name", "")
 
+	_dispatch_summon_effect(effect_id, card_ui, is_player, context, card_name, result)
+
+	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
+	return result
+
+func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_001":  # 登場時:敵1体ATK-1
 			var target = _get_random_enemy(is_player, context)
@@ -469,9 +475,6 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 		"white_015":  # 登場時:自分HP+6
 			result["heal_player"] = 6
 			result["log"] = "[color=white]%s の効果: 自分HP+6[/color]" % card_name
-
-	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
-	return result
 
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
