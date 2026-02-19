@@ -396,10 +396,29 @@ func _end_turn() -> void:
 	_start_turn()
 
 # ═══════════════════════════════════════════
+# CARD PREVIEW (shared)
+# ═══════════════════════════════════════════
+func _show_card_preview(card_ui: CardUI) -> void:
+	BattleUtils.show_card_preview(card_preview_container, card_preview_overlay, CARD_UI_SCENE, card_ui)
+
+func _hide_card_preview() -> void:
+	BattleUtils.hide_card_preview(card_preview_container, card_preview_overlay)
+
+func _on_preview_overlay_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_hide_card_preview()
+	if event is InputEventScreenTouch and event.pressed:
+		_hide_card_preview()
+
+func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
+	_show_card_preview(card_ui)
+
+# ═══════════════════════════════════════════
 # STUBS (override in subclasses)
 # ═══════════════════════════════════════════
 func _start_turn() -> void:
 	pass
+
 func _opponent_draw_card() -> void:
 	pass
 
@@ -413,7 +432,4 @@ func _on_hand_card_clicked(_card_ui: CardUI) -> void:
 	pass
 
 func _on_hand_card_drag_ended(_card_ui: CardUI, _drop_pos: Vector2) -> void:
-	pass
-
-func _on_hand_card_long_pressed(_card_ui: CardUI) -> void:
 	pass

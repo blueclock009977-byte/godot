@@ -693,21 +693,6 @@ func _game_end(player_wins: bool) -> void:
 	await get_tree().create_timer(2.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
 
-func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
-	_show_card_preview(card_ui)
-
-func _show_card_preview(card_ui: CardUI) -> void:
-	BattleUtils.show_card_preview(card_preview_container, card_preview_overlay, CARD_UI_SCENE, card_ui)
-
-func _hide_card_preview() -> void:
-	BattleUtils.hide_card_preview(card_preview_container, card_preview_overlay)
-
-func _on_preview_overlay_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		_hide_card_preview()
-	if event is InputEventScreenTouch and event.pressed:
-		_hide_card_preview()
-
 func _on_surrender() -> void:
 	if game_over:
 		return
