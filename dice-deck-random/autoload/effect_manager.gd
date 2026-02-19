@@ -798,6 +798,7 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 				var poison_result := {}
 				_apply_damage_and_mark_destroy(card_ui, 1, poison_result)
 				poison_result["log"] = "[color=purple]%s は毒で1ダメージ[/color]" % card_ui.card_data.card_name
+				_emit_effect_trigger_if_logged("status_poison", card_ui, null, poison_result)
 				results.append(poison_result)
 
 	return results

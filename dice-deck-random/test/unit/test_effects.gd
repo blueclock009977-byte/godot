@@ -746,6 +746,18 @@ func test_turn_end_effect_emits_effect_triggered_signal() -> void:
 	EffectManager.process_turn_end_effects(true, context)
 	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Turn end effect should emit effect_triggered once")
 
+func test_turn_start_poison_tick_emits_effect_triggered_signal() -> void:
+	watch_signals(EffectManager)
+	var poisoned = _create_mock_slot_with_ui("")
+	poisoned.card_ui._status = EffectManager.StatusEffect.POISON
+	poisoned.card_ui._status_duration = 99
+	var context := {
+		"player_slots": [poisoned, null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	EffectManager.process_turn_start_effects(true, context)
+	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Poison tick should emit effect_triggered once")
+
 func test_detect_unimplemented_on_summon_effect_ids() -> void:
 	# ON_SUMMONの効果IDで、処理が未実装のものを検出する
 	var context := {
