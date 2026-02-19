@@ -281,22 +281,21 @@ func _add_pool_card(card: CardData) -> void:
 	card_ui.setup(card, 300)
 	cards_in_row += 1
 
-func _get_deck_color() -> CardData.ColorType:
+func _get_deck_colors() -> Array:
+	var colors := []
 	for card in deck:
-		if card.color_type != CardData.ColorType.GRAY:
-			return card.color_type
-	return CardData.ColorType.GRAY
+		if card.color_type == CardData.ColorType.GRAY:
+			continue
+		if card.color_type not in colors:
+			colors.append(card.color_type)
+	return colors
 
 func _can_add_card(card: CardData) -> bool:
 	if deck.size() >= MAX_DECK_SIZE:
 		return false
 	if _count_in_deck(card.id) >= MAX_COPIES:
 		return false
-	# 1色制限: グレー以外のカードは、既にデッキにある色と同じでなければならない
-	if card.color_type != CardData.ColorType.GRAY:
-		var deck_color := _get_deck_color()
-		if deck_color != CardData.ColorType.GRAY and deck_color != card.color_type:
-			return false
+	# ユーザーデッキは多色OK（グレーは色数に含めない）
 	return true
 
 func _add_card_to_deck(card: CardData) -> void:
@@ -334,9 +333,9 @@ func _update_deck_display() -> void:
 	else:
 		deck_count_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1))
 
-	# Show deck color
-	var deck_color := _get_deck_color()
-	if deck_color == CardData.ColorType.GRAY:
+	# Show deck colors (gray is excluded)
+	var deck_colors := _get_deck_colors()
+	if deck_colors.is_empty():
 		deck_color_label.text = "色: なし"
 		deck_color_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
 	else:
@@ -344,14 +343,16 @@ func _update_deck_display() -> void:
 			CardData.ColorType.BLUE: "青",
 			CardData.ColorType.GREEN: "緑",
 			CardData.ColorType.BLACK: "黒",
+			CardData.ColorType.RED: "赤",
+			CardData.ColorType.YELLOW: "黄",
+			CardData.ColorType.PURPLE: "紫",
+			CardData.ColorType.WHITE: "白",
 		}
-		var color_colors := {
-			CardData.ColorType.BLUE: Color(0.3, 0.5, 0.9),
-			CardData.ColorType.GREEN: Color(0.3, 0.8, 0.3),
-			CardData.ColorType.BLACK: Color(0.6, 0.4, 0.6),
-		}
-		deck_color_label.text = "色: %s" % color_names.get(deck_color, "?")
-		deck_color_label.add_theme_color_override("font_color", color_colors.get(deck_color, Color.WHITE))
+		var name_list := []
+		for c in deck_colors:
+			name_list.append(color_names.get(c, "?"))
+		deck_color_label.text = "色: %s (%d色)" % ["/".join(name_list), deck_colors.size()]
+		deck_color_label.add_theme_color_override("font_color", Color(0.8, 0.9, 1.0))
 
 func _remove_card_from_deck(index: int) -> void:
 	if index >= 0 and index < deck.size():
