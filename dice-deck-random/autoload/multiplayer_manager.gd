@@ -21,8 +21,10 @@ var _last_action_index: int = -1
 var _polling: bool = false
 var _my_room_created_at: float = 0.0
 var _heartbeat_timer: Timer
+var _opponent_disconnect_emitted: bool = false
 const HEARTBEAT_INTERVAL := 3.0
 const HEARTBEAT_TIMEOUT := 8.0
+const ROOM_CODE_RETRY_LIMIT := 10
 var last_error: String = ""
 
 func _ready() -> void:
@@ -39,9 +41,15 @@ func _ready() -> void:
 # ─── Room Management ───
 
 func create_room(deck_ids: Array) -> String:
-	room_code = _generate_room_code()
+	room_code = await _generate_available_room_code()
+	if room_code == "":
+		last_error = "room code generation failed"
+		return ""
 	is_host = true
 	my_player_number = 1
+	opponent_id = ""
+	opponent_name = ""
+	_opponent_disconnect_emitted = false
 
 	var room_data := {
 		"status": "waiting",
@@ -74,16 +82,23 @@ func join_room(code: String, deck_ids: Array) -> bool:
 	room_code = code.to_upper()
 	var result := await FirebaseManager.get_data("rooms/%s" % room_code)
 	if result.code != 200 or result.data == null:
+		last_error = "HTTP %d" % result.code
 		return false
 	if result.data.get("status") != "waiting":
+		last_error = "room is not waiting"
 		return false
 	if result.data.get("player2") != null:
+		last_error = "room is full"
+		return false
+	if result.data.get("player1") == null or result.data["player1"] is not Dictionary:
+		last_error = "room data is invalid"
 		return false
 
 	is_host = false
 	my_player_number = 2
 	opponent_id = result.data["player1"]["id"]
 	opponent_name = result.data["player1"].get("name", "")
+	_opponent_disconnect_emitted = false
 
 	var player2_data := {
 		"id": FirebaseManager.player_id,
@@ -101,22 +116,21 @@ func join_room(code: String, deck_ids: Array) -> bool:
 		_last_action_index = -1
 		_poll_timer.start()
 		_heartbeat_timer.start()
-		# ホスト生存確認: 4秒待ってlast_seenが更新されるかチェック
-		var pre_check := await FirebaseManager.get_data("rooms/%s/player1/last_seen" % room_code)
-		var pre_seen: float = 0.0
-		if pre_check.code == 200 and pre_check.data != null:
-			pre_seen = float(pre_check.data)
+		# ホスト生存確認
 		await get_tree().create_timer(4.0).timeout
 		var post_check := await FirebaseManager.get_data("rooms/%s/player1/last_seen" % room_code)
 		var post_seen: float = 0.0
 		if post_check.code == 200 and post_check.data != null:
 			post_seen = float(post_check.data)
-		if post_seen <= pre_seen:
-			# ホスト死亡 - 部屋を片付けて失敗
+		var now := Time.get_unix_time_from_system()
+		if post_seen <= 0.0 or now - post_seen > HEARTBEAT_TIMEOUT:
+			# ホスト死亡の可能性が高い場合のみ失敗扱い
+			last_error = "host heartbeat timeout"
 			await leave_room()
 			await FirebaseManager.delete_data("rooms/%s" % room_code)
 			return false
 		return true
+	last_error = "HTTP %d" % patch_result.code
 	return false
 
 func leave_room() -> void:
@@ -133,7 +147,7 @@ func leave_room() -> void:
 			var last_seen: float = float(hb_result.data)
 			var now := Time.get_unix_time_from_system()
 			if now - last_seen > HEARTBEAT_TIMEOUT:
-				opponent_disconnected.emit()
+				_emit_opponent_disconnected_once()
 
 	_polling = false
 	if room_code != "":
@@ -143,27 +157,40 @@ func leave_room() -> void:
 		_schedule_room_delete(code_to_delete)
 	is_in_room = false
 	room_code = ""
+	opponent_id = ""
 	opponent_name = ""
 	_last_action_index = -1
+	_opponent_disconnect_emitted = false
 
 # ─── Actions ───
 
-func send_action(action: Dictionary) -> void:
+func send_action(action: Dictionary) -> bool:
 	if not is_in_room:
-		return
+		last_error = "not in room"
+		return false
 	action["player"] = my_player_number
 	action["timestamp"] = Time.get_unix_time_from_system()
 
 	# Get current last_action_index, increment, write
 	var result := await FirebaseManager.get_data("rooms/%s/last_action_index" % room_code)
+	if result.code != 200:
+		last_error = "HTTP %d" % result.code
+		return false
 	var idx: int = -1
 	if result.data != null:
 		idx = int(result.data)
 	idx += 1
 
-	await FirebaseManager.put_data("rooms/%s/actions/%d" % [room_code, idx], action)
-	await FirebaseManager.put_data("rooms/%s/last_action_index" % room_code, idx)
+	var put_action := await FirebaseManager.put_data("rooms/%s/actions/%d" % [room_code, idx], action)
+	if put_action.code != 200:
+		last_error = "HTTP %d" % put_action.code
+		return false
+	var put_index := await FirebaseManager.put_data("rooms/%s/last_action_index" % room_code, idx)
+	if put_index.code != 200:
+		last_error = "HTTP %d" % put_index.code
+		return false
 	_last_action_index = idx
+	return true
 
 func send_game_state(state: Dictionary) -> void:
 	if not is_in_room:
@@ -188,7 +215,7 @@ func _poll_room() -> void:
 					opponent_name = data["player2"].get("name", "")
 					opponent_joined.emit()
 			if data.get("status") == "finished":
-				opponent_disconnected.emit()
+				_emit_opponent_disconnected_once()
 
 	# Check for new actions
 	var idx_result := await FirebaseManager.get_data("rooms/%s/last_action_index" % room_code)
@@ -213,7 +240,7 @@ func _poll_room() -> void:
 		var last_seen: float = float(hb_result.data)
 		var now := Time.get_unix_time_from_system()
 		if now - last_seen > HEARTBEAT_TIMEOUT:
-			opponent_disconnected.emit()
+			_emit_opponent_disconnected_once()
 			_polling = false
 			return
 	_polling = false
@@ -243,6 +270,14 @@ func _generate_room_code() -> String:
 	for i in range(6):
 		code += chars[randi() % chars.length()]
 	return code
+
+func _generate_available_room_code() -> String:
+	for _i in range(ROOM_CODE_RETRY_LIMIT):
+		var candidate := _generate_room_code()
+		var result := await FirebaseManager.get_data("rooms/%s" % candidate)
+		if result.code == 200 and result.data == null:
+			return candidate
+	return ""
 
 func find_waiting_room(only_before: float = 0.0) -> String:
 	var result := await FirebaseManager.get_data("rooms")
@@ -279,3 +314,9 @@ func find_waiting_room(only_before: float = 0.0) -> String:
 func _schedule_room_delete(code: String) -> void:
 	await get_tree().create_timer(5.0).timeout
 	await FirebaseManager.delete_data("rooms/%s" % code)
+
+func _emit_opponent_disconnected_once() -> void:
+	if _opponent_disconnect_emitted:
+		return
+	_opponent_disconnect_emitted = true
+	opponent_disconnected.emit()

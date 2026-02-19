@@ -1,71 +1,64 @@
 extends GutTest
 
-# Standalone simulation (same logic as battle.gd _simulate_battle)
-func _sim_find_target(attacker: Dictionary, defenders: Array):
-	var lane: int = attacker["lane"]
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
-			return d
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
-			return d
-	return null
+# Test using shared BattleUtils functions
 
+func _make_card(atk: int, hp: int, lane: int, is_front: bool, dice: Array) -> Dictionary:
+	return {"atk": atk, "hp": hp, "lane": lane, "is_front": is_front, "dice": dice, "idx": lane + (0 if is_front else 3)}
+
+# Wrapper to simulate battle without actual slot objects
+# Creates mock data structure that BattleUtils.simulate_battle expects
 func _simulate(dice_val: int, p_cards: Array, o_cards: Array, is_player_turn: bool) -> Array:
-	var turn_cards: Array
-	var def_cards: Array
-	if is_player_turn:
-		turn_cards = p_cards
-		def_cards = o_cards
-	else:
-		turn_cards = o_cards
-		def_cards = p_cards
+	# BattleUtils.simulate_battle expects slot objects with card_ui properties
+	# For unit testing, we use a standalone implementation
+	var turn_cards: Array = p_cards.duplicate(true) if is_player_turn else o_cards.duplicate(true)
+	var def_cards: Array = o_cards.duplicate(true) if is_player_turn else p_cards.duplicate(true)
 
 	var dmg_to_opp := 0
 	var dmg_to_me := 0
 
+	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
 	for card in turn_cards:
 		if card["hp"] <= 0:
 			continue
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = _sim_find_target(card, def_cards)
+		var target: Variant = BattleUtils.sim_find_target(card, def_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_opp += card["atk"]
 			else:
 				dmg_to_me += card["atk"]
 		else:
-			target["hp"] -= card["atk"]
+			var t: Dictionary = target
+			t["hp"] -= card["atk"]
 			if is_player_turn:
 				dmg_to_opp += card["atk"]
 			else:
 				dmg_to_me += card["atk"]
 
+	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
 	for card in def_cards:
 		if card["hp"] <= 0:
 			continue
 		var dice_arr: Array = card["dice"]
 		if not dice_arr.has(dice_val):
 			continue
-		var target = _sim_find_target(card, turn_cards)
+		var target: Variant = BattleUtils.sim_find_target(card, turn_cards)
 		if target == null:
 			if is_player_turn:
 				dmg_to_me += card["atk"]
 			else:
 				dmg_to_opp += card["atk"]
 		else:
-			target["hp"] -= card["atk"]
+			var t: Dictionary = target
+			t["hp"] -= card["atk"]
 			if is_player_turn:
 				dmg_to_me += card["atk"]
 			else:
 				dmg_to_opp += card["atk"]
 
 	return [dmg_to_opp, dmg_to_me]
-
-func _make_card(atk: int, hp: int, lane: int, is_front: bool, dice: Array) -> Dictionary:
-	return {"atk": atk, "hp": hp, "lane": lane, "is_front": is_front, "dice": dice, "idx": lane + (0 if is_front else 3)}
 
 func test_empty_field():
 	var result := _simulate(1, [], [], true)

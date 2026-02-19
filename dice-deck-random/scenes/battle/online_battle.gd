@@ -429,72 +429,7 @@ func _update_dice_preview() -> void:
 	dice_preview_label.text = text
 
 func _simulate_battle(dice_val: int) -> Array:
-	var p_cards := []
-	var o_cards := []
-	for i in range(6):
-		var ps: FieldSlot = player_slots[i]
-		if ps and not ps.is_empty():
-			p_cards.append({"atk": ps.card_ui.current_atk, "hp": ps.card_ui.current_hp, "lane": ps.lane, "is_front": ps.is_front_row, "dice": ps.card_ui.card_data.attack_dice, "idx": i})
-		var os: FieldSlot = opponent_slots[i]
-		if os and not os.is_empty():
-			o_cards.append({"atk": os.card_ui.current_atk, "hp": os.card_ui.current_hp, "lane": os.lane, "is_front": os.is_front_row, "dice": os.card_ui.card_data.attack_dice, "idx": i})
-
-	var turn_cards: Array
-	var def_cards: Array
-	if is_player_turn:
-		turn_cards = p_cards
-		def_cards = o_cards
-	else:
-		turn_cards = o_cards
-		def_cards = p_cards
-
-	var dmg_to_opp := 0
-	var dmg_to_me := 0
-
-	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in turn_cards:
-		if card["hp"] <= 0:
-			continue
-		var dice_arr: Array = card["dice"]
-		if not dice_arr.has(dice_val):
-			continue
-		var target = _sim_find_target(card, def_cards)
-		if target == null:
-			if is_player_turn:
-				dmg_to_opp += card["atk"]
-			else:
-				dmg_to_me += card["atk"]
-		else:
-			target["hp"] -= card["atk"]
-			if is_player_turn:
-				dmg_to_opp += card["atk"]
-			else:
-				dmg_to_me += card["atk"]
-
-	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in def_cards:
-		if card["hp"] <= 0:
-			continue
-		var dice_arr: Array = card["dice"]
-		if not dice_arr.has(dice_val):
-			continue
-		var target = _sim_find_target(card, turn_cards)
-		if target == null:
-			if is_player_turn:
-				dmg_to_me += card["atk"]
-			else:
-				dmg_to_opp += card["atk"]
-		else:
-			target["hp"] -= card["atk"]
-			if is_player_turn:
-				dmg_to_me += card["atk"]
-			else:
-				dmg_to_opp += card["atk"]
-
-	return [dmg_to_opp, dmg_to_me]
-
-func _sim_find_target(attacker: Dictionary, defenders: Array):
-	return BattleUtils.sim_find_target(attacker, defenders)
+	return BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn)
 
 func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
@@ -643,18 +578,24 @@ func _on_end_phase() -> void:
 
 	if current_phase == Phase.MAIN1:
 		if skip_dice_draw:
-			await _send_action({"type": "end_phase", "phase": "main1", "skip": true})
+			var ok_skip := await _send_action({"type": "end_phase", "phase": "main1", "skip": true})
+			if not ok_skip:
+				return
 			_end_turn()
 			return
 		else:
-			await _send_action({"type": "end_phase", "phase": "main1"})
+			var ok_main1 := await _send_action({"type": "end_phase", "phase": "main1"})
+			if not ok_main1:
+				return
 			# Dice phase
 			current_phase = Phase.DICE
 			_clear_selection()
 			_update_all_ui()
 			await _show_phase_banner("ダイス!", Color(1, 0.9, 0.3), 0.5)
 			var dice_val := randi() % 6 + 1
-			await _send_action({"type": "dice_roll", "value": dice_val})
+			var ok_dice := await _send_action({"type": "dice_roll", "value": dice_val})
+			if not ok_dice:
+				return
 			await _do_dice_and_battle(dice_val)
 			if game_over:
 				return
@@ -662,11 +603,13 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DRAW
 			_update_all_ui()
 			await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
+			var ok_draw := await _send_action({"type": "draw"})
+			if not ok_draw:
+				return
 			_player_draw_card()
 			_opponent_draw_card()
 			player_mana = mini(player_mana + 1, player_max_mana)
 			opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
-			await _send_action({"type": "draw"})
 			_log("カードを1枚ドロー。1マナ回復。")
 			# Main2
 			current_phase = Phase.MAIN2
@@ -674,14 +617,18 @@ func _on_end_phase() -> void:
 			_update_all_ui()
 			await _show_phase_banner("メインフェイズ2", Color(0.3, 1.0, 0.5), 0.5)
 	elif current_phase == Phase.MAIN2:
-		await _send_action({"type": "end_phase", "phase": "main2"})
+		var ok_main2 := await _send_action({"type": "end_phase", "phase": "main2"})
+		if not ok_main2:
+			return
 		_end_turn()
 
 func _on_end_turn() -> void:
 	if not is_player_turn or is_animating or game_over:
 		return
 	if current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2:
-		await _send_action({"type": "end_turn"})
+		var ok := await _send_action({"type": "end_turn"})
+		if not ok:
+			return
 		_end_turn()
 
 func _end_turn() -> void:
@@ -696,13 +643,18 @@ func _end_turn() -> void:
 # ═══════════════════════════════════════════
 # SEND ACTIONS TO FIREBASE
 # ═══════════════════════════════════════════
-func _send_action(action: Dictionary) -> void:
-	await MultiplayerManager.send_action(action)
+func _send_action(action: Dictionary) -> bool:
+	var ok := await MultiplayerManager.send_action(action)
+	if not ok:
+		_log("[color=red]通信エラー: アクション送信に失敗 (%s)[/color]" % MultiplayerManager.last_error)
+	return ok
 
 # ═══════════════════════════════════════════
 # RECEIVE OPPONENT ACTIONS
 # ═══════════════════════════════════════════
 func _on_action_received(action: Dictionary) -> void:
+	if game_over:
+		return
 	_action_queue.append(action)
 	if not _processing_actions:
 		_process_action_queue()
@@ -764,19 +716,22 @@ func _execute_opponent_action(action: Dictionary) -> void:
 
 func _opponent_summon(card_id: int, slot_idx: int) -> void:
 	_log("[color=gray]DEBUG: opponent_summon id=%d slot=%d hand=%d[/color]" % [card_id, slot_idx, opponent_hand_count])
+	if slot_idx < 0 or slot_idx >= opponent_slots.size():
+		_log("[color=red]ERROR: invalid summon slot %d[/color]" % slot_idx)
+		return
 	# Find card in opponent deck (they drew it) - for display only
 	var card_data := CardDatabase.get_card_by_id(card_id)
 	if not card_data:
 		return
-	var data_copy := card_data.duplicate_card()
-	opponent_mana -= data_copy.mana_cost
-	opponent_hand_count -= 1
-
-	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	var slot: FieldSlot = opponent_slots[slot_idx]
 	if not slot or not slot.is_empty():
 		_log("[color=red]ERROR: slot %d is not empty or null[/color]" % slot_idx)
 		return
+	var data_copy := card_data.duplicate_card()
+	opponent_mana = maxi(0, opponent_mana - data_copy.mana_cost)
+	opponent_hand_count = maxi(0, opponent_hand_count - 1)
+
+	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	slot.place_card(card_ui)
 	card_ui.setup(data_copy)
 	_log("相手が %s を召喚" % data_copy.card_name)
@@ -785,11 +740,19 @@ func _opponent_summon(card_id: int, slot_idx: int) -> void:
 	_update_all_ui()
 
 func _opponent_move(from_idx: int, to_idx: int) -> void:
+	if from_idx < 0 or from_idx >= opponent_slots.size() or to_idx < 0 or to_idx >= opponent_slots.size():
+		_log("[color=red]ERROR: invalid move %d -> %d[/color]" % [from_idx, to_idx])
+		return
 	var from_slot: FieldSlot = opponent_slots[from_idx]
 	var to_slot: FieldSlot = opponent_slots[to_idx]
+	if not from_slot or not to_slot:
+		return
 	if from_slot.is_empty():
 		return
-	opponent_mana -= MOVE_COST
+	if not to_slot.is_empty():
+		_log("[color=red]ERROR: target slot %d is not empty[/color]" % to_idx)
+		return
+	opponent_mana = maxi(0, opponent_mana - MOVE_COST)
 	var card := from_slot.remove_card()
 	to_slot.place_card(card)
 	_log("相手が %s を移動" % card.card_data.card_name)
@@ -1089,21 +1052,38 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.reset_position()
 	card_ui.set_card_size(175)
 	slot.place_card(card_ui)
+	var ok := await _send_action({"type": "summon", "card_id": card_ui.card_data.id, "slot": slot.slot_index})
+	if not ok:
+		slot.remove_card()
+		player_mana += effective_cost
+		player_hand_container.add_child(card_ui)
+		card_ui.set_card_size(120)
+		card_ui.card_clicked.connect(_on_hand_card_clicked)
+		card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
+		card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
+		player_hand.append(card_ui)
+		_clear_selection()
+		_update_all_ui()
+		return
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, effective_cost])
 	_process_summon_effect(card_ui, true)
 	_clear_selection()
 	_update_all_ui()
-	# Send to Firebase
-	await _send_action({"type": "summon", "card_id": card_ui.card_data.id, "slot": slot.slot_index})
 
 func _move_card_to_slot(from_slot: FieldSlot, to_slot: FieldSlot) -> void:
 	player_mana -= MOVE_COST
 	var card := from_slot.remove_card()
 	to_slot.place_card(card)
+	var ok := await _send_action({"type": "move", "from_slot": from_slot.slot_index, "to_slot": to_slot.slot_index})
+	if not ok:
+		to_slot.remove_card()
+		from_slot.place_card(card)
+		player_mana += MOVE_COST
+		_update_all_ui()
+		return
 	_log("移動: %s (マナ1消費)" % card.card_data.card_name)
 	_clear_selection()
 	_update_all_ui()
-	await _send_action({"type": "move", "from_slot": from_slot.slot_index, "to_slot": to_slot.slot_index})
 
 # ═══════════════════════════════════════════
 # GAME END
@@ -1128,6 +1108,7 @@ func _on_opponent_disconnected() -> void:
 	_log("[color=red]相手が切断しました[/color]")
 	game_over = true
 	GameManager.battle_result = "win"
+	await MultiplayerManager.leave_room()
 	await get_tree().create_timer(2.0).timeout
 	GameManager.change_scene("res://scenes/result/result.tscn")
 
@@ -1181,8 +1162,10 @@ func _on_preview_overlay_input(event: InputEvent) -> void:
 func _on_surrender() -> void:
 	if game_over:
 		return
+	var ok := await _send_action({"type": "surrender"})
+	if not ok:
+		return
 	game_over = true
-	await _send_action({"type": "surrender"})
 	GameManager.battle_result = "lose"
 	_log("[color=red]降参しました。[/color]")
 	await MultiplayerManager.leave_room()

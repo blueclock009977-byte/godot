@@ -416,72 +416,7 @@ func _update_dice_preview() -> void:
 	dice_preview_label.text = text
 
 func _simulate_battle(dice_val: int) -> Array:
-	var p_cards := []
-	var o_cards := []
-	for i in range(6):
-		var ps: FieldSlot = player_slots[i]
-		if ps and not ps.is_empty():
-			p_cards.append({"atk": ps.card_ui.current_atk, "hp": ps.card_ui.current_hp, "lane": ps.lane, "is_front": ps.is_front_row, "dice": ps.card_ui.card_data.attack_dice, "idx": i})
-		var os: FieldSlot = opponent_slots[i]
-		if os and not os.is_empty():
-			o_cards.append({"atk": os.card_ui.current_atk, "hp": os.card_ui.current_hp, "lane": os.lane, "is_front": os.is_front_row, "dice": os.card_ui.card_data.attack_dice, "idx": i})
-
-	var turn_cards: Array
-	var def_cards: Array
-	if is_player_turn:
-		turn_cards = p_cards
-		def_cards = o_cards
-	else:
-		turn_cards = o_cards
-		def_cards = p_cards
-
-	var dmg_to_opp := 0
-	var dmg_to_me := 0
-
-	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in turn_cards:
-		if card["hp"] <= 0:
-			continue
-		var dice_arr: Array = card["dice"]
-		if not dice_arr.has(dice_val):
-			continue
-		var target = _sim_find_target(card, def_cards)
-		if target == null:
-			if is_player_turn:
-				dmg_to_opp += card["atk"]
-			else:
-				dmg_to_me += card["atk"]
-		else:
-			target["hp"] -= card["atk"]
-			if is_player_turn:
-				dmg_to_opp += card["atk"]
-			else:
-				dmg_to_me += card["atk"]
-
-	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in def_cards:
-		if card["hp"] <= 0:
-			continue
-		var dice_arr: Array = card["dice"]
-		if not dice_arr.has(dice_val):
-			continue
-		var target = _sim_find_target(card, turn_cards)
-		if target == null:
-			if is_player_turn:
-				dmg_to_me += card["atk"]
-			else:
-				dmg_to_opp += card["atk"]
-		else:
-			target["hp"] -= card["atk"]
-			if is_player_turn:
-				dmg_to_me += card["atk"]
-			else:
-				dmg_to_opp += card["atk"]
-
-	return [dmg_to_opp, dmg_to_me]
-
-func _sim_find_target(attacker: Dictionary, defenders: Array):
-	return BattleUtils.sim_find_target(attacker, defenders)
+	return BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn)
 
 
 func _update_opponent_hand_display() -> void:
