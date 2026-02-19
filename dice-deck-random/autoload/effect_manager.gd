@@ -257,10 +257,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_001":  # 登場時:敵1体ATK-1
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				target.modify_atk(-1)
-				result["log"] = "[color=cyan]%s の効果: %s のATK-1[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_atk_modifier_effect(is_player, context, -1, result, card_name, "cyan", "のATK-1")
 
 		"blue_004":  # 登場時:敵全体ATK-1
 			var enemies = _get_all_enemies(is_player, context)
@@ -601,10 +598,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_009":  # 死亡時:敵1体ATK-1
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				target.modify_atk(-1)
-				result["log"] = "[color=cyan]%s の効果: %s のATK-1[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_atk_modifier_effect(is_player, context, -1, result, card_name, "cyan", "のATK-1")
 
 		"green_002":  # 死亡時:マナ+1
 			result["mana"] = 1
@@ -638,10 +632,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 				result["log"] = "[color=purple]%s の効果: HP1で復活[/color]" % card_name
 
 		"black_013":  # 死亡時:敵1体ATK-2
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				target.modify_atk(-2)
-				result["log"] = "[color=purple]%s の効果: %s のATK-2[/color]" % [card_name, target.card_data.card_name]
+			_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, "purple", "のATK-2")
 
 		"black_018":  # 死亡時:敵全体HP-3
 			var enemies = _get_all_enemies(is_player, context)
@@ -1020,6 +1011,13 @@ func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount:
 	if not target:
 		return
 	_apply_damage_and_mark_destroy(target, amount, result)
+	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
+
+func _apply_targeted_atk_modifier_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
+	var target = _get_random_enemy(is_player, context)
+	if not target:
+		return
+	target.modify_atk(amount)
 	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:

@@ -1106,6 +1106,17 @@ func test_destroy_mark_helper_is_shared_for_lethal_and_instant_destroy_paths() -
 	assert_ne(script_text.find("_mark_destroy_target(result, enemy)"), -1,
 		"purple_012 instant destroy should delegate target registration to _mark_destroy_target")
 
+func test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_effects() -> void:
+	# 次の段階リファクタ: 単体ATK増減+ログ生成を1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_targeted_atk_modifier_effect"), -1,
+		"effect_manager should define _apply_targeted_atk_modifier_effect")
+	var debuff_call := "_apply_targeted_atk_modifier_effect(is_player, context, -1, result, card_name, \"cyan\", \"のATK-1\")"
+	assert_true(script_text.count(debuff_call) >= 2,
+		"blue_001 and blue_009 should delegate to targeted ATK modifier helper")
+	assert_ne(script_text.find("_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, \"purple\", \"のATK-2\")"), -1,
+		"black_013 should delegate to targeted ATK modifier helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
