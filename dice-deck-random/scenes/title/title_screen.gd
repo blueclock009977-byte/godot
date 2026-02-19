@@ -2,6 +2,7 @@ extends Control
 
 var main_vbox: VBoxContainer
 var name_label: Label
+var deck_label: Label
 
 func _ready() -> void:
 	var bg := ColorRect.new()
@@ -40,6 +41,13 @@ func _ready() -> void:
 	name_label.add_theme_color_override("font_color", Color(0.5, 0.9, 1.0))
 	main_vbox.add_child(name_label)
 	_update_name_display()
+
+	# Deck status display
+	deck_label = Label.new()
+	deck_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	deck_label.add_theme_font_size_override("font_size", 22)
+	main_vbox.add_child(deck_label)
+	_update_deck_display()
 
 	var spacer := Control.new()
 	spacer.custom_minimum_size.y = 10
@@ -84,6 +92,17 @@ func _update_name_display() -> void:
 		name_label.text = "プレイヤー: %s" % GameManager.user_name
 	else:
 		name_label.text = "プレイヤー: ゲスト"
+
+func _update_deck_display() -> void:
+	if GameManager.player_deck.size() == 0:
+		deck_label.text = "デッキ: 未設定"
+		deck_label.add_theme_color_override("font_color", Color(1, 0.4, 0.4))
+	elif GameManager.current_deck_slot >= 0:
+		deck_label.text = "デッキ: スロット %d" % (GameManager.current_deck_slot + 1)
+		deck_label.add_theme_color_override("font_color", Color(0.4, 1, 0.6))
+	else:
+		deck_label.text = "デッキ: 設定済み (%d枚)" % GameManager.player_deck.size()
+		deck_label.add_theme_color_override("font_color", Color(0.4, 1, 0.6))
 
 func _show_login_menu() -> void:
 	var overlay := ColorRect.new()
