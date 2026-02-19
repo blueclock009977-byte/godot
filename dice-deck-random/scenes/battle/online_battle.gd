@@ -642,9 +642,6 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 # PLAYER INPUT
 # ═══════════════════════════════════════════
-func _is_my_input_allowed() -> bool:
-	return is_player_turn and not is_animating and not game_over
-
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if not _is_my_input_allowed():
 		return

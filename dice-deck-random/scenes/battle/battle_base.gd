@@ -91,6 +91,12 @@ func _clear_selection() -> void:
 	_update_hand_highlights()
 
 # ═══════════════════════════════════════════
+# INPUT ALLOWED
+# ═══════════════════════════════════════════
+func _is_my_input_allowed() -> bool:
+	return is_player_turn and not is_animating and not game_over
+
+# ═══════════════════════════════════════════
 # HAND/DICE PREVIEW
 # ═══════════════════════════════════════════
 func _update_hand_highlights() -> void:

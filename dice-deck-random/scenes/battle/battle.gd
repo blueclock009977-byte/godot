@@ -474,7 +474,7 @@ func _opponent_draw_card() -> void:
 # PLAYER INPUT
 # ═══════════════════════════════════════════
 func _on_hand_card_clicked(card_ui: CardUI) -> void:
-	if not is_player_turn or is_animating or game_over:
+	if not _is_my_input_allowed():
 		return
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		return
@@ -502,7 +502,7 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 			slot.set_highlighted(true)
 
 func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
-	if not is_player_turn or is_animating or game_over:
+	if not _is_my_input_allowed():
 		card_ui.reset_position()
 		return
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
@@ -522,7 +522,7 @@ func _on_hand_card_drag_ended(card_ui: CardUI, drop_pos: Vector2) -> void:
 	card_ui.reset_position()
 
 func _on_player_slot_clicked(slot: FieldSlot) -> void:
-	if not is_player_turn or is_animating or game_over:
+	if not _is_my_input_allowed():
 		return
 	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
 		return
