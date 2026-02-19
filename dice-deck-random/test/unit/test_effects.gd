@@ -803,6 +803,11 @@ func test_process_timing_event_missing_required_payload_is_safe() -> void:
 	})
 	assert_eq(turn_end_result, [], "TURN_END without context should safely return empty results")
 
+func test_process_summon_effect_with_missing_slot_context_is_safe() -> void:
+	var summon_card = _create_mock_card_ui("red_001")
+	var result := EffectManager.process_summon_effect(summon_card, true, {})
+	assert_eq(result, {}, "Targeted summon effects should safely no-op when slot arrays are missing from context")
+
 func test_smoke_effects_trigger_on_each_timing() -> void:
 	# ON_SUMMON
 	var summon_card = _create_mock_card_ui("green_001")

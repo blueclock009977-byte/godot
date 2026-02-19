@@ -1061,11 +1061,11 @@ func _get_effect_card_from_slot(slot):
 	return card_ui
 
 func _collect_targets(is_player: bool, context: Dictionary, for_enemy: bool) -> Array:
-	var slots: Array
+	var slots: Array = []
 	if for_enemy:
-		slots = context["opponent_slots"] if is_player else context["player_slots"]
+		slots = context.get("opponent_slots", []) if is_player else context.get("player_slots", [])
 	else:
-		slots = context["player_slots"] if is_player else context["opponent_slots"]
+		slots = context.get("player_slots", []) if is_player else context.get("opponent_slots", [])
 
 	var targets := []
 	for slot in slots:
