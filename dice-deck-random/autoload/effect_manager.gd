@@ -416,10 +416,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = "[color=green]%s の効果: マナ+2, 自身HP+2[/color]" % card_name
 
 		"green_017":  # 登場時:味方全体HP+2
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(2)
-			result["log"] = "[color=green]%s の効果: 味方全体HP+2[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, "green", "味方全体HP+2")
 
 		"black_001":  # 登場時:自分HP-1
 			_apply_self_damage_effect(result, card_name, 1)
@@ -474,10 +471,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_draw_effect(result, "yellow", card_name, 2)
 
 		"yellow_006":  # 登場時:味方全体HP+1
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(1)
-			result["log"] = "[color=yellow]%s の効果: 味方全体HP+1[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, "yellow", "味方全体HP+1")
 
 		"yellow_009":  # 登場時:味方1体ATK+2
 			var target = _get_random_ally(is_player, context)
@@ -532,10 +526,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_player_heal_effect(result, "white", card_name, 2)
 
 		"white_004":  # 登場時:味方全体HP+2
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(2)
-			result["log"] = "[color=white]%s の効果: 味方全体HP+2[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, "white", "味方全体HP+2")
 
 		"white_006":  # 登場時:墓地から1体復活
 			result["revive_from_graveyard"] = 1
@@ -656,10 +647,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		# 白カード攻撃時効果
 		# ═══════════════════════════════════════════
 		"white_008":  # 攻撃時:味方全体HP+1
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(1)
-			result["log"] = "[color=white]%s の効果: 味方全体HP+1[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, "white", "味方全体HP+1")
 
 ## 死亡時効果を処理
 func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
@@ -738,10 +726,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 		# 黄カード死亡時効果
 		# ═══════════════════════════════════════════
 		"yellow_011":  # 死亡時:味方全体HP+2
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(2)
-			result["log"] = "[color=yellow]%s の効果: 味方全体HP+2[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, "yellow", "味方全体HP+2")
 
 		# ═══════════════════════════════════════════
 		# 紫カード死亡時効果
@@ -857,10 +842,7 @@ func _build_turn_end_effect_result(effect_id: String, card_ui, is_player: bool, 
 	var result := {}
 	match effect_id:
 		"green_016":  # ターン終了時:味方全体HP+1
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.heal(1)
-			result["log"] = "[color=green]%s の効果: 味方全体HP+1[/color]" % card_name
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, "green", "味方全体HP+1")
 
 		# 黄カードターン終了時効果
 		"yellow_010":  # ターン終了時:マナ+1
@@ -1158,6 +1140,13 @@ func _apply_aoe_damage_effect(targets: Array, amount: int, result: Dictionary, c
 	_apply_damage_to_targets_and_mark_destroy(targets, amount, result)
 	if targets.size() > 0:
 		result["log"] = _make_effect_log(color, card_name, message)
+
+func _apply_aoe_heal_effect(targets: Array, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	if amount <= 0:
+		return
+	for target in targets:
+		target.heal(amount)
+	result["log"] = _make_effect_log(color, card_name, message)
 
 func _get_slots_by_owner(is_player: bool, context: Dictionary) -> Array:
 	if is_player:

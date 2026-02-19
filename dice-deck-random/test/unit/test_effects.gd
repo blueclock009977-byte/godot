@@ -1440,6 +1440,24 @@ func test_random_ally_heal_helper_is_shared_for_green_011_yellow_001_015() -> vo
 	assert_true(script_text.count("_apply_random_ally_heal_effect(is_player, context, 2, result, \"yellow\", card_name)") >= 2,
 		"yellow_001 and yellow_015 should delegate to random-ally-heal helper")
 
+func test_aoe_heal_helper_is_shared_for_team_heal_effects() -> void:
+	# 次の段階リファクタ: 味方全体回復+ログ生成を共通ヘルパーへ統一して実装漏れを防ぐ
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_aoe_heal_effect"), -1,
+		"effect_manager should define _apply_aoe_heal_effect helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, \"green\", \"味方全体HP+2\")"), -1,
+		"green_017 should delegate to AOE heal helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, \"yellow\", \"味方全体HP+1\")"), -1,
+		"yellow_006 should delegate to AOE heal helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, \"yellow\", \"味方全体HP+2\")"), -1,
+		"yellow_011 should delegate to AOE heal helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, \"white\", \"味方全体HP+2\")"), -1,
+		"white_004 should delegate to AOE heal helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, \"white\", \"味方全体HP+1\")"), -1,
+		"white_008 should delegate to AOE heal helper")
+	assert_ne(script_text.find("_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, \"green\", \"味方全体HP+1\")"), -1,
+		"green_016 should delegate to AOE heal helper")
+
 func test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context() -> void:
 	# 次の段階リファクタ: process_timing_event の payload値解決を小ヘルパーで共通化
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
