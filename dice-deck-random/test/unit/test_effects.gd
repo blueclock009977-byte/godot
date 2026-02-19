@@ -1133,6 +1133,16 @@ func test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_ef
 	assert_ne(script_text.find("_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, \"purple\", \"のATK-2\")"), -1,
 		"black_013 should delegate to targeted ATK modifier helper")
 
+func test_turn_start_self_heal_helper_is_shared_for_blue_010_and_green_003() -> void:
+	# 次の段階リファクタ: ターン開始時の自身回復+ログ生成を1ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_self_heal_effect"), -1,
+		"effect_manager should define _apply_self_heal_effect")
+	assert_ne(script_text.find("_apply_self_heal_effect(card_ui, result, \"cyan\", card_name, 1)"), -1,
+		"blue_010 should delegate to self-heal helper")
+	assert_ne(script_text.find("_apply_self_heal_effect(card_ui, result, \"green\", card_name, 1)"), -1,
+		"green_003 should delegate to self-heal helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

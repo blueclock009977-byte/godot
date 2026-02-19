@@ -741,12 +741,10 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 	var result := {}
 	match effect_id:
 		"blue_010":  # ターン開始時:自身HP+1
-			card_ui.heal(1)
-			result["log"] = "[color=cyan]%s の効果: 自身HP+1[/color]" % card_name
+			_apply_self_heal_effect(card_ui, result, "cyan", card_name, 1)
 
 		"green_003":  # ターン開始時:自身HP+1
-			card_ui.heal(1)
-			result["log"] = "[color=green]%s の効果: 自身HP+1[/color]" % card_name
+			_apply_self_heal_effect(card_ui, result, "green", card_name, 1)
 
 		"green_009":  # ターン開始時:マナ+1
 			result["mana"] = 1
@@ -999,6 +997,12 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
 	result["self_damage"] = amount
 	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
+
+func _apply_self_heal_effect(card_ui, result: Dictionary, color: String, card_name: String, amount: int) -> void:
+	if not card_ui or amount <= 0:
+		return
+	card_ui.heal(amount)
+	result["log"] = _make_effect_log(color, card_name, "自身HP+%d" % amount)
 
 func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)
