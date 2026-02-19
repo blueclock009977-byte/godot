@@ -279,6 +279,88 @@ func _generate_card_pool() -> void:
 	for d in white_defs:
 		_add_card(d[0], d[1], d[2], d[3], d[4], d[5], CardData.ColorType.WHITE, d[6])
 
+func _score_card(card: CardData) -> int:
+	var faces := card.attack_dice.size()
+	var synergy := (card.atk * faces) / 3
+	return 4 * card.hp + 3 * card.atk + 3 * faces + int(synergy)
+
+func _get_effect_budget_modifier(effect_id: String) -> int:
+	# 効果が強いほどマイナス（ステータス予算を消費）
+	# デメリット効果はプラス（ステータス予算を追加）
+	if effect_id == "":
+		return 0
+
+	var mod := -2  # 基本は中程度の効果コスト
+
+	# デメリット系（主に黒）
+	match effect_id:
+		"black_001": return 1
+		"black_003": return 2
+		"black_005": return 3
+		"black_008": return 5
+		"black_017": return 4
+		"black_014": return 0  # 自傷+ドローで相殺気味
+		"red_009": return 1  # 自爆デメリットを少し還元
+
+	# 強力な効果
+	if effect_id in [
+		"blue_007", "blue_018", "green_013", "green_017",
+		"black_018", "black_019",
+		"red_008", "red_015", "red_016",
+		"yellow_003", "yellow_005", "yellow_012", "yellow_013",
+		"purple_004", "purple_006", "purple_009", "purple_012",
+		"white_007", "white_011", "white_015"
+	]:
+		mod = -4
+	elif effect_id in [
+		"blue_004", "blue_006", "blue_008", "blue_014", "blue_016", "blue_017",
+		"green_004", "green_006", "green_008", "green_009", "green_015", "green_016",
+		"black_006", "black_007", "black_009", "black_010", "black_011", "black_016",
+		"red_003", "red_006", "red_011", "red_014",
+		"yellow_010", "yellow_011", "yellow_014", "yellow_015",
+		"purple_007", "purple_008", "purple_010", "purple_011", "purple_014",
+		"white_004", "white_005", "white_006", "white_009", "white_010", "white_014"
+	]:
+		mod = -3
+	elif effect_id in [
+		"blue_001", "blue_002", "blue_003", "blue_005", "blue_009", "blue_010", "blue_011", "blue_012", "blue_013", "blue_015",
+		"green_001", "green_002", "green_003", "green_005", "green_007", "green_010", "green_011", "green_012", "green_014",
+		"black_002", "black_004", "black_012", "black_013", "black_015",
+		"red_001", "red_002", "red_004", "red_005", "red_007", "red_010", "red_012", "red_013",
+		"yellow_001", "yellow_002", "yellow_004", "yellow_006", "yellow_007", "yellow_008", "yellow_009",
+		"purple_001", "purple_002", "purple_003", "purple_005", "purple_013",
+		"white_001", "white_002", "white_003", "white_008", "white_012", "white_013"
+	]:
+		mod = -1
+
+	return mod
+
+func _balance_effect_card_stats(card: CardData) -> void:
+	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
+		return
+
+	var budget := 12 + 10 * card.mana_cost + _get_effect_budget_modifier(card.effect_id)
+	var score := _score_card(card)
+	var delta := budget - score
+
+	# まずHPで調整（4pt刻み）
+	if delta != 0:
+		var hp_step := int(ceili(abs(delta) / 4.0))
+		if delta > 0:
+			card.hp += hp_step
+		else:
+			card.hp = maxi(1, card.hp - hp_step)
+
+	# 次にATKで微調整（3pt刻み）
+	score = _score_card(card)
+	delta = budget - score
+	if abs(delta) > 1:
+		var atk_step := int(ceili(abs(delta) / 3.0))
+		if delta > 0:
+			card.atk += atk_step
+		else:
+			card.atk = maxi(0, card.atk - atk_step)
+
 func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_arr: Array, color_type: CardData.ColorType, effect_id: String) -> void:
 	var card := CardData.new()
 	card.id = id
@@ -292,6 +374,7 @@ func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_ar
 	card.color_type = color_type
 	card.color = color_by_type.get(color_type, Color.WHITE)
 	card.effect_id = effect_id
+	_balance_effect_card_stats(card)
 	card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][id % 10]
 	card_pool.append(card)
 
