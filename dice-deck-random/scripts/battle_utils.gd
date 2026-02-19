@@ -74,3 +74,10 @@ static func sim_find_target(attacker: Dictionary, defenders: Array):
 		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
 			return d
 	return null
+
+## Check if any slot in the array is empty
+static func has_empty_slot(slots: Array) -> bool:
+	for slot in slots:
+		if slot and slot.is_empty():
+			return true
+	return false

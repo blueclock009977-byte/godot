@@ -503,19 +503,13 @@ func _update_hand_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
 	for card_ui in player_hand:
 		if card_ui is CardUI:
-			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and _has_empty_player_slot()
+			var can_summon: bool = in_main_phase and is_player_turn and not is_animating and _get_effective_summon_cost(card_ui) <= player_mana and BattleUtils.has_empty_slot(player_slots)
 			card_ui.set_summonable(can_summon)
 	# Field cards: glow if movable (in main phase, has mana, has empty slot)
-	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and _has_empty_player_slot()
+	var can_move: bool = in_main_phase and is_player_turn and not is_animating and player_mana >= MOVE_COST and BattleUtils.has_empty_slot(player_slots)
 	for slot in player_slots:
 		if slot and not slot.is_empty():
 			slot.card_ui.set_movable(can_move)
-
-func _has_empty_player_slot() -> bool:
-	for slot in player_slots:
-		if slot and slot.is_empty():
-			return true
-	return false
 
 func _log(text: String) -> void:
 	log_label.append_text(text + "\n")
@@ -881,7 +875,7 @@ func _on_hand_card_clicked(card_ui: CardUI) -> void:
 	if _get_effective_summon_cost(card_ui) > player_mana:
 		_log("マナが足りない！")
 		return
-	if not _has_empty_player_slot():
+	if not BattleUtils.has_empty_slot(player_slots):
 		_log("空きスロットがない！")
 		return
 
