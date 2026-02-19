@@ -1645,6 +1645,16 @@ func test_defense_final_damage_log_helper_is_shared_for_damage_reduction_effects
 	assert_ne(script_text.find("_apply_final_damage_with_log(result, 0, \"white\", card_name, \"ダメージ無効\")"), -1,
 		"white_005 should delegate final damage update to shared helper")
 
+func test_disable_dice_effect_helper_is_shared_for_summon_and_attack() -> void:
+	# 次の小さなリファクタ候補: ダイス無効化効果の結果生成とログを共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_disable_dice_effect"), -1,
+		"effect_manager should define _apply_disable_dice_effect helper")
+	assert_ne(script_text.find("_apply_disable_dice_effect(result, \"magenta\", card_name, 1, \"敵1体のダイス1つ無効\")"), -1,
+		"purple_001 should delegate disable-dice result generation to shared helper")
+	assert_ne(script_text.find("_apply_disable_dice_effect(result, \"magenta\", card_name, 2, \"%s のダイス2つ無効\" % defender_ui.card_data.card_name)"), -1,
+		"purple_007 should delegate disable-dice result generation to shared helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

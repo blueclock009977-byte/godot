@@ -482,8 +482,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		# 紫カード登場時効果
 		# ═══════════════════════════════════════════
 		"purple_001":  # 登場時:敵1体のダイス1つ無効化
-			result["disable_dice"] = 1
-			result["log"] = "[color=magenta]%s の効果: 敵1体のダイス1つ無効[/color]" % card_name
+			_apply_disable_dice_effect(result, "magenta", card_name, 1, "敵1体のダイス1つ無効")
 
 		"purple_003":  # 登場時:相手の手札1枚破棄
 			result["discard_opponent"] = 1
@@ -625,8 +624,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"purple_007":  # 攻撃時:対象のダイス2つ無効化
 			if defender_ui:
-				result["disable_dice"] = 2
-				result["log"] = "[color=magenta]%s の効果: %s のダイス2つ無効[/color]" % [card_name, defender_ui.card_data.card_name]
+				_apply_disable_dice_effect(result, "magenta", card_name, 2, "%s のダイス2つ無効" % defender_ui.card_data.card_name)
 
 		"purple_013":  # 攻撃時:対象と自身入れ替え
 			if defender_ui:
@@ -1087,6 +1085,12 @@ func _apply_draw_effect(result: Dictionary, color: String, card_name: String, am
 		return
 	result["draw"] = amount
 	result["log"] = _make_effect_log(color, card_name, "%d枚ドロー" % amount)
+
+func _apply_disable_dice_effect(result: Dictionary, color: String, card_name: String, amount: int, message: String) -> void:
+	if amount <= 0:
+		return
+	result["disable_dice"] = amount
+	result["log"] = _make_effect_log(color, card_name, message)
 
 func _apply_random_ally_heal_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, color: String, card_name: String) -> void:
 	if amount <= 0:
