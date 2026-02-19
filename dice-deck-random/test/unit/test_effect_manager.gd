@@ -66,19 +66,19 @@ func test_white_effects_registered() -> void:
 # ═══════════════════════════════════════════
 
 func test_get_effect_description_blue_001() -> void:
-	var desc := effect_manager.get_effect_description("blue_001")
+	var desc: String = effect_manager.get_effect_description("blue_001")
 	assert_eq(desc, "登場時:敵1体ATK-1")
 
 func test_get_effect_description_green_001() -> void:
-	var desc := effect_manager.get_effect_description("green_001")
+	var desc: String = effect_manager.get_effect_description("green_001")
 	assert_eq(desc, "登場時:マナ+1")
 
 func test_get_effect_description_black_004() -> void:
-	var desc := effect_manager.get_effect_description("black_004")
+	var desc: String = effect_manager.get_effect_description("black_004")
 	assert_eq(desc, "攻撃時:対象に毒(毎ターンHP-1)")
 
 func test_get_effect_description_invalid() -> void:
-	var desc := effect_manager.get_effect_description("invalid_effect")
+	var desc: String = effect_manager.get_effect_description("invalid_effect")
 	assert_eq(desc, "", "Invalid effect should return empty string")
 
 # ═══════════════════════════════════════════
@@ -86,31 +86,31 @@ func test_get_effect_description_invalid() -> void:
 # ═══════════════════════════════════════════
 
 func test_get_effect_timing_on_summon() -> void:
-	var timing := effect_manager.get_effect_timing("blue_001")
+	var timing: int = effect_manager.get_effect_timing("blue_001")
 	assert_eq(timing, EffectManager.Timing.ON_SUMMON)
 
 func test_get_effect_timing_on_attack() -> void:
-	var timing := effect_manager.get_effect_timing("blue_003")
+	var timing: int = effect_manager.get_effect_timing("blue_003")
 	assert_eq(timing, EffectManager.Timing.ON_ATTACK)
 
 func test_get_effect_timing_on_death() -> void:
-	var timing := effect_manager.get_effect_timing("black_002")
+	var timing: int = effect_manager.get_effect_timing("black_002")
 	assert_eq(timing, EffectManager.Timing.ON_DEATH)
 
 func test_get_effect_timing_on_defense() -> void:
-	var timing := effect_manager.get_effect_timing("blue_006")
+	var timing: int = effect_manager.get_effect_timing("blue_006")
 	assert_eq(timing, EffectManager.Timing.ON_DEFENSE)
 
 func test_get_effect_timing_constant() -> void:
-	var timing := effect_manager.get_effect_timing("blue_002")
+	var timing: int = effect_manager.get_effect_timing("blue_002")
 	assert_eq(timing, EffectManager.Timing.CONSTANT)
 
 func test_get_effect_timing_turn_start() -> void:
-	var timing := effect_manager.get_effect_timing("blue_010")
+	var timing: int = effect_manager.get_effect_timing("blue_010")
 	assert_eq(timing, EffectManager.Timing.TURN_START)
 
 func test_get_effect_timing_turn_end() -> void:
-	var timing := effect_manager.get_effect_timing("green_016")
+	var timing: int = effect_manager.get_effect_timing("green_016")
 	assert_eq(timing, EffectManager.Timing.TURN_END)
 
 # ═══════════════════════════════════════════
@@ -135,7 +135,7 @@ func test_get_summon_cost_modifier_no_effects() -> void:
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	var modifier := effect_manager.get_summon_cost_modifier(true, context)
+	var modifier: int = effect_manager.get_summon_cost_modifier(true, context)
 	assert_eq(modifier, 0, "No effects should return 0 modifier")
 
 # ═══════════════════════════════════════════
@@ -147,7 +147,7 @@ func test_get_dice_modifier_no_effects() -> void:
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	var result := effect_manager.get_dice_modifier(true, context)
+	var result: Dictionary = effect_manager.get_dice_modifier(true, context)
 	assert_eq(result["bonus"], 0, "No effects should return 0 bonus")
 	assert_eq(result["extra_dice"].size(), 0, "No effects should return empty extra_dice")
 	assert_eq(result["blocked_dice"].size(), 0, "No effects should return empty blocked_dice")

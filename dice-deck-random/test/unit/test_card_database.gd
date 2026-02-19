@@ -53,3 +53,46 @@ func test_get_card_by_invalid_id():
 func test_build_random_deck():
 	var deck := CardDatabase.build_random_deck()
 	assert_eq(deck.size(), 20, "Random deck should have 20 cards")
+
+func test_each_color_has_20_cards():
+	# 各色のカード枚数をカウント
+	var color_counts := {}
+	for color in CardData.ColorType.values():
+		color_counts[color] = 0
+	for card in CardDatabase.card_pool:
+		color_counts[card.color_type] += 1
+	# 各色20枚であることを確認
+	for color in CardData.ColorType.values():
+		var color_name: String = CardData.ColorType.keys()[color]
+		assert_eq(color_counts[color], 20, "%s should have 20 cards" % color_name)
+
+func test_card_ids_are_sequential():
+	# カードIDが0-159の連続した値であることを確認
+	var ids := []
+	for card in CardDatabase.card_pool:
+		ids.append(card.id)
+	ids.sort()
+	for i in range(160):
+		assert_true(ids.has(i), "Card ID %d should exist" % i)
+
+func test_effect_cards_have_valid_effect_id():
+	# 効果カード（非グレー）はeffect_idを持つべき
+	for card in CardDatabase.card_pool:
+		if card.color_type == CardData.ColorType.GRAY:
+			assert_eq(card.effect_id, "", "%s (vanilla) should have empty effect_id" % card.card_name)
+		else:
+			assert_ne(card.effect_id, "", "%s (effect card) should have effect_id" % card.card_name)
+
+func test_duplicate_card_creates_copy():
+	var original := CardDatabase.get_card_by_id(0)
+	var copy := original.duplicate_card()
+	# 同じ値を持つ
+	assert_eq(copy.id, original.id)
+	assert_eq(copy.card_name, original.card_name)
+	assert_eq(copy.atk, original.atk)
+	assert_eq(copy.hp, original.hp)
+	# 別インスタンス
+	assert_ne(copy, original, "duplicate should create new instance")
+	# 変更しても元に影響しない
+	copy.hp = 999
+	assert_ne(original.hp, 999, "modifying copy should not affect original")
