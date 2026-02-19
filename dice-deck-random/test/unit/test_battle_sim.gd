@@ -130,3 +130,67 @@ func test_opponent_turn():
 	# Player attacks back: hits opponent card for 2
 	assert_eq(result[0], 2, "Player deals 2 to opponent card")
 	assert_eq(result[1], 3, "Opponent deals 3 to player card")
+
+func test_back_row_only_same_lane():
+	# Player has back row card in lane 1, opponent has front in lane 1
+	# Back row should attack front row in same lane
+	var p := [_make_card(4, 3, 1, false, [2])]  # back row, lane 1
+	var o := [_make_card(2, 5, 1, true, [2])]   # front row, lane 1
+	var result := _simulate(2, p.duplicate(true), o.duplicate(true), true)
+	# Player back attacks opponent front: 4 dmg
+	# Opponent front attacks player back: 2 dmg
+	assert_eq(result[0], 4, "Player back row attacks opponent front")
+	assert_eq(result[1], 2, "Opponent front attacks player back")
+
+func test_back_row_direct_hp_no_defender():
+	# Player has back row only, no opponent in that lane
+	var p := [_make_card(3, 4, 2, false, [4])]  # back row, lane 2
+	var result := _simulate(4, p.duplicate(true), [], true)
+	assert_eq(result[0], 3, "Back row deals direct HP damage when lane empty")
+	assert_eq(result[1], 0, "No damage to player")
+
+func test_multiple_lanes_battle():
+	# Multiple lanes active simultaneously
+	var p := [
+		_make_card(2, 3, 0, true, [1]),  # lane 0 front
+		_make_card(3, 4, 2, true, [1]),  # lane 2 front
+	]
+	var o := [
+		_make_card(1, 5, 0, true, [1]),  # lane 0 front
+		_make_card(2, 3, 1, true, [1]),  # lane 1 front (no opponent)
+	]
+	var result := _simulate(1, p.duplicate(true), o.duplicate(true), true)
+	# Player lane 0 attacks opponent lane 0: 2 dmg
+	# Player lane 2 attacks direct HP: 3 dmg
+	# Opponent lane 0 attacks player lane 0: 1 dmg
+	# Opponent lane 1 attacks direct HP: 2 dmg
+	assert_eq(result[0], 5, "Player deals 2+3=5 total")
+	assert_eq(result[1], 3, "Opponent deals 1+2=3 total")
+
+func test_selective_dice_activation():
+	# Some cards activate on certain dice, others don't
+	var p := [
+		_make_card(5, 3, 0, true, [1, 2]),  # activates on 1,2
+		_make_card(4, 3, 1, true, [3, 4]),  # activates on 3,4
+	]
+	var result := _simulate(2, p.duplicate(true), [], true)
+	# Only first card activates (dice 2)
+	assert_eq(result[0], 5, "Only card with dice 2 attacks")
+	assert_eq(result[1], 0, "No damage to player")
+
+func test_dead_card_no_counterattack():
+	# If a card dies from the first attack, it shouldn't counterattack
+	var p := [_make_card(10, 5, 0, true, [1])]  # very high ATK
+	var o := [_make_card(3, 2, 0, true, [1])]   # low HP, will die
+	var result := _simulate(1, p.duplicate(true), o.duplicate(true), true)
+	# Player kills opponent card (10 dmg to 2 hp)
+	# Dead card doesn't counterattack
+	assert_eq(result[0], 10, "Player overkills opponent card")
+	assert_eq(result[1], 0, "Dead card doesn't counterattack")
+
+func test_all_six_dice_values():
+	# Test card with all dice values [1,2,3,4,5,6]
+	var p := [_make_card(2, 5, 0, true, [1, 2, 3, 4, 5, 6])]
+	for dice_val in range(1, 7):
+		var result := _simulate(dice_val, p.duplicate(true), [], true)
+		assert_eq(result[0], 2, "Card attacks on dice %d" % dice_val)
