@@ -938,9 +938,7 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 # PLAYER INPUT
 # ═══════════════════════════════════════════
-## 入力が許可されているかチェック（BattleBaseと共通化のため同名に統一）
-func _is_input_allowed() -> bool:
-	return is_player_turn and not is_animating and not game_over
+# _is_input_allowed() は BattleBase で共通実装済み
 
 func _clear_selection() -> void:
 	if selected_hand_card:
