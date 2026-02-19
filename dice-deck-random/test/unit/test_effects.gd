@@ -1588,6 +1588,12 @@ func test_death_mana_gain_effects_use_shared_mana_helper() -> void:
 	assert_ne(script_text.find("_apply_mana_gain_effect(result, \"green\", card_name, 2)"), -1,
 		"green_005 should delegate mana gain to _apply_mana_gain_effect helper")
 
+func test_attack_mana_gain_effect_uses_shared_mana_helper() -> void:
+	# 次の小さなリファクタ候補: 攻撃時のマナ獲得も共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("\"green_010\":  # 攻撃時:マナ+1\n\t\t\t_apply_mana_gain_effect(result, \"green\", card_name, 1)"), -1,
+		"green_010 should delegate mana gain to _apply_mana_gain_effect helper")
+
 func test_summon_yellow_013_uses_shared_aoe_atk_heal_helper() -> void:
 	# 次の小さなリファクタ候補: 味方全体ATK+HP付与を共通helperへ統一
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

@@ -572,8 +572,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 				result["log"] = "[color=cyan]%s の効果: %s を即破壊[/color]" % [card_name, defender_ui.card_data.card_name]
 
 		"green_010":  # 攻撃時:マナ+1
-			result["mana"] = 1
-			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			_apply_mana_gain_effect(result, "green", card_name, 1)
 
 		"black_004":  # 攻撃時:対象に毒
 			_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, "purple", card_name, "に毒付与")
