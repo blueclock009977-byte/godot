@@ -16,7 +16,7 @@ func _ready() -> void:
 func _update_all_ui() -> void:
 	player_hp_label.text = "HP 自分: %d" % player_hp
 	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
-	
+
 	# Turn indicator
 	if is_player_turn:
 		var go_text := "先行" if is_player_first else "後攻"
@@ -25,7 +25,7 @@ func _update_all_ui() -> void:
 	else:
 		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
 		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-	
+
 	_update_opponent_hand_display()
 	_update_field_card_highlights()
 	_update_base_ui()
