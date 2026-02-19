@@ -262,6 +262,7 @@ func _ai_summon_phase() -> void:
 			best_slot.place_card(card_ui)
 			card_ui.setup(card_data)
 			_log("相手が %s を召喚" % card_data.card_name)
+			_process_summon_effect(card_ui, false)
 			_update_all_ui()
 			await get_tree().create_timer(0.4).timeout
 

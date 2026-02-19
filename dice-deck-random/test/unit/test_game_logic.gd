@@ -184,3 +184,10 @@ func test_back_to_front_mapping():
 	assert_eq(3 - 3, 0, "Back slot 3 → front slot 0")
 	assert_eq(4 - 3, 1, "Back slot 4 → front slot 1")
 	assert_eq(5 - 3, 2, "Back slot 5 → front slot 2")
+
+func test_ai_summon_calls_summon_effect_processing() -> void:
+	# 回帰テスト: ローカルAI召喚で登場時効果が漏れないこと
+	var script_path := "res://scenes/battle/battle.gd"
+	var script_text := FileAccess.get_file_as_string(script_path)
+	assert_ne(script_text.find("_process_summon_effect(card_ui, false)"), -1,
+		"AI summon path should call _process_summon_effect(card_ui, false)")
