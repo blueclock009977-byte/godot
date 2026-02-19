@@ -642,38 +642,6 @@ func _opponent_draw_card() -> void:
 # ═══════════════════════════════════════════
 # PLAYER INPUT
 # ═══════════════════════════════════════════
-func _on_player_slot_clicked(slot: FieldSlot) -> void:
-	if not _is_my_input_allowed():
-		return
-	if current_phase != Phase.MAIN1 and current_phase != Phase.MAIN2:
-		return
-	if select_mode == SelectMode.SUMMON_SELECT_SLOT:
-		if slot.is_empty() and selected_hand_card:
-			_summon_card_to_slot(selected_hand_card, slot)
-		return
-	if select_mode == SelectMode.MOVE_SELECT_SLOT:
-		if slot.is_empty() and selected_field_slot:
-			_move_card_to_slot(selected_field_slot, slot)
-		else:
-			_clear_selection()
-		return
-	if not slot.is_empty():
-		if player_mana >= MOVE_COST:
-			_clear_selection()
-			selected_field_card = slot.card_ui
-			selected_field_slot = slot
-			slot.card_ui.set_selected(true)
-			slot.card_ui.set_movable(true)
-			select_mode = SelectMode.MOVE_SELECT_SLOT
-			for s in player_slots:
-				if s and s.is_empty():
-					s.set_highlighted(true)
-		else:
-			_clear_selection()
-
-func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
-	pass
-
 func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	var effective_cost := _get_effective_summon_cost(card_ui)
 	player_mana -= effective_cost
