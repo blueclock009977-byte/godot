@@ -1506,6 +1506,14 @@ func test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects() -
 	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, \"purple\", card_name, \"に毒付与\")"), -1,
 		"black_004 should delegate status application to shared helper")
 
+func test_attack_direct_damage_logs_use_make_effect_log_helper() -> void:
+	# 次のリファクタ候補: ON_ATTACKの直接ダメージ系ログも共通ログhelperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("_make_effect_log(\"cyan\", card_name, \"相手HPに追加1ダメージ\")"), -1,
+		"blue_012 should build log via _make_effect_log helper")
+	assert_ne(script_text.find("_make_effect_log(\"red\", card_name, \"相手HP-1\")"), -1,
+		"red_013 should build log via _make_effect_log helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

@@ -584,7 +584,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"blue_012":  # 攻撃時:追加で相手HP-1
 			result["direct_damage"] = 1
-			result["log"] = "[color=cyan]%s の効果: 相手HPに追加1ダメージ[/color]" % card_name
+			result["log"] = _make_effect_log("cyan", card_name, "相手HPに追加1ダメージ")
 
 		"blue_017":  # 攻撃時:HP5以下の対象を即破壊
 			if defender_ui and defender_ui.current_hp <= 5:
@@ -631,7 +631,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"red_013":  # 攻撃時:相手HP直接-1
 			result["direct_damage"] = 1
-			result["log"] = "[color=red]%s の効果: 相手HP-1[/color]" % card_name
+			result["log"] = _make_effect_log("red", card_name, "相手HP-1")
 
 		# ═══════════════════════════════════════════
 		# 黄カード攻撃時効果
