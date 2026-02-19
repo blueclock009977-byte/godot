@@ -20,7 +20,7 @@ enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
 enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
 
 # ─── Phase Names ───
-static func get_phase_name(phase: Phase) -> String:
+static func get_phase_name(phase: int) -> String:
 	match phase:
 		Phase.MAIN1: return "メイン1"
 		Phase.DICE: return "ダイス"

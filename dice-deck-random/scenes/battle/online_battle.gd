@@ -822,8 +822,8 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			if attacker_is_player:
 				_log("[color=lime]%s → 相手HPに%dダメージ！[/color]" % [atk_name, damage])
 				await BattleUtils.animate_attack(self, card_ui, opponent_hp_label)
-				_spawn_damage_popup(opponent_hp_label.global_position + Vector2(50, 0), damage)
-				_shake_node(opponent_hp_label)
+				BattleUtils.spawn_damage_popup(self, opponent_hp_label.global_position + Vector2(50, 0), damage)
+				BattleUtils.shake_node(self, opponent_hp_label)
 				opponent_hp -= damage
 				if opponent_hp <= 0:
 					_game_end(true)
@@ -831,8 +831,8 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			else:
 				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
 				await BattleUtils.animate_attack(self, card_ui, player_hp_label)
-				_spawn_damage_popup(player_hp_label.global_position + Vector2(50, 0), damage)
-				_shake_node(player_hp_label)
+				BattleUtils.spawn_damage_popup(self, player_hp_label.global_position + Vector2(50, 0), damage)
+				BattleUtils.shake_node(self, player_hp_label)
 				player_hp -= damage
 				if player_hp <= 0:
 					_game_end(false)
@@ -842,7 +842,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
 			await BattleUtils.animate_attack(self, card_ui, def_card)
 			def_card.play_damage_flash()
-			_spawn_damage_popup(def_card.global_position + Vector2(40, 0), damage)
+			BattleUtils.spawn_damage_popup(self, def_card.global_position + Vector2(40, 0), damage)
 			# 防御時効果
 			var final_damage := _process_defense_effect(def_card, damage, not attacker_is_player)
 			var remaining := def_card.take_damage(final_damage)
@@ -877,12 +877,6 @@ func _animate_dice_roll_to(target: int) -> int:
 	dice_label.add_theme_font_size_override("font_size", 36)
 	await get_tree().create_timer(0.3).timeout
 	return target
-
-func _shake_node(node: Control) -> void:
-	BattleUtils.shake_node(self, node)
-
-func _spawn_damage_popup(pos: Vector2, amount: int) -> void:
-	BattleUtils.spawn_damage_popup(self, pos, amount)
 
 # ═══════════════════════════════════════════
 # DRAW
