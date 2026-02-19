@@ -206,26 +206,39 @@ func _prepare_timing_effect(card_ui, timing: Timing) -> Dictionary:
 		"card_name": card_ui.card_data.card_name
 	}
 
+func _resolve_timing_card_ui(timing: Timing, payload: Dictionary):
+	match timing:
+		Timing.ON_SUMMON:
+			return payload.get("card_ui", payload.get("summon_card_ui", null))
+		Timing.ON_ATTACK:
+			return payload.get("attacker_ui", payload.get("card_ui", null))
+		Timing.ON_DEATH:
+			return payload.get("card_ui", payload.get("dead_card_ui", null))
+		Timing.ON_DEFENSE:
+			return payload.get("defender_ui", payload.get("card_ui", null))
+		_:
+			return null
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	match timing:
 		Timing.ON_SUMMON:
-			return process_summon_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
+			return process_summon_effect(_resolve_timing_card_ui(timing, payload), payload.get("is_player", true), payload.get("context", {}))
 		Timing.ON_ATTACK:
 			return process_attack_effect(
-				payload.get("attacker_ui", payload.get("card_ui")),
+				_resolve_timing_card_ui(timing, payload),
 				payload.get("defender_ui", null),
 				payload.get("is_player", true),
 				payload.get("context", {})
 			)
 		Timing.ON_DEATH:
 			return process_death_effect(
-				payload.get("card_ui", payload.get("dead_card_ui")),
+				_resolve_timing_card_ui(timing, payload),
 				payload.get("is_player", true),
 				payload.get("context", {})
 			)
 		Timing.ON_DEFENSE:
 			return process_defense_effect(
-				payload.get("defender_ui", payload.get("card_ui")),
+				_resolve_timing_card_ui(timing, payload),
 				payload.get("damage", 0),
 				payload.get("is_player", true),
 				payload.get("context", {})

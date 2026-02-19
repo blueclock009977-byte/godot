@@ -682,6 +682,15 @@ func test_process_timing_event_dispatch_on_summon() -> void:
 	})
 	assert_eq(result.get("mana", 0), 1, "Dispatcher should route ON_SUMMON to summon handler")
 
+func test_process_timing_event_dispatch_on_summon_with_summon_card_ui_fallback() -> void:
+	var summon_card = _create_mock_card_ui("green_001")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_SUMMON, {
+		"summon_card_ui": summon_card,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("mana", 0), 1, "ON_SUMMON should accept unified summon_card_ui payload")
+
 func test_process_timing_event_dispatch_on_attack() -> void:
 	var atk_card = _create_mock_card_ui("blue_012")
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {

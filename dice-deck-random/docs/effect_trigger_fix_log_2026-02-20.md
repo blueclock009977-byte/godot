@@ -54,6 +54,17 @@
 - 構文チェック: `bash tools/check_syntax.sh` 通過
 - GUT: 全件通過（291/291）
 
+## Step 5: ON_SUMMON payload別名での発動漏れ再現と修正（summon_card_ui）
+- 追加テスト: `test_process_timing_event_dispatch_on_summon_with_summon_card_ui_fallback`
+- 初回結果: 失敗（`summon_card_ui` だけ渡した場合に召喚効果が未発動）
+- 原因: `process_timing_event` のON_SUMMONが `card_ui` 固定参照で、入口payloadの別名を吸収できていない
+- 修正:
+  - `_resolve_timing_card_ui(timing, payload)` を追加
+  - ON_SUMMON/ON_ATTACK/ON_DEATH/ON_DEFENSE の単一カード入口解決を共通化
+  - ON_SUMMON で `summon_card_ui` フォールバックを許容
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（335/335）
+
 ## 次リファクタリング候補（着手開始）
-- 候補: ターン開始/終了処理の共通ループ化
-- 着手メモ: `_get_effect_card_from_slot` を導入済み。次Stepで「走査→effect取得→emit/append」の骨格をヘルパー化し、match本体だけを差し替える設計に着手する
+- 候補: `process_timing_event` の残りpayload解決（例: `defender_ui`/`context`）も小ヘルパー化し、dispatcherを「タイミング分岐のみ」に薄くする
+- 着手メモ: 単一カード入口は `_resolve_timing_card_ui` で共通化済み。次Stepは防御側ターゲットやcontext既定値の解決重複を最小差分で整理する
