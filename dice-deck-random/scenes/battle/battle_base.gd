@@ -501,6 +501,54 @@ func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
 	pass
 
 # ═══════════════════════════════════════════
+# UI UPDATE (shared)
+# ═══════════════════════════════════════════
+func _get_my_display_name() -> String:
+	return "自分"
+
+func _get_opponent_display_name() -> String:
+	return "相手"
+
+func _update_all_ui() -> void:
+	var my_name := _get_my_display_name()
+	var opp_name := _get_opponent_display_name()
+	player_hp_label.text = "HP %s: %d" % [my_name, player_hp]
+	opponent_hp_label.text = "HP %s: %d" % [opp_name, opponent_hp]
+	var mana_str := BattleUtils.build_mana_string(player_mana, player_max_mana, MAX_MANA_CAP)
+	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
+	var whose := "自分" if is_player_turn else "相手"
+	phase_label.text = "%s: %s" % [whose, BattleConstants.get_phase_name(current_phase)]
+	if is_player_turn:
+		phase_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+	else:
+		phase_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+	# Turn indicator
+	if is_player_turn:
+		var go_text := "先行" if is_player_first else "後攻"
+		turn_indicator_label.text = "自分のターン (%s) - ターン %d" % [go_text, turn_number]
+		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+		if end_turn_btn:
+			end_turn_btn.disabled = false
+		if next_phase_btn:
+			next_phase_btn.disabled = false
+	else:
+		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
+		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+		if end_turn_btn:
+			end_turn_btn.disabled = true
+		if next_phase_btn:
+			next_phase_btn.disabled = true
+	# Dice
+	if current_dice > 0:
+		dice_label.text = "%d" % current_dice
+	else:
+		dice_label.text = "-"
+	# Update sub-elements
+	_update_opponent_hand_display()
+	_update_hand_highlights()
+	_update_dice_preview()
+
+# ═══════════════════════════════════════════
 # STUBS (override in subclasses)
 # ═══════════════════════════════════════════
 func _start_turn() -> void:
@@ -512,7 +560,7 @@ func _opponent_draw_card() -> void:
 func _game_end(_win: bool) -> void:
 	pass
 
-func _update_all_ui() -> void:
+func _update_opponent_hand_display() -> void:
 	pass
 
 func _summon_card_to_slot(_card_ui: CardUI, _slot: FieldSlot) -> void:

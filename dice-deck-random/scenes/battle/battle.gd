@@ -302,36 +302,6 @@ func _build_ui() -> void:
 	card_preview_overlay.add_child(card_preview_container)
 	card_preview_overlay.gui_input.connect(_on_preview_overlay_input)
 
-func _update_all_ui() -> void:
-	player_hp_label.text = "HP 自分: %d" % player_hp
-	opponent_hp_label.text = "HP 相手: %d" % opponent_hp
-	var mana_str := BattleUtils.build_mana_string(player_mana, player_max_mana, MAX_MANA_CAP)
-	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var whose := "自分" if is_player_turn else "相手"
-	phase_label.text = "%s: %s" % [whose, BattleConstants.get_phase_name(current_phase)]
-	if is_player_turn:
-		phase_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	else:
-		phase_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-	# Turn indicator
-	if is_player_turn:
-		var go_text := "先行" if is_player_first else "後攻"
-		turn_indicator_label.text = "自分のターン (%s) - ターン %d" % [go_text, turn_number]
-		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	else:
-		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
-		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-	if current_dice > 0:
-		dice_label.text = "%d" % current_dice
-	else:
-		dice_label.text = "-"
-	# Opponent hand display
-	_update_opponent_hand_display()
-	# Hand card summonability
-	_update_hand_highlights()
-	# Dice preview
-	_update_dice_preview()
-
 func _update_opponent_hand_display() -> void:
 	BattleUtils.update_opponent_hand_display(opponent_hand_container, opponent_hand.size())
 

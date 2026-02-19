@@ -310,38 +310,11 @@ func _build_ui() -> void:
 	card_preview_overlay.add_child(card_preview_container)
 	card_preview_overlay.gui_input.connect(_on_preview_overlay_input)
 
-func _update_all_ui() -> void:
-	var my_name := GameManager.user_name if GameManager.user_name != "" else "自分"
-	var opp_name := MultiplayerManager.opponent_name if MultiplayerManager.opponent_name != "" else "相手"
-	player_hp_label.text = "HP %s: %d" % [my_name, player_hp]
-	opponent_hp_label.text = "HP %s: %d" % [opp_name, opponent_hp]
-	var mana_str := BattleUtils.build_mana_string(player_mana, player_max_mana, MAX_MANA_CAP)
-	mana_label.text = "マナ: %s (%d/%d)" % [mana_str, player_mana, player_max_mana]
-	var whose := "自分" if is_player_turn else "相手"
-	phase_label.text = "%s: %s" % [whose, BattleConstants.get_phase_name(current_phase)]
-	if is_player_turn:
-		phase_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-	else:
-		phase_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-	if is_player_turn:
-		var go_text := "先行" if is_player_first else "後攻"
-		turn_indicator_label.text = "自分のターン (%s) - ターン %d" % [go_text, turn_number]
-		turn_indicator_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
-		end_turn_btn.disabled = false
-		next_phase_btn.disabled = false
-	else:
-		turn_indicator_label.text = "相手のターン - ターン %d" % turn_number
-		turn_indicator_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-		end_turn_btn.disabled = true
-		next_phase_btn.disabled = true
-	if current_dice > 0:
-		dice_label.text = "%d" % current_dice
-	else:
-		dice_label.text = "-"
-	_update_opponent_hand_display()
-	_update_hand_highlights()
-	# Dice preview
-	_update_dice_preview()
+func _get_my_display_name() -> String:
+	return GameManager.user_name if GameManager.user_name != "" else "自分"
+
+func _get_opponent_display_name() -> String:
+	return MultiplayerManager.opponent_name if MultiplayerManager.opponent_name != "" else "相手"
 
 func _update_opponent_hand_display() -> void:
 	BattleUtils.update_opponent_hand_display(opponent_hand_container, opponent_hand_count)
