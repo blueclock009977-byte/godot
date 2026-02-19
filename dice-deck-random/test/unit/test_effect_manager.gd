@@ -151,3 +151,7 @@ func test_get_dice_modifier_no_effects() -> void:
 	assert_eq(result["bonus"], 0, "No effects should return 0 bonus")
 	assert_eq(result["extra_dice"].size(), 0, "No effects should return empty extra_dice")
 	assert_eq(result["blocked_dice"].size(), 0, "No effects should return empty blocked_dice")
+
+func test_make_effect_log_format() -> void:
+	var log: String = effect_manager._make_effect_log("green", "TestCard", "マナ+2")
+	assert_eq(log, "[color=green]TestCard の効果: マナ+2[/color]", "_make_effect_log should build unified effect log format")

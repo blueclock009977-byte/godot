@@ -270,7 +270,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 
 		"green_004":  # 登場時:マナ+2
 			result["mana"] = 2
-			result["log"] = "[color=green]%s の効果: マナ+2[/color]" % card_name
+			result["log"] = _make_effect_log("green", card_name, "マナ+2")
 
 		"green_008":  # 登場時:マナ+3
 			result["mana"] = 3
