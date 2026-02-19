@@ -22,7 +22,7 @@ const TIMING_PAYLOAD_KEYS := {
 	Timing.ON_SUMMON: {"is_player": ["is_player"], "context": ["context"]},
 	Timing.ON_ATTACK: {"is_player": ["is_player"], "context": ["context"], "defender_ui": ["defender_ui"]},
 	Timing.ON_DEATH: {"is_player": ["is_player"], "context": ["context"]},
-	Timing.ON_DEFENSE: {"is_player": ["is_player"], "context": ["context"], "damage": ["damage"]},
+	Timing.ON_DEFENSE: {"is_player": ["is_player"], "context": ["context"], "damage": ["damage", "final_damage"]},
 	Timing.TURN_START: {"is_player": ["is_player"], "context": ["context"]},
 	Timing.TURN_END: {"is_player": ["is_player"], "context": ["context"]}
 }

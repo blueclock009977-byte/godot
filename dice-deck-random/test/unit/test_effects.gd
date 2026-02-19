@@ -868,6 +868,16 @@ func test_process_timing_event_dispatch_on_defense_with_generic_card_ui() -> voi
 	})
 	assert_eq(result.get("final_damage", 5), 4, "ON_DEFENSE should accept unified card_ui payload")
 
+func test_process_timing_event_dispatch_on_defense_with_final_damage_alias() -> void:
+	var defender = _create_mock_card_ui("yellow_004")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+		"defense_card_ui": defender,
+		"final_damage": 4,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("final_damage", -1), 3, "ON_DEFENSE should accept final_damage payload alias")
+
 func test_process_timing_event_dispatch_on_turn_start() -> void:
 	var context := {
 		"player_slots": [_create_mock_slot("green_009"), null, null, null, null, null],
