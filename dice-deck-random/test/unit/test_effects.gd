@@ -557,6 +557,22 @@ func test_detect_unimplemented_on_summon_effect_ids() -> void:
 
 	assert_eq(missing, [], "ON_SUMMON未実装: %s" % [", ".join(missing)])
 
+func test_detect_unimplemented_on_attack_effect_ids() -> void:
+	# ON_ATTACKの効果IDで、処理が未実装のものを検出する
+	var context := _create_empty_context()
+	var missing: Array[String] = []
+
+	for effect_id in EffectManager.effect_definitions.keys():
+		if EffectManager.get_effect_timing(effect_id) != EffectManager.Timing.ON_ATTACK:
+			continue
+		var attacker = _create_mock_card_ui(effect_id)
+		var defender = _create_mock_card_ui("")
+		var result: Dictionary = EffectManager.process_attack_effect(attacker, defender, true, context)
+		if result.size() == 0:
+			missing.append(effect_id)
+
+	assert_eq(missing, [], "ON_ATTACK未実装: %s" % [", ".join(missing)])
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

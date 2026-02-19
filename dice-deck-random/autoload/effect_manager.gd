@@ -524,6 +524,11 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 				result["disable_dice"] = 2
 				result["log"] = "[color=magenta]%s の効果: %s のダイス2つ無効[/color]" % [card_name, defender_ui.card_data.card_name]
 
+		"purple_013":  # 攻撃時:対象と自身入れ替え
+			if defender_ui:
+				result["swap_with_target"] = true
+				result["log"] = "[color=magenta]%s の効果: %s と位置入れ替え[/color]" % [card_name, defender_ui.card_data.card_name]
+
 		# ═══════════════════════════════════════════
 		# 白カード攻撃時効果
 		# ═══════════════════════════════════════════
