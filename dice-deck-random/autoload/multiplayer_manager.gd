@@ -279,3 +279,10 @@ func find_waiting_room(only_before: float = 0.0) -> String:
 func _schedule_room_delete(code: String) -> void:
 	await get_tree().create_timer(5.0).timeout
 	await FirebaseManager.delete_data("rooms/%s" % code)
+
+## ルームコードをシード値に変換（デッキシャッフル等の同期用）
+static func room_code_to_seed(code: String) -> int:
+	var h: int = 0
+	for i in range(code.length()):
+		h = h * 31 + code.unicode_at(i)
+	return h
