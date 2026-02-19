@@ -38,10 +38,10 @@ func _build_ui() -> void:
 
 	# Deck status
 	deck_status_label = Label.new()
-	_update_deck_status()
 	deck_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	deck_status_label.add_theme_font_size_override("font_size", 20)
 	root_vbox.add_child(deck_status_label)
+	_update_deck_status()
 
 	# Status
 	status_label = Label.new()

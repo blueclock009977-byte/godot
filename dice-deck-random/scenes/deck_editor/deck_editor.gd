@@ -405,6 +405,7 @@ func _show_slot_dialog() -> void:
 	# ダイアログ本体
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
+	panel.offset_left = -200  # 左に200pxずらす
 	panel.custom_minimum_size = Vector2(700, 800)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.2)
