@@ -406,11 +406,8 @@ func _update_dice_preview() -> void:
 		return
 	var results := []
 	for dice_val in range(1, 7):
-		results.append(_simulate_battle(dice_val))
+		results.append(BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn))
 	dice_preview_label.text = BattleUtils.build_dice_preview_text(results)
-
-func _simulate_battle(dice_val: int) -> Array:
-	return BattleUtils.simulate_battle(dice_val, player_slots, opponent_slots, is_player_turn)
 
 func _update_opponent_hand_display() -> void:
 	BattleUtils.update_opponent_hand_display(opponent_hand_container, opponent_hand_count)
