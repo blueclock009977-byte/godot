@@ -178,9 +178,7 @@ func _on_end_phase() -> void:
 			if not ok_draw:
 				return
 			_player_draw_card()
-			_opponent_draw_card()
 			player_mana = mini(player_mana + 1, player_max_mana)
-			opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
 			_log("カードを1枚ドロー。1マナ回復。")
 			# Main2
 			current_phase = Phase.MAIN2
