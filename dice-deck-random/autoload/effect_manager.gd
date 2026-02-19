@@ -474,15 +474,13 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	if not attacker_ui or not attacker_ui.card_data:
+	var prepared := _prepare_timing_effect(attacker_ui, Timing.ON_ATTACK)
+	if not prepared.get("ok", false):
 		return {}
 
-	var effect_id: String = attacker_ui.card_data.effect_id
-	if not _can_process_effect(effect_id, Timing.ON_ATTACK):
-		return {}
-
+	var effect_id: String = prepared.get("effect_id", "")
 	var result := {}
-	var card_name: String = attacker_ui.card_data.card_name
+	var card_name: String = prepared.get("card_name", "")
 
 	match effect_id:
 		"blue_003":  # 攻撃時:対象を凍結
@@ -587,15 +585,13 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 
 ## 死亡時効果を処理
 func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	if not card_ui or not card_ui.card_data:
+	var prepared := _prepare_timing_effect(card_ui, Timing.ON_DEATH)
+	if not prepared.get("ok", false):
 		return {}
 
-	var effect_id: String = card_ui.card_data.effect_id
-	if not _can_process_effect(effect_id, Timing.ON_DEATH):
-		return {}
-
+	var effect_id: String = prepared.get("effect_id", "")
 	var result := {}
-	var card_name: String = card_ui.card_data.card_name
+	var card_name: String = prepared.get("card_name", "")
 
 	match effect_id:
 		"blue_009":  # 死亡時:敵1体ATK-1
