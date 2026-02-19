@@ -565,6 +565,49 @@ func test_process_timing_event_dispatch_on_attack() -> void:
 	})
 	assert_eq(result.get("direct_damage", 0), 1, "Dispatcher should route ON_ATTACK to attack handler")
 
+func test_process_timing_event_dispatch_on_death() -> void:
+	var death_card = _create_mock_card_ui("green_002")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
+		"card_ui": death_card,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("mana", 0), 1, "Dispatcher should route ON_DEATH to death handler")
+
+func test_process_timing_event_dispatch_on_defense() -> void:
+	var defender = _create_mock_card_ui("yellow_004")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+		"defender_ui": defender,
+		"damage": 5,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("final_damage", 5), 4, "Dispatcher should route ON_DEFENSE to defense handler")
+
+func test_process_timing_event_dispatch_on_turn_start() -> void:
+	var context := {
+		"player_slots": [_create_mock_slot("green_009"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var result: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_START, {
+		"is_player": true,
+		"context": context
+	})
+	assert_eq(result.size(), 1, "Dispatcher should route TURN_START to turn-start handler")
+	assert_eq(result[0].get("mana", 0), 1, "TURN_START dispatcher should preserve handler result")
+
+func test_process_timing_event_dispatch_on_turn_end() -> void:
+	var context := {
+		"player_slots": [_create_mock_slot("yellow_010"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var result: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_END, {
+		"is_player": true,
+		"context": context
+	})
+	assert_eq(result.size(), 1, "Dispatcher should route TURN_END to turn-end handler")
+	assert_eq(result[0].get("mana", 0), 1, "TURN_END dispatcher should preserve handler result")
+
 func test_smoke_effects_trigger_on_each_timing() -> void:
 	# ON_SUMMON
 	var summon_card = _create_mock_card_ui("green_001")
