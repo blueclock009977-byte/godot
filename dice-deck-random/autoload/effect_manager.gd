@@ -740,7 +740,7 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 ## ターン開始時効果を処理
 func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 	var results := []
-	var slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
+	var slots: Array = _get_slots_by_owner(is_player, context)
 
 	for slot in slots:
 		if slot and not slot.is_empty():
@@ -805,7 +805,7 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 ## ターン終了時効果を処理
 func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
 	var results := []
-	var slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
+	var slots: Array = _get_slots_by_owner(is_player, context)
 
 	for slot in slots:
 		if slot and not slot.is_empty():
@@ -985,6 +985,9 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
 	for target in targets:
 		_apply_damage_and_mark_destroy(target, amount, result)
+
+func _get_slots_by_owner(is_player: bool, context: Dictionary) -> Array:
+	return context["player_slots"] if is_player else context["opponent_slots"]
 
 func _get_random_enemy(is_player: bool, context: Dictionary):
 	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
