@@ -49,3 +49,16 @@ static func sim_find_target(attacker: Dictionary, defenders: Array):
 		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
 			return d
 	return null
+
+## 相手手札表示用のカードバックを作成（battle/online_battle共通）
+static func create_card_back() -> Panel:
+	var card_back := Panel.new()
+	card_back.custom_minimum_size = Vector2(40, 55)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.3, 0.3, 0.4)
+	style.corner_radius_top_left = 4
+	style.corner_radius_top_right = 4
+	style.corner_radius_bottom_left = 4
+	style.corner_radius_bottom_right = 4
+	card_back.add_theme_stylebox_override("panel", style)
+	return card_back

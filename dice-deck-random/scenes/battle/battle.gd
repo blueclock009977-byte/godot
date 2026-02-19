@@ -34,16 +34,7 @@ func _update_opponent_hand_display() -> void:
 	for child in opponent_hand_container.get_children():
 		child.queue_free()
 	for i in range(opponent_hand.size()):
-		var card_back := Panel.new()
-		card_back.custom_minimum_size = Vector2(40, 55)
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.3, 0.3, 0.4)
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_left = 4
-		style.corner_radius_bottom_right = 4
-		card_back.add_theme_stylebox_override("panel", style)
-		opponent_hand_container.add_child(card_back)
+		opponent_hand_container.add_child(BattleConstants.create_card_back())
 
 func _update_field_card_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
