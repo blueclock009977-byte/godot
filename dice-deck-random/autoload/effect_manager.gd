@@ -715,15 +715,13 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
-	if not defender_ui or not defender_ui.card_data:
+	var prepared := _prepare_timing_effect(defender_ui, Timing.ON_DEFENSE)
+	if not prepared.get("ok", false):
 		return {"final_damage": damage}
 
-	var effect_id: String = defender_ui.card_data.effect_id
-	if not _can_process_effect(effect_id, Timing.ON_DEFENSE):
-		return {"final_damage": damage}
-
+	var effect_id: String = prepared.get("effect_id", "")
 	var result := {"final_damage": damage}
-	var card_name: String = defender_ui.card_data.card_name
+	var card_name: String = prepared.get("card_name", "")
 
 	match effect_id:
 		"blue_006":  # 防御時:被ダメージ半減

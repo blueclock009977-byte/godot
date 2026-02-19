@@ -935,6 +935,12 @@ func test_death_effect_uses_prepare_helper_for_entry_guard() -> void:
 	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, Timing.ON_DEATH)"), -1,
 		"process_death_effect should use _prepare_timing_effect")
 
+func test_defense_effect_uses_prepare_helper_for_entry_guard() -> void:
+	# ON_DEFENSE も共通入口ヘルパーに寄せる
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("var prepared := _prepare_timing_effect(defender_ui, Timing.ON_DEFENSE)"), -1,
+		"process_defense_effect should use _prepare_timing_effect")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
