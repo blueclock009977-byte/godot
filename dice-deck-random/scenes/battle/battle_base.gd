@@ -236,15 +236,35 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 			else:
 				_opponent_draw_card()
 
+	_apply_damaged_targets_from_effect(result)
 	_apply_destroy_targets_from_effect(result)
 
 	_update_all_ui()
+
+func _apply_damaged_targets_from_effect(result: Dictionary) -> void:
+	if not result.has("damaged_targets"):
+		return
+	for target in result["damaged_targets"]:
+		if not target or not is_instance_valid(target):
+			continue
+		if target.current_hp <= 0:
+			_destroy_effect_target(target)
 
 func _apply_destroy_targets_from_effect(result: Dictionary) -> void:
 	if not result.has("destroy_targets"):
 		return
 	for target in result["destroy_targets"]:
-		_destroy_card_ui_immediate(target)
+		_destroy_effect_target(target)
+
+func _destroy_effect_target(target) -> void:
+	if not target or not is_instance_valid(target):
+		return
+	var owner_slot = _find_slot_by_card_ui(target)
+	if owner_slot and not owner_slot.is_empty():
+		var is_player_owner: bool = owner_slot in player_slots
+		_destroy_card_in_slot(owner_slot, is_player_owner)
+		return
+	_destroy_card_ui_immediate(target)
 
 func _apply_hp_damage_to_owner(is_player: bool, amount: int) -> void:
 	_apply_hp_damage(is_player, amount, false)

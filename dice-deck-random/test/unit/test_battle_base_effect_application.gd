@@ -182,3 +182,32 @@ func test_apply_effect_result_uses_destroy_targets_helper() -> void:
 		"BattleBase should define destroy_targets helper for effect application")
 	assert_true(script_text.find("_apply_destroy_targets_from_effect(result)") >= 0,
 		"_apply_effect_result should delegate destroy_targets handling to helper")
+
+func test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card() -> void:
+	var battle := TestBattleBase.new()
+	var card := CardUI.new()
+	card.current_hp = 0
+	var slot := DummySlot.new()
+	slot.card_ui = card
+	battle.player_slots = [slot]
+	battle.opponent_slots = []
+
+	battle._apply_effect_result({"damaged_targets": [card]}, true)
+
+	assert_eq(battle.destroyed_slot, slot, "lethal damaged_targets should use shared destroy flow")
+	battle.free()
+
+func test_apply_effect_result_damaged_targets_skips_alive_card() -> void:
+	var battle := TestBattleBase.new()
+	var card := CardUI.new()
+	card.current_hp = 2
+	var slot := DummySlot.new()
+	slot.card_ui = card
+	battle.player_slots = [slot]
+	battle.opponent_slots = []
+
+	battle._apply_effect_result({"damaged_targets": [card]}, true)
+
+	assert_null(battle.destroyed_slot, "alive damaged_targets should not be destroyed")
+	assert_null(battle.destroyed_ui, "alive damaged_targets should not call immediate destroy")
+	battle.free()
