@@ -192,6 +192,20 @@ func _can_process_effect(effect_id: String, timing: Timing) -> bool:
 		return false
 	return has_timing(effect_id, timing)
 
+func _prepare_timing_effect(card_ui, timing: Timing) -> Dictionary:
+	if not card_ui or not card_ui.card_data:
+		return {"ok": false, "effect_id": "", "card_name": ""}
+
+	var effect_id: String = card_ui.card_data.effect_id
+	if not _can_process_effect(effect_id, timing):
+		return {"ok": false, "effect_id": effect_id, "card_name": card_ui.card_data.card_name}
+
+	return {
+		"ok": true,
+		"effect_id": effect_id,
+		"card_name": card_ui.card_data.card_name
+	}
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	match timing:
 		Timing.ON_SUMMON:
@@ -221,15 +235,13 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 
 ## 登場時効果を処理
 func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
-	if not card_ui or not card_ui.card_data:
+	var prepared := _prepare_timing_effect(card_ui, Timing.ON_SUMMON)
+	if not prepared.get("ok", false):
 		return {}
 
-	var effect_id: String = card_ui.card_data.effect_id
-	if not _can_process_effect(effect_id, Timing.ON_SUMMON):
-		return {}
-
+	var effect_id: String = prepared.get("effect_id", "")
 	var result := {}
-	var card_name: String = card_ui.card_data.card_name
+	var card_name: String = prepared.get("card_name", "")
 
 	match effect_id:
 		"blue_001":  # 登場時:敵1体ATK-1

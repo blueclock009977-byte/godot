@@ -917,6 +917,12 @@ func test_detect_unimplemented_turn_end_effect_ids() -> void:
 
 	assert_eq(missing, [], "TURN_END未実装: %s" % [", ".join(missing)])
 
+func test_summon_effect_uses_prepare_helper_for_entry_guard() -> void:
+	# 段階リファクタ開始: ON_SUMMON の入口前処理を共通化
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, Timing.ON_SUMMON)"), -1,
+		"process_summon_effect should use _prepare_timing_effect")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
