@@ -410,9 +410,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_mana_full_effect(result, "green", card_name)
 
 		"green_015":  # 登場時:マナ+2,自身HP+2
-			result["mana"] = 2
-			card_ui.heal(2)
-			result["log"] = "[color=green]%s の効果: マナ+2, 自身HP+2[/color]" % card_name
+			_apply_mana_and_self_heal_effect(card_ui, result, "green", card_name, 2, 2)
 
 		"green_017":  # 登場時:味方全体HP+2
 			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 2, result, card_name, "green", "味方全体HP+2")
@@ -430,9 +428,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_self_damage_effect(result, card_name, 5)
 
 		"black_014":  # 登場時:自分HP-2,カード1枚ドロー
-			result["self_damage"] = 2
-			result["draw"] = 1
-			result["log"] = "[color=purple]%s の効果: 自分HP-2, 1枚ドロー[/color]" % card_name
+			_apply_self_damage_and_draw_effect(result, "purple", card_name, 2, 1)
 
 		"black_017":  # 登場時:自分HP-4
 			_apply_self_damage_effect(result, card_name, 4)
@@ -1048,6 +1044,13 @@ func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: in
 	result["self_damage"] = amount
 	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
 
+func _apply_self_damage_and_draw_effect(result: Dictionary, color: String, card_name: String, self_damage: int, draw_amount: int) -> void:
+	if self_damage <= 0 or draw_amount <= 0:
+		return
+	result["self_damage"] = self_damage
+	result["draw"] = draw_amount
+	result["log"] = _make_effect_log(color, card_name, "自分HP-%d, %d枚ドロー" % [self_damage, draw_amount])
+
 func _apply_self_heal_effect(card_ui, result: Dictionary, color: String, card_name: String, amount: int) -> void:
 	if not card_ui or amount <= 0:
 		return
@@ -1075,6 +1078,13 @@ func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: Strin
 		return
 	result["mana"] = amount
 	result["log"] = _make_effect_log(color, card_name, "マナ+%d" % amount)
+
+func _apply_mana_and_self_heal_effect(card_ui, result: Dictionary, color: String, card_name: String, mana_gain: int, heal_amount: int) -> void:
+	if not card_ui or mana_gain <= 0 or heal_amount <= 0:
+		return
+	result["mana"] = mana_gain
+	card_ui.heal(heal_amount)
+	result["log"] = _make_effect_log(color, card_name, "マナ+%d, 自身HP+%d" % [mana_gain, heal_amount])
 
 func _apply_mana_full_effect(result: Dictionary, color: String, card_name: String) -> void:
 	result["mana_full"] = true
