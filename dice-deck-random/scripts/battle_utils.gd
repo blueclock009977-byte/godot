@@ -41,3 +41,22 @@ static func animate_attack(parent: Control, card_ui: Control, target_node: Contr
 	tween.tween_property(card_ui, "global_position", orig, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween.finished
 	card_ui.z_index = 1
+
+## Get adjacent slots for a given slot index
+## Adjacent = same row left/right, or same lane other row
+static func get_adjacent_slots(idx: int) -> Array[int]:
+	var result: Array[int] = []
+	var row_start := (idx / 3) * 3
+	var lane_idx := idx % 3
+	# Left in same row
+	if lane_idx > 0:
+		result.append(row_start + lane_idx - 1)
+	# Right in same row
+	if lane_idx < 2:
+		result.append(row_start + lane_idx + 1)
+	# Same lane other row
+	if idx < 3:
+		result.append(idx + 3)
+	else:
+		result.append(idx - 3)
+	return result

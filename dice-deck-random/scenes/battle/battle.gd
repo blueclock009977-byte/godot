@@ -962,22 +962,7 @@ func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
 	pass
 
 func _get_adjacent_slots(idx: int) -> Array[int]:
-	# Adjacent = same row left/right, or same lane other row
-	var result: Array[int] = []
-	var row_start := (idx / 3) * 3
-	var lane_idx := idx % 3
-	# Left in same row
-	if lane_idx > 0:
-		result.append(row_start + lane_idx - 1)
-	# Right in same row
-	if lane_idx < 2:
-		result.append(row_start + lane_idx + 1)
-	# Same lane other row
-	if idx < 3:
-		result.append(idx + 3)
-	else:
-		result.append(idx - 3)
-	return result
+	return BattleUtils.get_adjacent_slots(idx)
 
 func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	var effective_cost := _get_effective_summon_cost(card_ui)
