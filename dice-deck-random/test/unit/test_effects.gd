@@ -192,6 +192,19 @@ func test_attack_effect_lifesteal_black_007() -> void:
 	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
 	assert_true(result.get("lifesteal", false), "black_007 should have lifesteal")
 
+func test_death_effect_red_014_marks_destroy_target_when_hp_zero() -> void:
+	var mock_card_ui = _create_mock_card_ui("red_014")
+	var enemy_slot = _create_mock_slot_with_ui("")
+	enemy_slot.card_ui.current_hp = 4
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy_slot, null, null, null, null, null],
+		"current_dice": 1
+	}
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_true(result.has("destroy_targets"), "red_014 should mark destroy_targets when target HP <= 0")
+	assert_eq(result["destroy_targets"].size(), 1, "red_014 should mark exactly 1 destroyed target")
+
 func test_death_effect_mana_green_002() -> void:
 	# green_002: 死亡時マナ+1
 	var mock_card_ui = _create_mock_card_ui("green_002")
@@ -208,6 +221,21 @@ func test_death_effect_spawn_token_black_006() -> void:
 	var token = result.get("spawn_token", {})
 	assert_eq(token.get("atk", 0), 2, "Token should have 2 ATK")
 	assert_eq(token.get("hp", 0), 2, "Token should have 2 HP")
+
+func test_death_effect_black_010_marks_destroy_targets_when_hp_zero() -> void:
+	var mock_card_ui = _create_mock_card_ui("black_010")
+	var enemy1 = _create_mock_slot_with_ui("")
+	var enemy2 = _create_mock_slot_with_ui("")
+	enemy1.card_ui.current_hp = 1
+	enemy2.card_ui.current_hp = 3
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy1, enemy2, null, null, null, null],
+		"current_dice": 1
+	}
+	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_true(result.has("destroy_targets"), "black_010 should mark destroyed enemies")
+	assert_eq(result["destroy_targets"].size(), 1, "black_010 should mark only enemies reduced to HP <= 0")
 
 func test_death_effect_black_002_marks_destroy_target_when_hp_zero() -> void:
 	var mock_card_ui = _create_mock_card_ui("black_002")
@@ -430,6 +458,19 @@ func test_turn_end_effects_heal_player_white_010() -> void:
 	var results: Array = EffectManager.process_turn_end_effects(true, context)
 	assert_eq(results.size(), 1, "Should have 1 turn end effect result")
 	assert_eq(results[0].get("heal_player", 0), 2, "white_010 should heal player 2 HP at turn end")
+
+func test_turn_end_effects_purple_008_marks_destroy_target_when_hp_zero() -> void:
+	var mock_slot = _create_mock_slot("purple_008")
+	var enemy = _create_mock_slot_with_ui("")
+	enemy.card_ui.current_hp = 1
+	var context := {
+		"player_slots": [mock_slot, null, null, null, null, null],
+		"opponent_slots": [enemy, null, null, null, null, null],
+	}
+	var results: Array = EffectManager.process_turn_end_effects(true, context)
+	assert_eq(results.size(), 1, "purple_008 should produce one turn-end result")
+	assert_true(results[0].has("destroy_targets"), "purple_008 should mark destroy_targets")
+	assert_eq(results[0]["destroy_targets"].size(), 1, "purple_008 should mark destroyed enemy")
 
 func test_turn_start_effects_multiple_cards() -> void:
 	# 複数カードの効果が同時に発動するか

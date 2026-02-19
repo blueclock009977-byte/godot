@@ -404,7 +404,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 			var enemies = _get_all_enemies(is_player, context)
 			for enemy in enemies:
 				enemy.modify_atk(-1)
-				enemy.take_damage(1)
+			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=magenta]%s の効果: 敵全体ATK-1,HP-1[/color]" % card_name
 
@@ -509,7 +509,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 		"black_016":  # 攻撃時:対象の現HP半減
 			if defender_ui:
 				var half_hp = defender_ui.current_hp / 2
-				defender_ui.take_damage(half_hp)
+				_apply_damage_and_mark_destroy(defender_ui, half_hp, result)
 				result["log"] = "[color=purple]%s の効果: %s のHP半減[/color]" % [card_name, defender_ui.card_data.card_name]
 
 		# ═══════════════════════════════════════════
@@ -608,8 +608,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 		"black_010":  # 死亡時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.take_damage(1)
+			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=purple]%s の効果: 敵全体HP-1[/color]" % card_name
 
@@ -626,8 +625,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 		"black_018":  # 死亡時:敵全体HP-3
 			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.take_damage(3)
+			_apply_damage_to_targets_and_mark_destroy(enemies, 3, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=purple]%s の効果: 敵全体HP-3[/color]" % card_name
 
@@ -636,21 +634,19 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 		# ═══════════════════════════════════════════
 		"red_006":  # 死亡時:敵全体HP-2
 			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.take_damage(2)
+			_apply_damage_to_targets_and_mark_destroy(enemies, 2, result)
 			if enemies.size() > 0:
 				result["log"] = "[color=red]%s の効果: 敵全体HP-2[/color]" % card_name
 
 		"red_009":  # 死亡時:自爆(敵味方全体HP-2)
 			var all_cards := _get_all_enemies(is_player, context) + _get_all_allies(is_player, context)
-			for c in all_cards:
-				c.take_damage(2)
+			_apply_damage_to_targets_and_mark_destroy(all_cards, 2, result)
 			result["log"] = "[color=red]%s の効果: 自爆!敵味方全体HP-2[/color]" % card_name
 
 		"red_014":  # 死亡時:敵1体HP-4
 			var target = _get_random_enemy(is_player, context)
 			if target:
-				target.take_damage(4)
+				_apply_damage_and_mark_destroy(target, 4, result)
 				result["log"] = "[color=red]%s の効果: %s にHP-4[/color]" % [card_name, target.card_data.card_name]
 
 		# ═══════════════════════════════════════════
@@ -832,8 +828,7 @@ func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
 				# 紫カードターン終了時効果
 				"purple_008":  # ターン終了時:敵全体HP-1
 					var enemies = _get_all_enemies(is_player, context)
-					for enemy in enemies:
-						enemy.take_damage(1)
+					_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
 					if enemies.size() > 0:
 						result["log"] = "[color=magenta]%s の効果: 敵全体HP-1[/color]" % card_name
 
@@ -977,6 +972,10 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 		result["destroy_targets"] = result.get("destroy_targets", [])
 		if target not in result["destroy_targets"]:
 			result["destroy_targets"].append(target)
+
+func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
+	for target in targets:
+		_apply_damage_and_mark_destroy(target, amount, result)
 
 func _get_random_enemy(is_player: bool, context: Dictionary):
 	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
