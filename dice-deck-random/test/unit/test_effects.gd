@@ -1052,6 +1052,22 @@ func test_attack_effect_dispatcher_helper_is_used() -> void:
 	assert_ne(script_text.find("_dispatch_attack_effect(effect_id, attacker_ui, defender_ui, is_player, context, card_name, result)"), -1,
 		"process_attack_effect should delegate to _dispatch_attack_effect")
 
+func test_death_effect_dispatcher_helper_is_used() -> void:
+	# 次の段階リファクタ: ON_DEATHのeffect_id分岐も専用ディスパッチ関数へ分離
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_death_effect"), -1,
+		"effect_manager should define _dispatch_death_effect")
+	assert_ne(script_text.find("_dispatch_death_effect(effect_id, card_ui, is_player, context, card_name, result)"), -1,
+		"process_death_effect should delegate to _dispatch_death_effect")
+
+func test_defense_effect_dispatcher_helper_is_used() -> void:
+	# 次の段階リファクタ: ON_DEFENSEのeffect_id分岐も専用ディスパッチ関数へ分離
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_defense_effect"), -1,
+		"effect_manager should define _dispatch_defense_effect")
+	assert_ne(script_text.find("_dispatch_defense_effect(effect_id, defender_ui, damage, card_name, result)"), -1,
+		"process_defense_effect should delegate to _dispatch_defense_effect")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

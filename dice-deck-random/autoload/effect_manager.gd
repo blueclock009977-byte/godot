@@ -597,6 +597,12 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 	var result := {}
 	var card_name: String = prepared.get("card_name", "")
 
+	_dispatch_death_effect(effect_id, card_ui, is_player, context, card_name, result)
+
+	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
+	return result
+
+func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_009":  # 死亡時:敵1体ATK-1
 			var target = _get_random_enemy(is_player, context)
@@ -708,9 +714,6 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 				target.heal(99)
 				result["log"] = "[color=white]%s の効果: %s のHP全回復[/color]" % [card_name, target.card_data.card_name]
 
-	_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
-	return result
-
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
 	var prepared := _process_single_card_timing_effect(defender_ui, Timing.ON_DEFENSE, {"final_damage": damage})
@@ -721,6 +724,12 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 	var result := {"final_damage": damage}
 	var card_name: String = prepared.get("card_name", "")
 
+	_dispatch_defense_effect(effect_id, defender_ui, damage, card_name, result)
+
+	_emit_effect_trigger_if_logged(effect_id, defender_ui, null, result)
+	return result
+
+func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_006":  # 防御時:被ダメージ半減
 			result["final_damage"] = int(damage / 2)
@@ -752,9 +761,6 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 				result["final_damage"] = 0
 				result["shield_consumed"] = true
 				result["log"] = "[color=white]%s の効果: ダメージ無効[/color]" % card_name
-
-	_emit_effect_trigger_if_logged(effect_id, defender_ui, null, result)
-	return result
 
 func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool, context: Dictionary, card_name: String) -> Dictionary:
 	var result := {}
