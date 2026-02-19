@@ -527,9 +527,9 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 			result["log"] = "[color=purple]%s の効果: HP-1, ATK+2[/color]" % card_name
 
 		"black_016":  # 攻撃時:対象の現HP半減
-			if defender_ui:
-				var half_hp = defender_ui.current_hp / 2
-				_apply_damage_and_mark_destroy(defender_ui, half_hp, result)
+			if defender_ui and defender_ui.current_hp > 0:
+				var half_hp_damage := int(ceil(defender_ui.current_hp / 2.0))
+				_apply_damage_and_mark_destroy(defender_ui, half_hp_damage, result)
 				result["log"] = "[color=purple]%s の効果: %s のHP半減[/color]" % [card_name, defender_ui.card_data.card_name]
 
 		# ═══════════════════════════════════════════
