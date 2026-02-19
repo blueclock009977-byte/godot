@@ -787,6 +787,7 @@ func process_turn_start_effects(is_player: bool, context: Dictionary) -> Array:
 					result["log"] = "[color=white]%s の効果: 自分HP+1[/color]" % card_name
 
 			if result.size() > 0:
+				_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
 				results.append(result)
 
 	# 毒ダメージ処理
@@ -841,6 +842,7 @@ func process_turn_end_effects(is_player: bool, context: Dictionary) -> Array:
 					result["log"] = "[color=white]%s の効果: 自分HP+2[/color]" % card_name
 
 			if result.size() > 0:
+				_emit_effect_trigger_if_logged(effect_id, card_ui, null, result)
 				results.append(result)
 
 	# 凍結ターン減少

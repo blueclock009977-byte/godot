@@ -706,6 +706,24 @@ func test_death_effect_emits_effect_triggered_signal() -> void:
 	EffectManager.process_death_effect(dead_card, true, _create_empty_context())
 	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Death timing effect should emit effect_triggered once")
 
+func test_turn_start_effect_emits_effect_triggered_signal() -> void:
+	watch_signals(EffectManager)
+	var context := {
+		"player_slots": [_create_mock_slot("green_009"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	EffectManager.process_turn_start_effects(true, context)
+	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Turn start effect should emit effect_triggered once")
+
+func test_turn_end_effect_emits_effect_triggered_signal() -> void:
+	watch_signals(EffectManager)
+	var context := {
+		"player_slots": [_create_mock_slot("yellow_010"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	EffectManager.process_turn_end_effects(true, context)
+	assert_signal_emit_count(EffectManager, "effect_triggered", 1, "Turn end effect should emit effect_triggered once")
+
 func test_detect_unimplemented_on_summon_effect_ids() -> void:
 	# ON_SUMMONの効果IDで、処理が未実装のものを検出する
 	var context := {
