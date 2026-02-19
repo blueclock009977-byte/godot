@@ -989,6 +989,18 @@ func test_target_collection_helper_is_shared_by_ally_enemy_getters() -> void:
 	assert_ne(script_text.find("return _collect_targets(is_player, context, false)"), -1,
 		"_get_all_allies should delegate to shared helper")
 
+func test_aoe_damage_helper_is_shared_for_death_damage_effects() -> void:
+	# 次の段階リファクタ: 敵全体ダメージ+死亡判定+ログ付与を1ヘルパーで統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_aoe_damage_effect"), -1,
+		"effect_manager should define _apply_aoe_damage_effect")
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 1, result, card_name, \"purple\", \"敵全体HP-1\")"), -1,
+		"black_010 should delegate to shared AOE helper")
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 3, result, card_name, \"purple\", \"敵全体HP-3\")"), -1,
+		"black_018 should delegate to shared AOE helper")
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 2, result, card_name, \"red\", \"敵全体HP-2\")"), -1,
+		"red_006 should delegate to shared AOE helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

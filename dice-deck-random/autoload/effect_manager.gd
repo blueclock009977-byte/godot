@@ -633,9 +633,7 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 		"black_010":  # 死亡時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=purple]%s の効果: 敵全体HP-1[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 1, result, card_name, "purple", "敵全体HP-1")
 
 		"black_011":  # 死亡時:HP1で1度だけ復活
 			if not card_ui.has_revived:
@@ -650,18 +648,14 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 
 		"black_018":  # 死亡時:敵全体HP-3
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_damage_to_targets_and_mark_destroy(enemies, 3, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=purple]%s の効果: 敵全体HP-3[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 3, result, card_name, "purple", "敵全体HP-3")
 
 		# ═══════════════════════════════════════════
 		# 赤カード死亡時効果
 		# ═══════════════════════════════════════════
 		"red_006":  # 死亡時:敵全体HP-2
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_damage_to_targets_and_mark_destroy(enemies, 2, result)
-			if enemies.size() > 0:
-				result["log"] = "[color=red]%s の効果: 敵全体HP-2[/color]" % card_name
+			_apply_aoe_damage_effect(enemies, 2, result, card_name, "red", "敵全体HP-2")
 
 		"red_009":  # 死亡時:自爆(敵味方全体HP-2)
 			var all_cards := _get_all_enemies(is_player, context) + _get_all_allies(is_player, context)
@@ -1023,6 +1017,11 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
 	for target in targets:
 		_apply_damage_and_mark_destroy(target, amount, result)
+
+func _apply_aoe_damage_effect(targets: Array, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	_apply_damage_to_targets_and_mark_destroy(targets, amount, result)
+	if targets.size() > 0:
+		result["log"] = _make_effect_log(color, card_name, message)
 
 func _get_slots_by_owner(is_player: bool, context: Dictionary) -> Array:
 	if is_player:
