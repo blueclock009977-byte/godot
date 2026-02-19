@@ -22,7 +22,7 @@ func _generate_card_pool() -> void:
 
 	# ═══════════════════════════════════════════
 	# バランス計算式（2026-02-20調整）:
-	# budget = 10 + 10 * cost
+	# budget = 12 + 8 * cost
 	# score = 4*HP + 3*ATK + 2*面数 + (ATK*面数)//4
 	# 効果カードは効果強度で予算補正（強い効果は減算、デメリットは加算）
 	# ═══════════════════════════════════════════
@@ -285,7 +285,7 @@ func _score_card(card: CardData) -> int:
 	return 4 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
 
 func _base_budget(cost: int) -> int:
-	return 10 + 10 * cost
+	return 12 + 8 * cost
 
 func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 	for _i in range(64):

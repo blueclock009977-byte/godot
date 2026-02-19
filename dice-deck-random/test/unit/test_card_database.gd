@@ -33,7 +33,7 @@ func test_all_cards_have_unique_ids():
 
 func test_point_budget_vanilla_cards():
 	# バニラ（グレー）カードのみポイントバジェットをチェック
-	# budget = 10 + 10*cost
+	# budget = 12 + 8*cost
 	# score = 4*HP + 3*ATK + 2*面数 + (ATK*面数)//4
 	for card in CardDatabase.card_pool:
 		if card.color_type != CardData.ColorType.GRAY:
@@ -41,7 +41,7 @@ func test_point_budget_vanilla_cards():
 		var faces := card.attack_dice.size()
 		var synergy := (card.atk * faces) / 4
 		var score := 4 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
-		var budget := 10 + 10 * card.mana_cost
+		var budget := 12 + 8 * card.mana_cost
 		assert_true(absi(score - budget) <= 3, "%s score=%d budget=%d should be within ±3" % [card.card_name, score, budget])
 
 func test_get_card_by_id():
