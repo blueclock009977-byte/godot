@@ -107,6 +107,7 @@ func _ready() -> void:
 	effect_text_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	effect_text_label.max_lines_visible = 2
 	effect_text_label.clip_text = true
+	effect_text_label.custom_minimum_size.y = 30
 	effect_text_label.visible = false
 	vbox.add_child(effect_text_label)
 
@@ -375,6 +376,7 @@ func set_card_size(w: float, h: float) -> void:
 	mana_cost_label.add_theme_font_size_override("font_size", int(26 * s))
 	name_label.add_theme_font_size_override("font_size", int(22 * s))
 	effect_text_label.add_theme_font_size_override("font_size", int(16 * s))
+	effect_text_label.custom_minimum_size.y = int(30 * s)
 	attack_dice_label.add_theme_font_size_override("font_size", int(24 * s))
 	hp_label.add_theme_font_size_override("font_size", int(28 * s))
 	atk_label.add_theme_font_size_override("font_size", int(28 * s))
