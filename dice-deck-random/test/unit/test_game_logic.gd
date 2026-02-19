@@ -210,3 +210,9 @@ func test_defense_reflect_effect_is_applied_to_attacker() -> void:
 	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
 	assert_ne(script_text.find("if defense_result.get(\"reflect\", false):"), -1,
 		"BattleBase should handle reflect flag from defense effects")
+
+func test_attack_resolution_skips_when_attacker_is_destroyed_by_own_attack_effect() -> void:
+	# 回帰テスト: black_015 等で攻撃側が先に死亡したら、そのまま攻撃処理を継続しない
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("if not is_instance_valid(card_ui) or card_ui.current_hp <= 0:"), -1,
+		"BattleBase should stop attack flow when attacker dies during attack-effect resolution")

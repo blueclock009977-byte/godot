@@ -406,6 +406,8 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
 		if atk_effect.has("atk_bonus"):
 			damage += atk_effect["atk_bonus"]
+		if not is_instance_valid(card_ui) or card_ui.current_hp <= 0:
+			continue
 		if target_slot and not target_slot.is_empty() and target_slot.card_ui.current_hp <= 0:
 			await _destroy_card_in_slot(target_slot, not attacker_is_player)
 			card_ui.modulate = Color.WHITE
