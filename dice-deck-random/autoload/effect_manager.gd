@@ -13,7 +13,7 @@ const TIMING_CARD_UI_KEYS := {
 	Timing.ON_SUMMON: ["card_ui", "summon_card_ui", "summoned_card_ui"],
 	Timing.ON_ATTACK: ["attacker_ui", "attack_card_ui", "card_ui"],
 	Timing.ON_DEATH: ["card_ui", "dead_card_ui", "death_card_ui"],
-	Timing.ON_DEFENSE: ["defender_ui", "defense_card_ui", "target_ui", "target_card_ui", "card_ui"],
+	Timing.ON_DEFENSE: ["defender_ui", "defense_card_ui", "defend_card_ui", "target_ui", "target_card_ui", "card_ui"],
 	Timing.TURN_START: ["card_ui", "turn_card_ui", "turn_start_card_ui"],
 	Timing.TURN_END: ["card_ui", "turn_card_ui", "turn_end_card_ui"]
 }
