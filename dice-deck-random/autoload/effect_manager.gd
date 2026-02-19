@@ -1075,12 +1075,15 @@ func _track_damaged_target(result: Dictionary, target) -> void:
 func _mark_destroy_target(result: Dictionary, target) -> void:
 	_append_unique_target(result, "destroy_targets", target)
 
+func _is_target_destroyed(target) -> bool:
+	return target and target.current_hp <= 0
+
 func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
 	if not target or amount <= 0:
 		return
 	target.take_damage(amount)
 	_track_damaged_target(result, target)
-	if target.current_hp <= 0:
+	if _is_target_destroyed(target):
 		_mark_destroy_target(result, target)
 
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:

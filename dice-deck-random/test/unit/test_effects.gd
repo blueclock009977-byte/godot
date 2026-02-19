@@ -1331,6 +1331,14 @@ func test_destroy_mark_helper_is_shared_for_lethal_and_instant_destroy_paths() -
 	assert_ne(script_text.find("_mark_destroy_target(result, enemy)"), -1,
 		"purple_012 instant destroy should delegate target registration to _mark_destroy_target")
 
+func test_damage_destroy_check_is_centralized_after_apply_damage() -> void:
+	# 次のリファクタ候補着手: ダメージ後の残HP<=0判定を1ヘルパーへ集約
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _is_target_destroyed"), -1,
+		"effect_manager should define _is_target_destroyed helper")
+	assert_ne(script_text.find("if _is_target_destroyed(target):"), -1,
+		"_apply_damage_and_mark_destroy should use centralized destroy check helper")
+
 func test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_effects() -> void:
 	# 次の段階リファクタ: 単体ATK増減+ログ生成を1ヘルパーへ統一
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
