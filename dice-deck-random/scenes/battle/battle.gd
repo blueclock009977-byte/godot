@@ -30,11 +30,8 @@ func _update_all_ui() -> void:
 	_update_field_card_highlights()
 	_update_base_ui()
 
-func _update_opponent_hand_display() -> void:
-	for child in opponent_hand_container.get_children():
-		child.queue_free()
-	for i in range(opponent_hand.size()):
-		opponent_hand_container.add_child(BattleConstants.create_card_back())
+func _get_opponent_hand_count() -> int:
+	return opponent_hand.size()
 
 func _update_field_card_highlights() -> void:
 	var in_main_phase := current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2
