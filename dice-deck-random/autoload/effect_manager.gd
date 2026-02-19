@@ -272,7 +272,7 @@ func process_summon_effect(card_ui, is_player: bool, context: Dictionary) -> Dic
 
 		"blue_011":  # 登場時:次ダイス+1
 			result["dice_bonus"] = 1
-			result["log"] = "[color=cyan]%s の効果: 次のダイス+1[/color]" % card_name
+			result["log"] = _make_effect_log("cyan", card_name, "次のダイス+1")
 
 		"blue_014":  # 登場時:カード1枚ドロー
 			result["draw"] = 1

@@ -160,6 +160,13 @@ func test_summon_effect_draw_blue_014() -> void:
 	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
 	assert_eq(result.get("draw", 0), 1, "blue_014 should draw 1 card")
 
+func test_summon_effect_blue_011_uses_unified_log_format() -> void:
+	var mock_card_ui = _create_mock_card_ui("blue_011")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	var expected := EffectManager._make_effect_log("cyan", mock_card_ui.card_data.card_name, "次のダイス+1")
+	assert_eq(result.get("log", ""), expected, "blue_011 should use unified effect log format helper")
+
 func test_summon_effect_draw_and_damage_black_014() -> void:
 	# black_014: 登場時自分HP-2, 1枚ドロー
 	var mock_card_ui = _create_mock_card_ui("black_014")
