@@ -708,6 +708,16 @@ func test_process_timing_event_missing_required_payload_is_safe() -> void:
 	})
 	assert_eq(defense_result.get("final_damage", -1), 5, "ON_DEFENSE without defender_ui should keep incoming damage")
 
+	var turn_start_result = EffectManager.process_timing_event(EffectManager.Timing.TURN_START, {
+		"is_player": true
+	})
+	assert_eq(turn_start_result, [], "TURN_START without context should safely return empty results")
+
+	var turn_end_result = EffectManager.process_timing_event(EffectManager.Timing.TURN_END, {
+		"is_player": true
+	})
+	assert_eq(turn_end_result, [], "TURN_END without context should safely return empty results")
+
 func test_smoke_effects_trigger_on_each_timing() -> void:
 	# ON_SUMMON
 	var summon_card = _create_mock_card_ui("green_001")
