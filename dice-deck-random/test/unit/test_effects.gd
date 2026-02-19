@@ -965,6 +965,14 @@ func test_turn_timing_effect_helper_is_used_for_turn_start_and_end() -> void:
 	assert_ne(script_text.find("var results := _process_turn_timing_effects(slots, is_player, context, Timing.TURN_END)"), -1,
 		"process_turn_end_effects should route via unified turn timing helper")
 
+func test_turn_timing_effect_helper_has_single_definition_and_uses_prepare_guard() -> void:
+	# TURN_START/TURN_END ヘルパーの重複定義防止 + 入口ガード統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_eq(script_text.count("func _process_turn_timing_effects"), 1,
+		"_process_turn_timing_effects should have exactly one definition")
+	assert_ne(script_text.find("var prepared := _prepare_timing_effect(card_ui, timing)"), -1,
+		"_process_turn_timing_effects should use _prepare_timing_effect guard")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
