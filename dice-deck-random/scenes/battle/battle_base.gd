@@ -241,19 +241,27 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 
 	_update_all_ui()
 
+func _queue_destroy_target(target, destroy_queue: Array) -> void:
+	if not target or not is_instance_valid(target):
+		return
+	if target in destroy_queue:
+		return
+	destroy_queue.append(target)
+
 func _apply_damaged_targets_from_effect(result: Dictionary) -> void:
 	if not result.has("damaged_targets"):
 		return
+	var destroy_queue: Array = result.get("_resolved_destroy_targets", [])
 	for target in result["damaged_targets"]:
-		if not target or not is_instance_valid(target):
-			continue
 		if target.current_hp <= 0:
-			_destroy_effect_target(target)
+			_queue_destroy_target(target, destroy_queue)
+	result["_resolved_destroy_targets"] = destroy_queue
 
 func _apply_destroy_targets_from_effect(result: Dictionary) -> void:
-	if not result.has("destroy_targets"):
-		return
-	for target in result["destroy_targets"]:
+	var destroy_queue: Array = result.get("_resolved_destroy_targets", [])
+	for target in result.get("destroy_targets", []):
+		_queue_destroy_target(target, destroy_queue)
+	for target in destroy_queue:
 		_destroy_effect_target(target)
 
 func _destroy_effect_target(target) -> void:

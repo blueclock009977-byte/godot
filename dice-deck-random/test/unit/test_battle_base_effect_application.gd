@@ -6,6 +6,7 @@ class TestBattleBase extends BattleBase:
 	var destroyed_slot = null
 	var destroyed_owner_is_player: bool = false
 	var destroyed_ui = null
+	var destroy_call_count: int = 0
 
 	func _update_all_ui() -> void:
 		pass
@@ -15,10 +16,12 @@ class TestBattleBase extends BattleBase:
 		game_end_win = win
 
 	func _destroy_card_in_slot(target_slot, is_player_owner: bool) -> void:
+		destroy_call_count += 1
 		destroyed_slot = target_slot
 		destroyed_owner_is_player = is_player_owner
 
 	func _destroy_card_ui_immediate(card_ui) -> void:
+		destroy_call_count += 1
 		destroyed_ui = card_ui
 
 	func _find_slot_by_card_ui(card_ui):
@@ -210,4 +213,22 @@ func test_apply_effect_result_damaged_targets_skips_alive_card() -> void:
 
 	assert_null(battle.destroyed_slot, "alive damaged_targets should not be destroyed")
 	assert_null(battle.destroyed_ui, "alive damaged_targets should not call immediate destroy")
+	battle.free()
+
+func test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists() -> void:
+	var battle := TestBattleBase.new()
+	var card := CardUI.new()
+	card.current_hp = 0
+	var slot := DummySlot.new()
+	slot.card_ui = card
+	battle.player_slots = [slot]
+	battle.opponent_slots = []
+
+	battle._apply_effect_result({
+		"damaged_targets": [card],
+		"destroy_targets": [card]
+	}, true)
+
+	assert_eq(battle.destroy_call_count, 1,
+		"same card in damaged_targets and destroy_targets should be destroyed exactly once")
 	battle.free()
