@@ -711,6 +711,17 @@ func test_process_timing_event_dispatch_on_attack_with_generic_card_ui() -> void
 	})
 	assert_eq(result.get("direct_damage", 0), 1, "ON_ATTACK should accept unified card_ui payload")
 
+func test_process_timing_event_dispatch_on_attack_with_attack_card_ui_alias() -> void:
+	# 再現: ON_ATTACK payload が attack_card_ui だと attacker解決できず効果発動漏れ
+	var atk_card = _create_mock_card_ui("blue_012")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {
+		"attack_card_ui": atk_card,
+		"defender_ui": _create_mock_card_ui(""),
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("direct_damage", 0), 1, "ON_ATTACK should accept attack_card_ui payload alias")
+
 func test_timing_dispatch_method_table_routes_all_event_timings() -> void:
 	var summon_result = EffectManager._dispatch_timing_via_method_table(
 		EffectManager.Timing.ON_SUMMON,

@@ -247,28 +247,23 @@ func _apply_destroy_targets_from_effect(result: Dictionary) -> void:
 		_destroy_card_ui_immediate(target)
 
 func _apply_hp_damage_to_owner(is_player: bool, amount: int) -> void:
-	if amount <= 0:
-		return
-	if is_player:
-		player_hp -= amount
-		if player_hp <= 0:
-			_game_end(false)
-	else:
-		opponent_hp -= amount
-		if opponent_hp <= 0:
-			_game_end(true)
+	_apply_hp_damage(is_player, amount, false)
 
 func _apply_hp_damage_to_opponent(is_player: bool, amount: int) -> void:
+	_apply_hp_damage(is_player, amount, true)
+
+func _apply_hp_damage(is_player: bool, amount: int, to_opponent: bool) -> void:
 	if amount <= 0:
 		return
-	if is_player:
-		opponent_hp -= amount
-		if opponent_hp <= 0:
-			_game_end(true)
-	else:
+	var damage_player_hp := is_player != to_opponent
+	if damage_player_hp:
 		player_hp -= amount
 		if player_hp <= 0:
 			_game_end(false)
+	else:
+		opponent_hp -= amount
+		if opponent_hp <= 0:
+			_game_end(true)
 
 func _apply_hp_heal_to_owner(is_player: bool, amount: int) -> void:
 	if amount <= 0:
