@@ -22,3 +22,18 @@
 - 影響範囲: 1効果のみ（最小変更）
 - 構文チェック: 通過
 - GUT: 全件通過
+
+## Step 3: タイミング入口の安全化（必須payload欠落ガード）
+- 追加テスト: `test_process_timing_event_missing_required_payload_is_safe`
+- 再現内容: Dispatcher経由で`card_ui/attacker_ui/defender_ui`未指定時にクラッシュし得る
+- 修正:
+  - `process_summon_effect`: `card_ui`/`card_data` nullガード
+  - `process_attack_effect`: `attacker_ui`/`card_data` nullガード
+  - `process_death_effect`: `card_ui`/`card_data` nullガード
+  - `process_defense_effect`: `defender_ui`/`card_data` nullガード（`final_damage`返却）
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（283/283）
+
+## 次リファクタリング候補（着手開始）
+- 候補: ターン開始/終了処理の共通ループ化
+- 着手メモ: `process_turn_start_effects` と `process_turn_end_effects` の走査・emit・append部分が重複しているため、共通ヘルパー抽出を次Stepで実施予定
