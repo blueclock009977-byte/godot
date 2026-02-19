@@ -930,6 +930,17 @@ func test_process_timing_event_dispatch_on_defense_with_final_damage_alias() -> 
 	})
 	assert_eq(result.get("final_damage", -1), 3, "ON_DEFENSE should accept final_damage payload alias")
 
+func test_process_timing_event_dispatch_on_defense_with_target_ui_alias() -> void:
+	# 次の着手: ON_DEFENSE payload が target_ui でも防御効果入口で受けられるようにする
+	var defender = _create_mock_card_ui("yellow_004")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+		"target_ui": defender,
+		"damage": 5,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("final_damage", -1), 4, "ON_DEFENSE should accept target_ui payload alias")
+
 func test_process_timing_event_dispatch_on_turn_start() -> void:
 	var context := {
 		"player_slots": [_create_mock_slot("green_009"), null, null, null, null, null],
