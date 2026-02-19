@@ -138,22 +138,22 @@ func _ready() -> void:
 
 	var back_btn := Button.new()
 	back_btn.text = "戻る"
-	back_btn.custom_minimum_size = Vector2(140, 55)
-	back_btn.add_theme_font_size_override("font_size", 20)
+	back_btn.custom_minimum_size = Vector2(200, 70)
+	back_btn.add_theme_font_size_override("font_size", 26)
 	back_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
 	btn_row.add_child(back_btn)
 
 	var clear_btn := Button.new()
 	clear_btn.text = "全削除"
-	clear_btn.custom_minimum_size = Vector2(140, 55)
-	clear_btn.add_theme_font_size_override("font_size", 20)
+	clear_btn.custom_minimum_size = Vector2(200, 70)
+	clear_btn.add_theme_font_size_override("font_size", 26)
 	clear_btn.pressed.connect(_on_clear)
 	btn_row.add_child(clear_btn)
 
 	var save_btn := Button.new()
 	save_btn.text = "保存/読込"
-	save_btn.custom_minimum_size = Vector2(140, 55)
-	save_btn.add_theme_font_size_override("font_size", 20)
+	save_btn.custom_minimum_size = Vector2(200, 70)
+	save_btn.add_theme_font_size_override("font_size", 26)
 	save_btn.pressed.connect(_show_slot_dialog)
 	btn_row.add_child(save_btn)
 
@@ -405,7 +405,7 @@ func _show_slot_dialog() -> void:
 	# ダイアログ本体
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	panel.custom_minimum_size = Vector2(400, 500)
+	panel.custom_minimum_size = Vector2(700, 800)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.2)
 	style.corner_radius_top_left = 10
@@ -449,8 +449,8 @@ func _show_slot_dialog() -> void:
 	# 閉じるボタン
 	var close_btn := Button.new()
 	close_btn.text = "閉じる"
-	close_btn.custom_minimum_size = Vector2(120, 45)
-	close_btn.add_theme_font_size_override("font_size", 18)
+	close_btn.custom_minimum_size = Vector2(180, 60)
+	close_btn.add_theme_font_size_override("font_size", 24)
 	close_btn.pressed.connect(func(): slot_dialog.queue_free(); slot_dialog = null)
 	inner_vbox.add_child(close_btn)
 
@@ -473,23 +473,23 @@ func _load_slot_buttons(parent: VBoxContainer) -> void:
 		else:
 			label.text = "スロット %d (空)" % [i + 1]
 			label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
-		label.custom_minimum_size.x = 150
-		label.add_theme_font_size_override("font_size", 18)
+		label.custom_minimum_size.x = 200
+		label.add_theme_font_size_override("font_size", 24)
 		hbox.add_child(label)
 
 		# 保存ボタン
 		var save_btn := Button.new()
 		save_btn.text = "保存"
-		save_btn.custom_minimum_size = Vector2(70, 35)
-		save_btn.add_theme_font_size_override("font_size", 16)
+		save_btn.custom_minimum_size = Vector2(120, 50)
+		save_btn.add_theme_font_size_override("font_size", 22)
 		save_btn.pressed.connect(_save_to_slot.bind(i))
 		hbox.add_child(save_btn)
 
 		# 読込ボタン
 		var load_btn := Button.new()
 		load_btn.text = "読込"
-		load_btn.custom_minimum_size = Vector2(70, 35)
-		load_btn.add_theme_font_size_override("font_size", 16)
+		load_btn.custom_minimum_size = Vector2(120, 50)
+		load_btn.add_theme_font_size_override("font_size", 22)
 		load_btn.disabled = count == 0
 		load_btn.pressed.connect(_load_from_slot.bind(i))
 		hbox.add_child(load_btn)
