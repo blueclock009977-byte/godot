@@ -591,9 +591,12 @@ func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dict
 			result["mana"] = 2
 			result["log"] = "[color=green]%s の効果: マナ+2[/color]" % card_name
 
-		"green_014":  # 味方死亡時:自身HP+2 - これは別の味方が死んだ時に発動
-			# この効果は特殊: 他の味方死亡時にトリガー
-			pass
+		"green_014":  # 味方死亡時:自身HP+2
+			if context.get("ally_died", false):
+				var dead_card = context.get("dead_card_ui", null)
+				if dead_card != card_ui:
+					card_ui.heal(2)
+					result["log"] = "[color=green]%s の効果: 味方死亡で自身HP+2[/color]" % card_name
 
 		"black_002":  # 死亡時:敵1体HP-2
 			var target = _get_random_enemy(is_player, context)

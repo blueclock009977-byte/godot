@@ -222,6 +222,17 @@ func test_death_effect_mana_green_002() -> void:
 	var result := EffectManager.process_death_effect(mock_card_ui, true, context)
 	assert_eq(result.get("mana", 0), 1, "green_002 should give mana +1 on death")
 
+func test_death_effect_green_014_triggers_on_ally_death() -> void:
+	# green_014: 味方死亡時に自身HP+2
+	var watcher = _create_mock_card_ui("green_014")
+	watcher.current_hp = 3
+	var context := _create_empty_context()
+	context["ally_died"] = true
+	context["dead_card_ui"] = _create_mock_card_ui("")
+	var result := EffectManager.process_death_effect(watcher, true, context)
+	assert_eq(watcher.current_hp, 5, "green_014 should heal itself by 2 when ally dies")
+	assert_true(result.has("log"), "green_014 ally death trigger should produce log")
+
 func test_death_effect_spawn_token_black_006() -> void:
 	# black_006: 死亡時トークン召喚
 	var mock_card_ui = _create_mock_card_ui("black_006")

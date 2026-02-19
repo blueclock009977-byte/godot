@@ -426,6 +426,7 @@ func _destroy_card_in_slot(target_slot: FieldSlot, is_player_owner: bool) -> voi
 	_log("[color=gray]%s 破壊！[/color]" % card_ui.card_data.card_name)
 	await card_ui.play_destroy_animation()
 	_process_death_effect(card_ui, is_player_owner)
+	_process_ally_death_reactions(card_ui, is_player_owner)
 	target_slot.remove_card()
 	card_ui.queue_free()
 
@@ -437,10 +438,32 @@ func _destroy_card_ui_immediate(card_ui: CardUI) -> void:
 		return
 	if owner_slot in player_slots:
 		_process_death_effect(card_ui, true)
+		_process_ally_death_reactions(card_ui, true)
 	else:
 		_process_death_effect(card_ui, false)
+		_process_ally_death_reactions(card_ui, false)
 	owner_slot.remove_card()
 	card_ui.queue_free()
+
+func _process_ally_death_reactions(dead_card_ui: CardUI, is_player_owner: bool) -> void:
+	var ally_slots: Array = player_slots if is_player_owner else opponent_slots
+	for slot in ally_slots:
+		if not slot or slot.is_empty():
+			continue
+		var ally_card: CardUI = slot.card_ui
+		if ally_card == dead_card_ui:
+			continue
+		if not ally_card.card_data.has_effect():
+			continue
+		var context := _get_effect_context()
+		context["ally_died"] = true
+		context["dead_card_ui"] = dead_card_ui
+		var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
+			"card_ui": ally_card,
+			"is_player": is_player_owner,
+			"context": context
+		})
+		_apply_effect_result(result, is_player_owner)
 
 func _find_slot_by_card_ui(card_ui: CardUI) -> FieldSlot:
 	for slot in player_slots:
