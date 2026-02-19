@@ -21,10 +21,10 @@ func _generate_card_pool() -> void:
 	card_pool.clear()
 
 	# ═══════════════════════════════════════════
-	# バランス計算式（バニラ）:
-	# budget = 12 + 10 * cost
-	# score = 4*HP + 3*ATK + 3*面数 + (ATK*面数)//3
-	# 効果カードは別基準で個別調整
+	# バランス計算式（パパ合意）:
+	# budget = 16 + 16 * cost
+	# score = 8*HP + 5*ATK + 4*面数 + (ATK*面数)//3
+	# 効果カードは効果強度で予算補正
 	# ═══════════════════════════════════════════
 
 	# ═══════════════════════════════════════════
@@ -282,8 +282,36 @@ func _generate_card_pool() -> void:
 func _score_card(card: CardData) -> int:
 	var faces := card.attack_dice.size()
 	var synergy := (card.atk * faces) / 3
-	return 4 * card.hp + 3 * card.atk + 3 * faces + int(synergy)
+	return 8 * card.hp + 5 * card.atk + 4 * faces + int(synergy)
 
+func _base_budget(cost: int) -> int:
+	return 16 + 16 * cost
+
+func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
+	for _i in range(64):
+		var score := _score_card(card)
+		var delta := budget - score
+		if abs(delta) <= 1:
+			return
+
+		if delta > 0:
+			# 予算不足: まずHPを上げ、次にATKで微調整
+			if delta >= 8:
+				card.hp += 1
+			else:
+				card.atk += 1
+		else:
+			# 予算超過: まずHPを下げ、次にATKを下げる
+			if card.hp > 1 and -delta >= 8:
+				card.hp -= 1
+			elif card.atk > 0 and -delta >= 5:
+				card.atk -= 1
+			elif card.hp > 1:
+				card.hp -= 1
+			elif card.atk > 0:
+				card.atk -= 1
+			else:
+				return
 func _get_effect_budget_modifier(effect_id: String) -> int:
 	# 効果が強いほどマイナス（ステータス予算を消費）
 	# デメリット効果はプラス（ステータス予算を追加）
@@ -339,27 +367,8 @@ func _balance_effect_card_stats(card: CardData) -> void:
 	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
 		return
 
-	var budget := 12 + 10 * card.mana_cost + _get_effect_budget_modifier(card.effect_id)
-	var score := _score_card(card)
-	var delta := budget - score
-
-	# まずHPで調整（4pt刻み）
-	if delta != 0:
-		var hp_step := int(ceili(abs(delta) / 4.0))
-		if delta > 0:
-			card.hp += hp_step
-		else:
-			card.hp = maxi(1, card.hp - hp_step)
-
-	# 次にATKで微調整（3pt刻み）
-	score = _score_card(card)
-	delta = budget - score
-	if abs(delta) > 1:
-		var atk_step := int(ceili(abs(delta) / 3.0))
-		if delta > 0:
-			card.atk += atk_step
-		else:
-			card.atk = maxi(0, card.atk - atk_step)
+	var budget := _base_budget(card.mana_cost) + _get_effect_budget_modifier(card.effect_id)
+	_tune_card_stats_to_budget(card, budget)
 
 func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_arr: Array, color_type: CardData.ColorType, effect_id: String) -> void:
 	var card := CardData.new()
@@ -374,7 +383,10 @@ func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_ar
 	card.color_type = color_type
 	card.color = color_by_type.get(color_type, Color.WHITE)
 	card.effect_id = effect_id
-	_balance_effect_card_stats(card)
+	if color_type == CardData.ColorType.GRAY or effect_id == "":
+		_tune_card_stats_to_budget(card, _base_budget(card.mana_cost))
+	else:
+		_balance_effect_card_stats(card)
 	card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][id % 10]
 	card_pool.append(card)
 
