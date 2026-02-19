@@ -1244,6 +1244,18 @@ func test_player_heal_helper_is_shared_for_white_heal_effects() -> void:
 	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 2)"), -1,
 		"white_010 should delegate to player-heal helper")
 
+func test_draw_effect_helper_is_shared_for_basic_draw_effects() -> void:
+	# 次の具体的リファクタ候補: 単純ドロー+ログ生成を共通ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_draw_effect"), -1,
+		"effect_manager should define _apply_draw_effect helper")
+	assert_ne(script_text.find("_apply_draw_effect(result, \"cyan\", card_name, 1)"), -1,
+		"blue_014 should delegate to draw helper")
+	assert_ne(script_text.find("_apply_draw_effect(result, \"yellow\", card_name, 2)"), -1,
+		"yellow_003 should delegate to draw helper")
+	assert_ne(script_text.find("_apply_draw_effect(result, \"yellow\", card_name, 1)"), -1,
+		"yellow_005 should delegate to draw helper")
+
 func test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context() -> void:
 	# 次の段階リファクタ: process_timing_event の payload値解決を小ヘルパーで共通化
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

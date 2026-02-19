@@ -328,8 +328,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = _make_effect_log("cyan", card_name, "次のダイス+1")
 
 		"blue_014":  # 登場時:カード1枚ドロー
-			result["draw"] = 1
-			result["log"] = "[color=cyan]%s の効果: 1枚ドロー[/color]" % card_name
+			_apply_draw_effect(result, "cyan", card_name, 1)
 
 		"blue_018":  # 登場時:敵全体を1ターン凍結
 			var enemies = _get_all_enemies(is_player, context)
@@ -421,8 +420,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
 
 		"yellow_003":  # 登場時:手札2枚ドロー
-			result["draw"] = 2
-			result["log"] = "[color=yellow]%s の効果: 2枚ドロー[/color]" % card_name
+			_apply_draw_effect(result, "yellow", card_name, 2)
 
 		"yellow_006":  # 登場時:味方全体HP+1
 			var allies = _get_all_allies(is_player, context)
@@ -799,8 +797,7 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 
 		# 黄カードターン開始時効果
 		"yellow_005":  # ターン開始時:カード1枚ドロー
-			result["draw"] = 1
-			result["log"] = "[color=yellow]%s の効果: 1枚ドロー[/color]" % card_name
+			_apply_draw_effect(result, "yellow", card_name, 1)
 
 		"yellow_015":  # ターン開始時:味方1体HP+2
 			var target = _get_random_ally(is_player, context)
@@ -1057,6 +1054,13 @@ func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: Strin
 		return
 	result["mana"] = amount
 	result["log"] = _make_effect_log(color, card_name, "マナ+%d" % amount)
+
+func _apply_draw_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	result["draw"] = amount
+	result["log"] = _make_effect_log(color, card_name, "%d枚ドロー" % amount)
+
 
 func _apply_targeted_damage_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, suffix: String) -> void:
 	var target = _get_random_enemy(is_player, context)
