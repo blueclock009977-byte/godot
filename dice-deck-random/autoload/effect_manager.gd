@@ -219,34 +219,50 @@ func _resolve_timing_card_ui(timing: Timing, payload: Dictionary):
 		_:
 			return null
 
+func _resolve_timing_payload_value(payload: Dictionary, keys: Array, default_value):
+	for key in keys:
+		if payload.has(key):
+			return payload[key]
+	return default_value
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	match timing:
 		Timing.ON_SUMMON:
-			return process_summon_effect(_resolve_timing_card_ui(timing, payload), payload.get("is_player", true), payload.get("context", {}))
+			return process_summon_effect(
+				_resolve_timing_card_ui(timing, payload),
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
+			)
 		Timing.ON_ATTACK:
 			return process_attack_effect(
 				_resolve_timing_card_ui(timing, payload),
-				payload.get("defender_ui", null),
-				payload.get("is_player", true),
-				payload.get("context", {})
+				_resolve_timing_payload_value(payload, ["defender_ui"], null),
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
 			)
 		Timing.ON_DEATH:
 			return process_death_effect(
 				_resolve_timing_card_ui(timing, payload),
-				payload.get("is_player", true),
-				payload.get("context", {})
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
 			)
 		Timing.ON_DEFENSE:
 			return process_defense_effect(
 				_resolve_timing_card_ui(timing, payload),
-				payload.get("damage", 0),
-				payload.get("is_player", true),
-				payload.get("context", {})
+				_resolve_timing_payload_value(payload, ["damage"], 0),
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
 			)
 		Timing.TURN_START:
-			return process_turn_start_effects(payload.get("is_player", true), payload.get("context", {}))
+			return process_turn_start_effects(
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
+			)
 		Timing.TURN_END:
-			return process_turn_end_effects(payload.get("is_player", true), payload.get("context", {}))
+			return process_turn_end_effects(
+				_resolve_timing_payload_value(payload, ["is_player"], true),
+				_resolve_timing_payload_value(payload, ["context"], {})
+			)
 		_:
 			return {}
 

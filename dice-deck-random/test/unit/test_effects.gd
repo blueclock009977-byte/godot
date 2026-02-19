@@ -1244,6 +1244,18 @@ func test_player_heal_helper_is_shared_for_white_heal_effects() -> void:
 	assert_ne(script_text.find("_apply_player_heal_effect(result, \"white\", card_name, 2)"), -1,
 		"white_010 should delegate to player-heal helper")
 
+func test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context() -> void:
+	# 次の段階リファクタ: process_timing_event の payload値解決を小ヘルパーで共通化
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _resolve_timing_payload_value"), -1,
+		"effect_manager should define _resolve_timing_payload_value helper")
+	assert_ne(script_text.find("_resolve_timing_payload_value(payload, [\"defender_ui\"], null)"), -1,
+		"ON_ATTACK should resolve defender_ui via payload helper")
+	assert_ne(script_text.find("_resolve_timing_payload_value(payload, [\"damage\"], 0)"), -1,
+		"ON_DEFENSE should resolve damage via payload helper")
+	assert_true(script_text.count("_resolve_timing_payload_value(payload, [\"context\"], {})") >= 6,
+		"All timing routes should resolve context via payload helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════

@@ -65,6 +65,16 @@
 - 構文チェック: `bash tools/check_syntax.sh` 通過
 - GUT: 全件通過（335/335）
 
+## Step 6: process_timing_event の payload値解決を小ヘルパー化
+- 追加テスト: `test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context`
+- 初回結果: 失敗（`_resolve_timing_payload_value` 未定義）
+- 修正:
+  - `_resolve_timing_payload_value(payload, keys, default)` を追加
+  - `process_timing_event` の `is_player/context/defender_ui/damage` 解決を helper 経由へ置換
+  - 既存の `_resolve_timing_card_ui` は単一カード入口解決に専念
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（337/337）
+
 ## 次リファクタリング候補（着手開始）
-- 候補: `process_timing_event` の残りpayload解決（例: `defender_ui`/`context`）も小ヘルパー化し、dispatcherを「タイミング分岐のみ」に薄くする
-- 着手メモ: 単一カード入口は `_resolve_timing_card_ui` で共通化済み。次Stepは防御側ターゲットやcontext既定値の解決重複を最小差分で整理する
+- 候補: `process_timing_event` の payload alias 定義を辞書テーブル化（タイミング別キー一覧を1か所に集約）
+- 目的: 新タイミング追加時のpayloadキー漏れを減らし、テストで表形式に検証しやすくする
