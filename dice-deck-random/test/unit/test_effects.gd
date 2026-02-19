@@ -711,7 +711,7 @@ func test_process_timing_event_dispatch_on_attack_with_generic_card_ui() -> void
 	})
 	assert_eq(result.get("direct_damage", 0), 1, "ON_ATTACK should accept unified card_ui payload")
 
-func test_timing_dispatch_method_table_routes_summon_and_attack() -> void:
+func test_timing_dispatch_method_table_routes_all_event_timings() -> void:
 	var summon_result = EffectManager._dispatch_timing_via_method_table(
 		EffectManager.Timing.ON_SUMMON,
 		{"card_ui": _create_mock_card_ui("green_001")},
@@ -730,14 +730,49 @@ func test_timing_dispatch_method_table_routes_summon_and_attack() -> void:
 	)
 	assert_eq(attack_result.get("direct_damage", 0), 1, "method table should route ON_ATTACK through attack dispatcher")
 
-	var no_route = EffectManager._dispatch_timing_via_method_table(
+	var death_result = EffectManager._dispatch_timing_via_method_table(
 		EffectManager.Timing.ON_DEATH,
 		{"card_ui": _create_mock_card_ui("green_002")},
 		{},
 		true,
 		_create_empty_context()
 	)
-	assert_eq(no_route, null, "method table should return null for timings not yet migrated")
+	assert_eq(death_result.get("mana", 0), 1, "method table should route ON_DEATH through death dispatcher")
+
+	var defense_result = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.ON_DEFENSE,
+		{"defender_ui": _create_mock_card_ui("yellow_004"), "damage": 5},
+		{"damage": ["damage"]},
+		true,
+		_create_empty_context()
+	)
+	assert_eq(defense_result.get("final_damage", 5), 4, "method table should route ON_DEFENSE through defense dispatcher")
+
+	var turn_start_context := {
+		"player_slots": [_create_mock_slot("green_009"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var turn_start_result = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.TURN_START,
+		{},
+		{},
+		true,
+		turn_start_context
+	)
+	assert_eq(turn_start_result.size(), 1, "method table should route TURN_START through turn-start dispatcher")
+
+	var turn_end_context := {
+		"player_slots": [_create_mock_slot("yellow_010"), null, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	var turn_end_result = EffectManager._dispatch_timing_via_method_table(
+		EffectManager.Timing.TURN_END,
+		{},
+		{},
+		true,
+		turn_end_context
+	)
+	assert_eq(turn_end_result.size(), 1, "method table should route TURN_END through turn-end dispatcher")
 
 func test_process_timing_event_dispatch_on_death() -> void:
 	var death_card = _create_mock_card_ui("green_002")

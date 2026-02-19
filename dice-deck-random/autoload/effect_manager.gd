@@ -29,7 +29,11 @@ const TIMING_PAYLOAD_KEYS := {
 
 const TIMING_DISPATCHER_METHODS := {
 	Timing.ON_SUMMON: "_dispatch_timing_on_summon",
-	Timing.ON_ATTACK: "_dispatch_timing_on_attack"
+	Timing.ON_ATTACK: "_dispatch_timing_on_attack",
+	Timing.ON_DEATH: "_dispatch_timing_on_death",
+	Timing.ON_DEFENSE: "_dispatch_timing_on_defense",
+	Timing.TURN_START: "_dispatch_timing_turn_start",
+	Timing.TURN_END: "_dispatch_timing_turn_end"
 }
 
 # 効果定義データ
@@ -300,9 +304,15 @@ func _dispatch_timing_via_method_table(timing: Timing, payload: Dictionary, alia
 	var method_name: String = TIMING_DISPATCHER_METHODS.get(timing, "")
 	if method_name == "" or not has_method(method_name):
 		return null
-	if timing == Timing.ON_ATTACK:
-		return call(method_name, payload, aliases, is_player, context)
-	return call(method_name, payload, is_player, context)
+	match timing:
+		Timing.ON_ATTACK, Timing.ON_DEFENSE:
+			return call(method_name, payload, aliases, is_player, context)
+		Timing.ON_SUMMON, Timing.ON_DEATH:
+			return call(method_name, payload, is_player, context)
+		Timing.TURN_START, Timing.TURN_END:
+			return call(method_name, is_player, context)
+		_:
+			return null
 
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
