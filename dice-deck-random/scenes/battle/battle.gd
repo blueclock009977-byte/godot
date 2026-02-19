@@ -843,9 +843,6 @@ func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
 	# No direct interaction with opponent slots in v2
 	pass
 
-func _get_adjacent_slots(idx: int) -> Array[int]:
-	return BattleUtils.get_adjacent_slots(idx)
-
 func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	var effective_cost := _get_effective_summon_cost(card_ui)
 	player_mana -= effective_cost

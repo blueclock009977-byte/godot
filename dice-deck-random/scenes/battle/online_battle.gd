@@ -591,11 +591,13 @@ func _on_end_phase() -> void:
 func _on_end_turn() -> void:
 	if not is_player_turn or is_animating or game_over:
 		return
-	if current_phase == Phase.MAIN1 or current_phase == Phase.MAIN2:
-		var ok := await _send_action({"type": "end_turn"})
-		if not ok:
-			return
-		_end_turn()
+	# Keep network protocol consistent: turn end is always end_phase(main2).
+	if current_phase != Phase.MAIN2:
+		return
+	var ok := await _send_action({"type": "end_phase", "phase": "main2"})
+	if not ok:
+		return
+	_end_turn()
 
 func _end_turn() -> void:
 	current_phase = Phase.END
@@ -993,9 +995,6 @@ func _on_player_slot_clicked(slot: FieldSlot) -> void:
 
 func _on_opponent_slot_clicked(_slot: FieldSlot) -> void:
 	pass
-
-func _get_adjacent_slots(idx: int) -> Array[int]:
-	return BattleUtils.get_adjacent_slots(idx)
 
 func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	var effective_cost := _get_effective_summon_cost(card_ui)
