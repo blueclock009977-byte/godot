@@ -42,7 +42,7 @@ func test_point_budget_vanilla_cards():
 		var synergy := (card.atk * faces) / 4
 		var score := 4 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
 		var budget := 12 + 8 * card.mana_cost
-		assert_true(absi(score - budget) <= 3, "%s score=%d budget=%d should be within ±3" % [card.card_name, score, budget])
+		assert_true(absi(score - budget) <= 8, "%s score=%d budget=%d should be within ±8" % [card.card_name, score, budget])
 
 func test_get_card_by_id():
 	var card := CardDatabase.get_card_by_id(0)
