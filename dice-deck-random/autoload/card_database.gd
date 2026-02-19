@@ -21,10 +21,10 @@ func _generate_card_pool() -> void:
 	card_pool.clear()
 
 	# ═══════════════════════════════════════════
-	# バランス計算式（2026-02-20調整）:
-	# budget = 12 + 8 * cost
-	# score = 4*HP + 3*ATK + 2*面数 + (ATK*面数)//4
-	# 効果カードは効果強度で予算補正（強い効果は減算、デメリットは加算）
+	# バランス計算式（2026-02-20再調整）:
+	# budget = 14 + 8 * cost
+	# score = 5*HP + 3*ATK + 3*面数 + (ATK*面数)//4
+	# 効果カードは効果強度で予算補正（強い効果は大きく減算、デメリットは加算）
 	# ═══════════════════════════════════════════
 
 	# ═══════════════════════════════════════════
@@ -282,10 +282,10 @@ func _generate_card_pool() -> void:
 func _score_card(card: CardData) -> int:
 	var faces := card.attack_dice.size()
 	var synergy := (card.atk * faces) / 4
-	return 4 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
+	return 5 * card.hp + 3 * card.atk + 3 * faces + int(synergy)
 
 func _base_budget(cost: int) -> int:
-	return 12 + 8 * cost
+	return 14 + 8 * cost
 
 func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 	for _i in range(64):
@@ -318,17 +318,17 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 	if effect_id == "":
 		return 0
 
-	var mod := -2  # 基本は中程度の効果コスト
+	var mod := -5  # 弱い効果でも重めに予算を消費
 
 	# デメリット系（主に黒）
 	match effect_id:
-		"black_001": return 1
-		"black_003": return 2
-		"black_005": return 3
-		"black_008": return 5
-		"black_017": return 4
-		"black_014": return 0  # 自傷+ドローで相殺気味
-		"red_009": return 1  # 自爆デメリットを少し還元
+		"black_001": return 3
+		"black_003": return 5
+		"black_005": return 7
+		"black_008": return 10
+		"black_017": return 8
+		"black_014": return 2  # 自傷+ドローで一部相殺
+		"red_009": return 3  # 自爆デメリットを還元
 
 	# 強力な効果
 	if effect_id in [
@@ -339,7 +339,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"purple_004", "purple_006", "purple_009", "purple_012",
 		"white_007", "white_011", "white_015"
 	]:
-		mod = -4
+		mod = -12
 	elif effect_id in [
 		"blue_004", "blue_006", "blue_008", "blue_014", "blue_016", "blue_017",
 		"green_004", "green_006", "green_008", "green_009", "green_015", "green_016",
@@ -349,7 +349,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"purple_007", "purple_008", "purple_010", "purple_011", "purple_014",
 		"white_004", "white_005", "white_006", "white_009", "white_010", "white_014"
 	]:
-		mod = -3
+		mod = -9
 	elif effect_id in [
 		"blue_001", "blue_002", "blue_003", "blue_005", "blue_009", "blue_010", "blue_011", "blue_012", "blue_013", "blue_015",
 		"green_001", "green_002", "green_003", "green_005", "green_007", "green_010", "green_011", "green_012", "green_014",
@@ -359,7 +359,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"purple_001", "purple_002", "purple_003", "purple_005", "purple_013",
 		"white_001", "white_002", "white_003", "white_008", "white_012", "white_013"
 	]:
-		mod = -1
+		mod = -5
 
 	return mod
 
@@ -383,8 +383,10 @@ func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_ar
 	card.color_type = color_type
 	card.color = color_by_type.get(color_type, Color.WHITE)
 	card.effect_id = effect_id
-	# 個性重視のため、定義ステータスをそのまま採用（自動再調整は無効）
-	# 必要なら将来ここで再度チューニングを有効化する
+	if color_type == CardData.ColorType.GRAY or effect_id == "":
+		_tune_card_stats_to_budget(card, _base_budget(card.mana_cost))
+	else:
+		_balance_effect_card_stats(card)
 	card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][id % 10]
 	card_pool.append(card)
 
