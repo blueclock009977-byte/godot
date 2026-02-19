@@ -838,6 +838,16 @@ func test_process_timing_event_dispatch_on_death_with_dead_card_ui_fallback() ->
 	})
 	assert_eq(result.get("mana", 0), 1, "ON_DEATH should accept unified dead_card_ui payload")
 
+func test_process_timing_event_dispatch_on_death_with_death_card_ui_alias() -> void:
+	# 再現: ON_DEATH payload が death_card_ui だと死亡時効果が漏れる
+	var death_card = _create_mock_card_ui("green_002")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
+		"death_card_ui": death_card,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("mana", 0), 1, "ON_DEATH should accept death_card_ui payload alias")
+
 func test_process_timing_event_dispatch_on_defense() -> void:
 	var defender = _create_mock_card_ui("yellow_004")
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
