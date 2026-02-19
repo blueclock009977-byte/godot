@@ -761,6 +761,16 @@ func test_process_timing_event_dispatch_on_turn_start() -> void:
 	assert_eq(result.size(), 1, "Dispatcher should route TURN_START to turn-start handler")
 	assert_eq(result[0].get("mana", 0), 1, "TURN_START dispatcher should preserve handler result")
 
+func test_process_timing_event_dispatch_on_turn_start_with_card_ui_payload() -> void:
+	var card_ui = _create_mock_card_ui("green_009")
+	var result: Array = EffectManager.process_timing_event(EffectManager.Timing.TURN_START, {
+		"card_ui": card_ui,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.size(), 1, "TURN_START should accept unified card_ui payload for single-card dispatch")
+	assert_eq(result[0].get("mana", 0), 1, "TURN_START single-card dispatch should use effect_id handler")
+
 func test_process_timing_event_dispatch_on_turn_end() -> void:
 	var context := {
 		"player_slots": [_create_mock_slot("yellow_010"), null, null, null, null, null],
@@ -1319,9 +1329,9 @@ func test_timing_dispatcher_helpers_cover_all_event_routes() -> void:
 		"process_timing_event should delegate ON_DEATH routing to helper")
 	assert_ne(script_text.find("Timing.ON_DEFENSE:\n\t\t\treturn _dispatch_timing_on_defense(payload, aliases, is_player, context)"), -1,
 		"process_timing_event should delegate ON_DEFENSE routing to helper")
-	assert_ne(script_text.find("Timing.TURN_START:\n\t\t\treturn _dispatch_timing_turn_start(is_player, context)"), -1,
+	assert_ne(script_text.find("Timing.TURN_START:\n\t\t\treturn _dispatch_timing_turn_start(payload, is_player, context)"), -1,
 		"process_timing_event should delegate TURN_START routing to helper")
-	assert_ne(script_text.find("Timing.TURN_END:\n\t\t\treturn _dispatch_timing_turn_end(is_player, context)"), -1,
+	assert_ne(script_text.find("Timing.TURN_END:\n\t\t\treturn _dispatch_timing_turn_end(payload, is_player, context)"), -1,
 		"process_timing_event should delegate TURN_END routing to helper")
 
 func test_turn_start_poison_tick_processing_is_extracted_to_helper() -> void:

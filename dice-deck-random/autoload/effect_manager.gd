@@ -13,7 +13,9 @@ const TIMING_CARD_UI_KEYS := {
 	Timing.ON_SUMMON: ["card_ui", "summon_card_ui"],
 	Timing.ON_ATTACK: ["attacker_ui", "card_ui"],
 	Timing.ON_DEATH: ["card_ui", "dead_card_ui"],
-	Timing.ON_DEFENSE: ["defender_ui", "card_ui"]
+	Timing.ON_DEFENSE: ["defender_ui", "card_ui"],
+	Timing.TURN_START: ["card_ui", "turn_card_ui"],
+	Timing.TURN_END: ["card_ui", "turn_card_ui"]
 }
 
 const TIMING_PAYLOAD_KEYS := {
@@ -264,10 +266,30 @@ func _dispatch_timing_on_defense(payload: Dictionary, aliases: Dictionary, is_pl
 		context
 	)
 
-func _dispatch_timing_turn_start(is_player: bool, context: Dictionary):
+func _dispatch_timing_turn_start(payload: Dictionary, is_player: bool, context: Dictionary):
+	var card_ui = _resolve_timing_card_ui(Timing.TURN_START, payload)
+	if card_ui:
+		var prepared := _prepare_timing_effect(card_ui, Timing.TURN_START)
+		if not prepared.get("ok", false):
+			return []
+		var single_result := _dispatch_turn_timing_effect(prepared.get("effect_id", ""), card_ui, is_player, context, prepared.get("card_name", ""), Timing.TURN_START)
+		if single_result.size() == 0:
+			return []
+		_emit_effect_trigger_if_logged(prepared.get("effect_id", ""), card_ui, null, single_result)
+		return [single_result]
 	return process_turn_start_effects(is_player, context)
 
-func _dispatch_timing_turn_end(is_player: bool, context: Dictionary):
+func _dispatch_timing_turn_end(payload: Dictionary, is_player: bool, context: Dictionary):
+	var card_ui = _resolve_timing_card_ui(Timing.TURN_END, payload)
+	if card_ui:
+		var prepared := _prepare_timing_effect(card_ui, Timing.TURN_END)
+		if not prepared.get("ok", false):
+			return []
+		var single_result := _dispatch_turn_timing_effect(prepared.get("effect_id", ""), card_ui, is_player, context, prepared.get("card_name", ""), Timing.TURN_END)
+		if single_result.size() == 0:
+			return []
+		_emit_effect_trigger_if_logged(prepared.get("effect_id", ""), card_ui, null, single_result)
+		return [single_result]
 	return process_turn_end_effects(is_player, context)
 
 func process_timing_event(timing: Timing, payload: Dictionary):
@@ -285,9 +307,9 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 		Timing.ON_DEFENSE:
 			return _dispatch_timing_on_defense(payload, aliases, is_player, context)
 		Timing.TURN_START:
-			return _dispatch_timing_turn_start(is_player, context)
+			return _dispatch_timing_turn_start(payload, is_player, context)
 		Timing.TURN_END:
-			return _dispatch_timing_turn_end(is_player, context)
+			return _dispatch_timing_turn_end(payload, is_player, context)
 		_:
 			return {}
 
