@@ -375,6 +375,21 @@ func test_summon_effect_red_001_marks_destroy_target_when_hp_zero() -> void:
 	assert_true(result.has("destroy_targets"), "red_001 should mark destroy_targets when target HP <= 0")
 	assert_eq(result["destroy_targets"].size(), 1, "red_001 should mark exactly 1 destroyed target")
 
+func test_summon_effect_red_007_buffs_all_allies() -> void:
+	var mock_card_ui = _create_mock_card_ui("red_007")
+	var ally1 = _create_mock_slot_with_ui("")
+	var ally2 = _create_mock_slot_with_ui("")
+	var context := {
+		"player_slots": [ally1, ally2, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+		"current_dice": 1
+	}
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(ally1.card_ui.atk_modified, 1, "red_007 should buff ally1 ATK by +1")
+	assert_eq(ally2.card_ui.atk_modified, 1, "red_007 should buff ally2 ATK by +1")
+	var expected := EffectManager._make_effect_log("red", mock_card_ui.card_data.card_name, "味方全体ATK+1")
+	assert_eq(result.get("log", ""), expected, "red_007 should use unified aoe atk buff log format")
+
 func test_summon_effect_yellow_001() -> void:
 	# yellow_001: 登場時味方1体HP+2
 	var mock_card_ui = _create_mock_card_ui("yellow_001")
@@ -1609,6 +1624,14 @@ func test_summon_yellow_013_uses_shared_aoe_atk_heal_helper() -> void:
 		"effect_manager should define _apply_aoe_atk_and_heal_effect helper")
 	assert_ne(script_text.find("_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, \"yellow\", \"味方全体ATK+1,HP+1\")"), -1,
 		"yellow_013 should delegate buff+heal to _apply_aoe_atk_and_heal_effect helper")
+
+func test_summon_red_007_uses_shared_aoe_atk_modifier_helper() -> void:
+	# 次の小さなリファクタ候補: 味方全体ATKバフも共通helperへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_aoe_atk_modifier_effect"), -1,
+		"effect_manager should define _apply_aoe_atk_modifier_effect helper")
+	assert_ne(script_text.find("\"red_007\":  # 登場時:味方全体ATK+1\n\t\t\t_apply_aoe_atk_modifier_effect(_get_all_allies(is_player, context), 1, result, card_name, \"red\", \"味方全体ATK+1\")"), -1,
+		"red_007 should delegate aoe ATK buff to _apply_aoe_atk_modifier_effect helper")
 
 func test_defense_final_damage_log_helper_is_shared_for_damage_reduction_effects() -> void:
 	# 次の小さなリファクタ候補: 防御時の最終ダメージ更新+ログを共通helperへ統一

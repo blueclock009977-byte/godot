@@ -448,10 +448,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_aoe_damage_effect(enemies, 1, result, card_name, "red", "敵全体HP-1")
 
 		"red_007":  # 登場時:味方全体ATK+1
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.modify_atk(1)
-			result["log"] = "[color=red]%s の効果: 味方全体ATK+1[/color]" % card_name
+			_apply_aoe_atk_modifier_effect(_get_all_allies(is_player, context), 1, result, card_name, "red", "味方全体ATK+1")
 
 		"red_011":  # 登場時:敵1体HP-3
 			_apply_targeted_damage_effect(is_player, context, 3, result, card_name, "red", "にHP-3")
@@ -1131,10 +1128,14 @@ func _apply_targeted_atk_modifier_effect(is_player: bool, context: Dictionary, a
 	result["log"] = _make_effect_log(color, card_name, "%s%s" % [target.card_data.card_name, suffix])
 
 func _apply_enemy_aoe_atk_modifier_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
-	var enemies = _get_all_enemies(is_player, context)
-	for enemy in enemies:
-		enemy.modify_atk(amount)
-	if enemies.size() > 0:
+	_apply_aoe_atk_modifier_effect(_get_all_enemies(is_player, context), amount, result, card_name, color, message)
+
+func _apply_aoe_atk_modifier_effect(targets: Array, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	if amount == 0:
+		return
+	for target in targets:
+		target.modify_atk(amount)
+	if targets.size() > 0:
 		result["log"] = _make_effect_log(color, card_name, message)
 
 func _apply_damage_to_targets_and_mark_destroy(targets: Array, amount: int, result: Dictionary) -> void:
