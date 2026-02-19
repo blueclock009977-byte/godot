@@ -434,8 +434,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			var enemies = _get_all_enemies(is_player, context)
 			for enemy in enemies:
 				if enemy.card_data.mana_cost <= 3:
-					result["destroy_targets"] = result.get("destroy_targets", [])
-					result["destroy_targets"].append(enemy)
+					_mark_destroy_target(result, enemy)
 			if result.has("destroy_targets") and result["destroy_targets"].size() > 0:
 				result["log"] = "[color=magenta]%s の効果: コスト3以下の敵を破壊[/color]" % card_name
 
@@ -998,14 +997,19 @@ func _emit_effect_trigger_if_logged(effect_id: String, source_card, target, resu
 	if result.has("log"):
 		effect_triggered.emit(effect_id, source_card, target)
 
+func _mark_destroy_target(result: Dictionary, target) -> void:
+	if not target:
+		return
+	result["destroy_targets"] = result.get("destroy_targets", [])
+	if target not in result["destroy_targets"]:
+		result["destroy_targets"].append(target)
+
 func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> void:
 	if not target or amount <= 0:
 		return
 	target.take_damage(amount)
 	if target.current_hp <= 0:
-		result["destroy_targets"] = result.get("destroy_targets", [])
-		if target not in result["destroy_targets"]:
-			result["destroy_targets"].append(target)
+		_mark_destroy_target(result, target)
 
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
 	result["self_damage"] = amount

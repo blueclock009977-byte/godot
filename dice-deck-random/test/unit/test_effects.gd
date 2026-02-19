@@ -1096,6 +1096,16 @@ func test_death_targeted_damage_helper_is_shared_for_single_target_death_damage_
 	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 4, result, card_name, \"red\", \"にHP-4\")"), -1,
 		"red_014 should delegate to targeted damage helper")
 
+func test_destroy_mark_helper_is_shared_for_lethal_and_instant_destroy_paths() -> void:
+	# 次の段階リファクタ: HP<=0破壊登録を1ヘルパーへ集約（ダメージ経由/即時破壊経由の両方）
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _mark_destroy_target"), -1,
+		"effect_manager should define _mark_destroy_target")
+	assert_ne(script_text.find("_mark_destroy_target(result, target)"), -1,
+		"_apply_damage_and_mark_destroy should delegate lethal registration to _mark_destroy_target")
+	assert_ne(script_text.find("_mark_destroy_target(result, enemy)"), -1,
+		"purple_012 instant destroy should delegate target registration to _mark_destroy_target")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
