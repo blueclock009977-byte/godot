@@ -10,8 +10,11 @@ var current_deck_slot: int = -1  # -1 = デッキ未設定
 
 func _ready() -> void:
 	_load_user_name()
+	_load_current_deck_slot()
 	if user_name != "":
 		FirebaseManager.player_id = user_name
+		# 起動時にデッキを復元
+		_restore_deck_on_startup()
 
 func change_scene(scene_path: String) -> void:
 	get_tree().change_scene_to_file(scene_path)
@@ -110,3 +113,38 @@ func delete_deck_slot(slot: int) -> void:
 	if user_name == "" or slot < 0 or slot >= MAX_DECK_SLOTS:
 		return
 	await FirebaseManager.delete_data("users/%s/decks/%d" % [user_name, slot])
+
+func _load_current_deck_slot() -> void:
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("localStorage.getItem('ddr_current_deck_slot')")
+		if result != null and str(result) != "" and str(result) != "null":
+			current_deck_slot = int(str(result))
+	else:
+		var path := "user://current_deck_slot.txt"
+		if FileAccess.file_exists(path):
+			var f := FileAccess.open(path, FileAccess.READ)
+			if f:
+				var val := f.get_as_text().strip_edges()
+				if val.is_valid_int():
+					current_deck_slot = int(val)
+				f.close()
+
+func save_current_deck_slot(slot: int) -> void:
+	current_deck_slot = slot
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("localStorage.setItem('ddr_current_deck_slot', '%d')" % slot)
+	else:
+		var f := FileAccess.open("user://current_deck_slot.txt", FileAccess.WRITE)
+		if f:
+			f.store_string(str(slot))
+			f.close()
+
+func _restore_deck_on_startup() -> void:
+	if current_deck_slot >= 0 and current_deck_slot < MAX_DECK_SLOTS:
+		var deck := await load_deck_from_slot(current_deck_slot)
+		if deck.size() > 0:
+			player_deck = deck
+		else:
+			# Firebaseにデッキがない場合はスロットをリセット
+			current_deck_slot = -1
+			save_current_deck_slot(-1)
