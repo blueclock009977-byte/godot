@@ -455,15 +455,18 @@ func _process_ally_death_reactions(dead_card_ui: CardUI, is_player_owner: bool) 
 			continue
 		if not ally_card.card_data.has_effect():
 			continue
-		var context := _get_effect_context()
-		context["ally_died"] = true
-		context["dead_card_ui"] = dead_card_ui
 		var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
 			"card_ui": ally_card,
 			"is_player": is_player_owner,
-			"context": context
+			"context": _build_ally_death_context(dead_card_ui)
 		})
 		_apply_effect_result(result, is_player_owner)
+
+func _build_ally_death_context(dead_card_ui: CardUI) -> Dictionary:
+	var context := _get_effect_context()
+	context["ally_died"] = true
+	context["dead_card_ui"] = dead_card_ui
+	return context
 
 func _find_slot_by_card_ui(card_ui: CardUI) -> FieldSlot:
 	for slot in player_slots:
