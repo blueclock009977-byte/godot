@@ -500,7 +500,7 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 			result["log"] = "[color=purple]%s の効果: 吸血[/color]" % card_name
 
 		"black_015":  # 攻撃時:自身HP-1,ATK+2
-			attacker_ui.take_damage(1)
+			_apply_damage_and_mark_destroy(attacker_ui, 1, result)
 			result["atk_bonus"] = 2
 			result["log"] = "[color=purple]%s の効果: HP-1, ATK+2[/color]" % card_name
 

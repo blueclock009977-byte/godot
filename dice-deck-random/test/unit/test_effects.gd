@@ -192,6 +192,16 @@ func test_attack_effect_lifesteal_black_007() -> void:
 	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
 	assert_true(result.get("lifesteal", false), "black_007 should have lifesteal")
 
+func test_attack_effect_black_015_marks_self_destroy_when_hp_zero() -> void:
+	var attacker = _create_mock_card_ui("black_015")
+	attacker.current_hp = 1
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	var result := EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_true(result.has("destroy_targets"), "black_015 should mark destroy_targets when self HP <= 0")
+	assert_eq(result["destroy_targets"].size(), 1, "black_015 should mark exactly one destroyed attacker")
+	assert_eq(result["destroy_targets"][0], attacker, "black_015 should mark attacker as destroyed target")
+
 func test_death_effect_red_014_marks_destroy_target_when_hp_zero() -> void:
 	var mock_card_ui = _create_mock_card_ui("red_014")
 	var enemy_slot = _create_mock_slot_with_ui("")
