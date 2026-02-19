@@ -1412,6 +1412,16 @@ func test_draw_effect_helper_is_shared_for_basic_draw_effects() -> void:
 	assert_ne(script_text.find("_apply_draw_effect(result, \"yellow\", card_name, 1)"), -1,
 		"yellow_005 should delegate to draw helper")
 
+func test_random_ally_heal_helper_is_shared_for_green_011_yellow_001_015() -> void:
+	# 次の具体的リファクタ候補: ランダム味方回復+ログ生成を共通ヘルパーへ統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _apply_random_ally_heal_effect"), -1,
+		"effect_manager should define _apply_random_ally_heal_effect helper")
+	assert_ne(script_text.find("_apply_random_ally_heal_effect(is_player, context, 2, result, \"green\", card_name)"), -1,
+		"green_011 should delegate to random-ally-heal helper")
+	assert_true(script_text.count("_apply_random_ally_heal_effect(is_player, context, 2, result, \"yellow\", card_name)") >= 2,
+		"yellow_001 and yellow_015 should delegate to random-ally-heal helper")
+
 func test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context() -> void:
 	# 次の段階リファクタ: process_timing_event の payload値解決を小ヘルパーで共通化
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")

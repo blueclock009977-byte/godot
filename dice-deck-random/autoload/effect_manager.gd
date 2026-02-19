@@ -404,10 +404,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_mana_gain_effect(result, "green", card_name, 3)
 
 		"green_011":  # 登場時:味方1体HP+2
-			var target = _get_random_ally(is_player, context)
-			if target:
-				target.heal(2)
-				result["log"] = "[color=green]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
+			_apply_random_ally_heal_effect(is_player, context, 2, result, "green", card_name)
 
 		"green_013":  # 登場時:マナ全回復
 			result["mana_full"] = true
@@ -471,10 +468,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		# 黄カード登場時効果
 		# ═══════════════════════════════════════════
 		"yellow_001":  # 登場時:味方1体HP+2
-			var target = _get_random_ally(is_player, context)
-			if target:
-				target.heal(2)
-				result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
+			_apply_random_ally_heal_effect(is_player, context, 2, result, "yellow", card_name)
 
 		"yellow_003":  # 登場時:手札2枚ドロー
 			_apply_draw_effect(result, "yellow", card_name, 2)
@@ -851,10 +845,7 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 			_apply_draw_effect(result, "yellow", card_name, 1)
 
 		"yellow_015":  # ターン開始時:味方1体HP+2
-			var target = _get_random_ally(is_player, context)
-			if target:
-				target.heal(2)
-				result["log"] = "[color=yellow]%s の効果: %s のHP+2[/color]" % [card_name, target.card_data.card_name]
+			_apply_random_ally_heal_effect(is_player, context, 2, result, "yellow", card_name)
 
 		# 白カードターン開始時効果
 		"white_003":  # ターン開始時:自分HP+1
@@ -1119,6 +1110,15 @@ func _apply_draw_effect(result: Dictionary, color: String, card_name: String, am
 		return
 	result["draw"] = amount
 	result["log"] = _make_effect_log(color, card_name, "%d枚ドロー" % amount)
+
+func _apply_random_ally_heal_effect(is_player: bool, context: Dictionary, amount: int, result: Dictionary, color: String, card_name: String) -> void:
+	if amount <= 0:
+		return
+	var target = _get_random_ally(is_player, context)
+	if not target:
+		return
+	target.heal(amount)
+	result["log"] = _make_effect_log(color, card_name, "%s のHP+%d" % [target.card_data.card_name, amount])
 
 func _apply_status_effect_with_log(target, status: StatusEffect, duration: int, result: Dictionary, color: String, card_name: String, suffix: String) -> void:
 	if not target:
