@@ -407,8 +407,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_random_ally_heal_effect(is_player, context, 2, result, "green", card_name)
 
 		"green_013":  # 登場時:マナ全回復
-			result["mana_full"] = true
-			result["log"] = "[color=green]%s の効果: マナ全回復[/color]" % card_name
+			_apply_mana_full_effect(result, "green", card_name)
 
 		"green_015":  # 登場時:マナ+2,自身HP+2
 			result["mana"] = 2
@@ -1084,6 +1083,10 @@ func _apply_mana_gain_effect(result: Dictionary, color: String, card_name: Strin
 		return
 	result["mana"] = amount
 	result["log"] = _make_effect_log(color, card_name, "マナ+%d" % amount)
+
+func _apply_mana_full_effect(result: Dictionary, color: String, card_name: String) -> void:
+	result["mana_full"] = true
+	result["log"] = _make_effect_log(color, card_name, "マナ全回復")
 
 func _apply_draw_effect(result: Dictionary, color: String, card_name: String, amount: int) -> void:
 	if amount <= 0:

@@ -146,6 +146,14 @@ func test_summon_effect_mana_green_004() -> void:
 	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
 	assert_eq(result.get("mana", 0), 2, "green_004 should give mana +2")
 
+func test_summon_effect_mana_full_green_013_uses_shared_helper() -> void:
+	var mock_card_ui = _create_mock_card_ui("green_013")
+	var context := _create_empty_context()
+	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_true(result.get("mana_full", false), "green_013 should set mana_full flag")
+	var expected := EffectManager._make_effect_log("green", mock_card_ui.card_data.card_name, "マナ全回復")
+	assert_eq(result.get("log", ""), expected, "green_013 should use unified mana-full helper log format")
+
 func test_summon_effect_self_damage_black() -> void:
 	# black_001: 登場時自分HP-1
 	var mock_card_ui = _create_mock_card_ui("black_001")
