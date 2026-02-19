@@ -1,7 +1,8 @@
 extends GutTest
 
-func test_card_pool_has_20_cards():
-	assert_eq(CardDatabase.card_pool.size(), 20, "CardDatabase should have 20 cards")
+func test_card_pool_has_160_cards():
+	# 8色 × 20枚 = 160枚
+	assert_eq(CardDatabase.card_pool.size(), 160, "CardDatabase should have 160 cards (8 colors × 20)")
 
 func test_all_cards_have_valid_cost():
 	for card in CardDatabase.card_pool:
@@ -30,11 +31,15 @@ func test_all_cards_have_unique_ids():
 		assert_false(ids.has(card.id), "Card ID %d should be unique" % card.id)
 		ids[card.id] = true
 
-func test_point_budget():
+func test_point_budget_vanilla_cards():
+	# バニラ（グレー）カードのみポイントバジェットをチェック
+	# budget = cost × 3 + 4, ATK=1pt, HP=1pt, ダイス目=2pt
 	for card in CardDatabase.card_pool:
-		var total := card.atk + card.hp + card.attack_dice.size()
-		var expected := card.mana_cost * 3 + 3
-		assert_eq(total, expected, "%s budget: atk(%d)+hp(%d)+dice(%d)=%d should be %d" % [card.card_name, card.atk, card.hp, card.attack_dice.size(), total, expected])
+		if card.color_type != CardData.ColorType.GRAY:
+			continue
+		var total := card.atk + card.hp + card.attack_dice.size() * 2
+		var expected := card.mana_cost * 3 + 4
+		assert_eq(total, expected, "%s budget: atk(%d)+hp(%d)+dice(%d×2)=%d should be %d" % [card.card_name, card.atk, card.hp, card.attack_dice.size(), total, expected])
 
 func test_get_card_by_id():
 	var card := CardDatabase.get_card_by_id(0)
