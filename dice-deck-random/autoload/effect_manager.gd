@@ -1135,6 +1135,14 @@ func _apply_aoe_damage_effect(targets: Array, amount: int, result: Dictionary, c
 	if targets.size() > 0:
 		result["log"] = _make_effect_log(color, card_name, message)
 
+func _apply_aoe_atk_and_heal_effect(targets: Array, atk_amount: int, heal_amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	if atk_amount == 0 and heal_amount == 0:
+		return
+	for target in targets:
+		target.modify_atk(atk_amount)
+		target.heal(heal_amount)
+	result["log"] = _make_effect_log(color, card_name, message)
+
 func _apply_aoe_heal_effect(targets: Array, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
 	if amount <= 0:
 		return
