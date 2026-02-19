@@ -216,3 +216,9 @@ func test_attack_resolution_skips_when_attacker_is_destroyed_by_own_attack_effec
 	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
 	assert_ne(script_text.find("if not is_instance_valid(card_ui) or card_ui.current_hp <= 0:"), -1,
 		"BattleBase should stop attack flow when attacker dies during attack-effect resolution")
+
+func test_attack_resolution_uses_shared_hp_damage_helper_for_direct_hits() -> void:
+	# リファクタ着手: 直接HPダメージは共通ヘルパー経由に統一する
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("_apply_hp_damage_to_opponent(attacker_is_player, damage)"), -1,
+		"BattleBase should route direct attack damage via shared HP damage helper")

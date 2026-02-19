@@ -425,19 +425,15 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 				await BattleUtils.animate_attack(self, card_ui, opponent_hp_label)
 				BattleUtils.spawn_damage_popup(self, opponent_hp_label.global_position + Vector2(50, 0), damage)
 				BattleUtils.shake_node(self, opponent_hp_label)
-				opponent_hp -= damage
-				if opponent_hp <= 0:
-					_game_end(true)
-					return
 			else:
 				_log("[color=red]%s → 自分HPに%dダメージ！[/color]" % [atk_name, damage])
 				await BattleUtils.animate_attack(self, card_ui, player_hp_label)
 				BattleUtils.spawn_damage_popup(self, player_hp_label.global_position + Vector2(50, 0), damage)
 				BattleUtils.shake_node(self, player_hp_label)
-				player_hp -= damage
-				if player_hp <= 0:
-					_game_end(false)
-					return
+
+			_apply_hp_damage_to_opponent(attacker_is_player, damage)
+			if game_over:
+				return
 		elif target_slot and not target_slot.is_empty():
 			var def_card: CardUI = target_slot.card_ui
 			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
