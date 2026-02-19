@@ -483,6 +483,12 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 	var result := {}
 	var card_name: String = prepared.get("card_name", "")
 
+	_dispatch_attack_effect(effect_id, attacker_ui, defender_ui, is_player, context, card_name, result)
+
+	_emit_effect_trigger_if_logged(effect_id, attacker_ui, defender_ui, result)
+	return result
+
+func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_player: bool, context: Dictionary, card_name: String, result: Dictionary) -> void:
 	match effect_id:
 		"blue_003":  # 攻撃時:対象を凍結
 			if defender_ui:
@@ -580,9 +586,6 @@ func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: D
 			for ally in allies:
 				ally.heal(1)
 			result["log"] = "[color=white]%s の効果: 味方全体HP+1[/color]" % card_name
-
-	_emit_effect_trigger_if_logged(effect_id, attacker_ui, defender_ui, result)
-	return result
 
 ## 死亡時効果を処理
 func process_death_effect(card_ui, is_player: bool, context: Dictionary) -> Dictionary:
