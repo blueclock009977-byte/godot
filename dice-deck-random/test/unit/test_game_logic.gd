@@ -198,3 +198,9 @@ func test_turn_start_effects_are_not_double_processed_in_local_battle() -> void:
 	var marker := "_process_turn_start_effects(is_player_turn)"
 	assert_eq(script_text.count(marker), 1,
 		"Turn start effects should be triggered exactly once per turn in battle.gd")
+
+func test_attack_resolution_skips_destroyed_target_slot_after_attack_effect() -> void:
+	# 回帰テスト: 攻撃時効果で先に相手が破壊された後、空スロットを再参照しない
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("elif target_slot and not target_slot.is_empty():"), -1,
+		"BattleBase should guard against empty target slot after attack effects")

@@ -434,7 +434,7 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 				if player_hp <= 0:
 					_game_end(false)
 					return
-		elif target_slot:
+		elif target_slot and not target_slot.is_empty():
 			var def_card: CardUI = target_slot.card_ui
 			_log("%s → %sに%dダメージ" % [atk_name, def_card.card_data.card_name, damage])
 			await BattleUtils.animate_attack(self, card_ui, def_card)
