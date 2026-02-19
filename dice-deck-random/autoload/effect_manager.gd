@@ -9,6 +9,22 @@ enum Timing { ON_SUMMON, ON_ATTACK, ON_DEATH, ON_DEFENSE, CONSTANT, TURN_START, 
 # 状態異常
 enum StatusEffect { NONE, FROZEN, POISON }
 
+const TIMING_CARD_UI_KEYS := {
+	Timing.ON_SUMMON: ["card_ui", "summon_card_ui"],
+	Timing.ON_ATTACK: ["attacker_ui", "card_ui"],
+	Timing.ON_DEATH: ["card_ui", "dead_card_ui"],
+	Timing.ON_DEFENSE: ["defender_ui", "card_ui"]
+}
+
+const TIMING_PAYLOAD_KEYS := {
+	Timing.ON_SUMMON: {"is_player": ["is_player"], "context": ["context"]},
+	Timing.ON_ATTACK: {"is_player": ["is_player"], "context": ["context"], "defender_ui": ["defender_ui"]},
+	Timing.ON_DEATH: {"is_player": ["is_player"], "context": ["context"]},
+	Timing.ON_DEFENSE: {"is_player": ["is_player"], "context": ["context"], "damage": ["damage"]},
+	Timing.TURN_START: {"is_player": ["is_player"], "context": ["context"]},
+	Timing.TURN_END: {"is_player": ["is_player"], "context": ["context"]}
+}
+
 # 効果定義データ
 var effect_definitions: Dictionary = {}
 
@@ -207,17 +223,8 @@ func _prepare_timing_effect(card_ui, timing: Timing) -> Dictionary:
 	}
 
 func _resolve_timing_card_ui(timing: Timing, payload: Dictionary):
-	match timing:
-		Timing.ON_SUMMON:
-			return payload.get("card_ui", payload.get("summon_card_ui", null))
-		Timing.ON_ATTACK:
-			return payload.get("attacker_ui", payload.get("card_ui", null))
-		Timing.ON_DEATH:
-			return payload.get("card_ui", payload.get("dead_card_ui", null))
-		Timing.ON_DEFENSE:
-			return payload.get("defender_ui", payload.get("card_ui", null))
-		_:
-			return null
+	var keys: Array = TIMING_CARD_UI_KEYS.get(timing, [])
+	return _resolve_timing_payload_value(payload, keys, null)
 
 func _resolve_timing_payload_value(payload: Dictionary, keys: Array, default_value):
 	for key in keys:
@@ -226,43 +233,43 @@ func _resolve_timing_payload_value(payload: Dictionary, keys: Array, default_val
 	return default_value
 
 func process_timing_event(timing: Timing, payload: Dictionary):
+	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
+	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
+	var context: Dictionary = _resolve_timing_payload_value(payload, aliases.get("context", ["context"]), {})
+
 	match timing:
 		Timing.ON_SUMMON:
 			return process_summon_effect(
 				_resolve_timing_card_ui(timing, payload),
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
+				is_player,
+				context
 			)
 		Timing.ON_ATTACK:
+			var defender_ui = _resolve_timing_payload_value(payload, aliases.get("defender_ui", ["defender_ui"]), null)
 			return process_attack_effect(
 				_resolve_timing_card_ui(timing, payload),
-				_resolve_timing_payload_value(payload, ["defender_ui"], null),
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
+				defender_ui,
+				is_player,
+				context
 			)
 		Timing.ON_DEATH:
 			return process_death_effect(
 				_resolve_timing_card_ui(timing, payload),
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
+				is_player,
+				context
 			)
 		Timing.ON_DEFENSE:
+			var damage: int = _resolve_timing_payload_value(payload, aliases.get("damage", ["damage"]), 0)
 			return process_defense_effect(
 				_resolve_timing_card_ui(timing, payload),
-				_resolve_timing_payload_value(payload, ["damage"], 0),
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
+				damage,
+				is_player,
+				context
 			)
 		Timing.TURN_START:
-			return process_turn_start_effects(
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
-			)
+			return process_turn_start_effects(is_player, context)
 		Timing.TURN_END:
-			return process_turn_end_effects(
-				_resolve_timing_payload_value(payload, ["is_player"], true),
-				_resolve_timing_payload_value(payload, ["context"], {})
-			)
+			return process_turn_end_effects(is_player, context)
 		_:
 			return {}
 

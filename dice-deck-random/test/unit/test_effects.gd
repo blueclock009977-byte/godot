@@ -1249,12 +1249,24 @@ func test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_contex
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _resolve_timing_payload_value"), -1,
 		"effect_manager should define _resolve_timing_payload_value helper")
-	assert_ne(script_text.find("_resolve_timing_payload_value(payload, [\"defender_ui\"], null)"), -1,
+	assert_ne(script_text.find("_resolve_timing_payload_value(payload, aliases.get(\"defender_ui\", [\"defender_ui\"]), null)"), -1,
 		"ON_ATTACK should resolve defender_ui via payload helper")
-	assert_ne(script_text.find("_resolve_timing_payload_value(payload, [\"damage\"], 0)"), -1,
+	assert_ne(script_text.find("_resolve_timing_payload_value(payload, aliases.get(\"damage\", [\"damage\"]), 0)"), -1,
 		"ON_DEFENSE should resolve damage via payload helper")
-	assert_true(script_text.count("_resolve_timing_payload_value(payload, [\"context\"], {})") >= 6,
-		"All timing routes should resolve context via payload helper")
+	assert_ne(script_text.find("var context: Dictionary = _resolve_timing_payload_value(payload, aliases.get(\"context\", [\"context\"]), {})"), -1,
+		"context should be resolved once via payload helper and reused for all timing routes")
+
+func test_timing_payload_alias_table_is_used_by_resolvers() -> void:
+	# 次の段階リファクタ: timingごとのpayload aliasを辞書テーブル化して参照を一元化
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("const TIMING_CARD_UI_KEYS :="), -1,
+		"effect_manager should define TIMING_CARD_UI_KEYS alias table")
+	assert_ne(script_text.find("const TIMING_PAYLOAD_KEYS :="), -1,
+		"effect_manager should define TIMING_PAYLOAD_KEYS alias table")
+	assert_ne(script_text.find("var keys: Array = TIMING_CARD_UI_KEYS.get(timing, [])"), -1,
+		"_resolve_timing_card_ui should read aliases from TIMING_CARD_UI_KEYS")
+	assert_ne(script_text.find("TIMING_PAYLOAD_KEYS.get(timing, {})"), -1,
+		"process_timing_event should read payload aliases from TIMING_PAYLOAD_KEYS")
 
 # ═══════════════════════════════════════════
 # ヘルパー関数
