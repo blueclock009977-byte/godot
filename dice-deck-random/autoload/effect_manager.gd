@@ -725,7 +725,7 @@ func process_defense_effect(defender_ui, damage: int, is_player: bool, context: 
 
 	match effect_id:
 		"blue_006":  # 防御時:被ダメージ半減
-			result["final_damage"] = damage / 2
+			result["final_damage"] = int(damage / 2)
 			result["log"] = "[color=cyan]%s の効果: ダメージ半減[/color]" % card_name
 
 		"green_012":  # 被ダメージ時:マナ+1

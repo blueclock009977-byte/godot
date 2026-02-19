@@ -278,6 +278,13 @@ func test_defense_effect_half_damage_blue_006() -> void:
 	var result := EffectManager.process_defense_effect(defender, 10, true, context)
 	assert_eq(result.get("final_damage", 10), 5, "blue_006 should halve damage")
 
+func test_defense_effect_half_damage_blue_006_rounds_down_and_keeps_int() -> void:
+	var defender = _create_mock_card_ui("blue_006")
+	var context := _create_empty_context()
+	var result := EffectManager.process_defense_effect(defender, 5, true, context)
+	assert_eq(typeof(result.get("final_damage")), TYPE_INT, "blue_006 final_damage should stay int")
+	assert_eq(result.get("final_damage", 5), 2, "blue_006 should floor half damage for odd values")
+
 func test_defense_effect_mana_on_damage_green_012() -> void:
 	# green_012: 被ダメージ時マナ+1
 	var defender = _create_mock_card_ui("green_012")
