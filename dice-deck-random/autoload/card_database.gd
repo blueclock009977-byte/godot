@@ -335,3 +335,19 @@ func get_initial_hand_size(deck: Array) -> int:
 		return 1
 	else:
 		return 0
+
+func to_card_data_array(arr: Array) -> Array[CardData]:
+	"""汎用配列をArray[CardData]に変換するユーティリティ関数"""
+	var result: Array[CardData] = []
+	for item in arr:
+		result.append(item)
+	return result
+
+func build_random_deck() -> Array[CardData]:
+	"""ランダムなデッキを生成（テスト用）"""
+	var deck: Array[CardData] = []
+	var all_cards := get_all_cards()
+	all_cards.shuffle()
+	for i in range(mini(20, all_cards.size())):
+		deck.append(all_cards[i].duplicate_card())
+	return deck

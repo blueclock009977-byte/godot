@@ -549,8 +549,8 @@ func _start_game() -> void:
 		for card in GameManager.player_deck:
 			player_deck.append(card.duplicate_card())
 	else:
-		player_deck = _to_card_data_array(CardDatabase.build_random_deck())
-	opponent_deck = _to_card_data_array(CardDatabase.build_random_deck())
+		player_deck = CardDatabase.build_random_deck()
+	opponent_deck = CardDatabase.build_random_deck()
 	player_deck.shuffle()
 	opponent_deck.shuffle()
 
@@ -579,12 +579,6 @@ func _start_game() -> void:
 
 	_update_all_ui()
 	_start_turn()
-
-func _to_card_data_array(arr: Array) -> Array[CardData]:
-	var result: Array[CardData] = []
-	for item in arr:
-		result.append(item)
-	return result
 
 # ═══════════════════════════════════════════
 # TURN FLOW
