@@ -16,8 +16,18 @@
 - 構文チェック: `bash tools/check_syntax.sh` 通過
 - GUT: 全件通過
 
+## Step 3: 統一イベント入口の payload キー差異で発動漏れ再現と修正（ON_ATTACK / ON_DEFENSE）
+- 追加テスト:
+  - `test_process_timing_event_dispatch_on_attack_with_generic_card_ui`
+  - `test_process_timing_event_dispatch_on_defense_with_generic_card_ui`
+- 初回結果: 失敗（`card_ui` だけ渡した場合に攻撃/防御効果が未発動）
+- 原因: `process_timing_event` が ON_ATTACK で `attacker_ui`、ON_DEFENSE で `defender_ui` のみ参照し、統一入口の `card_ui` を許容していない
+- 修正: dispatcher で `attacker_ui/defender_ui` が無いとき `card_ui` をフォールバック参照
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過
+
 ## 追加着手（次リファクタリング候補）
-- 候補: ログ生成の共通化
+- 候補: `process_timing_event` の payload 解決ロジック（attacker/defender/card_ui）を共通ヘルパー化して重複を除去
 - 着手内容: `_make_effect_log(color, card_name, message)` を追加し、`green_001` のログ生成を置換
 - 影響範囲: 1効果のみ（最小変更）
 - 構文チェック: 通過

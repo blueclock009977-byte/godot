@@ -692,6 +692,16 @@ func test_process_timing_event_dispatch_on_attack() -> void:
 	})
 	assert_eq(result.get("direct_damage", 0), 1, "Dispatcher should route ON_ATTACK to attack handler")
 
+func test_process_timing_event_dispatch_on_attack_with_generic_card_ui() -> void:
+	var atk_card = _create_mock_card_ui("blue_012")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_ATTACK, {
+		"card_ui": atk_card,
+		"defender_ui": _create_mock_card_ui(""),
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("direct_damage", 0), 1, "ON_ATTACK should accept unified card_ui payload")
+
 func test_process_timing_event_dispatch_on_death() -> void:
 	var death_card = _create_mock_card_ui("green_002")
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEATH, {
@@ -710,6 +720,16 @@ func test_process_timing_event_dispatch_on_defense() -> void:
 		"context": _create_empty_context()
 	})
 	assert_eq(result.get("final_damage", 5), 4, "Dispatcher should route ON_DEFENSE to defense handler")
+
+func test_process_timing_event_dispatch_on_defense_with_generic_card_ui() -> void:
+	var defender = _create_mock_card_ui("yellow_004")
+	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
+		"card_ui": defender,
+		"damage": 5,
+		"is_player": true,
+		"context": _create_empty_context()
+	})
+	assert_eq(result.get("final_damage", 5), 4, "ON_DEFENSE should accept unified card_ui payload")
 
 func test_process_timing_event_dispatch_on_turn_start() -> void:
 	var context := {

@@ -212,7 +212,7 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 			return process_summon_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
 		Timing.ON_ATTACK:
 			return process_attack_effect(
-				payload.get("attacker_ui"),
+				payload.get("attacker_ui", payload.get("card_ui")),
 				payload.get("defender_ui", null),
 				payload.get("is_player", true),
 				payload.get("context", {})
@@ -221,7 +221,7 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 			return process_death_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
 		Timing.ON_DEFENSE:
 			return process_defense_effect(
-				payload.get("defender_ui"),
+				payload.get("defender_ui", payload.get("card_ui")),
 				payload.get("damage", 0),
 				payload.get("is_player", true),
 				payload.get("context", {})
