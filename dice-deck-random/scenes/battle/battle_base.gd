@@ -389,6 +389,15 @@ func _apply_attack_effect_post_damage(atk_effect: Dictionary, attacker_ui: CardU
 		attacker_ui.heal(dealt_damage)
 		_log("[color=purple]%s の吸血: HP+%d[/color]" % [attacker_ui.card_data.card_name, dealt_damage])
 
+func _resolve_attack_target(defender_slots: Array, lane: int) -> Dictionary:
+	var enemy_front: FieldSlot = defender_slots[lane]
+	var enemy_back: FieldSlot = defender_slots[lane + 3]
+	if enemy_front and not enemy_front.is_empty():
+		return {"target_slot": enemy_front, "target_is_player_hp": false}
+	if enemy_back and not enemy_back.is_empty():
+		return {"target_slot": enemy_back, "target_is_player_hp": false}
+	return {"target_slot": null, "target_is_player_hp": true}
+
 func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_player: bool) -> void:
 	for i in range(6):
 		var slot: FieldSlot = attacker_slots[i]
@@ -402,30 +411,11 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			continue
 
 		var lane: int = slot.lane
-		var is_front: bool = slot.is_front_row
 
 		# Find target
-		var target_slot: FieldSlot = null
-		var target_is_player_hp := false
-
-		if is_front:
-			var enemy_front: FieldSlot = defender_slots[lane]
-			var enemy_back: FieldSlot = defender_slots[lane + 3]
-			if enemy_front and not enemy_front.is_empty():
-				target_slot = enemy_front
-			elif enemy_back and not enemy_back.is_empty():
-				target_slot = enemy_back
-			else:
-				target_is_player_hp = true
-		else:
-			var enemy_front: FieldSlot = defender_slots[lane]
-			var enemy_back: FieldSlot = defender_slots[lane + 3]
-			if enemy_front and not enemy_front.is_empty():
-				target_slot = enemy_front
-			elif enemy_back and not enemy_back.is_empty():
-				target_slot = enemy_back
-			else:
-				target_is_player_hp = true
+		var target_info := _resolve_attack_target(defender_slots, lane)
+		var target_slot: FieldSlot = target_info.get("target_slot", null)
+		var target_is_player_hp: bool = target_info.get("target_is_player_hp", true)
 
 		var atk_name := card_ui.card_data.card_name
 		var damage: int = card_ui.current_atk

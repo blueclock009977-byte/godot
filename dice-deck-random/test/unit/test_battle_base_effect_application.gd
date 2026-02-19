@@ -232,3 +232,11 @@ func test_apply_effect_result_does_not_double_destroy_same_target_from_damage_an
 	assert_eq(battle.destroy_call_count, 1,
 		"same card in damaged_targets and destroy_targets should be destroyed exactly once")
 	battle.free()
+
+func test_resolve_attacks_uses_shared_target_resolution_helper() -> void:
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+
+	assert_true(script_text.find("func _resolve_attack_target") >= 0,
+		"BattleBase should expose a shared helper for attack target resolution")
+	assert_true(script_text.find("_resolve_attack_target(defender_slots, lane)") >= 0,
+		"_resolve_attacks should delegate target selection via shared helper")
