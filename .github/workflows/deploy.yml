@@ -62,7 +62,7 @@ jobs:
       - name: Auto-update version in title screen
         run: |
           git config --global --add safe.directory $(pwd)
-          VERSION=$(git log -1 --format=%s | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' || true)
+          VERSION=$(git log -1 --format=%s | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
           echo "Commit message: $(git log -1 --format=%s)"
           echo "Extracted version: $VERSION"
           if [ -n "$VERSION" ]; then
