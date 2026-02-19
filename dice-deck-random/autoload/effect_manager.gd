@@ -218,7 +218,11 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 				payload.get("context", {})
 			)
 		Timing.ON_DEATH:
-			return process_death_effect(payload.get("card_ui"), payload.get("is_player", true), payload.get("context", {}))
+			return process_death_effect(
+				payload.get("card_ui", payload.get("dead_card_ui")),
+				payload.get("is_player", true),
+				payload.get("context", {})
+			)
 		Timing.ON_DEFENSE:
 			return process_defense_effect(
 				payload.get("defender_ui", payload.get("card_ui")),
