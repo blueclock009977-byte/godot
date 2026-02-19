@@ -239,6 +239,37 @@ func _dispatch_timing_on_summon(payload: Dictionary, is_player: bool, context: D
 		context
 	)
 
+func _dispatch_timing_on_attack(payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):
+	var defender_ui = _resolve_timing_payload_value(payload, aliases.get("defender_ui", ["defender_ui"]), null)
+	return process_attack_effect(
+		_resolve_timing_card_ui(Timing.ON_ATTACK, payload),
+		defender_ui,
+		is_player,
+		context
+	)
+
+func _dispatch_timing_on_death(payload: Dictionary, is_player: bool, context: Dictionary):
+	return process_death_effect(
+		_resolve_timing_card_ui(Timing.ON_DEATH, payload),
+		is_player,
+		context
+	)
+
+func _dispatch_timing_on_defense(payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):
+	var damage: int = _resolve_timing_payload_value(payload, aliases.get("damage", ["damage"]), 0)
+	return process_defense_effect(
+		_resolve_timing_card_ui(Timing.ON_DEFENSE, payload),
+		damage,
+		is_player,
+		context
+	)
+
+func _dispatch_timing_turn_start(is_player: bool, context: Dictionary):
+	return process_turn_start_effects(is_player, context)
+
+func _dispatch_timing_turn_end(is_player: bool, context: Dictionary):
+	return process_turn_end_effects(is_player, context)
+
 func process_timing_event(timing: Timing, payload: Dictionary):
 	var aliases: Dictionary = TIMING_PAYLOAD_KEYS.get(timing, {})
 	var is_player: bool = _resolve_timing_payload_value(payload, aliases.get("is_player", ["is_player"]), true)
@@ -248,31 +279,15 @@ func process_timing_event(timing: Timing, payload: Dictionary):
 		Timing.ON_SUMMON:
 			return _dispatch_timing_on_summon(payload, is_player, context)
 		Timing.ON_ATTACK:
-			var defender_ui = _resolve_timing_payload_value(payload, aliases.get("defender_ui", ["defender_ui"]), null)
-			return process_attack_effect(
-				_resolve_timing_card_ui(timing, payload),
-				defender_ui,
-				is_player,
-				context
-			)
+			return _dispatch_timing_on_attack(payload, aliases, is_player, context)
 		Timing.ON_DEATH:
-			return process_death_effect(
-				_resolve_timing_card_ui(timing, payload),
-				is_player,
-				context
-			)
+			return _dispatch_timing_on_death(payload, is_player, context)
 		Timing.ON_DEFENSE:
-			var damage: int = _resolve_timing_payload_value(payload, aliases.get("damage", ["damage"]), 0)
-			return process_defense_effect(
-				_resolve_timing_card_ui(timing, payload),
-				damage,
-				is_player,
-				context
-			)
+			return _dispatch_timing_on_defense(payload, aliases, is_player, context)
 		Timing.TURN_START:
-			return process_turn_start_effects(is_player, context)
+			return _dispatch_timing_turn_start(is_player, context)
 		Timing.TURN_END:
-			return process_turn_end_effects(is_player, context)
+			return _dispatch_timing_turn_end(is_player, context)
 		_:
 			return {}
 

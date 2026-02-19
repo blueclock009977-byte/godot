@@ -88,7 +88,20 @@
 - GUT: 全件通過（338/338）
 - コミット: `v1.19.199: timing payload alias定義を辞書テーブル化`
 
-## 次リファクタリング候補（着手開始）
-- 候補: `process_timing_event` の `match timing` 本体を `TIMING_DISPATCHERS` 的な関数テーブルへ段階移行
-- 目的: タイミング追加時の分岐編集箇所を減らし、dispatcher差分を局所化する
-- 最小着手案: まず ON_SUMMON だけを小さな private dispatcher 関数に切り出し、既存挙動不変テストを追加
+## Step 8: process_timing_event の timing分岐を dispatcher helper へ段階移行（ON_ATTACK着手→全timing拡張）
+- 追加テスト:
+  - `test_timing_dispatcher_helper_handles_on_attack_route`
+- 初回結果: 失敗（既存テスト `test_timing_dispatcher_helpers_cover_all_event_routes` が ON_DEATH/ON_DEFENSE/TURN_START/TURN_END の helper未定義で失敗）
+- 修正:
+  - `_dispatch_timing_on_attack(payload, aliases, is_player, context)` を追加し ON_ATTACK 分岐を置換
+  - 既存失敗テストを満たす最小追従として、以下の wrapper dispatcher を追加して `process_timing_event` 側を全て委譲化
+    - `_dispatch_timing_on_death(payload, is_player, context)`
+    - `_dispatch_timing_on_defense(payload, aliases, is_player, context)`
+    - `_dispatch_timing_turn_start(is_player, context)`
+    - `_dispatch_timing_turn_end(is_player, context)`
+- 構文チェック: `bash tools/check_syntax.sh` 通過
+- GUT: 全件通過（341/341）
+
+## 次リファクタリング候補
+- 候補: `process_timing_event` の `match timing` 自体を `Dictionary<Timing, Callable>` 方式へ段階移行
+- 最小着手案: まず ON_SUMMON/ON_ATTACK の2件だけ `TIMING_DISPATCHERS` で解決し、既存 helper を backend として再利用

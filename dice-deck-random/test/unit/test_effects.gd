@@ -1278,6 +1278,40 @@ func test_timing_dispatcher_helper_handles_on_summon_route() -> void:
 	assert_ne(script_text.find("func _dispatch_timing_on_summon(payload: Dictionary, is_player: bool, context: Dictionary):"), -1,
 		"ON_SUMMON dispatcher helper should preserve typed routing signature")
 
+func test_timing_dispatcher_helper_handles_on_attack_route() -> void:
+	# 次の段階リファクタ: ON_ATTACK の分岐も private dispatcher helper に切り出し
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_timing_on_attack"), -1,
+		"effect_manager should define _dispatch_timing_on_attack helper")
+	assert_ne(script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)"), -1,
+		"process_timing_event should delegate ON_ATTACK routing to helper")
+	assert_ne(script_text.find("func _dispatch_timing_on_attack(payload: Dictionary, aliases: Dictionary, is_player: bool, context: Dictionary):"), -1,
+		"ON_ATTACK dispatcher helper should preserve typed routing signature")
+
+func test_timing_dispatcher_helpers_cover_all_event_routes() -> void:
+	# 次の段階リファクタ: timing 入口分岐を全て private dispatcher helper に統一
+	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
+	assert_ne(script_text.find("func _dispatch_timing_on_attack"), -1,
+		"effect_manager should define _dispatch_timing_on_attack helper")
+	assert_ne(script_text.find("func _dispatch_timing_on_death"), -1,
+		"effect_manager should define _dispatch_timing_on_death helper")
+	assert_ne(script_text.find("func _dispatch_timing_on_defense"), -1,
+		"effect_manager should define _dispatch_timing_on_defense helper")
+	assert_ne(script_text.find("func _dispatch_timing_turn_start"), -1,
+		"effect_manager should define _dispatch_timing_turn_start helper")
+	assert_ne(script_text.find("func _dispatch_timing_turn_end"), -1,
+		"effect_manager should define _dispatch_timing_turn_end helper")
+	assert_ne(script_text.find("Timing.ON_ATTACK:\n\t\t\treturn _dispatch_timing_on_attack(payload, aliases, is_player, context)"), -1,
+		"process_timing_event should delegate ON_ATTACK routing to helper")
+	assert_ne(script_text.find("Timing.ON_DEATH:\n\t\t\treturn _dispatch_timing_on_death(payload, is_player, context)"), -1,
+		"process_timing_event should delegate ON_DEATH routing to helper")
+	assert_ne(script_text.find("Timing.ON_DEFENSE:\n\t\t\treturn _dispatch_timing_on_defense(payload, aliases, is_player, context)"), -1,
+		"process_timing_event should delegate ON_DEFENSE routing to helper")
+	assert_ne(script_text.find("Timing.TURN_START:\n\t\t\treturn _dispatch_timing_turn_start(is_player, context)"), -1,
+		"process_timing_event should delegate TURN_START routing to helper")
+	assert_ne(script_text.find("Timing.TURN_END:\n\t\t\treturn _dispatch_timing_turn_end(is_player, context)"), -1,
+		"process_timing_event should delegate TURN_END routing to helper")
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
