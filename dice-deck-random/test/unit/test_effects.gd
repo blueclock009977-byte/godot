@@ -419,6 +419,89 @@ func test_turn_start_no_effect_vanilla() -> void:
 	assert_eq(results.size(), 0, "Vanilla card should have no turn start effect")
 
 # ═══════════════════════════════════════════
+# Phase 6: 状態異常テスト
+# ═══════════════════════════════════════════
+
+func test_attack_effect_freeze_blue_003() -> void:
+	# blue_003: 攻撃時対象を凍結
+	var attacker = _create_mock_card_ui("blue_003")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(defender._status, EffectManager.StatusEffect.FROZEN, "blue_003 should freeze defender")
+	assert_eq(defender._status_duration, 1, "blue_003 freeze should last 1 turn")
+
+func test_attack_effect_freeze_2turn_blue_008() -> void:
+	# blue_008: 攻撃時対象を2ターン凍結
+	var attacker = _create_mock_card_ui("blue_008")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(defender._status, EffectManager.StatusEffect.FROZEN, "blue_008 should freeze defender")
+	assert_eq(defender._status_duration, 2, "blue_008 freeze should last 2 turns")
+
+func test_attack_effect_poison_black_004() -> void:
+	# black_004: 攻撃時対象に毒
+	var attacker = _create_mock_card_ui("black_004")
+	var defender = _create_mock_card_ui("")
+	var context := _create_empty_context()
+	EffectManager.process_attack_effect(attacker, defender, true, context)
+	assert_eq(defender._status, EffectManager.StatusEffect.POISON, "black_004 should poison defender")
+
+func test_summon_effect_freeze_all_blue_018() -> void:
+	# blue_018: 登場時敵全体を1ターン凍結
+	var mock_card_ui = _create_mock_card_ui("blue_018")
+	var enemy1 = _create_mock_slot_with_ui("")
+	var enemy2 = _create_mock_slot_with_ui("")
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy1, enemy2, null, null, null, null],
+	}
+	EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(enemy1.card_ui._status, EffectManager.StatusEffect.FROZEN, "blue_018 should freeze enemy1")
+	assert_eq(enemy2.card_ui._status, EffectManager.StatusEffect.FROZEN, "blue_018 should freeze enemy2")
+
+func test_summon_effect_freeze_one_purple_009() -> void:
+	# purple_009: 登場時敵1体を2ターン凍結
+	var mock_card_ui = _create_mock_card_ui("purple_009")
+	var enemy1 = _create_mock_slot_with_ui("")
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy1, null, null, null, null, null],
+	}
+	EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(enemy1.card_ui._status, EffectManager.StatusEffect.FROZEN, "purple_009 should freeze enemy")
+	assert_eq(enemy1.card_ui._status_duration, 2, "purple_009 freeze should last 2 turns")
+
+func test_summon_effect_clear_status_white_013() -> void:
+	# white_013: 登場時味方全体の状態異常解除
+	var mock_card_ui = _create_mock_card_ui("white_013")
+	var ally1 = _create_mock_slot_with_ui("")
+	ally1.card_ui._status = EffectManager.StatusEffect.FROZEN
+	ally1.card_ui._status_duration = 2
+	var ally2 = _create_mock_slot_with_ui("")
+	ally2.card_ui._status = EffectManager.StatusEffect.POISON
+	ally2.card_ui._status_duration = 99
+	var context := {
+		"player_slots": [ally1, ally2, null, null, null, null],
+		"opponent_slots": [null, null, null, null, null, null],
+	}
+	EffectManager.process_summon_effect(mock_card_ui, true, context)
+	assert_eq(ally1.card_ui._status, 0, "white_013 should clear ally1 status")
+	assert_eq(ally2.card_ui._status, 0, "white_013 should clear ally2 status")
+
+func test_death_effect_freeze_purple_005() -> void:
+	# purple_005: 死亡時敵1体を凍結
+	var mock_card_ui = _create_mock_card_ui("purple_005")
+	var enemy1 = _create_mock_slot_with_ui("")
+	var context := {
+		"player_slots": [null, null, null, null, null, null],
+		"opponent_slots": [enemy1, null, null, null, null, null],
+	}
+	EffectManager.process_death_effect(mock_card_ui, true, context)
+	assert_eq(enemy1.card_ui._status, EffectManager.StatusEffect.FROZEN, "purple_005 should freeze enemy on death")
+
+# ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
 
@@ -428,6 +511,16 @@ func _create_mock_slot(effect_id: String):
 	mock_slot.card_ui = MockCardUI.new()
 	mock_slot.card_ui.card_data = MockCardData.new()
 	mock_slot.card_ui.card_data.effect_id = effect_id
+	mock_slot._is_empty = false
+	return mock_slot
+
+func _create_mock_slot_with_ui(effect_id: String):
+	# カードUIを持つモックスロットを作成（状態異常テスト用）
+	var mock_slot = MockFieldSlot.new()
+	mock_slot.card_ui = MockCardUI.new()
+	mock_slot.card_ui.card_data = MockCardData.new()
+	mock_slot.card_ui.card_data.effect_id = effect_id
+	mock_slot.card_ui.card_data.card_name = "TestCard_" + effect_id
 	mock_slot._is_empty = false
 	return mock_slot
 
@@ -459,6 +552,7 @@ class MockCardUI:
 	var current_atk: int = 1
 	var current_hp: int = 1
 	var _status: int = 0  # StatusEffect.NONE
+	var _status_duration: int = 0
 	var shield_used: bool = false
 	var healed_amount: int = 0
 	var atk_modified: int = 0
@@ -479,8 +573,13 @@ class MockCardUI:
 	func has_status(status: int) -> bool:
 		return _status == status
 	
-	func apply_status(status: int, _duration: int) -> void:
+	func apply_status(status: int, duration: int) -> void:
 		_status = status
+		_status_duration = duration
+	
+	func clear_status_effects() -> void:
+		_status = 0
+		_status_duration = 0
 	
 	func tick_status_effects() -> void:
 		# モックなので何もしない
