@@ -179,9 +179,9 @@ func _process_death_effect(card_ui: CardUI, is_player: bool) -> Dictionary:
 	_apply_effect_result(result, is_player)
 	return result
 
-func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) -> int:
+func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) -> Dictionary:
 	if not defender_ui.card_data.has_effect():
-		return damage
+		return {"final_damage": damage}
 	var context := _get_effect_context()
 	var result: Dictionary = EffectManager.process_timing_event(EffectManager.Timing.ON_DEFENSE, {
 		"defender_ui": defender_ui,
@@ -190,7 +190,9 @@ func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) 
 		"context": context
 	})
 	_apply_effect_result(result, is_player)
-	return result.get("final_damage", damage)
+	if not result.has("final_damage"):
+		result["final_damage"] = damage
+	return result
 
 func _process_turn_start_effects(is_player: bool) -> void:
 	var context := _get_effect_context()
@@ -440,10 +442,21 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			await BattleUtils.animate_attack(self, card_ui, def_card)
 			def_card.play_damage_flash()
 			BattleUtils.spawn_damage_popup(self, def_card.global_position + Vector2(40, 0), damage)
-			var final_damage := _process_defense_effect(def_card, damage, not attacker_is_player)
-			var remaining := def_card.take_damage(final_damage)
+			var defense_result: Dictionary = _process_defense_effect(def_card, damage, not attacker_is_player)
+			var final_damage: int = defense_result.get("final_damage", damage)
+			var remaining: int = def_card.take_damage(final_damage)
 			if remaining <= 0:
 				await _destroy_card_in_slot(target_slot, not attacker_is_player)
+
+			if defense_result.get("reflect", false):
+				var reflected_damage: int = max(0, final_damage)
+				if reflected_damage > 0 and card_ui and card_ui.current_hp > 0:
+					_log("[color=yellow]%s の反射: %s に%dダメージ[/color]" % [def_card.card_data.card_name, atk_name, reflected_damage])
+					var attacker_slot: FieldSlot = _find_slot_by_card_ui(card_ui)
+					if attacker_slot and not attacker_slot.is_empty():
+						var attacker_remaining: int = card_ui.take_damage(reflected_damage)
+						if attacker_remaining <= 0:
+							await _destroy_card_in_slot(attacker_slot, attacker_is_player)
 
 		card_ui.modulate = Color.WHITE
 		_update_all_ui()

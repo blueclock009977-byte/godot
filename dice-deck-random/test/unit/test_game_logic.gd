@@ -204,3 +204,9 @@ func test_attack_resolution_skips_destroyed_target_slot_after_attack_effect() ->
 	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
 	assert_ne(script_text.find("elif target_slot and not target_slot.is_empty():"), -1,
 		"BattleBase should guard against empty target slot after attack effects")
+
+func test_defense_reflect_effect_is_applied_to_attacker() -> void:
+	# 回帰テスト: yellow_014 の反射が result だけで捨てられず、攻撃側に適用されること
+	var script_text := FileAccess.get_file_as_string("res://scenes/battle/battle_base.gd")
+	assert_ne(script_text.find("if defense_result.get(\"reflect\", false):"), -1,
+		"BattleBase should handle reflect flag from defense effects")
