@@ -554,7 +554,7 @@ func _start_game() -> void:
 		for card in GameManager.player_deck:
 			player_deck.append(card.duplicate_card())
 	else:
-		player_deck = _to_card_data_array(CardDatabase.build_random_deck())
+		player_deck = BattleConstants.to_card_data_array(CardDatabase.build_random_deck())
 
 	# Load opponent deck from Firebase
 	var opp_deck_ids := await MultiplayerManager.get_opponent_deck()
@@ -564,7 +564,7 @@ func _start_game() -> void:
 		if card:
 			opponent_deck.append(card.duplicate_card())
 	if opponent_deck.size() < 20:
-		opponent_deck = _to_card_data_array(CardDatabase.build_random_deck())
+		opponent_deck = BattleConstants.to_card_data_array(CardDatabase.build_random_deck())
 
 	# Use room data seed for shuffle consistency
 	# Both players need same shuffle. Use room code as seed.
@@ -613,9 +613,6 @@ func _shuffle_with_rng(arr: Array, rng: RandomNumberGenerator) -> void:
 		var tmp = arr[i]
 		arr[i] = arr[j]
 		arr[j] = tmp
-
-func _to_card_data_array(arr: Array) -> Array[CardData]:
-	return BattleConstants.to_card_data_array(arr)
 
 # ═══════════════════════════════════════════
 # TURN FLOW
