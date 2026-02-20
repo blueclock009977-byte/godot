@@ -811,6 +811,87 @@ func test_attack_effect_yellow_008_self_heal() -> void:
 	
 	assert_eq(attacker.current_hp, 4, "Attacker HP should be +1")
 
+func test_summon_effect_blue_004_enemy_aoe_atk_debuff() -> void:
+	# blue_004: 登場時:敵全体ATK-1
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "blue_004"
+	card_ui.card_data.card_name = "氷の魔導士"
+	
+	var enemy1 := MockCardUI.new()
+	var enemy_slot1 := MockSlot.new()
+	enemy_slot1._card_ui = enemy1
+	enemy_slot1._empty = false
+	
+	var enemy2 := MockCardUI.new()
+	var enemy_slot2 := MockSlot.new()
+	enemy_slot2._card_ui = enemy2
+	enemy_slot2._empty = false
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [enemy_slot1, enemy_slot2]
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_eq(enemy1._atk_modifier, -1, "Enemy1 ATK should be -1")
+	assert_eq(enemy2._atk_modifier, -1, "Enemy2 ATK should be -1")
+
+func test_death_effect_blue_009_single_atk_debuff() -> void:
+	# blue_009: 死亡時:敵1体ATK-1
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "blue_009"
+	card_ui.card_data.card_name = "氷の精"
+	
+	var enemy := MockCardUI.new()
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = enemy
+	enemy_slot._empty = false
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [enemy_slot]
+	}
+	
+	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
+	
+	assert_eq(enemy._atk_modifier, -1, "Enemy ATK should be -1")
+
+func test_death_effect_green_005_mana_gain() -> void:
+	# green_005: 死亡時:マナ+2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "green_005"
+	card_ui.card_data.card_name = "森の生贄"
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
+	
+	assert_eq(result.get("mana", 0), 2, "Mana should be +2")
+
+func test_turn_start_effect_green_003_self_heal() -> void:
+	# green_003: ターン開始時:自身HP+1
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "green_003"
+	card_ui.card_data.card_name = "生命の樹"
+	card_ui.current_hp = 4
+	
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = card_ui
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_turn_start_effect(card_ui, true, context)
+	
+	assert_eq(card_ui.current_hp, 5, "Self HP should be +1")
+
 # ═══════════════════════════════════════════
 # Mocks
 # ═══════════════════════════════════════════
