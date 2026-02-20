@@ -22,7 +22,7 @@ func _generate_card_pool() -> void:
 
 	# ═══════════════════════════════════════════
 	# バランス計算式（2026-02-20再調整）:
-	# budget = 14 + 8 * cost
+	# budget = 14 + 10 * cost
 	# score = 5*HP + 3*ATK + 3*面数 + (ATK*面数)//4
 	# 効果カードは効果強度で予算補正（強い効果は大きく減算、デメリットは加算）
 	# 2026-02-20 調整方針:
@@ -288,8 +288,12 @@ func _score_card(card: CardData) -> int:
 	var synergy := (card.atk * faces) / 4
 	return 5 * card.hp + 3 * card.atk + 3 * faces + int(synergy)
 
+const MIN_CARD_SCORE := 5  # 1/0/0 相当の最低ステータスコスト
+
 func _base_budget(cost: int) -> int:
-	return 14 + 8 * cost
+	# 2026-02-20 再調整: コスト1の総予算を24に設定
+	# -> 最低ステ5を確保すると、効果予算の上限は19
+	return 14 + 10 * cost
 
 func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 	for _i in range(64):
@@ -400,7 +404,10 @@ func _balance_effect_card_stats(card: CardData) -> void:
 	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
 		return
 
-	var budget := _base_budget(card.mana_cost) + _get_effect_budget_modifier(card.effect_id)
+	var base_budget := _base_budget(card.mana_cost)
+	var requested_budget := base_budget + _get_effect_budget_modifier(card.effect_id)
+	# 最低ステータス(1/0/0相当=score5)を下回らないようにする
+	var budget := maxi(MIN_CARD_SCORE, requested_budget)
 	_tune_card_stats_to_budget(card, budget)
 	_enforce_effect_min_hp(card)
 
@@ -418,7 +425,7 @@ func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_ar
 	card.color = color_by_type.get(color_type, Color.WHITE)
 	card.effect_id = effect_id
 	if color_type == CardData.ColorType.GRAY or effect_id == "":
-		_tune_card_stats_to_budget(card, _base_budget(card.mana_cost))
+		_tune_card_stats_to_budget(card, maxi(MIN_CARD_SCORE, _base_budget(card.mana_cost)))
 	else:
 		_balance_effect_card_stats(card)
 	card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][id % 10]
