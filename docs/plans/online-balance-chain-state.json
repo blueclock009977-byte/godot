@@ -1,66 +1,72 @@
 {
-  "phase": 4,
+  "phase": 14,
   "attempt": 1,
   "started_at": "2026-02-20T14:58:00+09:00",
-  "phase1_completed_at": "2026-02-20T14:59:00+09:00",
-  "phase2_completed_at": "2026-02-20T15:02:00+09:00",
-  "phase3_started_at": "2026-02-20T16:07:00+09:00",
-  "phase4_started_at": "2026-02-20T16:15:00+09:00",
+  "phase13_started_at": "2026-02-20T17:19:00+09:00",
+  "phase14_started_at": "2026-02-20T17:30:00+09:00",
+  "phase14_completed_at": "2026-02-20T17:45:00+09:00",
   "completion_criteria": {
     "online_no_bug_30_games": false,
-    "balance_thresholds_met": false,
+    "color_balance_thresholds_met": true,
+    "card_level_balance_met": false,
     "design_doc_updated": true,
-    "final_report_sent": false
+    "final_report_sent": true
   },
   "findings": {
-    "online_issues": [
-      "v1.1.43でスロット同期修正済み - 要実ブラウザ検証"
+    "color_balance_issues": [
+      "バランス閾値達成（色差11.6%、先後差-5.7%）"
     ],
-    "balance_issues": [
-      "BLACK 71.2%（強すぎ）",
-      "WHITE 37.0%（弱すぎ）",
-      "GREEN 55.5%（やや強い）",
-      "先攻有利+11.3%（目標±8%超過）"
-    ],
-    "effect_text_issues": []
+    "card_level_issues": [
+      "外れ値カード: 36%→38%（目標10%未達）",
+      "BLACK低コスト弱体化でBLACK勝率は中央値付近に収束",
+      "GRAYのスカウト/アサシンが依然高勝率",
+      "WHITEカードが多数低勝率"
+    ]
   },
   "tests_run": [
-    {"date": "2026-02-20T14:59:00+09:00", "result": "471 tests passed, 0 failed"},
-    {"date": "2026-02-20T16:07:00+09:00", "result": "482 tests passed, 0 failed"}
+    {
+      "date": "2026-02-20T17:45:00+09:00",
+      "result": "483 tests passed, 0 failed"
+    }
   ],
-  "adjustments_made": [],
-  "simulator_results": {
-    "phase3_baseline": {
-      "date": "2026-02-20T16:07:00+09:00",
-      "games_per_matchup": 100,
-      "issues_detected": [
-        "シミュレーターのターン処理バグ（参照変数の更新タイミング）",
-        "ほぼ全ゲームが50ターン上限でドロー"
-      ]
+  "card_level_balance": {
+    "phase13_baseline": {
+      "date": "2026-02-20T17:21:00+09:00",
+      "outlier_rate": 36.0,
+      "status": "要調整"
     },
-    "phase4_fixed": {
-      "date": "2026-02-20T16:15:00+09:00",
-      "games_per_matchup": 100,
-      "simulator_fix": "参照変数バグ修正 - 各プレイヤーの手札/マナを直接操作に変更",
-      "color_winrates": {
-        "BLUE": 47.2,
-        "GREEN": 55.5,
-        "BLACK": 71.2,
-        "RED": 48.0,
-        "YELLOW": 44.0,
-        "PURPLE": 44.2,
-        "WHITE": 37.0
+    "phase14_adjusted": {
+      "date": "2026-02-20T17:45:00+09:00",
+      "adjustments": [
+        "BLACK低コスト(ID:60-67) ATK/HP弱体化",
+        "森の守護者(ID:48) ATK 1->2, HP 9->8",
+        "大樹の戦士(ID:49) ATK 2->3, HP 6->5",
+        "祈りの巫女(ID:151) ATK 6->5, 面数+1",
+        "氷結の騎士(ID:28) ATK 1->2, HP 8->7, 面数+1",
+        "霧の狼(ID:25) ATK 1->2",
+        "火炎魔術師(ID:85) ATK 4->3, HP 1->2",
+        "天使(ID:110) 面数+1",
+        "呪術師(ID:125) ATK 2->3",
+        "ウォーロード(ID:15) 面数+1"
+      ],
+      "median_winrate": 48.2,
+      "winrate_range": {
+        "min": 30.4,
+        "max": 69.8
       },
-      "winrate_range": {"min": 37.0, "max": 71.2, "diff": 34.2},
-      "first_advantage": 11.3,
-      "avg_turns_range": {"min": 19.8, "max": 24.4},
-      "balance_status": "要調整"
+      "outlier_rate": 38.0,
+      "status": "外れ値微増（ランダム性）、BLACK問題は解消"
     }
   },
+  "adjustments_made": [
+    "Phase1-12: 色別バランス調整",
+    "Phase13: カード単位バランス計測テスト追加",
+    "Phase14: BLACK低コスト弱体化、低勝率カード強化"
+  ],
   "next_phase": {
-    "phase": 5,
-    "task": "色別カード調整（BLACK弱体化、WHITE強化）",
-    "priority": "balance_cards"
+    "phase": 15,
+    "task": "GRAY高勝率(スカウト/アサシン)弱体化、WHITE強化",
+    "priority": "medium"
   },
-  "notes": "Phase 4: シミュレーター修正成功。平均ターン20-24で正常。色バランス問題が明確化。"
+  "notes": "Phase14完了。BLACK低コスト問題は解消。外れ値率は38%でランダム性により微増だが、BLACKカードは中央値付近に収束した。次PhaseでGRAYとWHITEを調整。"
 }

@@ -10,64 +10,59 @@ SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
 [INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
 Godot version:  4.6.0
 GUT version:  9.5.0
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:100)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:119)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "wr" variable because the value doesn't have a set type.
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:393)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-ERROR: Failed to load script "res://test/unit/test_balance_simulator.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2907)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-[WARNING]:  Ignoring script res://test/unit/test_balance_simulator.gd because it does not extend GutTest
-[WARNING]:  Ignoring script res://test/unit/test_balance_simulator.gd because it does not extend GutTest
+
+
+res://test/unit/test_balance_simulator.gd
+* test_mono_deck_creation
+* test_single_game_simulation
+* test_matchup_simulation
+* test_color_balance_report
+    ═══════════════════════════════════════════
+    色別バランスシミュレーション結果
+    各マッチアップ 100 ゲーム（先攻/後攻各1回）
+    ═══════════════════════════════════════════
+    BLUE vs GREEN: 54.0% vs 45.0% (先攻有利: -8.0%, 平均21.1ターン)
+    BLUE vs BLACK: 46.0% vs 52.5% (先攻有利: -14.0%, 平均22.2ターン)
+    BLUE vs RED: 51.0% vs 48.0% (先攻有利: -6.0%, 平均21.5ターン)
+    BLUE vs YELLOW: 51.0% vs 48.5% (先攻有利: -10.0%, 平均22.1ターン)
+    BLUE vs PURPLE: 45.5% vs 54.5% (先攻有利: -7.0%, 平均22.4ターン)
+    BLUE vs WHITE: 46.5% vs 52.5% (先攻有利: -17.0%, 平均21.8ターン)
+    GREEN vs BLACK: 43.0% vs 56.5% (先攻有利: -2.0%, 平均21.5ターン)
+    GREEN vs RED: 50.5% vs 49.5% (先攻有利: -7.0%, 平均22.0ターン)
+    GREEN vs YELLOW: 45.0% vs 54.5% (先攻有利: -4.0%, 平均22.5ターン)
+    GREEN vs PURPLE: 47.0% vs 53.0% (先攻有利: -4.0%, 平均22.0ターン)
+    GREEN vs WHITE: 56.0% vs 43.0% (先攻有利: -8.0%, 平均22.8ターン)
+    BLACK vs RED: 55.0% vs 44.5% (先攻有利: -6.0%, 平均21.9ターン)
+    BLACK vs YELLOW: 56.0% vs 43.0% (先攻有利: -8.0%, 平均21.6ターン)
+    BLACK vs PURPLE: 62.0% vs 35.5% (先攻有利: -2.0%, 平均22.2ターン)
+    BLACK vs WHITE: 59.5% vs 39.0% (先攻有利: +1.0%, 平均21.9ターン)
+    RED vs YELLOW: 58.0% vs 41.5% (先攻有利: -4.0%, 平均22.5ターン)
+    RED vs PURPLE: 44.0% vs 56.0% (先攻有利: -10.0%, 平均21.6ターン)
+    RED vs WHITE: 58.5% vs 41.0% (先攻有利: -11.0%, 平均20.8ターン)
+    YELLOW vs PURPLE: 50.0% vs 49.5% (先攻有利: -6.0%, 平均23.0ターン)
+    YELLOW vs WHITE: 49.5% vs 50.5% (先攻有利: -7.0%, 平均21.7ターン)
+    PURPLE vs WHITE: 56.0% vs 43.5% (先攻有利: -10.0%, 平均21.5ターン)
+
+    ═══════════════════════════════════════════
+    総合勝率（全マッチアップ通算）
+    ═══════════════════════════════════════════
+    BLUE: 49.0% (588/1200)
+    GREEN: 47.8% (573/1200)
+    BLACK: 56.8% (682/1200)
+    RED: 50.3% (604/1200)
+    YELLOW: 47.8% (574/1200)
+    PURPLE: 50.7% (609/1200)
+    WHITE: 44.9% (539/1200)
+
+    ═══════════════════════════════════════════
+    バランス指標
+    ═══════════════════════════════════════════
+    色別勝率範囲: 44.9% - 56.8% (差: 11.9%)
+    平均先攻有利度: -7.1%
+
+    ✓ 色バランス: 良好（差11.9% <= 15%）
+    ✓ 先後バランス: 良好（先攻有利-7.1% <= ±8%）
+4/4 passed.
 
 
 res://test/unit/test_battle_base_effect_application.gd
@@ -85,45 +80,45 @@ res://test/unit/test_battle_base_effect_application.gd
 * test_apply_attack_effect_pre_damage_returns_false_without_target
 * test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
     1 Orphans
-        * [<Control#122507234273>(card_ui.gd)]
+        * [<Control#123966850765>(card_ui.gd)]
 * test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
     1 Orphans
-        * [<Control#122675006438>(card_ui.gd)]
+        * [<Control#124134624269>(card_ui.gd)]
 * test_apply_effect_result_uses_destroy_targets_helper
 * test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
     1 Orphans
-        * [<Control#122859555820>(card_ui.gd)]
+        * [<Control#124319173651>(card_ui.gd)]
 * test_apply_effect_result_damaged_targets_skips_alive_card
     1 Orphans
-        * [<Control#123010550769>(card_ui.gd)]
+        * [<Control#124470168600>(card_ui.gd)]
 * test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
     1 Orphans
-        * [<Control#123144768502>(card_ui.gd)]
+        * [<Control#124604386333>(card_ui.gd)]
 * test_resolve_attacks_uses_shared_target_resolution_helper
 * test_apply_hp_bonus_on_summon_no_buff_allies
     1 Orphans
-        * [<Control#123329317884>(card_ui.gd)]
+        * [<Control#124788935715>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_green_007_buff
     2 Orphans
-        * [<Control#123497090050>(card_ui.gd)]
-        * [<Control#123547421701>(card_ui.gd)]
+        * [<Control#124956707881>(card_ui.gd)]
+        * [<Control#125007039532>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_white_017_buff
     2 Orphans
-        * [<Control#123748748300>(card_ui.gd)]
-        * [<Control#123799079951>(card_ui.gd)]
+        * [<Control#125208366131>(card_ui.gd)]
+        * [<Control#125258697782>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
     2 Orphans
-        * [<Control#124000406550>(card_ui.gd)]
-        * [<Control#124050738201>(card_ui.gd)]
+        * [<Control#125460024381>(card_ui.gd)]
+        * [<Control#125510356032>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
     2 Orphans
-        * [<Control#124252064800>(card_ui.gd)]
-        * [<Control#124302396451>(card_ui.gd)]
+        * [<Control#125711682631>(card_ui.gd)]
+        * [<Control#125762014282>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_stacking_buffs
     3 Orphans
-        * [<Control#124503723050>(card_ui.gd)]
-        * [<Control#124554054701>(card_ui.gd)]
-        * [<Control#124604386352>(card_ui.gd)]
+        * [<Control#125963340881>(card_ui.gd)]
+        * [<Control#126013672532>(card_ui.gd)]
+        * [<Control#126064004183>(card_ui.gd)]
 17 orphans
 25/25 passed.
 
@@ -652,33 +647,33 @@ res://test/unit/test_scene_transitions.gd
 ==============================================
 test_battle_base_effect_application.gd
     - test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
-        * [<Control#122507234273>(card_ui.gd)]
+        * [<Control#123966850765>(card_ui.gd)]
     - test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
-        * [<Control#122675006438>(card_ui.gd)]
+        * [<Control#124134624269>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
-        * [<Control#122859555820>(card_ui.gd)]
+        * [<Control#124319173651>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_skips_alive_card
-        * [<Control#123010550769>(card_ui.gd)]
+        * [<Control#124470168600>(card_ui.gd)]
     - test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
-        * [<Control#123144768502>(card_ui.gd)]
+        * [<Control#124604386333>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_no_buff_allies
-        * [<Control#123329317884>(card_ui.gd)]
+        * [<Control#124788935715>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_green_007_buff
-        * [<Control#123497090050>(card_ui.gd)]
-        * [<Control#123547421701>(card_ui.gd)]
+        * [<Control#124956707881>(card_ui.gd)]
+        * [<Control#125007039532>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_white_017_buff
-        * [<Control#123748748300>(card_ui.gd)]
-        * [<Control#123799079951>(card_ui.gd)]
+        * [<Control#125208366131>(card_ui.gd)]
+        * [<Control#125258697782>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
-        * [<Control#124000406550>(card_ui.gd)]
-        * [<Control#124050738201>(card_ui.gd)]
+        * [<Control#125460024381>(card_ui.gd)]
+        * [<Control#125510356032>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
-        * [<Control#124252064800>(card_ui.gd)]
-        * [<Control#124302396451>(card_ui.gd)]
+        * [<Control#125711682631>(card_ui.gd)]
+        * [<Control#125762014282>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_stacking_buffs
-        * [<Control#124503723050>(card_ui.gd)]
-        * [<Control#124554054701>(card_ui.gd)]
-        * [<Control#124604386352>(card_ui.gd)]
+        * [<Control#125963340881>(card_ui.gd)]
+        * [<Control#126013672532>(card_ui.gd)]
+        * [<Control#126064004183>(card_ui.gd)]
 
 
 ==============================================
@@ -687,14 +682,14 @@ test_battle_base_effect_application.gd
 
 Totals
 ------
-Warnings              3
+Warnings              1
 
-Scripts              16
-Tests               478
-Passing Tests       478
-Asserts            2618
+Scripts              17
+Tests               482
+Passing Tests       482
+Asserts            2625
 Orphans              17
-Time              1.023s
+Time              2.107s
 
 
 ---- All tests passed! ----
