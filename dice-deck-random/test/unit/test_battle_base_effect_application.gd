@@ -240,3 +240,123 @@ func test_resolve_attacks_uses_shared_target_resolution_helper() -> void:
 		"BattleBase should expose a shared helper for attack target resolution")
 	assert_true(script_text.find("_resolve_attack_target(defender_slots, lane)") >= 0,
 		"_resolve_attacks should delegate target selection via shared helper")
+
+# ═══════════════════════════════════════════
+# _apply_hp_bonus_on_summon() テスト
+# ═══════════════════════════════════════════
+
+func _create_card_with_effect(effect_id: String, hp: int = 5) -> CardUI:
+	var card := CardUI.new()
+	var card_data := CardData.new()
+	card_data.card_name = "TestCard"
+	card_data.hp = hp
+	card_data.effect_id = effect_id
+	card.card_data = card_data
+	card.current_hp = hp
+	return card
+
+func test_apply_hp_bonus_on_summon_no_buff_allies() -> void:
+	var battle := TestBattleBase.new()
+	var card := _create_card_with_effect("", 5)
+	var slot := DummySlot.new()
+	slot.card_ui = card
+	battle.player_slots = [slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(card, true)
+
+	assert_eq(card.current_hp, 5, "HP should stay same without buff allies")
+	battle.free()
+
+func test_apply_hp_bonus_on_summon_receives_green_007_buff() -> void:
+	var battle := TestBattleBase.new()
+	var buff_card := _create_card_with_effect("green_007", 3)
+	var summoned_card := _create_card_with_effect("", 5)
+
+	var buff_slot := DummySlot.new()
+	buff_slot.card_ui = buff_card
+	var summoned_slot := DummySlot.new()
+	summoned_slot.card_ui = summoned_card
+
+	battle.player_slots = [buff_slot, summoned_slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(summoned_card, true)
+
+	assert_eq(summoned_card.current_hp, 6, "Summoned card should receive +1 HP from green_007")
+	battle.free()
+
+func test_apply_hp_bonus_on_summon_receives_white_017_buff() -> void:
+	var battle := TestBattleBase.new()
+	var buff_card := _create_card_with_effect("white_017", 4)
+	var summoned_card := _create_card_with_effect("", 5)
+
+	var buff_slot := DummySlot.new()
+	buff_slot.card_ui = buff_card
+	var summoned_slot := DummySlot.new()
+	summoned_slot.card_ui = summoned_card
+
+	battle.player_slots = [buff_slot, summoned_slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(summoned_card, true)
+
+	assert_eq(summoned_card.current_hp, 7, "Summoned card should receive +2 HP from white_017")
+	battle.free()
+
+func test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies() -> void:
+	var battle := TestBattleBase.new()
+	var green_007_card := _create_card_with_effect("green_007", 3)
+	var existing_ally := _create_card_with_effect("", 5)
+
+	var green_slot := DummySlot.new()
+	green_slot.card_ui = green_007_card
+	var ally_slot := DummySlot.new()
+	ally_slot.card_ui = existing_ally
+
+	battle.player_slots = [green_slot, ally_slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(green_007_card, true)
+
+	assert_eq(existing_ally.current_hp, 6, "Existing ally should receive +1 HP when green_007 is summoned")
+	battle.free()
+
+func test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies() -> void:
+	var battle := TestBattleBase.new()
+	var white_017_card := _create_card_with_effect("white_017", 4)
+	var existing_ally := _create_card_with_effect("", 5)
+
+	var white_slot := DummySlot.new()
+	white_slot.card_ui = white_017_card
+	var ally_slot := DummySlot.new()
+	ally_slot.card_ui = existing_ally
+
+	battle.player_slots = [white_slot, ally_slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(white_017_card, true)
+
+	assert_eq(existing_ally.current_hp, 7, "Existing ally should receive +2 HP when white_017 is summoned")
+	battle.free()
+
+func test_apply_hp_bonus_on_summon_stacking_buffs() -> void:
+	var battle := TestBattleBase.new()
+	var green_card := _create_card_with_effect("green_007", 3)
+	var white_card := _create_card_with_effect("white_017", 4)
+	var summoned_card := _create_card_with_effect("", 5)
+
+	var green_slot := DummySlot.new()
+	green_slot.card_ui = green_card
+	var white_slot := DummySlot.new()
+	white_slot.card_ui = white_card
+	var summoned_slot := DummySlot.new()
+	summoned_slot.card_ui = summoned_card
+
+	battle.player_slots = [green_slot, white_slot, summoned_slot]
+	battle.opponent_slots = []
+
+	battle._apply_hp_bonus_on_summon(summoned_card, true)
+
+	assert_eq(summoned_card.current_hp, 8, "Summoned card should receive +3 HP from stacked buffs")
+	battle.free()
