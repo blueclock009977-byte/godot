@@ -120,3 +120,24 @@ func test_duplicate_card_creates_copy():
 	# 変更しても元に影響しない
 	copy.hp = 999
 	assert_ne(original.hp, 999, "modifying copy should not affect original")
+
+func test_effect_budget_modifier_covers_all_registered_effect_ids():
+	var effect_manager = preload("res://autoload/effect_manager.gd").new()
+	effect_manager._register_all_effects()
+
+	for effect_id in effect_manager.effect_definitions.keys():
+		var modifier := CardDatabase._get_effect_budget_modifier(String(effect_id))
+		assert_ne(modifier, 0, "effect_id %s should be explicitly classified" % String(effect_id))
+
+	effect_manager.free()
+
+func test_effect_budget_modifier_key_rules():
+	# ドロー 1枚=-12 / 2枚=-24
+	assert_eq(CardDatabase._get_effect_budget_modifier("blue_014"), -12, "draw 1 should be -12")
+	assert_eq(CardDatabase._get_effect_budget_modifier("yellow_003"), -24, "draw 2 should be -24")
+
+	# 召喚時1ダメージ相当（red_001: 敵1体HP-2 は強めなので -8）
+	assert_lte(CardDatabase._get_effect_budget_modifier("red_001"), -6, "summon damage should be at least as costly as -6")
+
+	# 召喚時HP-2 は +10 回復目安
+	assert_eq(CardDatabase._get_effect_budget_modifier("black_003"), 10, "summon self damage 2 should refund about +10")

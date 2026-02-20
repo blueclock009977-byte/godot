@@ -319,66 +319,60 @@ func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 func _get_effect_budget_modifier(effect_id: String) -> int:
 	# 効果が強いほどマイナス（ステータス予算を消費）
 	# デメリット効果はプラス（ステータス予算を追加）
+	# ルーブリック:
+	# - 基準: 召喚時1ダメージ ≒ -6
+	# - ドロー: 1枚=-12 / 2枚=-24
+	# - 重要度: 召喚時/常時 > 死亡時 > 攻撃時
+	# - 召喚時自傷は +5/1HP（HP-2 で +10 回復目安）
 	if effect_id == "":
 		return 0
 
-	# デメリット系（主に黒）
-	# 目安: 召喚時HP-2 は +10 近辺を回復
-	match effect_id:
-		"black_001": return 5   # 召喚時HP-1
-		"black_003": return 10  # 召喚時HP-2
-		"black_005": return 15  # 召喚時HP-3
-		"black_008": return 25  # 召喚時HP-5
-		"black_017": return 20  # 召喚時HP-4
-		"black_014": return -2  # 自傷(-2)=+10 と ドロー1=-12 を相殺
-		"red_009": return 6     # 自爆デメリットを還元
+	var modifier_by_effect := {
+		# blue
+		"blue_001": -8, "blue_002": -12, "blue_003": -5, "blue_004": -10, "blue_005": -8, "blue_006": -8,
+		"blue_007": -12, "blue_008": -7, "blue_009": -7, "blue_010": -8, "blue_011": -8, "blue_012": -4,
+		"blue_013": -9, "blue_014": -12, "blue_015": -9, "blue_016": -11, "blue_017": -10, "blue_018": -12,
 
-	# 重要度別の基準（召喚/常時 > 死亡 > 攻撃）
-	# 召喚時1ダメージ ≒ -6、召喚時1ドロー ≒ -12 を基準に調整
-	var mod := -6  # 弱い効果の基準値
+		# green
+		"green_001": -8, "green_002": -6, "green_003": -7, "green_004": -10, "green_005": -8, "green_006": -12,
+		"green_007": -10, "green_008": -12, "green_009": -10, "green_010": -4, "green_011": -8, "green_012": -5,
+		"green_013": -14, "green_014": -7, "green_015": -12, "green_016": -10, "green_017": -12,
 
-	# 最重要: ドロー/コスト/ダイス/全体制圧
-	if effect_id in [
-		"blue_014", "green_013", "yellow_003", "yellow_005",
-		"green_006", "purple_004", "purple_017",
-		"blue_002", "black_009", "black_012", "black_019", "yellow_002", "purple_020",
-		"blue_018", "purple_011", "white_018"
-	]:
-		return -12
+		# black
+		"black_001": 5, "black_002": -7, "black_003": 10, "black_004": -6, "black_005": 15, "black_006": -8,
+		"black_007": -6, "black_008": 25, "black_009": -12, "black_010": -9, "black_011": -9, "black_012": -10,
+		"black_013": -8, "black_014": -2, "black_015": -3, "black_016": -8, "black_017": 20, "black_018": -11,
+		"black_019": -14,
 
-	# 強い効果（主に召喚時/常時/全体）
-	if effect_id in [
-		"blue_004", "blue_007", "blue_016", "blue_017",
-		"green_004", "green_007", "green_008", "green_009", "green_016", "green_017",
-		"black_010", "black_018",
-		"red_001", "red_003", "red_006", "red_011", "red_015", "red_016", "red_017", "red_018",
-		"yellow_010", "yellow_011", "yellow_012", "yellow_013", "yellow_016", "yellow_017", "yellow_019", "yellow_020",
-		"purple_006", "purple_008", "purple_009", "purple_010", "purple_012", "purple_014", "purple_016", "purple_018", "purple_019",
-		"white_004", "white_005", "white_006", "white_007", "white_009", "white_010", "white_011", "white_015", "white_016", "white_017", "white_019", "white_020"
-	]:
-		mod = -10
+		# red
+		"red_001": -8, "red_002": -6, "red_003": -12, "red_004": -9, "red_005": -5, "red_006": -10,
+		"red_007": -10, "red_008": -8, "red_009": 6, "red_010": -7, "red_011": -10, "red_012": -8,
+		"red_013": -4, "red_014": -9, "red_015": -13, "red_016": -11, "red_017": -14, "red_018": -12,
 
-	# 死亡時（次点）を少し重く
-	if effect_id in [
-		"blue_009", "green_002", "green_005", "green_014",
-		"black_002", "black_006", "black_011", "black_013",
-		"red_014", "yellow_011", "purple_005", "white_002", "white_014"
-	]:
-		mod = min(mod, -8)
+		# yellow
+		"yellow_001": -8, "yellow_002": -12, "yellow_003": -24, "yellow_004": -5, "yellow_005": -12, "yellow_006": -9,
+		"yellow_007": -8, "yellow_008": -4, "yellow_009": -9, "yellow_010": -8, "yellow_011": -9, "yellow_012": -10,
+		"yellow_013": -12, "yellow_014": -6, "yellow_015": -8, "yellow_016": -12, "yellow_017": -11,
+		"yellow_018": -6, "yellow_019": -11, "yellow_020": -13,
 
-	# 攻撃時（発動機会がダイス依存）
-	if effect_id in [
-		"blue_003", "blue_008", "blue_012",
-		"green_010",
-		"black_004", "black_007", "black_015", "black_016",
-		"red_002", "red_005", "red_008", "red_013",
-		"yellow_008", "yellow_018",
-		"purple_002", "purple_007", "purple_013", "purple_015",
-		"white_008"
-	]:
-		mod = max(mod, -8)
+		# purple
+		"purple_001": -9, "purple_002": -5, "purple_003": -10, "purple_004": -12, "purple_005": -7, "purple_006": -12,
+		"purple_007": -8, "purple_008": -9, "purple_009": -10, "purple_010": -11, "purple_011": -11, "purple_012": -12,
+		"purple_013": -6, "purple_014": -11, "purple_015": -12, "purple_016": -7, "purple_017": -14,
+		"purple_018": -14, "purple_019": -13, "purple_020": -13,
 
-	return mod
+		# white
+		"white_001": -8, "white_002": -7, "white_003": -7, "white_004": -11, "white_005": -11, "white_006": -12,
+		"white_007": -11, "white_008": -6, "white_009": -10, "white_010": -9, "white_011": -11, "white_012": -9,
+		"white_013": -8, "white_014": -9, "white_015": -12, "white_016": -11, "white_017": -12,
+		"white_018": -12, "white_019": -13, "white_020": -14,
+	}
+
+	if modifier_by_effect.has(effect_id):
+		return int(modifier_by_effect[effect_id])
+
+	push_error("[CardDatabase] 未分類のeffect_id: %s" % effect_id)
+	return 0
 
 func _get_required_min_hp_for_effect(effect_id: String) -> int:
 	match effect_id:
