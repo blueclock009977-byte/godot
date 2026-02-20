@@ -17,6 +17,7 @@ enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
 enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
 
 # ─── Game State ───
+var game_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # Shared RNG for deterministic gameplay
 var player_hp: int = MAX_HP
 var opponent_hp: int = MAX_HP
 var player_mana: int = 0

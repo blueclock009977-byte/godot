@@ -38,6 +38,7 @@ func _ready() -> void:
 	_start_game()
 
 func _exit_tree() -> void:
+	EffectManager.clear_battle_rng()  # Clear synced RNG on exit
 	if MultiplayerManager.action_received.is_connected(_on_action_received):
 		MultiplayerManager.action_received.disconnect(_on_action_received)
 	if MultiplayerManager.opponent_disconnected.is_connected(_on_opponent_disconnected):
@@ -79,15 +80,16 @@ func _start_game() -> void:
 	if opponent_deck.size() < 20:
 		opponent_deck = CardDatabase.build_random_battle_deck()
 
-	# Use room data seed for shuffle consistency
-	# Both players need same shuffle. Use room code as seed.
+	# Use room data seed for all random operations (shuffle, dice, effects)
+	# Both players use same seed for deterministic gameplay
 	var seed_val: int = room_code_to_seed(MultiplayerManager.room_code)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = seed_val
+	game_rng.seed = seed_val
+	EffectManager.set_battle_rng(game_rng)  # Sync effect random with game RNG
+	_log("[color=gray]ゲームシード: %d[/color]" % seed_val)
 
 	# Shuffle both decks with shared RNG
-	_shuffle_with_rng(player_deck, rng)
-	_shuffle_with_rng(opponent_deck, rng)
+	_shuffle_with_rng(player_deck, game_rng)
+	_shuffle_with_rng(opponent_deck, game_rng)
 
 	# Player 1 goes first
 	is_player_first = (my_player_number == 1)
@@ -182,7 +184,7 @@ func _on_end_phase() -> void:
 			_clear_selection()
 			_update_all_ui()
 			await _show_phase_banner("ダイス!", Color(1, 0.9, 0.3), 0.5)
-			var dice_val := randi() % 6 + 1
+			var dice_val := game_rng.randi_range(1, 6)
 			var ok_dice := await _send_action({"type": "dice_roll", "value": dice_val})
 			if not ok_dice:
 				return
@@ -429,6 +431,7 @@ func _move_card_to_slot(from_slot: FieldSlot, to_slot: FieldSlot) -> void:
 func _game_end(player_wins: bool) -> void:
 	game_over = true
 	_waiting_for_opponent = false
+	EffectManager.clear_battle_rng()  # Clear synced RNG
 	_update_all_ui()
 	if player_wins:
 		_log("[color=yellow]勝利！[/color]")

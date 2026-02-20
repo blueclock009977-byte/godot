@@ -3,6 +3,20 @@ extends Node
 ## 効果管理システム
 ## 効果の定義と処理を一元管理
 
+# オンライン対戦用: バトルシーンからRNGを受け取り、ランダム処理を同期
+var battle_rng: RandomNumberGenerator = null
+
+func set_battle_rng(rng: RandomNumberGenerator) -> void:
+	battle_rng = rng
+
+func clear_battle_rng() -> void:
+	battle_rng = null
+
+func _get_random_int(max_val: int) -> int:
+	if battle_rng:
+		return battle_rng.randi() % max_val
+	return randi() % max_val
+
 # 効果タイミング
 enum Timing { ON_SUMMON, ON_ATTACK, ON_DEATH, ON_DEFENSE, CONSTANT, TURN_START, TURN_END }
 
@@ -1333,7 +1347,7 @@ func _collect_targets(is_player: bool, context: Dictionary, for_enemy: bool) -> 
 func _pick_random_target(targets: Array):
 	if targets.size() == 0:
 		return null
-	return targets[randi() % targets.size()]
+	return targets[_get_random_int(targets.size())]
 
 func _get_random_enemy(is_player: bool, context: Dictionary):
 	return _pick_random_target(_collect_targets(is_player, context, true))
