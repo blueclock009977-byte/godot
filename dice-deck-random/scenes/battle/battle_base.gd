@@ -469,11 +469,17 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 			if defense_result.get("shield_consumed", false) and "shield_used" in def_card:
 				def_card.shield_used = true
 			var final_damage: int = defense_result.get("final_damage", damage)
+			# 常時被ダメ軽減を適用
+			var damage_reduction := EffectManager.get_damage_reduction_for_card(def_card, not attacker_is_player, _get_effect_context())
+			final_damage = max(0, final_damage - damage_reduction)
 			await _apply_card_damage_and_handle_destroy(def_card, final_damage, not attacker_is_player)
 			_apply_attack_effect_post_damage(atk_effect, card_ui, final_damage)
 
 			if defense_result.get("reflect", false):
 				var reflected_damage: int = max(0, final_damage)
+				# 反射ダメージにも攻撃者側の被ダメ軽減を適用
+				var attacker_reduction := EffectManager.get_damage_reduction_for_card(card_ui, attacker_is_player, _get_effect_context())
+				reflected_damage = max(0, reflected_damage - attacker_reduction)
 				if reflected_damage > 0 and card_ui and card_ui.current_hp > 0:
 					_log("[color=yellow]%s の反射: %s に%dダメージ[/color]" % [def_card.card_data.card_name, atk_name, reflected_damage])
 					await _apply_card_damage_and_handle_destroy(card_ui, reflected_damage, attacker_is_player)
