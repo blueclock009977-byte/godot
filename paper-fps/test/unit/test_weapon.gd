@@ -4,8 +4,8 @@ extends GutTest
 
 func test_pistol_stats() -> void:
 	# ピストルのステータス確認
-	var pistol_scene := load("res://scenes/weapons/pistol.tscn")
-	var pistol := pistol_scene.instantiate()
+	var pistol_scene: PackedScene = load("res://scenes/weapons/pistol.tscn")
+	var pistol: WeaponBase = pistol_scene.instantiate()
 	add_child_autofree(pistol)
 	
 	assert_eq(pistol.weapon_name, "Pistol", "武器名が正しい")
@@ -14,8 +14,8 @@ func test_pistol_stats() -> void:
 	assert_eq(pistol.current_ammo, 12, "初期弾数が満タン")
 
 func test_shotgun_stats() -> void:
-	var shotgun_scene := load("res://scenes/weapons/shotgun.tscn")
-	var shotgun := shotgun_scene.instantiate()
+	var shotgun_scene: PackedScene = load("res://scenes/weapons/shotgun.tscn")
+	var shotgun: WeaponBase = shotgun_scene.instantiate()
 	add_child_autofree(shotgun)
 	
 	assert_eq(shotgun.weapon_name, "Shotgun", "武器名が正しい")
@@ -23,8 +23,8 @@ func test_shotgun_stats() -> void:
 	assert_eq(shotgun.spread, 8.0, "スプレッドが正しい")
 
 func test_assault_stats() -> void:
-	var assault_scene := load("res://scenes/weapons/assault.tscn")
-	var assault := assault_scene.instantiate()
+	var assault_scene: PackedScene = load("res://scenes/weapons/assault.tscn")
+	var assault: WeaponBase = assault_scene.instantiate()
 	add_child_autofree(assault)
 	
 	assert_eq(assault.weapon_name, "Assault Rifle", "武器名が正しい")
@@ -32,8 +32,8 @@ func test_assault_stats() -> void:
 	assert_eq(assault.magazine_size, 30, "弾数が正しい")
 
 func test_sniper_stats() -> void:
-	var sniper_scene := load("res://scenes/weapons/sniper.tscn")
-	var sniper := sniper_scene.instantiate()
+	var sniper_scene: PackedScene = load("res://scenes/weapons/sniper.tscn")
+	var sniper: WeaponBase = sniper_scene.instantiate()
 	add_child_autofree(sniper)
 	
 	assert_eq(sniper.weapon_name, "Sniper Rifle", "武器名が正しい")

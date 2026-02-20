@@ -46,7 +46,7 @@ func _on_player_hp_changed(current_hp: int, max_hp: int) -> void:
 
 func _on_player_died() -> void:
 	# ゲームオーバー処理
-	var game_over := Label.new()
+	var game_over: Label = Label.new()
 	game_over.text = "GAME OVER\n\nKills: %d\n\nPress R to restart" % enemies_killed
 	game_over.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	game_over.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -78,10 +78,10 @@ func _update_weapon_display() -> void:
 		_on_ammo_changed(player.current_weapon.current_ammo, player.current_weapon.magazine_size)
 
 func _spawn_enemies() -> void:
-	var enemy_scene := preload("res://scenes/enemy/basic_enemy.tscn")
+	var enemy_scene: PackedScene = preload("res://scenes/enemy/basic_enemy.tscn")
 	
 	# 敵を複数スポーン
-	var spawn_positions := [
+	var spawn_positions: Array[Vector3] = [
 		Vector3(10, 0, 10),
 		Vector3(-10, 0, 10),
 		Vector3(15, 0, -5),
@@ -89,8 +89,8 @@ func _spawn_enemies() -> void:
 		Vector3(0, 0, 20),
 	]
 	
-	for pos in spawn_positions:
-		var enemy := enemy_scene.instantiate()
+	for pos: Vector3 in spawn_positions:
+		var enemy: EnemyBase = enemy_scene.instantiate()
 		enemy.global_position = pos
 		enemy.enemy_died.connect(_on_enemy_died)
 		add_child(enemy)
@@ -99,7 +99,7 @@ func _on_enemy_died(_enemy: EnemyBase) -> void:
 	enemies_killed += 1
 	
 	# 全滅チェック
-	var remaining := get_tree().get_nodes_in_group("enemies").size()
+	var remaining: int = get_tree().get_nodes_in_group("enemies").size()
 	if remaining <= 1:  # 死んだ敵がまだグループにいる可能性
 		_spawn_more_enemies()
 

@@ -91,8 +91,8 @@ func _physics_process(delta: float) -> void:
 		velocity.y = JUMP_VELOCITY
 	
 	# Movement
-	var input_dir := Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
-	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	var direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:
 		velocity.x = direction.x * SPEED
@@ -116,31 +116,31 @@ func _physics_process(delta: float) -> void:
 func get_hitbox_width() -> float:
 	# カメラの向きから当たり判定の幅を計算
 	# 正面（Z軸方向）= 幅0.8、横（X軸方向）= 幅0.1
-	var forward := -global_transform.basis.z
+	var forward: Vector3 = -global_transform.basis.z
 	# 横向き度合い（0 = 正面/背面、1 = 完全に横）
-	var sideways := abs(forward.x)
+	var sideways: float = abs(forward.x)
 	return lerp(0.8, 0.1, sideways)
 
 ## 敵からの角度に基づいてダメージ倍率を計算
 ## 横向きの本当のメリットは当たり判定が小さくなること
 ## ダメージ軽減は微小（0.8〜1.0）
 func get_hitbox_scale_for_enemy(enemy_position: Vector3) -> float:
-	var to_enemy := (enemy_position - global_position).normalized()
-	var forward := -global_transform.basis.z.normalized()
+	var to_enemy: Vector3 = (enemy_position - global_position).normalized()
+	var forward: Vector3 = -global_transform.basis.z.normalized()
 	
 	# 内積で角度を計算（1 = 正面、0 = 横向き、-1 = 背後）
-	var dot := forward.dot(to_enemy)
-	var angle := acos(clamp(dot, -1.0, 1.0))
+	var dot: float = forward.dot(to_enemy)
+	var angle: float = acos(clamp(dot, -1.0, 1.0))
 	
 	# 0度 = 1.0（最大）、90度 = 0.8（最小）
 	# 横向きの真のメリットは物理的に当たり判定が薄いこと
-	var scale := lerp(1.0, 0.8, abs(sin(angle)))
+	var scale: float = lerp(1.0, 0.8, abs(sin(angle)))
 	return scale
 
 func take_damage(amount: int, from_position: Vector3) -> void:
 	# 敵の位置に基づいてダメージを軽減
-	var scale := get_hitbox_scale_for_enemy(from_position)
-	var actual_damage := int(amount * scale)
+	var scale: float = get_hitbox_scale_for_enemy(from_position)
+	var actual_damage: int = int(amount * scale)
 	
 	hp = max(0, hp - actual_damage)
 	hp_changed.emit(hp, max_hp)

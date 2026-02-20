@@ -1,0 +1,8 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+ERROR: Some GUT class_names have not been imported.  Please restart the Editor or run godot --headless --import
+Missing class_names:  ["GutErrorTracker", "GutHookScript", "GutInputFactory", "GutInputSender", "GutMain", "GutStringUtils", "GutTest", "GutTrackedError", "GutUtils"]
+   at: push_error (core/variant/variant_utility.cpp:1024)
+   GDScript backtrace (most recent call first):
+       [0] error_if_not_all_classes_imported (res://addons/gut/version_conversion.gd:108)
+       [1] _init (res://addons/gut/gut_cmdln.gd:16)
