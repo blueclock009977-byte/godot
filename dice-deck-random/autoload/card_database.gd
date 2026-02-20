@@ -332,24 +332,24 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 
 	var modifier_by_effect := {
 		# blue
-		"blue_001": -8, "blue_002": -12, "blue_003": -5, "blue_004": -8, "blue_005": -8, "blue_006": -8,
+		"blue_001": -8, "blue_002": -12, "blue_003": -6, "blue_004": -8, "blue_005": -8, "blue_006": -8,
 		"blue_007": -12, "blue_008": -7, "blue_009": -7, "blue_010": -8, "blue_011": -8, "blue_012": -4,
 		"blue_013": -9, "blue_014": -12, "blue_015": -9, "blue_016": -11, "blue_017": -10, "blue_018": -12,
 
 		# green
-		"green_001": -8, "green_002": -6, "green_003": -3, "green_004": -8, "green_005": -6, "green_006": -12,
+		"green_001": -8, "green_002": -6, "green_003": -3, "green_004": -8, "green_005": -9, "green_006": -12,
 		"green_007": -10, "green_008": -12, "green_009": -10, "green_010": -4, "green_011": -8, "green_012": -5,
 		"green_013": -14, "green_014": -7, "green_015": -12, "green_016": -10, "green_017": -12,
 
 		# black
-		"black_001": 2, "black_002": -11, "black_003": 10, "black_004": -6, "black_005": 15, "black_006": -8,
+		"black_001": -3, "black_002": -11, "black_003": 10, "black_004": -6, "black_005": 12, "black_006": -8,
 		"black_007": -6, "black_008": 25, "black_009": -12, "black_010": -12, "black_011": -12, "black_012": -13,
 		"black_013": -8, "black_014": -2, "black_015": -3, "black_016": -8, "black_017": 20, "black_018": -11,
 		"black_019": -14,
 
 		# red
 		"red_001": -8, "red_002": -6, "red_003": -12, "red_004": -8, "red_005": -5, "red_006": -10,
-		"red_007": -10, "red_008": -8, "red_009": 6, "red_010": -7, "red_011": -10, "red_012": -8,
+		"red_007": -10, "red_008": -8, "red_009": 3, "red_010": -7, "red_011": -10, "red_012": -8,
 		"red_013": -4, "red_014": -9, "red_015": -13, "red_016": -11, "red_017": -14, "red_018": -12,
 
 		# yellow
@@ -359,8 +359,8 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"yellow_018": -6, "yellow_019": -11, "yellow_020": -13,
 
 		# purple
-		"purple_001": -9, "purple_002": -5, "purple_003": -10, "purple_004": -12, "purple_005": -7, "purple_006": -9,
-		"purple_007": -8, "purple_008": -9, "purple_009": -10, "purple_010": -11, "purple_011": -11, "purple_012": -12,
+		"purple_001": -12, "purple_002": -5, "purple_003": -10, "purple_004": -12, "purple_005": -7, "purple_006": -12,
+		"purple_007": -11, "purple_008": -9, "purple_009": -10, "purple_010": -11, "purple_011": -14, "purple_012": -12,
 		"purple_013": -6, "purple_014": -11, "purple_015": -12, "purple_016": -7, "purple_017": -14,
 		"purple_018": -14, "purple_019": -13, "purple_020": -13,
 

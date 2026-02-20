@@ -10,63 +10,59 @@ SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
 [INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
 Godot version:  4.6.0
 GUT version:  9.5.0
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:100)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:119)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-SCRIPT ERROR: Parse Error: Cannot infer the type of "wr" variable because the value doesn't have a set type.
-   at: GDScript::reload (res://test/unit/test_balance_simulator.gd:393)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-ERROR: Failed to load script "res://test/unit/test_balance_simulator.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2907)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-[WARNING]:  Ignoring script res://test/unit/test_balance_simulator.gd because it does not extend GutTest
+
+
+res://test/unit/test_balance_simulator.gd
+* test_mono_deck_creation
+* test_single_game_simulation
+* test_matchup_simulation
+* test_color_balance_report
+    ═══════════════════════════════════════════
+    色別バランスシミュレーション結果
+    各マッチアップ 100 ゲーム（先攻/後攻各1回）
+    ═══════════════════════════════════════════
+    BLUE vs GREEN: 60.5% vs 38.5% (先攻有利: -1.0%, 平均22.0ターン)
+    BLUE vs BLACK: 53.5% vs 46.5% (先攻有利: +7.0%, 平均21.2ターン)
+    BLUE vs RED: 60.5% vs 39.5% (先攻有利: -5.0%, 平均20.6ターン)
+    BLUE vs YELLOW: 60.0% vs 40.0% (先攻有利: -6.0%, 平均21.1ターン)
+    BLUE vs PURPLE: 53.0% vs 46.5% (先攻有利: -4.0%, 平均21.4ターン)
+    BLUE vs WHITE: 59.5% vs 40.0% (先攻有利: -7.0%, 平均21.0ターン)
+    GREEN vs BLACK: 43.5% vs 56.0% (先攻有利: -3.0%, 平均22.1ターン)
+    GREEN vs RED: 48.5% vs 50.0% (先攻有利: -15.0%, 平均21.1ターン)
+    GREEN vs YELLOW: 52.0% vs 47.5% (先攻有利: +6.0%, 平均22.7ターン)
+    GREEN vs PURPLE: 42.0% vs 57.5% (先攻有利: -8.0%, 平均21.9ターン)
+    GREEN vs WHITE: 49.5% vs 49.0% (先攻有利: +11.0%, 平均21.4ターン)
+    BLACK vs RED: 61.0% vs 38.0% (先攻有利: -10.0%, 平均23.0ターン)
+    BLACK vs YELLOW: 54.0% vs 45.5% (先攻有利: -10.0%, 平均22.8ターン)
+    BLACK vs PURPLE: 53.5% vs 46.0% (先攻有利: -11.0%, 平均22.2ターン)
+    BLACK vs WHITE: 57.5% vs 42.5% (先攻有利: -9.0%, 平均22.2ターン)
+    RED vs YELLOW: 49.0% vs 50.0% (先攻有利: +0.0%, 平均21.5ターン)
+    RED vs PURPLE: 53.0% vs 46.5% (先攻有利: -10.0%, 平均20.6ターン)
+    RED vs WHITE: 52.5% vs 47.0% (先攻有利: -1.0%, 平均20.6ターン)
+    YELLOW vs PURPLE: 49.0% vs 50.5% (先攻有利: -2.0%, 平均21.3ターン)
+    YELLOW vs WHITE: 48.0% vs 52.0% (先攻有利: -8.0%, 平均21.2ターン)
+    PURPLE vs WHITE: 50.5% vs 48.5% (先攻有利: -5.0%, 平均22.5ターン)
+
+    ═══════════════════════════════════════════
+    総合勝率（全マッチアップ通算）
+    ═══════════════════════════════════════════
+    BLUE: 57.8% (694/1200)
+    GREEN: 45.7% (548/1200)
+    BLACK: 54.7% (656/1200)
+    RED: 47.0% (564/1200)
+    YELLOW: 46.7% (560/1200)
+    PURPLE: 49.5% (594/1200)
+    WHITE: 46.5% (558/1200)
+
+    ═══════════════════════════════════════════
+    バランス指標
+    ═══════════════════════════════════════════
+    色別勝率範囲: 45.7% - 57.8% (差: 12.2%)
+    平均先攻有利度: -4.3%
+
+    ✓ 色バランス: 良好（差12.2% <= 15%）
+    ✓ 先後バランス: 良好（先攻有利-4.3% <= ±8%）
+4/4 passed.
 
 
 res://test/unit/test_battle_base_effect_application.gd
@@ -84,45 +80,45 @@ res://test/unit/test_battle_base_effect_application.gd
 * test_apply_attack_effect_pre_damage_returns_false_without_target
 * test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
     1 Orphans
-        * [<Control#122440125409>(card_ui.gd)]
+        * [<Control#124805711565>(card_ui.gd)]
 * test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
     1 Orphans
-        * [<Control#122607897574>(card_ui.gd)]
+        * [<Control#124973485073>(card_ui.gd)]
 * test_apply_effect_result_uses_destroy_targets_helper
 * test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
     1 Orphans
-        * [<Control#122792446956>(card_ui.gd)]
+        * [<Control#125158034455>(card_ui.gd)]
 * test_apply_effect_result_damaged_targets_skips_alive_card
     1 Orphans
-        * [<Control#122943441905>(card_ui.gd)]
+        * [<Control#125309029404>(card_ui.gd)]
 * test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
     1 Orphans
-        * [<Control#123077659638>(card_ui.gd)]
+        * [<Control#125443247137>(card_ui.gd)]
 * test_resolve_attacks_uses_shared_target_resolution_helper
 * test_apply_hp_bonus_on_summon_no_buff_allies
     1 Orphans
-        * [<Control#123262209020>(card_ui.gd)]
+        * [<Control#125627796519>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_green_007_buff
     2 Orphans
-        * [<Control#123429981186>(card_ui.gd)]
-        * [<Control#123480312837>(card_ui.gd)]
+        * [<Control#125795568685>(card_ui.gd)]
+        * [<Control#125845900336>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_white_017_buff
     2 Orphans
-        * [<Control#123681639436>(card_ui.gd)]
-        * [<Control#123731971087>(card_ui.gd)]
+        * [<Control#126047226935>(card_ui.gd)]
+        * [<Control#126097558586>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
     2 Orphans
-        * [<Control#123933297686>(card_ui.gd)]
-        * [<Control#123983629337>(card_ui.gd)]
+        * [<Control#126298885185>(card_ui.gd)]
+        * [<Control#126349216836>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
     2 Orphans
-        * [<Control#124184955936>(card_ui.gd)]
-        * [<Control#124235287587>(card_ui.gd)]
+        * [<Control#126550543435>(card_ui.gd)]
+        * [<Control#126600875086>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_stacking_buffs
     3 Orphans
-        * [<Control#124436614186>(card_ui.gd)]
-        * [<Control#124486945837>(card_ui.gd)]
-        * [<Control#124537277488>(card_ui.gd)]
+        * [<Control#126802201685>(card_ui.gd)]
+        * [<Control#126852533336>(card_ui.gd)]
+        * [<Control#126902864987>(card_ui.gd)]
 17 orphans
 25/25 passed.
 
@@ -229,6 +225,159 @@ res://test/unit/test_card_database.gd
 * test_effect_budget_modifier_covers_all_registered_effect_ids
 * test_effect_budget_modifier_key_rules
 18/18 passed.
+
+
+res://test/unit/test_card_level_balance.gd
+* test_card_level_balance_report
+    ═══════════════════════════════════════════
+    カード単位バランス計測結果
+    各マッチアップ 50 ゲーム × 21ペア × 2（先後）
+    ═══════════════════════════════════════════
+
+    ═══════════════════════════════════════════
+    出場時勝率 統計
+    ═══════════════════════════════════════════
+    中央値: 47.6%
+    最小: 34.7% / 最大: 62.7%
+    目標: 中央値±7%以内 (40.6% ~ 54.6%)
+
+    ═══════════════════════════════════════════
+    外れ値カード（中央値±7%超）
+    ═══════════════════════════════════════════
+
+    【高勝率 TOP10】
+      堕天使 [BLACK] ID:68 - 62.7% (59 games)
+      死霊術師 [BLACK] ID:69 - 62.0% (100 games)
+      光の魔術師 [YELLOW] ID:109 - 61.3% (75 games)
+      スカウト [GRAY] ID:5 - 60.8% (1353 games)
+      闇のコウモリ [BLACK] ID:60 - 60.7% (183 games)
+      水の使い [BLUE] ID:24 - 60.6% (142 games)
+      海のスライム [BLUE] ID:27 - 59.7% (186 games)
+      影の暗殺者 [BLACK] ID:64 - 57.9% (159 games)
+      呪いの魔女 [PURPLE] ID:129 - 57.8% (64 games)
+      霧の狼 [BLUE] ID:25 - 57.2% (173 games)
+
+    【低勝率 BOTTOM10】
+      癒しの騎士 [WHITE] ID:145 - 34.7% (170 games)
+      火炎魔術師 [RED] ID:85 - 35.6% (188 games)
+      業火の魔人 [RED] ID:91 - 36.1% (61 games)
+      聖騎士団長 [WHITE] ID:148 - 36.4% (77 games)
+      花の精 [GREEN] ID:45 - 36.6% (172 games)
+      火の精霊 [RED] ID:80 - 37.2% (188 games)
+      森の巨人 [GREEN] ID:51 - 37.5% (72 games)
+      呪術師 [PURPLE] ID:125 - 37.7% (175 games)
+      炎の騎士 [RED] ID:88 - 38.6% (57 games)
+      毒蛇 [BLACK] ID:65 - 38.7% (163 games)
+
+    ═══════════════════════════════════════════
+    バランス判定
+    ═══════════════════════════════════════════
+    外れ値カード: 29 / 99 (29.3%)
+    ✗ カードバランス: 要調整（外れ値29.3% > 10%）
+
+    ═══════════════════════════════════════════
+    全カード出場時勝率（勝率順）
+    ═══════════════════════════════════════════
+    ID: 68 [ BLACK] 堕天使: 62.7% (59) ▲
+    ID: 69 [ BLACK] 死霊術師: 62.0% (100) ▲
+    ID:109 [YELLOW] 光の魔術師: 61.3% (75) ▲
+    ID:  5 [  GRAY] スカウト: 60.8% (1353) ▲
+    ID: 60 [ BLACK] 闇のコウモリ: 60.7% (183) ▲
+    ID: 24 [  BLUE] 水の使い: 60.6% (142) ▲
+    ID: 27 [  BLUE] 海のスライム: 59.7% (186) ▲
+    ID: 64 [ BLACK] 影の暗殺者: 57.9% (159) ▲
+    ID:129 [PURPLE] 呪いの魔女: 57.8% (64) ▲
+    ID: 25 [  BLUE] 霧の狼: 57.2% (173) ▲
+    ID:  7 [  GRAY] アサシン: 57.2% (1270) ▲
+    ID: 12 [  GRAY] アイアンゴーレム: 57.1% (14) ▲
+    ID: 30 [  BLUE] 吹雪の魔術師: 56.7% (67) ▲
+    ID:131 [PURPLE] 悪夢の使者: 56.2% (73) ▲
+    ID: 29 [  BLUE] 深海魚: 55.3% (76) ▲
+    ID: 23 [  BLUE] 霜の妖精: 54.6% (194) ▲
+    ID: 22 [  BLUE] 氷のネズミ: 54.0% (224)
+    ID:  9 [  GRAY] ストライカー: 53.7% (495)
+    ID: 61 [ BLACK] 呪いの人形: 53.6% (179)
+    ID:123 [PURPLE] 夜の蝶: 53.6% (194)
+    ID: 63 [ BLACK] 闘のインプ: 53.6% (196)
+    ID: 10 [  GRAY] パラディン: 53.3% (482)
+    ID: 50 [ GREEN] ドリアードの巫女: 52.9% (68)
+    ID: 66 [ BLACK] ゾンビ: 52.9% (174)
+    ID:  2 [  GRAY] ゴブリン: 52.8% (1354)
+    ID:  6 [  GRAY] ウォリアー: 52.5% (1276)
+    ID:  0 [  GRAY] スライム: 52.5% (1343)
+    ID:  3 [  GRAY] ナイフィンプ: 52.4% (1307)
+    ID:120 [PURPLE] 闇の精霊: 52.3% (199)
+    ID:126 [PURPLE] 影の狼: 52.2% (161)
+    ID: 71 [ BLACK] 悪魔の契約者: 51.9% (79)
+    ID:107 [YELLOW] 光のスライム: 51.7% (178)
+    ID:130 [PURPLE] 影の龍: 51.5% (66)
+    ID:121 [PURPLE] 呪いのコウモリ: 51.5% (171)
+    ID: 26 [  BLUE] 氷の彫刻家: 51.4% (173)
+    ID:108 [YELLOW] 聖騎士: 51.3% (76)
+    ID:  4 [  GRAY] シールドナイト: 51.3% (1259)
+    ID:  1 [  GRAY] ストーンウォール: 50.3% (1330)
+    ID:  8 [  GRAY] フォートレス: 50.2% (496)
+    ID: 28 [  BLUE] 氷結の騎士: 50.0% (70)
+    ID:105 [YELLOW] 癒しの天使: 49.2% (197)
+    ID:128 [PURPLE] 闇の騎士: 49.2% (63)
+    ID:111 [YELLOW] 希望の使者: 48.8% (80)
+    ID:149 [ WHITE] 癒しの天使長: 48.7% (76)
+    ID: 31 [  BLUE] 氷の壁: 48.6% (74)
+    ID:103 [YELLOW] 星の欠片: 48.4% (190)
+    ID: 21 [  BLUE] フロストバット: 48.2% (170)
+    ID:110 [YELLOW] 天使: 47.9% (73)
+    ID:147 [ WHITE] 祝福の僧侶: 47.9% (211)
+    ID: 11 [  GRAY] バーサーカー: 47.6% (523)
+    ID:102 [YELLOW] 祝福のスプライト: 47.4% (175)
+    ID: 46 [ GREEN] 蔦の魔術師: 47.4% (194)
+    ID:124 [PURPLE] 闇の魔術師: 47.3% (186)
+    ID:106 [YELLOW] 守護の騎士: 47.1% (191)
+    ID: 87 [   RED] 火の鳥: 47.1% (155)
+    ID:141 [ WHITE] 癒しの光: 47.1% (189)
+    ID: 90 [   RED] 溶岩巨人: 46.8% (77)
+    ID: 84 [   RED] 炎の戦士: 46.6% (163)
+    ID: 20 [  BLUE] 氷の精霊: 46.3% (201)
+    ID:127 [PURPLE] 夢魔: 46.0% (202)
+    ID:122 [PURPLE] 影のネズミ: 45.9% (183)
+    ID: 47 [ GREEN] 木こりオーク: 45.9% (181)
+    ID: 70 [ BLACK] 骸骨剣士: 45.8% (72)
+    ID: 43 [ GREEN] 種まき: 45.6% (215)
+    ID: 42 [ GREEN] 花のスプライト: 45.4% (216)
+    ID: 81 [   RED] 炎のネズミ: 45.3% (161)
+    ID: 49 [ GREEN] 大樹の戦士: 45.3% (95)
+    ID:140 [ WHITE] 聖なる精霊: 45.2% (177)
+    ID:142 [ WHITE] 守護の精霊: 45.0% (189)
+    ID: 82 [   RED] 火花インプ: 44.8% (181)
+    ID:150 [ WHITE] 聖なる守護者: 44.6% (74)
+    ID: 44 [ GREEN] 草原の狩人: 44.4% (178)
+    ID:144 [ WHITE] 白の戦士: 44.3% (176)
+    ID:101 [YELLOW] 聖なる小鳥: 43.8% (201)
+    ID: 86 [   RED] バーニングナイト: 43.5% (191)
+    ID: 41 [ GREEN] 若木のトレント: 43.0% (186)
+    ID: 67 [ BLACK] 闇の魔術師: 42.9% (182)
+    ID:151 [ WHITE] 祈りの巫女: 42.9% (77)
+    ID: 13 [  GRAY] ブレードマスター: 42.9% (21)
+    ID:143 [ WHITE] 祈りの天使: 42.5% (207)
+    ID:146 [ WHITE] 聖なる盾: 42.2% (185)
+    ID: 89 [   RED] ファイアドラゴン: 42.1% (57)
+    ID: 62 [ BLACK] 疫病ネズミ: 41.9% (179)
+    ID:100 [YELLOW] 光の精霊: 41.8% (165)
+    ID: 48 [ GREEN] 森の守護者: 41.5% (53)
+    ID: 40 [ GREEN] 森の妖精: 41.2% (194)
+    ID: 14 [  GRAY] ドラゴンナイト: 40.0% (15) ▼
+    ID: 83 [   RED] 溶岩スライム: 39.5% (177) ▼
+    ID:104 [YELLOW] 光の戦士: 39.2% (194) ▼
+    ID: 65 [ BLACK] 毒蛇: 38.7% (163) ▼
+    ID: 88 [   RED] 炎の騎士: 38.6% (57) ▼
+    ID:125 [PURPLE] 呪術師: 37.7% (175) ▼
+    ID: 51 [ GREEN] 森の巨人: 37.5% (72) ▼
+    ID: 80 [   RED] 火の精霊: 37.2% (188) ▼
+    ID: 45 [ GREEN] 花の精: 36.6% (172) ▼
+    ID:148 [ WHITE] 聖騎士団長: 36.4% (77) ▼
+    ID: 91 [   RED] 業火の魔人: 36.1% (61) ▼
+    ID: 85 [   RED] 火炎魔術師: 35.6% (188) ▼
+    ID:145 [ WHITE] 癒しの騎士: 34.7% (170) ▼
+1/1 passed.
 
 
 res://test/unit/test_effect_integration.gd
@@ -651,33 +800,33 @@ res://test/unit/test_scene_transitions.gd
 ==============================================
 test_battle_base_effect_application.gd
     - test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
-        * [<Control#122440125409>(card_ui.gd)]
+        * [<Control#124805711565>(card_ui.gd)]
     - test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
-        * [<Control#122607897574>(card_ui.gd)]
+        * [<Control#124973485073>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
-        * [<Control#122792446956>(card_ui.gd)]
+        * [<Control#125158034455>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_skips_alive_card
-        * [<Control#122943441905>(card_ui.gd)]
+        * [<Control#125309029404>(card_ui.gd)]
     - test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
-        * [<Control#123077659638>(card_ui.gd)]
+        * [<Control#125443247137>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_no_buff_allies
-        * [<Control#123262209020>(card_ui.gd)]
+        * [<Control#125627796519>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_green_007_buff
-        * [<Control#123429981186>(card_ui.gd)]
-        * [<Control#123480312837>(card_ui.gd)]
+        * [<Control#125795568685>(card_ui.gd)]
+        * [<Control#125845900336>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_white_017_buff
-        * [<Control#123681639436>(card_ui.gd)]
-        * [<Control#123731971087>(card_ui.gd)]
+        * [<Control#126047226935>(card_ui.gd)]
+        * [<Control#126097558586>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
-        * [<Control#123933297686>(card_ui.gd)]
-        * [<Control#123983629337>(card_ui.gd)]
+        * [<Control#126298885185>(card_ui.gd)]
+        * [<Control#126349216836>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
-        * [<Control#124184955936>(card_ui.gd)]
-        * [<Control#124235287587>(card_ui.gd)]
+        * [<Control#126550543435>(card_ui.gd)]
+        * [<Control#126600875086>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_stacking_buffs
-        * [<Control#124436614186>(card_ui.gd)]
-        * [<Control#124486945837>(card_ui.gd)]
-        * [<Control#124537277488>(card_ui.gd)]
+        * [<Control#126802201685>(card_ui.gd)]
+        * [<Control#126852533336>(card_ui.gd)]
+        * [<Control#126902864987>(card_ui.gd)]
 
 
 ==============================================
@@ -686,14 +835,14 @@ test_battle_base_effect_application.gd
 
 Totals
 ------
-Warnings              2
+Warnings              1
 
-Scripts              16
-Tests               478
-Passing Tests       478
-Asserts            2616
+Scripts              18
+Tests               483
+Passing Tests       483
+Asserts            2630
 Orphans              17
-Time              1.095s
+Time              2.604s
 
 
 ---- All tests passed! ----

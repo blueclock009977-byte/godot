@@ -1,9 +1,9 @@
 {
-  "phase": 15,
+  "phase": 24,
   "attempt": 1,
   "started_at": "2026-02-20T14:58:00+09:00",
-  "phase15_started_at": "2026-02-20T17:36:00+09:00",
-  "phase15_completed_at": "2026-02-20T17:38:00+09:00",
+  "phase24_started_at": "2026-02-20T20:59:00+09:00",
+  "phase24_completed_at": "2026-02-20T21:03:00+09:00",
   "completion_criteria": {
     "online_no_bug_30_games": false,
     "color_balance_thresholds_met": true,
@@ -13,55 +13,39 @@
   },
   "findings": {
     "color_balance_issues": [
-      "バランス閾値達成（色差11.6%、先後差-5.7%）"
+      "バランス閾値達成（色差10.8%、先後差-5.2%）"
     ],
     "card_level_issues": [
-      "外れ値カード: 38%（目標10%未達）",
-      "GRAY高勝率(スカウト/アサシン/ブレードマスター)をPhase15で弱体化",
-      "アイアンゴーレム低勝率をPhase15で強化"
+      "Phase24: シミュゲーム数50→100に増加し乱数揺れを低減",
+      "高勝率外れ値8カードのmodifier弱体化（各-3）",
+      "変更: black_001(+2→-1), black_005(+15→+12), purple_001(-9→-12), purple_006(-9→-12), purple_007(-8→-11), purple_011(-11→-14), red_009(+6→+3), green_005(-6→-9)",
+      "結果: 外れ値率28.0%→15.8%（-12.2%改善）",
+      "残存高勝率外れ値: ブレードマスター/パラディン（GRAYバニラ、調整不可）、深海魚(blue_005)、溶岩巨人(red_009)、影の暗殺者/闇のコウモリ/闘のインプ(BLACK系)"
     ]
   },
   "tests_run": [
     {
-      "date": "2026-02-20T17:38:00+09:00",
-      "result": "483 tests passed, 0 failed"
+      "date": "2026-02-20T21:02:00+09:00",
+      "result": "外れ値率: 15.8%（100ゲーム/マッチアップ）"
     }
   ],
   "card_level_balance": {
-    "phase14_baseline": {
-      "date": "2026-02-20T17:45:00+09:00",
-      "outlier_rate": 38.0,
-      "status": "要調整"
-    },
-    "phase15_adjusted": {
-      "date": "2026-02-20T17:38:00+09:00",
-      "adjustments": [
-        "スカウト(ID:5) ATK 2->1 (高勝率弱体化)",
-        "アサシン(ID:7) ATK 4->3 (高勝率弱体化)",
-        "ブレードマスター(ID:13) HP 7->6 (高勝率弱体化)",
-        "アイアンゴーレム(ID:12) ATK 2->3, HP 9->8 (低勝率強化)"
-      ],
-      "status": "GRAY高勝率+低勝率壁カード調整完了"
+    "phase24_modifier_weaken": {
+      "date": "2026-02-20T21:02:00+09:00",
+      "outlier_rate_before": "28.0%",
+      "outlier_rate_after": "15.8%",
+      "status": "改善成功、目標10%未達（GRAY外れ値が主因）"
     }
   },
-  "log_color_fix": {
-    "date": "2026-02-20T17:37:00+09:00",
-    "changes": [
-      "BLACK系効果ログを 'purple' から 'dark_gray' に修正",
-      "対象: black_001-019の全効果（自傷/吸血/毒/復活/トークン/AoE等）",
-      "テストも同時修正（5箇所）"
-    ]
-  },
   "adjustments_made": [
-    "Phase1-12: 色別バランス調整",
-    "Phase13: カード単位バランス計測テスト追加",
-    "Phase14: BLACK低コスト弱体化、低勝率カード強化",
-    "Phase15: BLACKログ色修正、GRAY高勝率弱体化、アイアンゴーレム強化"
+    "Phase1-21: 既存調整（modifier主導21%到達）",
+    "Phase22: 高勝率modifier弱体化試行→悪化→ロールバック",
+    "Phase24: シミュ100ゲーム化 + modifier弱体化8件 → 15.8%達成"
   ],
   "next_phase": {
-    "phase": 16,
-    "task": "シミュレーター再計測で外れ値率確認",
+    "phase": 25,
+    "task": "残存外れ値（blue_005、BLACK系modifier）のさらなる弱体化、または低勝率外れ値（YELLOW系）のmodifier強化でバランス補正",
     "priority": "medium"
   },
-  "notes": "Phase15完了。BLACKログ色をdark_grayに統一、GRAY高勝率カード弱体化、アイアンゴーレム強化。テスト483件全パス。"
+  "notes": "Phase24完了。外れ値率15.8%まで改善。GRAYバニラ（ID:13,10）が高勝率の主因だがbudget理論厳守により直接調整不可。目標10%達成には効果カードのみでの限界がある可能性。"
 }

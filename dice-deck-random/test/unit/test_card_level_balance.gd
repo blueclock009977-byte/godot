@@ -3,7 +3,7 @@ extends GutTest
 ## カード単位バランス計測シミュレーター
 ## 各カードの出場時勝率・採用時勝率を測定
 
-const GAMES_PER_MATCHUP := 50  # 各マッチアップあたりのゲーム数（カード単位は総ゲーム数多いので少なめ）
+const GAMES_PER_MATCHUP := 100  # 各マッチアップあたりのゲーム数（Phase24: 乱数揺れ低減のため増加）
 const MAX_TURNS := 50
 const STARTING_HP := 20
 const STARTING_MANA := 1
