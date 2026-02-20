@@ -23,7 +23,7 @@ func _generate_card_pool() -> void:
 	# ═══════════════════════════════════════════
 	# バランス計算式（2026-02-20再調整）:
 	# budget = 14 + 8 * cost
-	# score = 5*HP + 3*ATK + 2*面数 + (ATK*面数)//4
+	# score = 5*HP + 3*ATK + 3*面数 + (ATK*面数)//4
 	# 効果カードは効果強度で予算補正（強い効果は大きく減算、デメリットは加算）
 	# 2026-02-20 調整方針:
 	# - 召喚時/常時 > 死亡時 > 攻撃時 の順で重くする
@@ -286,7 +286,7 @@ func _generate_card_pool() -> void:
 func _score_card(card: CardData) -> int:
 	var faces := card.attack_dice.size()
 	var synergy := (card.atk * faces) / 4
-	return 5 * card.hp + 3 * card.atk + 2 * faces + int(synergy)
+	return 5 * card.hp + 3 * card.atk + 3 * faces + int(synergy)
 
 func _base_budget(cost: int) -> int:
 	return 14 + 8 * cost
