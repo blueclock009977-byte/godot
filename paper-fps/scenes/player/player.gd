@@ -111,8 +111,19 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("reload") and current_weapon:
 		current_weapon.reload()
 
-## 敵からの角度に基づいて当たり判定サイズを計算
-## 0度（正面）= 最大、90度（横向き）= 最小
+## プレイヤーの向きに応じた当たり判定の幅を取得
+## 正面向き = 幅広い、横向き = 薄い
+func get_hitbox_width() -> float:
+	# カメラの向きから当たり判定の幅を計算
+	# 正面（Z軸方向）= 幅0.8、横（X軸方向）= 幅0.1
+	var forward := -global_transform.basis.z
+	# 横向き度合い（0 = 正面/背面、1 = 完全に横）
+	var sideways := abs(forward.x)
+	return lerp(0.8, 0.1, sideways)
+
+## 敵からの角度に基づいてダメージ倍率を計算
+## 横向きの本当のメリットは当たり判定が小さくなること
+## ダメージ軽減は微小（0.8〜1.0）
 func get_hitbox_scale_for_enemy(enemy_position: Vector3) -> float:
 	var to_enemy := (enemy_position - global_position).normalized()
 	var forward := -global_transform.basis.z.normalized()
@@ -121,8 +132,9 @@ func get_hitbox_scale_for_enemy(enemy_position: Vector3) -> float:
 	var dot := forward.dot(to_enemy)
 	var angle := acos(clamp(dot, -1.0, 1.0))
 	
-	# 0度 = 1.0（最大）、90度 = 0.2（最小）
-	var scale := lerp(1.0, 0.2, abs(sin(angle)))
+	# 0度 = 1.0（最大）、90度 = 0.8（最小）
+	# 横向きの真のメリットは物理的に当たり判定が薄いこと
+	var scale := lerp(1.0, 0.8, abs(sin(angle)))
 	return scale
 
 func take_damage(amount: int, from_position: Vector3) -> void:
