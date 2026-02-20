@@ -444,6 +444,8 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 		var damage: int = card_ui.current_atk
 		# 常時効果によるATK修正
 		var atk_mod := EffectManager.get_constant_atk_modifier(card_ui, attacker_is_player, _get_effect_context())
+		if atk_mod != 0:
+			_log("[color=cyan]%s: 常時効果ATK%+d[/color]" % [atk_name, atk_mod])
 		damage += atk_mod
 		var defender_ui = target_slot.card_ui if target_slot else null
 		var atk_effect := _process_attack_effect(card_ui, defender_ui, attacker_is_player)
@@ -1040,6 +1042,22 @@ func _update_all_ui() -> void:
 	_update_opponent_hand_display()
 	_update_hand_highlights()
 	_update_dice_preview()
+	_update_constant_atk_modifiers()
+
+func _update_constant_atk_modifiers() -> void:
+	var context := _get_effect_context()
+	# プレイヤーのカード
+	for slot in player_slots:
+		if slot and not slot.is_empty():
+			var mod := EffectManager.get_constant_atk_modifier(slot.card_ui, true, context)
+			slot.card_ui.constant_atk_mod = mod
+			slot.card_ui.update_display()
+	# 相手のカード
+	for slot in opponent_slots:
+		if slot and not slot.is_empty():
+			var mod := EffectManager.get_constant_atk_modifier(slot.card_ui, false, context)
+			slot.card_ui.constant_atk_mod = mod
+			slot.card_ui.update_display()
 
 # ═══════════════════════════════════════════
 # STUBS (override in subclasses)

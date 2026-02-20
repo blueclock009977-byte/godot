@@ -9,6 +9,7 @@ signal card_long_pressed(card_ui: CardUI)
 var card_data: CardData
 var current_hp: int = 0
 var current_atk: int = 0
+var constant_atk_mod: int = 0  # 常時効果によるATK修正
 var is_selected: bool = false
 var is_face_down: bool = false
 var is_dragging: bool = false
@@ -237,16 +238,17 @@ func _update_display() -> void:
 		hp_color = Color(0.8, 0.3, 0.3)  # ダメージで赤
 	_update_badge_style(hp_badge, hp_color)
 
-	# ATK表示（増加で黄、減少で青）
-	atk_label.text = "%d" % current_atk
+	# ATK表示（増加で黄、減少で青）- 常時効果込み
+	var display_atk := current_atk + constant_atk_mod
+	atk_label.text = "%d" % display_atk
 	var atk_color := Color(0.7, 0.15, 0.15)
 	if base_atk > 0:
-		if current_atk > base_atk:
+		if display_atk > base_atk:
 			atk_color = Color(1.0, 0.7, 0.2)  # バフで黄
-			atk_label.text = "%d+" % current_atk
-		elif current_atk < base_atk:
+			atk_label.text = "%d+" % display_atk
+		elif display_atk < base_atk:
 			atk_color = Color(0.3, 0.3, 0.8)  # デバフで青
-			atk_label.text = "%d-" % current_atk
+			atk_label.text = "%d-" % display_atk
 	_update_badge_style(atk_badge, atk_color)
 
 	# Border
