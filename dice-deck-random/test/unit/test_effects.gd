@@ -712,8 +712,9 @@ func test_summon_effect_clear_status_white_013() -> void:
 func test_summon_effect_clear_status_white_013_uses_unified_log_format() -> void:
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("\"white_013\""), -1, "white_013 summon handler should exist")
-	assert_ne(script_text.find("_make_effect_log(\"white\", card_name, \"味方全体の状態異常解除\")"), -1,
-		"white_013 should use shared log helper for unified formatting")
+	# white_013は_apply_aoe_clear_status_effectを使用し、その中で_make_effect_logが呼ばれる
+	assert_ne(script_text.find("_apply_aoe_clear_status_effect(_get_all_allies(is_player, context), 0, result, card_name, \"white\", \"味方全体の状態異常解除\")"), -1,
+		"white_013 should use _apply_aoe_clear_status_effect for unified log formatting")
 
 func test_death_effect_freeze_purple_005() -> void:
 	# purple_005: 死亡時敵1体を凍結
@@ -1161,7 +1162,12 @@ func test_detect_unimplemented_on_summon_effect_ids() -> void:
 
 func test_detect_unimplemented_on_attack_effect_ids() -> void:
 	# ON_ATTACKの効果IDで、処理が未実装のものを検出する
-	var context := _create_empty_context()
+	# purple_016などAOE効果のために敵スロットを用意
+	var context := {
+		"player_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"opponent_slots": [_create_mock_slot_with_ui(""), null, null, null, null, null],
+		"current_dice": 1
+	}
 	var missing: Array[String] = []
 
 	for effect_id in EffectManager.effect_definitions.keys():
