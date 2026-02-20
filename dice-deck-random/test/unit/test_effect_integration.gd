@@ -574,9 +574,9 @@ func test_no_effect_on_vanilla_card() -> void:
 		"opponent_slots": []
 	}
 	
-	var summon_result := effect_manager.process_summon_effect(card_ui, true, context)
-	var attack_result := effect_manager.process_attack_effect(card_ui, MockCardUI.new(), true, context)
-	var death_result := effect_manager.process_death_effect(card_ui, true, context)
+	var summon_result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	var attack_result: Dictionary = effect_manager.process_attack_effect(card_ui, MockCardUI.new(), true, context)
+	var death_result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
 	
 	assert_eq(summon_result.size(), 0, "Vanilla card should have no summon effect")
 	assert_eq(attack_result.size(), 0, "Vanilla card should have no attack effect")
@@ -676,7 +676,7 @@ func test_constant_effect_purple_017_enemy_summon_cost() -> void:
 		"opponent_slots": []
 	}
 	
-	var modifier := effect_manager.get_summon_cost_modifier(false, context)
+	var modifier: int = effect_manager.get_summon_cost_modifier(false, context)
 	
 	assert_eq(modifier, 2, "Enemy summon cost should be +2")
 
@@ -694,9 +694,9 @@ func test_constant_effect_purple_020_enemy_dice_penalty() -> void:
 		"opponent_slots": []
 	}
 	
-	var dice_mod := effect_manager.get_dice_modifier(false, context)
+	var dice_mod: Dictionary = effect_manager.get_dice_modifier(false, context)
 	
-	assert_eq(dice_mod, -1, "Enemy dice should be -1")
+	assert_eq(dice_mod.get("bonus", 0), -1, "Enemy dice should be -1")
 
 # ═══════════════════════════════════════════
 # 追加テスト: 未カバー効果
@@ -888,8 +888,13 @@ func test_turn_start_effect_green_003_self_heal() -> void:
 		"opponent_slots": []
 	}
 	
-	var result: Dictionary = effect_manager.process_turn_start_effect(card_ui, true, context)
+	var results: Array = effect_manager.process_timing_event(EffectManager.Timing.TURN_START, {
+		"card_ui": card_ui,
+		"is_player": true,
+		"context": context
+	})
 	
+	assert_eq(results.size(), 1, "TURN_START should return one result for single-card payload")
 	assert_eq(card_ui.current_hp, 5, "Self HP should be +1")
 
 func test_attack_effect_red_005_permanent_atk_buff() -> void:
@@ -1023,7 +1028,7 @@ func test_death_effect_white_011_self_full_heal() -> void:
 	
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
 	
-	assert_true(result.get("revive_self", false), "Self should be marked for revival")
+	assert_true(result.get("heal_player_full", false), "Self full-heal death effect should set heal_player_full")
 
 func test_death_effect_white_014_ally_full_heal() -> void:
 	# white_014: 死亡時:味方1体HP全回復
