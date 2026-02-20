@@ -59,34 +59,32 @@ Act: 次のPhase決定 or 繰り返し
 - 判断（なぜそうした）
 - 次アクション
 
-### 6. 1cronで1報告（必須）
+### 6. 1cronで「了解→作業→完了」報告
 
-各Phase完了時に**必ず** sessions_send で人間へ進捗報告する。
+各Phase実行時に以下の流れで報告する：
 
-**sessionKeyの形式:**
-```
-agent:<エージェント名>:discord:channel:<チャンネルID>
-```
+```markdown
+## 報告の流れ
 
-**報告コマンド例:**
-```gdscript
-sessions_send(
-  sessionKey="agent:godot-clock:discord:channel:1471429991005950013",
-  message="Phase N 完了: [やったこと] → 次: [次のPhase]"
-)
-```
+1. **了解報告**（作業開始時）
+   sessions_sendツールで Discord channel:チャンネルID に報告：
+   「📥 Phase N 開始: [これからやること]」
 
-**報告フォーマット（固定）:**
-```
-Phase番号 / 変更内容 / 指標差分 / 次アクション
-```
+2. **作業実行**
+   タスクを実行
 
-**報告に失敗した場合:**
-1. sessions_list でsessionKeyを再探索
-2. 最大3回リトライ
-3. それでも失敗なら状態ファイルにエラー記録して継続
+3. **完了報告**（作業終了時）
+   sessions_sendツールで Discord channel:チャンネルID に報告：
+   「✅ Phase N 完了: [やったこと] → 次: [次のPhase]」
+
+4. **次のcronを設定**
+   完了報告の後に次Phaseのcronを設定
+```
 
 これにより人間がリアルタイムで進捗を把握でき、必要なら介入できる。
+
+**注意**: sessions_sendはcronのisolated sessionから動作する。
+サンドボックス内のメインセッションからは使えない場合がある。
 
 ### 7. 1回のcronは小さく
 
@@ -164,19 +162,18 @@ Phase番号 / 変更内容 / 指標差分 / 次アクション
 
 ## 指示内容（Phase 1の場合）
 
-1. 状態ファイル `chain-state.json` を作成
-2. プロジェクト構造を調査
-3. タスク対象を特定してfindingsに記録
-4. 人間に進捗報告（sessions_sendでDiscordへ）
-5. 完了したらPhase 2のcronを設定
-
-## 報告内容
-「Phase 1 完了: [調査結果の要約] → 次: Phase 2 開始」
+1. **了解報告**: sessions_sendでDiscordに「📥 Phase 1 開始: [これからやること]」
+2. 状態ファイル `chain-state.json` を作成
+3. プロジェクト構造を調査
+4. タスク対象を特定してfindingsに記録
+5. **完了報告**: sessions_sendでDiscordに「✅ Phase 1 完了: [結果] → 次: Phase 2」
+6. Phase 2のcronを設定
 
 ## 完了条件
 - 状態ファイルが作成されている
 - findingsに調査結果がある
-- 人間に報告済み
+- 了解報告・完了報告が送信済み
+- 次Phaseのcronが設定済み
 ```
 
 ### Phase 2-N: 実行フェーズ（繰り返し）
@@ -191,13 +188,12 @@ Phase番号 / 変更内容 / 指標差分 / 次アクション
 
 ## 指示内容（Phase 2-Nの場合）
 
-1. findingsから未完了タスクを1つ選ぶ
+1. **了解報告**: sessions_sendでDiscordに「📥 Phase N 開始: [これからやること]」
+2. findingsから未完了タスクを1つ選ぶ
 3. 実行してcompletedに追加
 4. ログを記録
-5. 人間に進捗報告（sessions_sendでDiscordへ）
-
-## 報告内容
-「Phase 2-N 完了: [実行したタスク] → 次: [Phase 2継続 or Phase 3へ]」
+5. **完了報告**: sessions_sendでDiscordに「✅ Phase N 完了: [結果] → 次: [継続 or 次Phase]」
+6. 次のcronを設定
 
 ## Phase遷移の判断
 
@@ -229,7 +225,8 @@ AIの自己判断で遷移：
 
 ## 指示内容（Phase Finalの場合）
 
-1. completedとlogからREPORT.mdを生成
+1. **了解報告**: sessions_sendでDiscordに「📥 Phase Final 開始: 最終報告作成」
+2. completedとlogからREPORT.mdを生成
 3. 人間にDiscordで報告
 4. cronを設定せず終了（チェーン終了）
 ```
@@ -350,33 +347,36 @@ openclaw cron add \\
 
 毎回チェックして、超えたら強制終了。
 
-### 2. Usage監視
+### 2. Usage監視（cron登録前に必須）
 
 ```markdown
-session_statusツールでusageを確認。
+## cron登録前の確認手順
 
-## 確認方法
-session_statusを実行し、使用量を確認。
-現在のモデルが90%を超えたら、別モデルへの切り替えを検討。
+1. session_statusツールで**紐づいている全モデル**のusageを確認
+2. 各モデルの残り使用量をチェック
+3. 残り10%以上（使用率90%未満）のモデルを選ぶ
+4. そのモデルを `--model` オプションで指定してcron登録
 
-## 複数モデルが利用可能な場合
-1. 現在のモデルが90%超え → 別のモデルで次のcronを設定
-   例: opus が90%超え → sonnet で --model オプション指定
-2. 次のcron設定時に --model を明示的に指定する
+## 確認例
+session_statusを実行 → 以下のような情報を確認：
+- opus: 85%使用 → 残り15% ✅ 使える
+- sonnet: 95%使用 → 残り5% ❌ 使えない
+- codex: 40%使用 → 残り60% ✅ 使える
+→ opus または codex で次cronを登録
 
-## 全モデルが90%超えの場合（一時中断）
-1. 現在の作業を安全な状態で止める
-2. chain-state.jsonに現状を保存（どこまで完了したか、どのモデルが何%か）
-3. 人間にDiscordで報告
-4. cronを設定せず終了
-
-## モデル切り替えの例
-# opusが90%超えの場合、sonnetで次Phaseを実行
+## モデル指定の例
+# 残り使用量が多いモデルを選んで指定
 openclaw cron add \
   --name "タスク-phase2" \
   --agent my-agent \
-  --model anthropic/claude-sonnet-4-20250514 \
+  --model anthropic/claude-opus-4-5 \  # ← 残り10%以上のモデルを指定
   ...
+
+## 全モデルが90%超えの場合（一時中断）
+1. 現在の作業を安全な状態で止める
+2. chain-state.jsonに現状を保存（どこまで完了したか、各モデルの使用率）
+3. 人間にDiscordで報告
+4. cronを設定せず終了
 ```
 
 ※ 報告方法はCRON_BASICS.mdの「Discordへの配信」を参照
@@ -417,12 +417,12 @@ chain-state.jsonに全状態が記録されているので、
 openclaw cron add \
   --name "タスク名-phaseN" \
   --agent my-agent \
-  --at "1m" \
-  --delete-after-run \
-  --no-deliver \
-  --timeout-seconds 1800 \
-  --thinking low \
-  --session isolated \
+  --at "1m" \                    # 次タスクへの間隔（後述）
+  --delete-after-run \           # 実行後に削除（ゴミを残さない）
+  --no-deliver \                 # 配信は自分で制御
+  --timeout-seconds 1800 \       # 30分（長めに）
+  --thinking low \               # 複雑なタスクならmedium
+  --session isolated \           # 履歴汚染を防ぐ
   --message "..."
 ```
 

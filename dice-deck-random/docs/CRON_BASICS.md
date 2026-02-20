@@ -70,13 +70,29 @@ openclaw cron add \
 ### 2. タイムゾーンを明示する
 `--tz "Asia/Tokyo"` を忘れるとUTC扱いになり、9時間ずれる。
 
-### 3. `--announce` / `--deliver` は使わない（バグあり）
-2026年2月時点で、announce/deliver機能は正常に動作しない。
-代わりに `--no-deliver` をつけて、メッセージ内で配信を指示する：
+### 3. Discord配信方法（テスト済み・2026年2月）
+
+以下の3つの方法が動作確認済み：
+
+**方法A: sessions_send（prompt内指示）** ← おすすめ
 ```bash
 --no-deliver \
---message "豆知識を生成して、sessions_send ツールで Discord channel:チャンネルID に送信して"
+--message "...完了したら sessions_send ツールで Discord channel:チャンネルID に報告して"
 ```
+エージェントが柔軟に報告内容を決められる。チェーン式cronに最適。
+
+**方法B: --announce --to**
+```bash
+--announce \
+--to "channel:1471449101999538208"
+```
+エージェントの最終応答を自動配信。
+
+**方法C: --to のみ**
+```bash
+--to "channel:1471449101999538208"
+```
+`--to` 指定で自動的にannounceモードになる。
 
 ### 4. `--to` には `channel:` プレフィックスが必須
 Discordチャンネルに配信する場合、IDだけでなくプレフィックスが必要：
