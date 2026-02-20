@@ -507,10 +507,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -1, 1, result, card_name, "magenta", "敵全体ATK-1,HP-1")
 
 		"purple_009":  # 登場時:敵1体を2ターン凍結
-			var target = _get_random_enemy(is_player, context)
-			if target:
-				target.apply_status(StatusEffect.FROZEN, 2)
-				result["log"] = _make_effect_log("magenta", card_name, "%s を2ターン凍結" % target.card_data.card_name)
+			_apply_targeted_status_effect(is_player, context, StatusEffect.FROZEN, 2, result, card_name, "magenta", "を2ターン凍結")
 
 		"purple_012":  # 登場時:コスト3以下の敵を破壊
 			var enemies = _get_all_enemies(is_player, context)
@@ -521,10 +518,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = _make_effect_log("magenta", card_name, "コスト3以下の敵を破壊")
 
 		"purple_015":  # 登場時:敵1体を3ターン凍結
-			var target_p15 = _get_random_enemy(is_player, context)
-			if target_p15:
-				target_p15.apply_status(StatusEffect.FROZEN, 3)
-				result["log"] = _make_effect_log("magenta", card_name, "%s を3ターン凍結" % target_p15.card_data.card_name)
+			_apply_targeted_status_effect(is_player, context, StatusEffect.FROZEN, 3, result, card_name, "magenta", "を3ターン凍結")
 
 		"purple_018":  # 登場時:敵全体ATK-2,HP-2
 			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -2, 2, result, card_name, "magenta", "敵全体ATK-2,HP-2")
@@ -549,20 +543,13 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_player_heal_effect(result, "white", card_name, 4)
 
 		"white_013":  # 登場時:味方全体の状態異常解除
-			var allies = _get_all_allies(is_player, context)
-			for ally in allies:
-				ally.clear_status_effects()
-			result["log"] = _make_effect_log("white", card_name, "味方全体の状態異常解除")
+			_apply_aoe_clear_status_effect(_get_all_allies(is_player, context), 0, result, card_name, "white", "味方全体の状態異常解除")
 
 		"white_015":  # 登場時:自分HP+6
 			_apply_player_heal_effect(result, "white", card_name, 6)
 
 		"white_018":  # 登場時:味方全体状態異常解除+HP+2
-			var allies_w18 = _get_all_allies(is_player, context)
-			for ally in allies_w18:
-				ally.clear_status_effects()
-				ally.heal(2)
-			result["log"] = _make_effect_log("white", card_name, "味方全体状態異常解除+HP+2")
+			_apply_aoe_clear_status_effect(_get_all_allies(is_player, context), 2, result, card_name, "white", "味方全体状態異常解除+HP+2")
 
 		"white_020":  # 登場時:味方全体HP+3,ATK+1
 			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 3, result, card_name, "white", "味方全体HP+3,ATK+1")
@@ -671,10 +658,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		# 紫カード攻撃時効果（追加）
 		# ═══════════════════════════════════════════
 		"purple_016":  # 攻撃時:敵全体ATK-1
-			var enemies_p16 = _get_all_enemies(is_player, context)
-			for enemy in enemies_p16:
-				enemy.modify_atk(-1)
-			result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-1")
+			_apply_enemy_aoe_atk_modifier_effect(is_player, context, -1, result, card_name, "magenta", "敵全体ATK-1")
 
 		# ═══════════════════════════════════════════
 		# 白カード攻撃時効果
@@ -1301,6 +1285,13 @@ func _apply_aoe_heal_effect(targets: Array, amount: int, result: Dictionary, car
 		return
 	for target in targets:
 		target.heal(amount)
+	result["log"] = _make_effect_log(color, card_name, message)
+
+func _apply_aoe_clear_status_effect(targets: Array, heal_amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	for target in targets:
+		target.clear_status_effects()
+		if heal_amount > 0:
+			target.heal(heal_amount)
 	result["log"] = _make_effect_log(color, card_name, message)
 
 func _get_slots_by_owner(is_player: bool, context: Dictionary) -> Array:
