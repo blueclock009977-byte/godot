@@ -505,7 +505,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"purple_003":  # 登場時:相手の手札1枚破棄
 			result["discard_opponent"] = 1
-			result["log"] = "[color=magenta]%s の効果: 相手手札1枚破棄[/color]" % card_name
+			result["log"] = _make_effect_log("magenta", card_name, "相手手札1枚破棄")
 
 		"purple_006":  # 登場時:敵全体ATK-1,HP-1
 			var enemies = _get_all_enemies(is_player, context)
@@ -513,13 +513,13 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				enemy.modify_atk(-1)
 			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
 			if enemies.size() > 0:
-				result["log"] = "[color=magenta]%s の効果: 敵全体ATK-1,HP-1[/color]" % card_name
+				result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-1,HP-1")
 
 		"purple_009":  # 登場時:敵1体を2ターン凍結
 			var target = _get_random_enemy(is_player, context)
 			if target:
 				target.apply_status(StatusEffect.FROZEN, 2)
-				result["log"] = "[color=magenta]%s の効果: %s を2ターン凍結[/color]" % [card_name, target.card_data.card_name]
+				result["log"] = _make_effect_log("magenta", card_name, "%s を2ターン凍結" % target.card_data.card_name)
 
 		"purple_012":  # 登場時:コスト3以下の敵を破壊
 			var enemies = _get_all_enemies(is_player, context)
@@ -527,13 +527,13 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				if enemy.card_data.mana_cost <= 3:
 					_mark_destroy_target(result, enemy)
 			if result.has("destroy_targets") and result["destroy_targets"].size() > 0:
-				result["log"] = "[color=magenta]%s の効果: コスト3以下の敵を破壊[/color]" % card_name
+				result["log"] = _make_effect_log("magenta", card_name, "コスト3以下の敵を破壊")
 
 		"purple_015":  # 登場時:敵1体を3ターン凍結
 			var target_p15 = _get_random_enemy(is_player, context)
 			if target_p15:
 				target_p15.apply_status(StatusEffect.FROZEN, 3)
-				result["log"] = "[color=magenta]%s の効果: %s を3ターン凍結[/color]" % [card_name, target_p15.card_data.card_name]
+				result["log"] = _make_effect_log("magenta", card_name, "%s を3ターン凍結" % target_p15.card_data.card_name)
 
 		"purple_018":  # 登場時:敵全体ATK-2,HP-2
 			var enemies_p18 = _get_all_enemies(is_player, context)
@@ -541,14 +541,14 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				enemy.modify_atk(-2)
 			_apply_damage_to_targets_and_mark_destroy(enemies_p18, 2, result)
 			if enemies_p18.size() > 0:
-				result["log"] = "[color=magenta]%s の効果: 敵全体ATK-2,HP-2[/color]" % card_name
+				result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-2,HP-2")
 
 		"purple_019":  # 登場時:敵全体を2ターン凍結
 			var enemies_p19 = _get_all_enemies(is_player, context)
 			for enemy in enemies_p19:
 				enemy.apply_status(StatusEffect.FROZEN, 2)
 			if enemies_p19.size() > 0:
-				result["log"] = "[color=magenta]%s の効果: 敵全体を2ターン凍結[/color]" % card_name
+				result["log"] = _make_effect_log("magenta", card_name, "敵全体を2ターン凍結")
 
 		# ═══════════════════════════════════════════
 		# 白カード登場時効果
@@ -561,7 +561,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"white_006":  # 登場時:墓地から1体復活
 			result["revive_from_graveyard"] = 1
-			result["log"] = "[color=white]%s の効果: 墓地から1体復活[/color]" % card_name
+			result["log"] = _make_effect_log("white", card_name, "墓地から1体復活")
 
 		"white_009":  # 登場時:自分HP+4
 			_apply_player_heal_effect(result, "white", card_name, 4)
@@ -624,18 +624,18 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"black_007":  # 攻撃時:与ダメ分自身HP回復
 			result["lifesteal"] = true
-			result["log"] = "[color=purple]%s の効果: 吸血[/color]" % card_name
+			result["log"] = _make_effect_log("purple", card_name, "吸血")
 
 		"black_015":  # 攻撃時:自身HP-1,ATK+2
 			_apply_damage_and_mark_destroy(attacker_ui, 1, result)
 			result["atk_bonus"] = 2
-			result["log"] = "[color=purple]%s の効果: HP-1, ATK+2[/color]" % card_name
+			result["log"] = _make_effect_log("purple", card_name, "HP-1, ATK+2")
 
 		"black_016":  # 攻撃時:対象の現HP半減
 			if defender_ui and defender_ui.current_hp > 0:
 				var half_hp_damage := int(ceil(defender_ui.current_hp / 2.0))
 				_apply_damage_and_mark_destroy(defender_ui, half_hp_damage, result)
-				result["log"] = "[color=purple]%s の効果: %s のHP半減[/color]" % [card_name, defender_ui.card_data.card_name]
+				result["log"] = _make_effect_log("purple", card_name, "%s のHP半減" % defender_ui.card_data.card_name)
 
 		# ═══════════════════════════════════════════
 		# 赤カード攻撃時効果
@@ -643,7 +643,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		"red_002":  # 攻撃時:対象に追加2ダメージ
 			if defender_ui:
 				_apply_damage_and_mark_destroy(defender_ui, 2, result)
-				result["log"] = "[color=red]%s の効果: %s に追加2ダメージ[/color]" % [card_name, defender_ui.card_data.card_name]
+				result["log"] = _make_effect_log("red", card_name, "%s に追加2ダメージ" % defender_ui.card_data.card_name)
 
 		"red_005":  # 攻撃時:自身ATK+1(永続)
 			attacker_ui.modify_atk(1)
@@ -651,7 +651,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 
 		"red_008":  # 攻撃時:2回攻撃
 			result["double_attack"] = true
-			result["log"] = "[color=red]%s の効果: 2回攻撃[/color]" % card_name
+			result["log"] = _make_effect_log("red", card_name, "2回攻撃")
 
 		"red_013":  # 攻撃時:相手HP直接-1
 			result["direct_damage"] = 1
@@ -662,7 +662,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		# ═══════════════════════════════════════════
 		"yellow_008":  # 攻撃時:自身HP+1
 			attacker_ui.heal(1)
-			result["log"] = "[color=yellow]%s の効果: 自身HP+1[/color]" % card_name
+			result["log"] = _make_effect_log("yellow", card_name, "自身HP+1")
 
 		# ═══════════════════════════════════════════
 		# 紫カード攻撃時効果
@@ -677,7 +677,7 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 		"purple_013":  # 攻撃時:対象と自身入れ替え
 			if defender_ui:
 				result["swap_with_target"] = true
-				result["log"] = "[color=magenta]%s の効果: %s と位置入れ替え[/color]" % [card_name, defender_ui.card_data.card_name]
+				result["log"] = _make_effect_log("magenta", card_name, "%s と位置入れ替え" % defender_ui.card_data.card_name)
 
 		# ═══════════════════════════════════════════
 		# 黄カード攻撃時効果
@@ -731,14 +731,14 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 				var dead_card = context.get("dead_card_ui", null)
 				if dead_card != card_ui:
 					card_ui.heal(2)
-					result["log"] = "[color=green]%s の効果: 味方死亡で自身HP+2[/color]" % card_name
+					result["log"] = _make_effect_log("green", card_name, "味方死亡で自身HP+2")
 
 		"black_002":  # 死亡時:敵1体HP-2
 			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "purple", "にHP-2")
 
 		"black_006":  # 死亡時:トークン召喚
 			result["spawn_token"] = {"atk": 2, "hp": 2}
-			result["log"] = "[color=purple]%s の効果: トークン召喚[/color]" % card_name
+			result["log"] = _make_effect_log("purple", card_name, "トークン召喚")
 
 		"black_010":  # 死亡時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
@@ -747,7 +747,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 		"black_011":  # 死亡時:HP1で1度だけ復活
 			if not card_ui.has_revived:
 				result["revive"] = true
-				result["log"] = "[color=purple]%s の効果: HP1で復活[/color]" % card_name
+				result["log"] = _make_effect_log("purple", card_name, "HP1で復活")
 
 		"black_013":  # 死亡時:敵1体ATK-2
 			_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, "purple", "のATK-2")
@@ -766,7 +766,7 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 		"red_009":  # 死亡時:自爆(敵味方全体HP-2)
 			var all_cards := _get_all_enemies(is_player, context) + _get_all_allies(is_player, context)
 			_apply_damage_to_targets_and_mark_destroy(all_cards, 2, result)
-			result["log"] = "[color=red]%s の効果: 自爆!敵味方全体HP-2[/color]" % card_name
+			result["log"] = _make_effect_log("red", card_name, "自爆!敵味方全体HP-2")
 
 		"red_014":  # 死亡時:敵1体HP-4
 			_apply_targeted_damage_effect(is_player, context, 4, result, card_name, "red", "にHP-4")
@@ -800,17 +800,17 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 
 		"white_011":  # 死亡時:自分HP全回復
 			result["heal_player_full"] = true
-			result["log"] = "[color=white]%s の効果: 自分HP全回復[/color]" % card_name
+			result["log"] = _make_effect_log("white", card_name, "自分HP全回復")
 
 		"white_014":  # 死亡時:味方1体HP全回復
 			var target = _get_random_ally(is_player, context)
 			if target:
 				target.heal(99)
-				result["log"] = "[color=white]%s の効果: %s のHP全回復[/color]" % [card_name, target.card_data.card_name]
+				result["log"] = _make_effect_log("white", card_name, "%s のHP全回復" % target.card_data.card_name)
 
 		"white_019":  # 死亡時:墓地から2体復活
 			result["revive_from_graveyard"] = 2
-			result["log"] = "[color=white]%s の効果: 墓地から2体復活[/color]" % card_name
+			result["log"] = _make_effect_log("white", card_name, "墓地から2体復活")
 
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
@@ -834,7 +834,7 @@ func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_
 
 		"green_012":  # 被ダメージ時:マナ+1
 			result["mana"] = 1
-			result["log"] = "[color=green]%s の効果: マナ+1[/color]" % card_name
+			result["log"] = _make_effect_log("green", card_name, "マナ+1")
 
 		# ═══════════════════════════════════════════
 		# 黄カード防御時効果
@@ -844,7 +844,7 @@ func _dispatch_defense_effect(effect_id: String, defender_ui, damage: int, card_
 
 		"yellow_014":  # 防御時:攻撃者にダメージ反射
 			result["reflect"] = true
-			result["log"] = "[color=yellow]%s の効果: ダメージ反射[/color]" % card_name
+			result["log"] = _make_effect_log("yellow", card_name, "ダメージ反射")
 
 		# ═══════════════════════════════════════════
 		# 白カード防御時効果
@@ -872,7 +872,7 @@ func _build_turn_start_effect_result(effect_id: String, card_ui, is_player: bool
 		# 赤カードターン開始時効果
 		"red_010":  # ターン開始時:自身ATK+1
 			card_ui.modify_atk(1)
-			result["log"] = "[color=red]%s の効果: 自身ATK+1[/color]" % card_name
+			result["log"] = _make_effect_log("red", card_name, "自身ATK+1")
 
 		# 黄カードターン開始時効果
 		"yellow_005":  # ターン開始時:カード1枚ドロー
@@ -957,7 +957,7 @@ func _append_poison_tick_results(slots: Array, results: Array) -> void:
 		if card_ui.has_status(StatusEffect.POISON):
 			var poison_result := {}
 			_apply_damage_and_mark_destroy(card_ui, 1, poison_result)
-			poison_result["log"] = "[color=purple]%s は毒で1ダメージ[/color]" % card_ui.card_data.card_name
+			poison_result["log"] = _make_effect_log("purple", card_ui.card_data.card_name, "毒で1ダメージ")
 			_emit_effect_trigger_if_logged("status_poison", card_ui, null, poison_result)
 			results.append(poison_result)
 

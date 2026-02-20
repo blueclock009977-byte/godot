@@ -155,3 +155,180 @@ func test_get_dice_modifier_no_effects() -> void:
 func test_make_effect_log_format() -> void:
 	var log: String = effect_manager._make_effect_log("green", "TestCard", "マナ+2")
 	assert_eq(log, "[color=green]TestCard の効果: マナ+2[/color]", "_make_effect_log should build unified effect log format")
+
+# ═══════════════════════════════════════════
+# get_constant_hp_bonus() テスト
+# ═══════════════════════════════════════════
+
+func test_get_constant_hp_bonus_no_allies() -> void:
+	var card_ui := MockCardUI.new()
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var bonus: int = effect_manager.get_constant_hp_bonus(card_ui, true, context)
+	assert_eq(bonus, 0, "No allies should return 0 HP bonus")
+
+func test_get_constant_hp_bonus_green_007() -> void:
+	# green_007: 味方全体のHP+1
+	var target_ui := MockCardUI.new()
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "green_007"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	var bonus: int = effect_manager.get_constant_hp_bonus(target_ui, true, context)
+	assert_eq(bonus, 1, "green_007 should give +1 HP bonus")
+
+func test_get_constant_hp_bonus_white_017() -> void:
+	# white_017: 味方全体HP+2
+	var target_ui := MockCardUI.new()
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "white_017"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	var bonus: int = effect_manager.get_constant_hp_bonus(target_ui, true, context)
+	assert_eq(bonus, 2, "white_017 should give +2 HP bonus")
+
+func test_get_constant_hp_bonus_multiple_buffs() -> void:
+	# green_007 + white_017 = +3
+	var target_ui := MockCardUI.new()
+	var ally1 := MockSlot.new()
+	ally1._card_ui = MockCardUI.new()
+	ally1._card_ui.card_data.effect_id = "green_007"
+	ally1._empty = false
+	var ally2 := MockSlot.new()
+	ally2._card_ui = MockCardUI.new()
+	ally2._card_ui.card_data.effect_id = "white_017"
+	ally2._empty = false
+	var context := {
+		"player_slots": [ally1, ally2],
+		"opponent_slots": []
+	}
+	var bonus: int = effect_manager.get_constant_hp_bonus(target_ui, true, context)
+	assert_eq(bonus, 3, "Multiple HP buffs should stack")
+
+# ═══════════════════════════════════════════
+# get_damage_reduction_for_card() テスト
+# ═══════════════════════════════════════════
+
+func test_get_damage_reduction_no_effects() -> void:
+	var card_ui := MockCardUI.new()
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var reduction: int = effect_manager.get_damage_reduction_for_card(card_ui, true, context)
+	assert_eq(reduction, 0, "No effects should return 0 reduction")
+
+func test_get_damage_reduction_yellow_007() -> void:
+	# yellow_007: 自身への被ダメ-1
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "yellow_007"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var reduction: int = effect_manager.get_damage_reduction_for_card(card_ui, true, context)
+	assert_eq(reduction, 1, "yellow_007 should give -1 damage reduction")
+
+func test_get_damage_reduction_white_016() -> void:
+	# white_016: 自身への被ダメ-2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "white_016"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var reduction: int = effect_manager.get_damage_reduction_for_card(card_ui, true, context)
+	assert_eq(reduction, 2, "white_016 should give -2 damage reduction")
+
+func test_get_damage_reduction_white_007_ally() -> void:
+	# white_007: 味方全体被ダメ-1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "white_007"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": []
+	}
+	var reduction: int = effect_manager.get_damage_reduction_for_card(target_ui, true, context)
+	assert_eq(reduction, 1, "white_007 ally should give -1 damage reduction")
+
+func test_get_damage_reduction_yellow_017_ally() -> void:
+	# yellow_017: 味方全体被ダメ-1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "yellow_017"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": []
+	}
+	var reduction: int = effect_manager.get_damage_reduction_for_card(target_ui, true, context)
+	assert_eq(reduction, 1, "yellow_017 ally should give -1 damage reduction")
+
+# ═══════════════════════════════════════════
+# Mocks for effect manager tests
+# ═══════════════════════════════════════════
+
+class MockCardData:
+	var card_name: String = "MockCard"
+	var effect_id: String = ""
+	var mana_cost: int = 1
+
+class MockCardUI:
+	var card_data := MockCardData.new()
+	var current_hp: int = 5
+	var has_revived: bool = false
+	var _atk_modifier: int = 0
+	var _status := {}
+	var _status_duration := {}
+
+	func heal(amount: int) -> void:
+		current_hp += amount
+	func modify_atk(amount: int) -> void:
+		_atk_modifier += amount
+	func take_damage(amount: int) -> void:
+		current_hp -= amount
+	func has_status(status: int) -> bool:
+		return _status.get(status, false)
+	func apply_status(status: int, duration: int) -> void:
+		_status[status] = true
+		_status_duration[status] = duration
+	func tick_status_effects() -> void:
+		for s in _status_duration.keys():
+			_status_duration[s] -= 1
+			if _status_duration[s] <= 0:
+				_status.erase(s)
+				_status_duration.erase(s)
+	func clear_status_effects() -> void:
+		_status.clear()
+		_status_duration.clear()
+
+class MockSlot:
+	var _empty: bool = true
+	var _card_ui = null
+	var is_front_row: bool = true
+
+	func is_empty() -> bool:
+		return _empty
+	var card_ui:
+		get:
+			return _card_ui

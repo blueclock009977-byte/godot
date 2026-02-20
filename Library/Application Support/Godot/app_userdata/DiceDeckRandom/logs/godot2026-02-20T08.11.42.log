@@ -1,0 +1,91 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+ERROR: Condition "ret != noErr" is true. Returning: ""
+   at: get_system_ca_certificates (platform/macos/os_macos.mm:1014)
+---  GUT  ---
+[INFO]:  using [/Users/masashi_shigekiyo/godot_clock/Library/Application Support/Godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+
+
+res://test/unit/test_battle_base_effect_application.gd
+* test_apply_effect_result_heal_player_applies_to_owner_hp
+* test_apply_effect_result_heal_player_full_sets_owner_to_max_hp
+* test_apply_effect_result_heal_player_applies_to_opponent_side_when_is_player_false
+* test_apply_effect_result_heal_player_full_applies_to_opponent_side_when_is_player_false
+* test_apply_effect_result_direct_damage_triggers_game_end
+* test_apply_effect_result_self_damage_triggers_game_end
+* test_battle_base_uses_unified_single_card_timing_entry_helper
+* test_battle_base_uses_unified_turn_timing_entry_helper
+* test_battle_base_ally_death_reaction_uses_unified_timing_entry_helper
+* test_battle_base_ally_death_reaction_uses_single_card_timing_helper
+* test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot
+* test_apply_attack_effect_pre_damage_returns_false_without_target
+* test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
+    1 Orphans
+        * [<Control#69591894049>(card_ui.gd)]
+* test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
+    1 Orphans
+        * [<Control#69759666214>(card_ui.gd)]
+* test_apply_effect_result_uses_destroy_targets_helper
+* test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
+    1 Orphans
+        * [<Control#69944215596>(card_ui.gd)]
+* test_apply_effect_result_damaged_targets_skips_alive_card
+    1 Orphans
+        * [<Control#70095210545>(card_ui.gd)]
+* test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
+    1 Orphans
+        * [<Control#70229428278>(card_ui.gd)]
+* test_resolve_attacks_uses_shared_target_resolution_helper
+5 orphans
+19/19 passed.
+
+
+
+
+==============================================
+= 5 Orphans
+==============================================
+test_battle_base_effect_application.gd
+    - test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
+        * [<Control#69591894049>(card_ui.gd)]
+    - test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
+        * [<Control#69759666214>(card_ui.gd)]
+    - test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
+        * [<Control#69944215596>(card_ui.gd)]
+    - test_apply_effect_result_damaged_targets_skips_alive_card
+        * [<Control#70095210545>(card_ui.gd)]
+    - test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
+        * [<Control#70229428278>(card_ui.gd)]
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Scripts               1
+Tests                19
+Passing Tests        19
+Asserts              41
+Orphans               5
+Time              0.456s
+
+
+Ran Scripts matching "test_battle_base_effect_application.gd"
+---- All tests passed! ----
+
+WARNING: 5 RIDs of type "CanvasItem" were leaked.
+   at: _free_rids (servers/rendering/renderer_canvas_cull.cpp:2692)
+WARNING: ObjectDB instances leaked at exit (run with --verbose for details).
+   at: cleanup (core/object/object.cpp:2641)
+ERROR: 1 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:810)

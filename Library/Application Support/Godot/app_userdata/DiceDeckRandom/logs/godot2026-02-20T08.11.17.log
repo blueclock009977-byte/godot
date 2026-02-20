@@ -1,0 +1,200 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+ERROR: Condition "ret != noErr" is true. Returning: ""
+   at: get_system_ca_certificates (platform/macos/os_macos.mm:1014)
+---  GUT  ---
+[INFO]:  using [/Users/masashi_shigekiyo/godot_clock/Library/Application Support/Godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+
+
+res://test/unit/test_effects.gd
+* test_effect_manager_exists
+* test_effect_definitions_registered
+* test_blue_effects_registered
+* test_green_effects_registered
+* test_black_effects_registered
+* test_red_effects_registered
+* test_yellow_effects_registered
+* test_purple_effects_registered
+* test_white_effects_registered
+* test_get_effect_description
+* test_get_effect_timing
+* test_has_timing
+* test_unknown_effect
+* test_dice_modifier_blue_002
+* test_dice_modifier_black_009
+* test_summon_cost_modifier_green_006
+* test_all_timings_covered
+* test_effect_count
+* test_summon_effect_mana_green_001
+* test_summon_effect_mana_green_004
+* test_summon_effect_mana_full_green_013_uses_shared_helper
+* test_summon_effect_self_damage_black
+* test_summon_effect_draw_blue_014
+* test_summon_effect_blue_011_uses_unified_log_format
+* test_summon_effect_blue_018_uses_unified_log_format
+* test_summon_effect_draw_and_damage_black_014
+* test_attack_effect_direct_damage_blue_012
+* test_attack_effect_mana_green_010
+* test_attack_effect_lifesteal_black_007
+* test_attack_effect_black_015_marks_self_destroy_when_hp_zero
+* test_attack_effect_black_016_halves_odd_hp_and_marks_destroy_on_hp1
+* test_attack_effect_blue_017_sets_instant_kill_for_low_hp_target
+* test_death_effect_red_014_marks_destroy_target_when_hp_zero
+* test_death_effect_mana_green_002
+* test_death_effect_green_014_triggers_on_ally_death
+* test_death_effect_spawn_token_black_006
+* test_death_effect_black_010_marks_destroy_targets_when_hp_zero
+* test_death_effect_black_002_marks_destroy_target_when_hp_zero
+* test_defense_effect_half_damage_blue_006
+* test_defense_effect_half_damage_blue_006_rounds_down_and_keeps_int
+* test_defense_effect_mana_on_damage_green_012
+* test_no_effect_vanilla_card
+* test_multiple_cost_modifiers
+* test_summon_effect_red_001
+* test_summon_effect_red_001_marks_destroy_target_when_hp_zero
+* test_summon_effect_red_007_buffs_all_allies
+* test_summon_effect_yellow_001
+* test_summon_effect_yellow_003
+* test_summon_effect_white_001
+* test_summon_effect_white_009
+* test_attack_effect_red_013
+* test_attack_effect_red_002_marks_destroy_target_when_hp_zero
+* test_attack_effect_red_002_tracks_damaged_target_for_post_damage_finalize
+* test_death_effect_white_002
+* test_defense_effect_yellow_004
+* test_cost_modifier_purple_004
+* test_turn_start_effects_mana_green_009
+* test_turn_start_effects_draw_yellow_005
+* test_turn_start_effects_heal_player_white_003
+* test_turn_start_effects_self_heal_blue_010
+* test_turn_start_effects_atk_up_red_010
+* test_turn_end_effects_mana_yellow_010
+* test_turn_end_effects_heal_player_white_010
+* test_turn_end_effects_purple_008_marks_destroy_target_when_hp_zero
+* test_turn_start_effects_multiple_cards
+* test_turn_start_effects_skips_malformed_slot_and_continues
+* test_turn_start_no_effect_vanilla
+* test_turn_start_poison_damage_marks_destroy_target_when_hp_zero
+* test_attack_effect_freeze_blue_003
+* test_attack_effect_freeze_2turn_blue_008
+* test_attack_effect_poison_black_004
+* test_summon_effect_freeze_all_blue_018
+* test_summon_effect_purple_001
+* test_summon_effect_freeze_one_purple_009
+* test_summon_effect_clear_status_white_013
+* test_summon_effect_clear_status_white_013_uses_unified_log_format
+* test_death_effect_freeze_purple_005
+* test_process_timing_event_dispatch_on_summon
+* test_process_timing_event_dispatch_on_summon_with_summon_card_ui_fallback
+* test_process_timing_event_dispatch_on_summon_with_summoned_card_ui_alias
+* test_process_timing_event_dispatch_on_attack
+* test_process_timing_event_dispatch_on_attack_with_generic_card_ui
+* test_process_timing_event_dispatch_on_attack_with_attack_card_ui_alias
+* test_process_timing_event_dispatch_on_attack_with_target_ui_alias
+* test_timing_dispatch_method_table_routes_all_event_timings
+* test_dispatch_timing_via_fallback_match_covers_on_summon_and_on_attack
+* test_process_timing_event_dispatch_on_death
+* test_process_timing_event_dispatch_on_death_with_dead_card_ui_fallback
+* test_process_timing_event_dispatch_on_death_with_death_card_ui_alias
+* test_process_timing_event_dispatch_on_defense
+* test_process_timing_event_dispatch_on_defense_with_generic_card_ui
+* test_process_timing_event_dispatch_on_defense_with_final_damage_alias
+* test_process_timing_event_dispatch_on_defense_with_target_ui_alias
+* test_process_timing_event_dispatch_on_defense_with_defend_card_ui_alias
+* test_process_timing_event_dispatch_on_turn_start
+* test_process_timing_event_dispatch_on_turn_start_with_card_ui_payload
+* test_process_timing_event_turn_start_single_card_payload_does_not_trigger_board_wide_scan
+* test_process_timing_event_dispatch_on_turn_end
+* test_process_timing_event_dispatch_on_turn_end_with_turn_end_card_ui_alias
+* test_process_timing_event_missing_required_payload_is_safe
+* test_process_summon_effect_with_missing_slot_context_is_safe
+* test_smoke_effects_trigger_on_each_timing
+* test_smoke_summon_effect_returns_log_as_activation_evidence
+* test_summon_effect_emits_effect_triggered_signal
+* test_attack_effect_emits_effect_triggered_signal
+* test_defense_effect_emits_effect_triggered_signal
+* test_death_effect_emits_effect_triggered_signal
+* test_turn_start_effect_emits_effect_triggered_signal
+* test_turn_end_effect_emits_effect_triggered_signal
+* test_turn_start_poison_tick_emits_effect_triggered_signal
+* test_detect_unimplemented_on_summon_effect_ids
+* test_detect_unimplemented_on_attack_effect_ids
+* test_detect_unimplemented_on_death_effect_ids
+* test_detect_unimplemented_on_defense_effect_ids
+* test_detect_unimplemented_turn_start_effect_ids
+* test_detect_unimplemented_turn_end_effect_ids
+* test_summon_effect_uses_prepare_helper_for_entry_guard
+* test_attack_effect_uses_prepare_helper_for_entry_guard
+* test_death_effect_uses_prepare_helper_for_entry_guard
+* test_defense_effect_uses_prepare_helper_for_entry_guard
+* test_single_card_timing_effect_helper_is_used_for_all_single_card_timings
+* test_turn_timing_effect_helper_is_used_for_turn_start_and_end
+* test_turn_timing_effect_helper_has_single_definition_and_uses_prepare_guard
+* test_target_collection_helper_is_shared_by_ally_enemy_getters
+* test_aoe_damage_helper_is_shared_for_death_damage_effects
+* test_self_damage_helper_is_shared_for_black_summon_effects
+* test_summon_effect_dispatcher_helper_is_used
+* test_attack_effect_dispatcher_helper_is_used
+* test_death_effect_dispatcher_helper_is_used
+* test_defense_effect_dispatcher_helper_is_used
+* test_summon_targeted_damage_helper_is_shared_for_red_summon_effects
+* test_death_targeted_damage_helper_is_shared_for_single_target_death_damage_effects
+* test_summon_aoe_damage_helper_is_shared_for_red_summon_effects
+* test_destroy_mark_helper_is_shared_for_lethal_and_instant_destroy_paths
+* test_damage_destroy_check_is_centralized_after_apply_damage
+* test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_effects
+* test_turn_start_self_heal_helper_is_shared_for_blue_010_and_green_003
+* test_summon_mana_gain_helper_is_shared_for_green_001_004_008
+* test_turn_mana_gain_helper_is_shared_for_green_009_and_yellow_010
+* test_turn_dispatch_helper_exists_and_is_used_for_start_end
+* test_summon_enemy_aoe_atk_debuff_helper_is_shared_for_blue_004_007
+* test_player_heal_helper_is_shared_for_white_heal_effects
+* test_draw_effect_helper_is_shared_for_basic_draw_effects
+* test_random_ally_heal_helper_is_shared_for_green_011_yellow_001_015
+* test_aoe_heal_helper_is_shared_for_team_heal_effects
+* test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context
+* test_timing_payload_alias_table_is_used_by_resolvers
+* test_timing_dispatcher_helper_handles_on_summon_route
+* test_timing_dispatcher_helper_handles_on_attack_route
+* test_timing_dispatcher_helpers_cover_all_event_routes
+* test_turn_start_poison_tick_processing_is_extracted_to_helper
+* test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects
+* test_death_freeze_effects_use_shared_status_helpers
+* test_attack_direct_damage_logs_use_make_effect_log_helper
+* test_attack_instant_kill_effect_uses_shared_helper
+* test_death_mana_gain_effects_use_shared_mana_helper
+* test_attack_mana_gain_effect_uses_shared_mana_helper
+* test_summon_hybrid_effects_use_shared_combo_helpers
+* test_summon_yellow_013_uses_shared_aoe_atk_heal_helper
+* test_summon_red_007_uses_shared_aoe_atk_modifier_helper
+* test_defense_final_damage_log_helper_is_shared_for_damage_reduction_effects
+* test_disable_dice_effect_helper_is_shared_for_summon_and_attack
+162/162 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Scripts               1
+Tests               162
+Passing Tests       162
+Asserts             339
+Time              0.517s
+
+
+Ran Scripts matching "test_effects.gd"
+---- All tests passed! ----
+

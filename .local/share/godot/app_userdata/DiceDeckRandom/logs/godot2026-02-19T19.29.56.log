@@ -1,0 +1,2088 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+SCRIPT ERROR: Parse Error: Function "_process_turn_timing_effects" has the same name as a previously declared function.
+   at: GDScript::reload (res://autoload/effect_manager.gd:860)
+ERROR: Failed to load script "res://autoload/effect_manager.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+ERROR: Failed to instantiate an autoload, script 'res://autoload/effect_manager.gd' does not inherit from 'Node'.
+   at: start (main/main.cpp:4407)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+SCRIPT ERROR: Parse Error: Could not resolve class "BattleBase".
+   at: GDScript::reload (res://test/unit/test_battle_base_effect_application.gd:3)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_battle_base_effect_application.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[WARNING]:  Ignoring script res://test/unit/test_battle_base_effect_application.gd because it does not extend GutTest
+SCRIPT ERROR: Parse Error: Cannot infer the type of "enemy_modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://scripts/battle_utils.gd:96)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://scripts/battle_utils.gd:181)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "effect_desc" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://scripts/battle_utils.gd:272)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://test/unit/test_battle_sim.gd:0)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_battle_sim.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "desc" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:48)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "timing" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:53)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "desc" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:69)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:84)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:97)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:108)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "timing" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:115)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "count" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:128)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:139)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:146)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:153)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:160)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:167)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:176)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:184)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:192)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:200)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:214)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:222)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:232)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:240)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:257)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:270)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:278)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:285)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:292)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:303)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:314)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:327)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:335)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:342)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:349)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:356)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:364)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:372)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:380)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:387)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "modifier" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:397)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Parse Error: Cannot infer the type of "result" variable because the value doesn't have a set type.
+   at: GDScript::reload (res://test/unit/test_effects.gd:596)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_effects.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[WARNING]:  Ignoring script res://test/unit/test_effects.gd because it does not extend GutTest
+
+
+res://test/unit/test_battle_constants.gd
+* test_max_hp_is_20
+* test_max_mana_cap_is_5
+* test_move_cost_is_1
+* test_default_starting_hand_is_4
+* test_card_size_hand_is_120
+* test_card_size_field_is_175
+* test_card_size_preview_is_300
+* test_phase_enum_values
+* test_select_mode_enum_values
+* test_get_phase_name_main1
+* test_get_phase_name_dice
+* test_get_phase_name_draw
+* test_get_phase_name_main2
+* test_get_phase_name_end
+* test_get_phase_name_invalid
+15/15 passed.
+
+
+res://test/unit/test_battle_sim.gd
+* test_empty_field
+* test_single_card_direct_hp
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_single_card_direct_hp (res://test/unit/test_battle_sim.gd:70)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_single_card_direct_hp (res://test/unit/test_battle_sim.gd:71)
+   GDScript backtrace (most recent call first):
+       [0] test_single_card_direct_hp (res://test/unit/test_battle_sim.gd:71)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_single_card_wrong_dice
+* test_card_vs_card_same_lane
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_card_vs_card_same_lane (res://test/unit/test_battle_sim.gd:83)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_card_vs_card_same_lane (res://test/unit/test_battle_sim.gd:86)
+   GDScript backtrace (most recent call first):
+       [0] test_card_vs_card_same_lane (res://test/unit/test_battle_sim.gd:86)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_kill_then_direct_hp
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_kill_then_direct_hp (res://test/unit/test_battle_sim.gd:94)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_kill_then_direct_hp (res://test/unit/test_battle_sim.gd:97)
+   GDScript backtrace (most recent call first):
+       [0] test_kill_then_direct_hp (res://test/unit/test_battle_sim.gd:97)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_front_blocks_back
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_front_blocks_back (res://test/unit/test_battle_sim.gd:107)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_front_blocks_back (res://test/unit/test_battle_sim.gd:112)
+   GDScript backtrace (most recent call first):
+       [0] test_front_blocks_back (res://test/unit/test_battle_sim.gd:112)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_different_lanes_no_interaction
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_different_lanes_no_interaction (res://test/unit/test_battle_sim.gd:119)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_different_lanes_no_interaction (res://test/unit/test_battle_sim.gd:121)
+   GDScript backtrace (most recent call first):
+       [0] test_different_lanes_no_interaction (res://test/unit/test_battle_sim.gd:121)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_opponent_turn
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_opponent_turn (res://test/unit/test_battle_sim.gd:128)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_opponent_turn (res://test/unit/test_battle_sim.gd:131)
+   GDScript backtrace (most recent call first):
+       [0] test_opponent_turn (res://test/unit/test_battle_sim.gd:131)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_back_row_only_same_lane
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_back_row_only_same_lane (res://test/unit/test_battle_sim.gd:139)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_back_row_only_same_lane (res://test/unit/test_battle_sim.gd:142)
+   GDScript backtrace (most recent call first):
+       [0] test_back_row_only_same_lane (res://test/unit/test_battle_sim.gd:142)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_back_row_direct_hp_no_defender
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_back_row_direct_hp_no_defender (res://test/unit/test_battle_sim.gd:148)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_back_row_direct_hp_no_defender (res://test/unit/test_battle_sim.gd:149)
+   GDScript backtrace (most recent call first):
+       [0] test_back_row_direct_hp_no_defender (res://test/unit/test_battle_sim.gd:149)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_multiple_lanes_battle
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_multiple_lanes_battle (res://test/unit/test_battle_sim.gd:162)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_multiple_lanes_battle (res://test/unit/test_battle_sim.gd:167)
+   GDScript backtrace (most recent call first):
+       [0] test_multiple_lanes_battle (res://test/unit/test_battle_sim.gd:167)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_selective_dice_activation
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_selective_dice_activation (res://test/unit/test_battle_sim.gd:176)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_selective_dice_activation (res://test/unit/test_battle_sim.gd:178)
+   GDScript backtrace (most recent call first):
+       [0] test_selective_dice_activation (res://test/unit/test_battle_sim.gd:178)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_dead_card_no_counterattack
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_dead_card_no_counterattack (res://test/unit/test_battle_sim.gd:185)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_dead_card_no_counterattack (res://test/unit/test_battle_sim.gd:188)
+   GDScript backtrace (most recent call first):
+       [0] test_dead_card_no_counterattack (res://test/unit/test_battle_sim.gd:188)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+* test_all_six_dice_values
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: _simulate (res://test/unit/test_battle_sim.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] _simulate (res://test/unit/test_battle_sim.gd:26)
+       [1] test_all_six_dice_values (res://test/unit/test_battle_sim.gd:195)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [4] test_scripts (res://addons/gut/gut.gd:1027)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [7] main (res://addons/gut/cli/gut_cli.gd:284)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+   at: test_all_six_dice_values (res://test/unit/test_battle_sim.gd:196)
+   GDScript backtrace (most recent call first):
+       [0] test_all_six_dice_values (res://test/unit/test_battle_sim.gd:196)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line -1
+2/14 passed.
+
+
+res://test/unit/test_battle_utils.gd
+* test_get_adjacent_slots_lane0_front
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane0_front (res://test/unit/test_battle_utils.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane0_front (res://test/unit/test_battle_utils.gd:10)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_get_adjacent_slots_lane1_front
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane1_front (res://test/unit/test_battle_utils.gd:18)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane1_front (res://test/unit/test_battle_utils.gd:18)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_get_adjacent_slots_lane2_front
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane2_front (res://test/unit/test_battle_utils.gd:27)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane2_front (res://test/unit/test_battle_utils.gd:27)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_get_adjacent_slots_lane0_back
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane0_back (res://test/unit/test_battle_utils.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane0_back (res://test/unit/test_battle_utils.gd:35)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_get_adjacent_slots_lane1_back
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane1_back (res://test/unit/test_battle_utils.gd:43)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane1_back (res://test/unit/test_battle_utils.gd:43)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_get_adjacent_slots_lane2_back
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+   at: test_get_adjacent_slots_lane2_back (res://test/unit/test_battle_utils.gd:52)
+   GDScript backtrace (most recent call first):
+       [0] test_get_adjacent_slots_lane2_back (res://test/unit/test_battle_utils.gd:52)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+      at line -1
+* test_build_mana_string_full
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+   at: test_build_mana_string_full (res://test/unit/test_battle_utils.gd:63)
+   GDScript backtrace (most recent call first):
+       [0] test_build_mana_string_full (res://test/unit/test_battle_utils.gd:63)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+      at line -1
+* test_build_mana_string_partial
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+   at: test_build_mana_string_partial (res://test/unit/test_battle_utils.gd:68)
+   GDScript backtrace (most recent call first):
+       [0] test_build_mana_string_partial (res://test/unit/test_battle_utils.gd:68)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+      at line -1
+* test_build_mana_string_empty
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+   at: test_build_mana_string_empty (res://test/unit/test_battle_utils.gd:73)
+   GDScript backtrace (most recent call first):
+       [0] test_build_mana_string_empty (res://test/unit/test_battle_utils.gd:73)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+      at line -1
+* test_build_mana_string_max_cap
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+   at: test_build_mana_string_max_cap (res://test/unit/test_battle_utils.gd:78)
+   GDScript backtrace (most recent call first):
+       [0] test_build_mana_string_max_cap (res://test/unit/test_battle_utils.gd:78)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+      at line -1
+* test_build_mana_string_overcap_max
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+   at: test_build_mana_string_overcap_max (res://test/unit/test_battle_utils.gd:84)
+   GDScript backtrace (most recent call first):
+       [0] test_build_mana_string_overcap_max (res://test/unit/test_battle_utils.gd:84)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+      at line -1
+* test_sim_find_target_front_first
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: test_sim_find_target_front_first (res://test/unit/test_battle_utils.gd:100)
+   GDScript backtrace (most recent call first):
+       [0] test_sim_find_target_front_first (res://test/unit/test_battle_utils.gd:100)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+      at line -1
+* test_sim_find_target_back_if_no_front
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: test_sim_find_target_back_if_no_front (res://test/unit/test_battle_utils.gd:110)
+   GDScript backtrace (most recent call first):
+       [0] test_sim_find_target_back_if_no_front (res://test/unit/test_battle_utils.gd:110)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+      at line -1
+* test_sim_find_target_different_lane
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: test_sim_find_target_different_lane (res://test/unit/test_battle_utils.gd:121)
+   GDScript backtrace (most recent call first):
+       [0] test_sim_find_target_different_lane (res://test/unit/test_battle_utils.gd:121)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+      at line -1
+* test_sim_find_target_dead_ignored
+SCRIPT ERROR: Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+   at: test_sim_find_target_dead_ignored (res://test/unit/test_battle_utils.gd:131)
+   GDScript backtrace (most recent call first):
+       [0] test_sim_find_target_dead_ignored (res://test/unit/test_battle_utils.gd:131)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+      at line -1
+* test_build_dice_preview_text_format
+SCRIPT ERROR: Invalid call. Nonexistent function 'build_dice_preview_text' in base 'GDScript'.
+   at: test_build_dice_preview_text_format (res://test/unit/test_battle_utils.gd:148)
+   GDScript backtrace (most recent call first):
+       [0] test_build_dice_preview_text_format (res://test/unit/test_battle_utils.gd:148)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_dice_preview_text' in base 'GDScript'.
+      at line -1
+* test_has_empty_slot_all_empty
+SCRIPT ERROR: Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+   at: test_has_empty_slot_all_empty (res://test/unit/test_battle_utils.gd:170)
+   GDScript backtrace (most recent call first):
+       [0] test_has_empty_slot_all_empty (res://test/unit/test_battle_utils.gd:170)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+      at line -1
+* test_has_empty_slot_all_filled
+SCRIPT ERROR: Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+   at: test_has_empty_slot_all_filled (res://test/unit/test_battle_utils.gd:174)
+   GDScript backtrace (most recent call first):
+       [0] test_has_empty_slot_all_filled (res://test/unit/test_battle_utils.gd:174)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+      at line -1
+* test_has_empty_slot_mixed
+SCRIPT ERROR: Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+   at: test_has_empty_slot_mixed (res://test/unit/test_battle_utils.gd:178)
+   GDScript backtrace (most recent call first):
+       [0] test_has_empty_slot_mixed (res://test/unit/test_battle_utils.gd:178)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+      at line -1
+* test_has_empty_slot_one_empty
+SCRIPT ERROR: Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+   at: test_has_empty_slot_one_empty (res://test/unit/test_battle_utils.gd:182)
+   GDScript backtrace (most recent call first):
+       [0] test_has_empty_slot_one_empty (res://test/unit/test_battle_utils.gd:182)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] test_scripts (res://addons/gut/gut.gd:1027)
+       [4] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [5] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [6] main (res://addons/gut/cli/gut_cli.gd:284)
+       [7] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+      at line -1
+* test_has_empty_slot_null_treated_as_occupied
+SCRIPT ERROR: Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+   at: test_has_empty_slot_null_treated_as_occupied (res://test/unit/test_battle_utils.gd:187)
+   GDScript backtrace (most recent call first):
+       [0] test_has_empty_slot_null_treated_as_occupied (res://test/unit/test_battle_utils.gd:187)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+      at line -1
+* test_is_dice_blocked_empty_context
+SCRIPT ERROR: Invalid call. Nonexistent function 'is_dice_blocked' in base 'GDScript'.
+   at: test_is_dice_blocked_empty_context (res://test/unit/test_battle_utils.gd:205)
+   GDScript backtrace (most recent call first):
+       [0] test_is_dice_blocked_empty_context (res://test/unit/test_battle_utils.gd:205)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'is_dice_blocked' in base 'GDScript'.
+      at line -1
+0/22 passed.
+
+
+res://test/unit/test_card_data.gd
+* test_default_values
+* test_color_type_enum
+* test_get_color_name_gray
+* test_get_color_name_blue
+* test_get_color_name_green
+* test_get_color_name_black
+* test_get_color_name_red
+* test_get_color_name_yellow
+* test_get_color_name_purple
+* test_get_color_name_white
+* test_has_effect_false
+* test_has_effect_true
+* test_duplicate_card_basic
+* test_duplicate_card_independent_arrays
+* test_all_color_names_are_japanese
+15/15 passed.
+
+
+res://test/unit/test_card_database.gd
+* test_card_pool_has_160_cards
+* test_all_cards_have_valid_cost
+* test_all_cards_have_positive_hp
+* test_all_cards_have_non_negative_atk
+* test_all_cards_have_attack_dice
+* test_all_dice_values_valid
+* test_all_cards_have_unique_ids
+* test_point_budget_vanilla_cards
+* test_get_card_by_id
+* test_get_card_by_invalid_id
+* test_build_random_deck
+* test_build_random_battle_deck_follows_rules
+* test_each_color_has_20_cards
+* test_card_ids_are_sequential
+* test_effect_cards_have_valid_effect_id
+* test_duplicate_card_creates_copy
+16/16 passed.
+
+
+res://test/unit/test_effect_manager.gd
+* test_timing_enum_values
+SCRIPT ERROR: Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+   at: test_timing_enum_values (res://test/unit/test_effect_manager.gd:16)
+   GDScript backtrace (most recent call first):
+       [0] test_timing_enum_values (res://test/unit/test_effect_manager.gd:16)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+      at line -1
+* test_status_effect_enum_values
+SCRIPT ERROR: Invalid access to property or key 'StatusEffect' on a base object of type 'Nil'.
+   at: test_status_effect_enum_values (res://test/unit/test_effect_manager.gd:25)
+   GDScript backtrace (most recent call first):
+       [0] test_status_effect_enum_values (res://test/unit/test_effect_manager.gd:25)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'StatusEffect' on a base object of type 'Nil'.
+      at line -1
+* test_effect_definitions_exist
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_effect_definitions_exist (res://test/unit/test_effect_manager.gd:34)
+   GDScript backtrace (most recent call first):
+       [0] test_effect_definitions_exist (res://test/unit/test_effect_manager.gd:34)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_blue_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_blue_effects_registered (res://test/unit/test_effect_manager.gd:37)
+   GDScript backtrace (most recent call first):
+       [0] test_blue_effects_registered (res://test/unit/test_effect_manager.gd:37)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_green_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_green_effects_registered (res://test/unit/test_effect_manager.gd:41)
+   GDScript backtrace (most recent call first):
+       [0] test_green_effects_registered (res://test/unit/test_effect_manager.gd:41)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_black_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_black_effects_registered (res://test/unit/test_effect_manager.gd:45)
+   GDScript backtrace (most recent call first):
+       [0] test_black_effects_registered (res://test/unit/test_effect_manager.gd:45)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_red_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_red_effects_registered (res://test/unit/test_effect_manager.gd:49)
+   GDScript backtrace (most recent call first):
+       [0] test_red_effects_registered (res://test/unit/test_effect_manager.gd:49)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_yellow_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_yellow_effects_registered (res://test/unit/test_effect_manager.gd:53)
+   GDScript backtrace (most recent call first):
+       [0] test_yellow_effects_registered (res://test/unit/test_effect_manager.gd:53)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_purple_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_purple_effects_registered (res://test/unit/test_effect_manager.gd:57)
+   GDScript backtrace (most recent call first):
+       [0] test_purple_effects_registered (res://test/unit/test_effect_manager.gd:57)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_white_effects_registered
+SCRIPT ERROR: Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+   at: test_white_effects_registered (res://test/unit/test_effect_manager.gd:61)
+   GDScript backtrace (most recent call first):
+       [0] test_white_effects_registered (res://test/unit/test_effect_manager.gd:61)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+      at line -1
+* test_get_effect_description_blue_001
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+   at: test_get_effect_description_blue_001 (res://test/unit/test_effect_manager.gd:69)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_description_blue_001 (res://test/unit/test_effect_manager.gd:69)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+      at line -1
+* test_get_effect_description_green_001
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+   at: test_get_effect_description_green_001 (res://test/unit/test_effect_manager.gd:73)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_description_green_001 (res://test/unit/test_effect_manager.gd:73)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+      at line -1
+* test_get_effect_description_black_004
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+   at: test_get_effect_description_black_004 (res://test/unit/test_effect_manager.gd:77)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_description_black_004 (res://test/unit/test_effect_manager.gd:77)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+      at line -1
+* test_get_effect_description_invalid
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+   at: test_get_effect_description_invalid (res://test/unit/test_effect_manager.gd:81)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_description_invalid (res://test/unit/test_effect_manager.gd:81)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_on_summon
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_on_summon (res://test/unit/test_effect_manager.gd:89)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_on_summon (res://test/unit/test_effect_manager.gd:89)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_on_attack
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_on_attack (res://test/unit/test_effect_manager.gd:93)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_on_attack (res://test/unit/test_effect_manager.gd:93)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_on_death
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_on_death (res://test/unit/test_effect_manager.gd:97)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_on_death (res://test/unit/test_effect_manager.gd:97)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_on_defense
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_on_defense (res://test/unit/test_effect_manager.gd:101)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_on_defense (res://test/unit/test_effect_manager.gd:101)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_constant
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_constant (res://test/unit/test_effect_manager.gd:105)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_constant (res://test/unit/test_effect_manager.gd:105)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_turn_start
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_turn_start (res://test/unit/test_effect_manager.gd:109)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_turn_start (res://test/unit/test_effect_manager.gd:109)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_get_effect_timing_turn_end
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+   at: test_get_effect_timing_turn_end (res://test/unit/test_effect_manager.gd:113)
+   GDScript backtrace (most recent call first):
+       [0] test_get_effect_timing_turn_end (res://test/unit/test_effect_manager.gd:113)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+      at line -1
+* test_has_timing_true
+SCRIPT ERROR: Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+   at: test_has_timing_true (res://test/unit/test_effect_manager.gd:121)
+   GDScript backtrace (most recent call first):
+       [0] test_has_timing_true (res://test/unit/test_effect_manager.gd:121)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+      at line -1
+* test_has_timing_false
+SCRIPT ERROR: Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+   at: test_has_timing_false (res://test/unit/test_effect_manager.gd:126)
+   GDScript backtrace (most recent call first):
+       [0] test_has_timing_false (res://test/unit/test_effect_manager.gd:126)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+      at line -1
+* test_get_summon_cost_modifier_no_effects
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_summon_cost_modifier' in base 'Nil'.
+   at: test_get_summon_cost_modifier_no_effects (res://test/unit/test_effect_manager.gd:138)
+   GDScript backtrace (most recent call first):
+       [0] test_get_summon_cost_modifier_no_effects (res://test/unit/test_effect_manager.gd:138)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_summon_cost_modifier' in base 'Nil'.
+      at line -1
+* test_get_dice_modifier_no_effects
+SCRIPT ERROR: Invalid call. Nonexistent function 'get_dice_modifier' in base 'Nil'.
+   at: test_get_dice_modifier_no_effects (res://test/unit/test_effect_manager.gd:150)
+   GDScript backtrace (most recent call first):
+       [0] test_get_dice_modifier_no_effects (res://test/unit/test_effect_manager.gd:150)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_dice_modifier' in base 'Nil'.
+      at line -1
+* test_make_effect_log_format
+SCRIPT ERROR: Invalid call. Nonexistent function '_make_effect_log' in base 'Nil'.
+   at: test_make_effect_log_format (res://test/unit/test_effect_manager.gd:156)
+   GDScript backtrace (most recent call first):
+       [0] test_make_effect_log_format (res://test/unit/test_effect_manager.gd:156)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function '_make_effect_log' in base 'Nil'.
+      at line -1
+0/26 passed.
+
+
+res://test/unit/test_firebase_manager.gd
+* test_firebase_url_defined
+* test_firebase_url_is_https
+* test_player_id_is_string
+* test_has_put_data_method
+* test_has_post_data_method
+* test_has_patch_data_method
+* test_has_get_data_method
+* test_has_delete_data_method
+* test_has_create_request_method
+* test_has_parse_response_method
+* test_has_load_or_create_player_id_method
+11/11 passed.
+
+
+res://test/unit/test_game_logic.gd
+* test_mana_cap
+* test_mana_recovery_in_draw_phase
+* test_damage_calculation
+* test_lane_assignment
+* test_first_player_turn1_skips_dice
+* test_second_player_turn1_no_skip
+* test_move_cost
+* test_deck_size
+* test_starting_hand
+* test_max_hp
+* test_win_condition_opponent_hp_zero
+* test_win_condition_opponent_hp_negative
+* test_lose_condition_player_hp_zero
+* test_lose_condition_player_hp_negative
+* test_game_continues_both_positive
+* test_both_hp_zero_draw
+* test_point_budget_cost_0
+* test_point_budget_cost_1
+* test_point_budget_cost_2
+* test_point_budget_cost_3
+* test_point_budget_cost_4
+* test_point_budget_cost_5
+* test_can_summon_with_exact_mana
+* test_can_summon_with_excess_mana
+* test_cannot_summon_insufficient_mana
+* test_can_summon_cost_zero
+* test_slot_indices
+* test_front_to_back_mapping
+* test_back_to_front_mapping
+* test_ai_summon_calls_summon_effect_processing
+* test_turn_start_effects_are_not_double_processed_in_local_battle
+* test_attack_resolution_skips_destroyed_target_slot_after_attack_effect
+* test_defense_reflect_effect_is_applied_to_attacker
+33/33 passed.
+
+
+res://test/unit/test_game_manager.gd
+* test_game_state_enum_values
+* test_max_deck_slots_constant
+* test_initial_current_state
+* test_initial_player_deck_is_array
+* test_initial_battle_result_is_string
+* test_initial_user_name_is_string
+* test_initial_current_deck_slot_type
+* test_has_required_methods
+* test_save_deck_to_slot_rejects_negative_slot
+* test_save_deck_to_slot_rejects_slot_too_large
+* test_valid_slot_range
+* test_extract_slot_counts_from_dictionary_response
+* test_extract_slot_counts_from_array_response
+13/13 passed.
+
+
+res://test/unit/test_game_manager_deck_slot.gd
+* test_deck_slot_is_persisted_and_restored_locally
+1/1 passed.
+
+
+res://test/unit/test_multiplayer_manager.gd
+* test_heartbeat_interval_constant
+* test_heartbeat_timeout_constant
+* test_room_code_retry_limit_constant
+* test_initial_room_code_is_empty
+* test_initial_is_host_type
+* test_initial_my_player_number_type
+* test_initial_opponent_id_type
+* test_initial_opponent_name_type
+* test_initial_is_in_room_type
+* test_initial_last_error_type
+* test_has_room_created_signal
+* test_has_opponent_joined_signal
+* test_has_game_starting_signal
+* test_has_action_received_signal
+* test_has_game_state_updated_signal
+* test_has_opponent_disconnected_signal
+* test_has_create_room_method
+* test_has_join_room_method
+* test_has_leave_room_method
+* test_has_send_action_method
+* test_has_send_game_state_method
+* test_has_get_room_data_method
+* test_has_get_opponent_deck_method
+* test_has_find_waiting_room_method
+* test_player_number_host_is_1
+* test_player_number_guest_is_2
+* test_player_number_range
+27/27 passed.
+
+
+res://test/unit/test_scene_transitions.gd
+* test_title_to_lobby_transition
+    タイトル画面ロード成功
+* test_lobby_scene_load
+    ロビー画面ロード成功
+* test_online_battle_scene_load
+SCRIPT ERROR: Parse Error: Could not resolve class "BattleBase".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:1)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+ERROR: Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] test_online_battle_scene_load (res://test/unit/test_scene_transitions.gd:33)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [3] _run_test (res://addons/gut/gut.gd:640)
+       [4] test_lobby_scene_load (res://test/unit/test_scene_transitions.gd:29)
+    オンラインバトル画面ロード成功
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Parse Error: Could not resolve class "BattleBase".
+    [2] <engine-0>Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+      at line 43
+2/3 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+res://test/unit/test_battle_sim.gd
+- test_single_card_direct_hp
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_card_vs_card_same_lane
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_kill_then_direct_hp
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_front_blocks_back
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_different_lanes_no_interaction
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_opponent_turn
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_back_row_only_same_lane
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_back_row_direct_hp_no_defender
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_multiple_lanes_battle
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_selective_dice_activation
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_dead_card_no_counterattack
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+- test_all_six_dice_values
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+    [2] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line -1
+
+res://test/unit/test_battle_utils.gd
+- test_get_adjacent_slots_lane0_front
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_get_adjacent_slots_lane1_front
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_get_adjacent_slots_lane2_front
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_get_adjacent_slots_lane0_back
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_get_adjacent_slots_lane1_back
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_get_adjacent_slots_lane2_back
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_adjacent_slots' in base 'GDScript'.
+          at line -1
+- test_build_mana_string_full
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+          at line -1
+- test_build_mana_string_partial
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+          at line -1
+- test_build_mana_string_empty
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+          at line -1
+- test_build_mana_string_max_cap
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+          at line -1
+- test_build_mana_string_overcap_max
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_mana_string' in base 'GDScript'.
+          at line -1
+- test_sim_find_target_front_first
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+          at line -1
+- test_sim_find_target_back_if_no_front
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+          at line -1
+- test_sim_find_target_different_lane
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+          at line -1
+- test_sim_find_target_dead_ignored
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'sim_find_target' in base 'GDScript'.
+          at line -1
+- test_build_dice_preview_text_format
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'build_dice_preview_text' in base 'GDScript'.
+          at line -1
+- test_has_empty_slot_all_empty
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+          at line -1
+- test_has_empty_slot_all_filled
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+          at line -1
+- test_has_empty_slot_mixed
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+          at line -1
+- test_has_empty_slot_one_empty
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+          at line -1
+- test_has_empty_slot_null_treated_as_occupied
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'has_empty_slot' in base 'GDScript'.
+          at line -1
+- test_is_dice_blocked_empty_context
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'is_dice_blocked' in base 'GDScript'.
+          at line -1
+
+res://test/unit/test_effect_manager.gd
+- test_timing_enum_values
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+          at line -1
+- test_status_effect_enum_values
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'StatusEffect' on a base object of type 'Nil'.
+          at line -1
+- test_effect_definitions_exist
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_blue_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_green_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_black_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_red_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_yellow_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_purple_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_white_effects_registered
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'effect_definitions' on a base object of type 'Nil'.
+          at line -1
+- test_get_effect_description_blue_001
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+          at line -1
+- test_get_effect_description_green_001
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+          at line -1
+- test_get_effect_description_black_004
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+          at line -1
+- test_get_effect_description_invalid
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_description' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_on_summon
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_on_attack
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_on_death
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_on_defense
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_constant
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_turn_start
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_get_effect_timing_turn_end
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_effect_timing' in base 'Nil'.
+          at line -1
+- test_has_timing_true
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+          at line -1
+- test_has_timing_false
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid access to property or key 'Timing' on a base object of type 'Nil'.
+          at line -1
+- test_get_summon_cost_modifier_no_effects
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_summon_cost_modifier' in base 'Nil'.
+          at line -1
+- test_get_dice_modifier_no_effects
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'get_dice_modifier' in base 'Nil'.
+          at line -1
+- test_make_effect_log_format
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function '_make_effect_log' in base 'Nil'.
+          at line -1
+
+res://test/unit/test_scene_transitions.gd
+- test_online_battle_scene_load
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Parse Error: Could not resolve class "BattleBase".
+    [2] <engine-0>Failed to load script "res://scenes/battle/online_battle.gd" with error "Parse error".
+          at line 43
+
+Totals
+------
+Warnings              2
+
+Scripts              12
+Tests               196
+Passing Tests       135
+Failing Tests        61
+Asserts           1827/1888
+Time              0.912s
+
+
+---- 61 failing tests ----
+

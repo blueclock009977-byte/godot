@@ -10,50 +10,18 @@ SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
 [INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
 Godot version:  4.6.0
 GUT version:  9.5.0
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_battle_sim.gd:40)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-SCRIPT ERROR: Parse Error: Cannot use subscript operator on a base of type "null".
-   at: GDScript::reload (res://test/unit/test_battle_sim.gd:59)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-ERROR: Failed to load script "res://test/unit/test_battle_sim.gd" with error "Parse error".
-   at: load (modules/gdscript/gdscript.cpp:2907)
-   GDScript backtrace (most recent call first):
-       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
-       [1] _parse_script (res://addons/gut/test_collector.gd:76)
-       [2] add_script (res://addons/gut/test_collector.gd:127)
-       [3] add_script (res://addons/gut/gut.gd:1050)
-       [4] add_directory (res://addons/gut/gut.gd:1073)
-       [5] _apply_options (res://addons/gut/gut_config.gd:136)
-       [6] apply_options (res://addons/gut/gut_config.gd:207)
-       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
-       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
-       [9] main (res://addons/gut/cli/gut_cli.gd:284)
-       [10] _init (res://addons/gut/gut_cmdln.gd:39)
-[WARNING]:  Ignoring script res://test/unit/test_battle_sim.gd because it does not extend GutTest
-[ERROR]:  Could not find script:  test_scene_transitions.gd
+
+
+res://test/unit/test_battle_sim.gd
+* test_empty_field
+* test_single_card_direct_hp
+* test_single_card_wrong_dice
+* test_card_vs_card_same_lane
+* test_kill_then_direct_hp
+* test_front_blocks_back
+* test_different_lanes_no_interaction
+* test_opponent_turn
+8/8 passed.
 
 
 res://test/unit/test_card_database.gd
@@ -431,6 +399,11 @@ res://test/unit/test_game_logic.gd
 10/10 passed.
 
 
+res://test/unit/test_game_manager_deck_slot.gd
+* test_deck_slot_is_persisted_and_restored_locally
+1/1 passed.
+
+
 res://test/unit/test_scene_transitions.gd
 * test_title_to_lobby_transition
     タイトル画面ロード成功
@@ -438,7 +411,6 @@ res://test/unit/test_scene_transitions.gd
     ロビー画面ロード成功
 * test_online_battle_scene_load
     オンラインバトル画面ロード成功
-[WARNING]:  Test script has 2 unfreed children.  Increase log level for more details.
 3/3 passed.
 
 
@@ -768,15 +740,12 @@ res://test/unit/test_card_database.gd
 
 Totals
 ------
-Errors                1
-Warnings              2
-
-Scripts               4
-Tests                52
-Passing Tests        50
+Scripts               6
+Tests                61
+Passing Tests        59
 Failing Tests         2
-Asserts           1254/1411
-Time              0.72s
+Asserts           1271/1428
+Time              0.845s
 
 
 ---- 2 failing tests ----
