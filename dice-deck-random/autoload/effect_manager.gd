@@ -504,12 +504,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			result["log"] = _make_effect_log("magenta", card_name, "相手手札1枚破棄")
 
 		"purple_006":  # 登場時:敵全体ATK-1,HP-1
-			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.modify_atk(-1)
-			_apply_damage_to_targets_and_mark_destroy(enemies, 1, result)
-			if enemies.size() > 0:
-				result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-1,HP-1")
+			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -1, 1, result, card_name, "magenta", "敵全体ATK-1,HP-1")
 
 		"purple_009":  # 登場時:敵1体を2ターン凍結
 			var target = _get_random_enemy(is_player, context)
@@ -532,12 +527,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = _make_effect_log("magenta", card_name, "%s を3ターン凍結" % target_p15.card_data.card_name)
 
 		"purple_018":  # 登場時:敵全体ATK-2,HP-2
-			var enemies_p18 = _get_all_enemies(is_player, context)
-			for enemy in enemies_p18:
-				enemy.modify_atk(-2)
-			_apply_damage_to_targets_and_mark_destroy(enemies_p18, 2, result)
-			if enemies_p18.size() > 0:
-				result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-2,HP-2")
+			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -2, 2, result, card_name, "magenta", "敵全体ATK-2,HP-2")
 
 		"purple_019":  # 登場時:敵全体を2ターン凍結
 			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 2, result, card_name, "magenta", "敵全体を2ターン凍結")
@@ -1298,6 +1288,13 @@ func _apply_aoe_atk_and_heal_effect(targets: Array, atk_amount: int, heal_amount
 		target.modify_atk(atk_amount)
 		target.heal(heal_amount)
 	result["log"] = _make_effect_log(color, card_name, message)
+
+func _apply_aoe_atk_and_damage_effect(targets: Array, atk_amount: int, damage_amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
+	for target in targets:
+		target.modify_atk(atk_amount)
+	_apply_damage_to_targets_and_mark_destroy(targets, damage_amount, result)
+	if targets.size() > 0:
+		result["log"] = _make_effect_log(color, card_name, message)
 
 func _apply_aoe_heal_effect(targets: Array, amount: int, result: Dictionary, card_name: String, color: String, message: String) -> void:
 	if amount <= 0:
