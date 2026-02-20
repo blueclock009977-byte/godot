@@ -522,6 +522,52 @@ func test_apply_aoe_atk_and_damage_effect_empty_targets() -> void:
 	assert_false(result.has("log"), "No log for empty targets")
 
 # ═══════════════════════════════════════════
+# _apply_aoe_clear_status_effect テスト
+# ═══════════════════════════════════════════
+
+func test_apply_aoe_clear_status_effect_basic() -> void:
+	var card1 := MockCardUI.new()
+	var card2 := MockCardUI.new()
+	card1.apply_status(effect_manager.StatusEffect.FROZEN, 2)
+	card2.apply_status(effect_manager.StatusEffect.POISON, 99)
+	var targets := [card1, card2]
+	var result := {}
+
+	effect_manager._apply_aoe_clear_status_effect(targets, 0, result, "浄化師", "white", "味方全体状態異常解除")
+
+	assert_false(card1.has_status(effect_manager.StatusEffect.FROZEN), "Card1 frozen cleared")
+	assert_false(card2.has_status(effect_manager.StatusEffect.POISON), "Card2 poison cleared")
+	assert_true(result.has("log"), "Log generated")
+	assert_true("浄化師" in result["log"], "Card name in log")
+
+func test_apply_aoe_clear_status_effect_with_heal() -> void:
+	var card1 := MockCardUI.new()
+	var card2 := MockCardUI.new()
+	card1.current_hp = 3
+	card2.current_hp = 4
+	card1.apply_status(effect_manager.StatusEffect.FROZEN, 1)
+	var targets := [card1, card2]
+	var result := {}
+
+	effect_manager._apply_aoe_clear_status_effect(targets, 2, result, "聖母", "white", "味方全体状態異常解除+HP+2")
+
+	assert_false(card1.has_status(effect_manager.StatusEffect.FROZEN), "Card1 frozen cleared")
+	assert_eq(card1.current_hp, 5, "Card1 healed +2")
+	assert_eq(card2.current_hp, 6, "Card2 healed +2")
+
+func test_apply_aoe_clear_status_effect_no_heal_when_zero() -> void:
+	var card := MockCardUI.new()
+	card.current_hp = 5
+	card.apply_status(effect_manager.StatusEffect.POISON, 99)
+	var targets := [card]
+	var result := {}
+
+	effect_manager._apply_aoe_clear_status_effect(targets, 0, result, "浄化師", "white", "味方全体状態異常解除")
+
+	assert_eq(card.current_hp, 5, "HP unchanged when heal_amount=0")
+	assert_false(card.has_status(effect_manager.StatusEffect.POISON), "Poison cleared")
+
+# ═══════════════════════════════════════════
 # Mocks for effect manager tests
 # ═══════════════════════════════════════════
 
