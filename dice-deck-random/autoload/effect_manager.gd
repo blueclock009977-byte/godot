@@ -406,11 +406,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_draw_effect(result, "cyan", card_name, 1)
 
 		"blue_018":  # 登場時:敵全体を1ターン凍結
-			var enemies = _get_all_enemies(is_player, context)
-			for enemy in enemies:
-				enemy.apply_status(StatusEffect.FROZEN, 1)
-			if enemies.size() > 0:
-				result["log"] = _make_effect_log("cyan", card_name, "敵全体を凍結")
+			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 1, result, card_name, "cyan", "敵全体を凍結")
 
 		"green_001":  # 登場時:マナ+1
 			_apply_mana_gain_effect(result, "green", card_name, 1)
@@ -544,11 +540,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 				result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-2,HP-2")
 
 		"purple_019":  # 登場時:敵全体を2ターン凍結
-			var enemies_p19 = _get_all_enemies(is_player, context)
-			for enemy in enemies_p19:
-				enemy.apply_status(StatusEffect.FROZEN, 2)
-			if enemies_p19.size() > 0:
-				result["log"] = _make_effect_log("magenta", card_name, "敵全体を2ターン凍結")
+			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 2, result, card_name, "magenta", "敵全体を2ターン凍結")
 
 		# ═══════════════════════════════════════════
 		# 白カード登場時効果

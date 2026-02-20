@@ -178,8 +178,9 @@ func test_summon_effect_blue_011_uses_unified_log_format() -> void:
 func test_summon_effect_blue_018_uses_unified_log_format() -> void:
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("\"blue_018\""), -1, "blue_018 summon handler should exist")
-	assert_ne(script_text.find("_make_effect_log(\"cyan\", card_name, \"敵全体を凍結\")"), -1,
-		"blue_018 should use shared log helper for unified formatting")
+	# blue_018 now uses _apply_aoe_status_effect which internally calls _make_effect_log
+	assert_ne(script_text.find("_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 1, result, card_name, \"cyan\", \"敵全体を凍結\")"), -1,
+		"blue_018 should use shared AOE status effect helper")
 
 func test_summon_effect_draw_and_damage_black_014() -> void:
 	# black_014: 登場時自分HP-2, 1枚ドロー
