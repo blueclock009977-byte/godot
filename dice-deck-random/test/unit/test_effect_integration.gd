@@ -892,6 +892,79 @@ func test_turn_start_effect_green_003_self_heal() -> void:
 	
 	assert_eq(card_ui.current_hp, 5, "Self HP should be +1")
 
+func test_attack_effect_red_005_permanent_atk_buff() -> void:
+	# red_005: 攻撃時:自身ATK+1(永続)
+	var attacker := MockCardUI.new()
+	attacker.card_data.effect_id = "red_005"
+	attacker.card_data.card_name = "炎の闘士"
+	
+	var defender := MockCardUI.new()
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
+	
+	assert_eq(attacker._atk_modifier, 1, "Attacker ATK should be +1 permanently")
+
+func test_death_effect_red_009_self_destruct() -> void:
+	# red_009: 死亡時:自爆(敵味方全体HP-2)
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "red_009"
+	card_ui.card_data.card_name = "爆弾ゴブリン"
+	
+	var ally := MockCardUI.new()
+	ally.current_hp = 5
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = ally
+	ally_slot._empty = false
+	
+	var enemy := MockCardUI.new()
+	enemy.current_hp = 6
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = enemy
+	enemy_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": [enemy_slot]
+	}
+	
+	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
+	
+	assert_eq(ally.current_hp, 3, "Ally HP should be -2")
+	assert_eq(enemy.current_hp, 4, "Enemy HP should be -2")
+
+func test_summon_effect_red_015_enemy_aoe_damage() -> void:
+	# red_015: 登場時:敵全体HP-2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "red_015"
+	card_ui.card_data.card_name = "炎の魔導士"
+	
+	var enemy1 := MockCardUI.new()
+	enemy1.current_hp = 5
+	var enemy_slot1 := MockSlot.new()
+	enemy_slot1._card_ui = enemy1
+	enemy_slot1._empty = false
+	
+	var enemy2 := MockCardUI.new()
+	enemy2.current_hp = 4
+	var enemy_slot2 := MockSlot.new()
+	enemy_slot2._card_ui = enemy2
+	enemy_slot2._empty = false
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [enemy_slot1, enemy_slot2]
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be -2")
+	assert_eq(enemy2.current_hp, 2, "Enemy2 HP should be -2")
+
 # ═══════════════════════════════════════════
 # Mocks
 # ═══════════════════════════════════════════
