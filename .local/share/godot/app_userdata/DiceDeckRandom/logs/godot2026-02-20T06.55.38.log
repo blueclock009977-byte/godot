@@ -67,7 +67,6 @@ ERROR: Failed to load script "res://test/unit/test_balance_simulator.gd" with er
        [9] main (res://addons/gut/cli/gut_cli.gd:284)
        [10] _init (res://addons/gut/gut_cmdln.gd:39)
 [WARNING]:  Ignoring script res://test/unit/test_balance_simulator.gd because it does not extend GutTest
-[WARNING]:  Ignoring script res://test/unit/test_balance_simulator.gd because it does not extend GutTest
 
 
 res://test/unit/test_battle_base_effect_application.gd
@@ -85,45 +84,45 @@ res://test/unit/test_battle_base_effect_application.gd
 * test_apply_attack_effect_pre_damage_returns_false_without_target
 * test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
     1 Orphans
-        * [<Control#122507234273>(card_ui.gd)]
+        * [<Control#122440125409>(card_ui.gd)]
 * test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
     1 Orphans
-        * [<Control#122675006438>(card_ui.gd)]
+        * [<Control#122607897574>(card_ui.gd)]
 * test_apply_effect_result_uses_destroy_targets_helper
 * test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
     1 Orphans
-        * [<Control#122859555820>(card_ui.gd)]
+        * [<Control#122792446956>(card_ui.gd)]
 * test_apply_effect_result_damaged_targets_skips_alive_card
     1 Orphans
-        * [<Control#123010550769>(card_ui.gd)]
+        * [<Control#122943441905>(card_ui.gd)]
 * test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
     1 Orphans
-        * [<Control#123144768502>(card_ui.gd)]
+        * [<Control#123077659638>(card_ui.gd)]
 * test_resolve_attacks_uses_shared_target_resolution_helper
 * test_apply_hp_bonus_on_summon_no_buff_allies
     1 Orphans
-        * [<Control#123329317884>(card_ui.gd)]
+        * [<Control#123262209020>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_green_007_buff
     2 Orphans
-        * [<Control#123497090050>(card_ui.gd)]
-        * [<Control#123547421701>(card_ui.gd)]
+        * [<Control#123429981186>(card_ui.gd)]
+        * [<Control#123480312837>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_receives_white_017_buff
     2 Orphans
-        * [<Control#123748748300>(card_ui.gd)]
-        * [<Control#123799079951>(card_ui.gd)]
+        * [<Control#123681639436>(card_ui.gd)]
+        * [<Control#123731971087>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
     2 Orphans
-        * [<Control#124000406550>(card_ui.gd)]
-        * [<Control#124050738201>(card_ui.gd)]
+        * [<Control#123933297686>(card_ui.gd)]
+        * [<Control#123983629337>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
     2 Orphans
-        * [<Control#124252064800>(card_ui.gd)]
-        * [<Control#124302396451>(card_ui.gd)]
+        * [<Control#124184955936>(card_ui.gd)]
+        * [<Control#124235287587>(card_ui.gd)]
 * test_apply_hp_bonus_on_summon_stacking_buffs
     3 Orphans
-        * [<Control#124503723050>(card_ui.gd)]
-        * [<Control#124554054701>(card_ui.gd)]
-        * [<Control#124604386352>(card_ui.gd)]
+        * [<Control#124436614186>(card_ui.gd)]
+        * [<Control#124486945837>(card_ui.gd)]
+        * [<Control#124537277488>(card_ui.gd)]
 17 orphans
 25/25 passed.
 
@@ -652,33 +651,33 @@ res://test/unit/test_scene_transitions.gd
 ==============================================
 test_battle_base_effect_application.gd
     - test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
-        * [<Control#122507234273>(card_ui.gd)]
+        * [<Control#122440125409>(card_ui.gd)]
     - test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
-        * [<Control#122675006438>(card_ui.gd)]
+        * [<Control#122607897574>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
-        * [<Control#122859555820>(card_ui.gd)]
+        * [<Control#122792446956>(card_ui.gd)]
     - test_apply_effect_result_damaged_targets_skips_alive_card
-        * [<Control#123010550769>(card_ui.gd)]
+        * [<Control#122943441905>(card_ui.gd)]
     - test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
-        * [<Control#123144768502>(card_ui.gd)]
+        * [<Control#123077659638>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_no_buff_allies
-        * [<Control#123329317884>(card_ui.gd)]
+        * [<Control#123262209020>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_green_007_buff
-        * [<Control#123497090050>(card_ui.gd)]
-        * [<Control#123547421701>(card_ui.gd)]
+        * [<Control#123429981186>(card_ui.gd)]
+        * [<Control#123480312837>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_receives_white_017_buff
-        * [<Control#123748748300>(card_ui.gd)]
-        * [<Control#123799079951>(card_ui.gd)]
+        * [<Control#123681639436>(card_ui.gd)]
+        * [<Control#123731971087>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_green_007_buffs_existing_allies
-        * [<Control#124000406550>(card_ui.gd)]
-        * [<Control#124050738201>(card_ui.gd)]
+        * [<Control#123933297686>(card_ui.gd)]
+        * [<Control#123983629337>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_white_017_buffs_existing_allies
-        * [<Control#124252064800>(card_ui.gd)]
-        * [<Control#124302396451>(card_ui.gd)]
+        * [<Control#124184955936>(card_ui.gd)]
+        * [<Control#124235287587>(card_ui.gd)]
     - test_apply_hp_bonus_on_summon_stacking_buffs
-        * [<Control#124503723050>(card_ui.gd)]
-        * [<Control#124554054701>(card_ui.gd)]
-        * [<Control#124604386352>(card_ui.gd)]
+        * [<Control#124436614186>(card_ui.gd)]
+        * [<Control#124486945837>(card_ui.gd)]
+        * [<Control#124537277488>(card_ui.gd)]
 
 
 ==============================================
@@ -687,14 +686,14 @@ test_battle_base_effect_application.gd
 
 Totals
 ------
-Warnings              3
+Warnings              2
 
 Scripts              16
 Tests               478
 Passing Tests       478
-Asserts            2618
+Asserts            2616
 Orphans              17
-Time              1.023s
+Time              1.095s
 
 
 ---- All tests passed! ----

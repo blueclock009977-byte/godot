@@ -144,43 +144,39 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 	while turn_count < MAX_TURNS:
 		turn_count += 1
 
-		# 現在のターンプレイヤー
-		var cur_hand: Array
-		var cur_field: Array
-		var cur_mana: int
-		var cur_deck: Array
-		var cur_deck_idx: int
-
-		if is_player_turn:
-			cur_hand = hand_p
-			cur_field = field_p
-			cur_mana = mana_p
-			cur_deck = deck_p
-			cur_deck_idx = deck_idx_p
-		else:
-			cur_hand = hand_o
-			cur_field = field_o
-			cur_mana = mana_o
-			cur_deck = deck_o
-			cur_deck_idx = deck_idx_o
-
 		# Main Phase 1: 召喚（貪欲にコスト順で召喚）
-		cur_hand.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
-		var to_remove := []
-		for card in cur_hand:
-			if card.mana_cost <= cur_mana:
-				# 空きスロットを探す
-				var slot := -1
-				for i in range(6):
-					if cur_field[i] == null:
-						slot = i
-						break
-				if slot >= 0:
-					cur_field[slot] = _make_card_dict(card, slot)
-					cur_mana -= card.mana_cost
-					to_remove.append(card)
-		for card in to_remove:
-			cur_hand.erase(card)
+		if is_player_turn:
+			hand_p.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
+			var to_remove := []
+			for card in hand_p:
+				if card.mana_cost <= mana_p:
+					var slot := -1
+					for i in range(6):
+						if field_p[i] == null:
+							slot = i
+							break
+					if slot >= 0:
+						field_p[slot] = _make_card_dict(card, slot)
+						mana_p -= card.mana_cost
+						to_remove.append(card)
+			for card in to_remove:
+				hand_p.erase(card)
+		else:
+			hand_o.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
+			var to_remove := []
+			for card in hand_o:
+				if card.mana_cost <= mana_o:
+					var slot := -1
+					for i in range(6):
+						if field_o[i] == null:
+							slot = i
+							break
+					if slot >= 0:
+						field_o[slot] = _make_card_dict(card, slot)
+						mana_o -= card.mana_cost
+						to_remove.append(card)
+			for card in to_remove:
+				hand_o.erase(card)
 
 		# ダイスロール + バトル
 		var dice_val := randi() % 6 + 1
@@ -192,12 +188,11 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 			if field_o[i] != null and field_o[i]["hp"] > 0:
 				o_cards.append(field_o[i])
 
-		# 直接カード配列を渡す（_simulate_single_battle内でHPが更新される）
 		var dmg_result := _simulate_single_battle(dice_val, p_cards, o_cards, is_player_turn)
-		hp_o -= dmg_result[0]  # 敵へのダメージ（プレイヤー視点）
-		hp_p -= dmg_result[1]  # 自分へのダメージ
+		hp_o -= dmg_result[0]
+		hp_p -= dmg_result[1]
 
-		# 死亡判定（field配列を直接参照しているのでHP更新済み）
+		# 死亡判定
 		for i in range(6):
 			if field_p[i] != null and field_p[i]["hp"] <= 0:
 				field_p[i] = null
@@ -212,7 +207,7 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 		elif hp_p <= 0:
 			return {"winner": "o", "turns": turn_count}
 
-		# ドローフェーズ
+		# ドローフェーズ + マナ増加
 		if is_player_turn:
 			if deck_idx_p < deck_p.size():
 				hand_p.append(deck_p[deck_idx_p])
@@ -226,16 +221,6 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 
 		# ターン交代
 		is_player_turn = not is_player_turn
-
-		# 参照を戻す
-		if is_player_turn:
-			hand_p = cur_hand
-			mana_p = cur_mana
-			deck_idx_p = cur_deck_idx
-		else:
-			hand_o = cur_hand
-			mana_o = cur_mana
-			deck_idx_o = cur_deck_idx
 
 	return {"winner": "draw", "turns": MAX_TURNS}
 

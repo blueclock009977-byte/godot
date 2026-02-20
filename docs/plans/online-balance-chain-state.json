@@ -1,10 +1,11 @@
 {
-  "phase": 3,
+  "phase": 4,
   "attempt": 1,
   "started_at": "2026-02-20T14:58:00+09:00",
   "phase1_completed_at": "2026-02-20T14:59:00+09:00",
   "phase2_completed_at": "2026-02-20T15:02:00+09:00",
   "phase3_started_at": "2026-02-20T16:07:00+09:00",
+  "phase4_started_at": "2026-02-20T16:15:00+09:00",
   "completion_criteria": {
     "online_no_bug_30_games": false,
     "balance_thresholds_met": false,
@@ -16,7 +17,10 @@
       "v1.1.43でスロット同期修正済み - 要実ブラウザ検証"
     ],
     "balance_issues": [
-      "v1.1.46で基礎予算12+8cost再設計済み - 要大量シミュレーション"
+      "BLACK 71.2%（強すぎ）",
+      "WHITE 37.0%（弱すぎ）",
+      "GREEN 55.5%（やや強い）",
+      "先攻有利+11.3%（目標±8%超過）"
     ],
     "effect_text_issues": []
   },
@@ -29,34 +33,34 @@
     "phase3_baseline": {
       "date": "2026-02-20T16:07:00+09:00",
       "games_per_matchup": 100,
-      "color_winrates": {
-        "BLUE": 6.8,
-        "GREEN": 8.8,
-        "BLACK": 12.2,
-        "RED": 6.3,
-        "YELLOW": 6.6,
-        "PURPLE": 7.0,
-        "WHITE": 6.7
-      },
-      "winrate_range": {"min": 6.3, "max": 12.2, "diff": 5.8},
-      "first_advantage": 11.8,
-      "avg_turns_range": {"min": 44.5, "max": 49.0},
       "issues_detected": [
-        "勝率が6-12%と低すぎ = ほぼ全ゲームがドローで終了",
-        "平均ターン44-49 = 50ターン上限に達している",
-        "先攻有利+11.8% = 8%目標超過"
+        "シミュレーターのターン処理バグ（参照変数の更新タイミング）",
+        "ほぼ全ゲームが50ターン上限でドロー"
       ]
+    },
+    "phase4_fixed": {
+      "date": "2026-02-20T16:15:00+09:00",
+      "games_per_matchup": 100,
+      "simulator_fix": "参照変数バグ修正 - 各プレイヤーの手札/マナを直接操作に変更",
+      "color_winrates": {
+        "BLUE": 47.2,
+        "GREEN": 55.5,
+        "BLACK": 71.2,
+        "RED": 48.0,
+        "YELLOW": 44.0,
+        "PURPLE": 44.2,
+        "WHITE": 37.0
+      },
+      "winrate_range": {"min": 37.0, "max": 71.2, "diff": 34.2},
+      "first_advantage": 11.3,
+      "avg_turns_range": {"min": 19.8, "max": 24.4},
+      "balance_status": "要調整"
     }
   },
-  "simulator_issues": {
-    "detected": true,
-    "description": "シミュレーターがダメージを正しく適用していない可能性。ほぼ全ゲームが50ターン上限でドローになる。",
-    "next_action": "シミュレーターのバトル処理を検証・修正"
-  },
   "next_phase": {
-    "phase": 4,
-    "task": "シミュレーターのバトル処理を修正し、適切にゲームが終了するようにする",
-    "priority": "fix_simulator"
+    "phase": 5,
+    "task": "色別カード調整（BLACK弱体化、WHITE強化）",
+    "priority": "balance_cards"
   },
-  "notes": "Phase 3: シミュレーター実行成功したが、結果が異常（ドロー多発）。シミュレーターのロジック検証が必要。"
+  "notes": "Phase 4: シミュレーター修正成功。平均ターン20-24で正常。色バランス問題が明確化。"
 }
