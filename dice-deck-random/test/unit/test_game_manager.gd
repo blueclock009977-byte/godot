@@ -96,3 +96,21 @@ func test_extract_slot_counts_from_array_response() -> void:
 	assert_eq(slots.get(0, -1), 4, "Array index 0 should map to 4 cards")
 	assert_eq(slots.get(2, -1), 2, "Array index 2 should map to 2 cards")
 	assert_false(slots.has(1), "Null array entries should be ignored")
+
+func test_normalize_id_list_accepts_dictionary_shape() -> void:
+	var raw := {
+		"0": 12,
+		"1": 34,
+		"2": 56,
+	}
+	var ids: Array = GameManager.call("_normalize_id_list", raw)
+	assert_eq(ids, [12, 34, 56], "Dictionary-shaped Firebase array should normalize to ordered id list")
+
+func test_extract_slot_counts_accepts_dictionary_shaped_slot_values() -> void:
+	var raw := {
+		"0": {"0": 1, "1": 2, "2": 3},
+		"2": {"0": 10, "1": 11},
+	}
+	var slots: Dictionary = GameManager.call("_extract_slot_counts", raw)
+	assert_eq(slots.get(0, -1), 3, "Dictionary-shaped slot value should be counted as 3 cards")
+	assert_eq(slots.get(2, -1), 2, "Dictionary-shaped slot value should be counted as 2 cards")

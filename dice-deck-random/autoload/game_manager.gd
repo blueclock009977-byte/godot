@@ -68,8 +68,8 @@ func load_deck() -> void:
 	var result := await FirebaseManager.get_data("users/%s/deck" % user_name)
 	if result.code != 200 or result.data == null:
 		return
-	var ids = result.data
-	if ids is not Array:
+	var ids: Array = _normalize_id_list(result.data)
+	if ids.size() == 0:
 		return
 	player_deck = []
 	for id in ids:
@@ -94,8 +94,8 @@ func load_deck_from_slot(slot: int) -> Array:
 	var result := await FirebaseManager.get_data("users/%s/decks/%d" % [user_name, slot])
 	if result.code != 200 or result.data == null:
 		return []
-	var ids = result.data
-	if ids is not Array:
+	var ids: Array = _normalize_id_list(result.data)
+	if ids.size() == 0:
 		return []
 	var deck: Array = []
 	for id in ids:
@@ -104,20 +104,50 @@ func load_deck_from_slot(slot: int) -> Array:
 			deck.append(card.duplicate_card())
 	return deck
 
+func _normalize_id_list(raw_data: Variant) -> Array:
+	"""FirebaseレスポンスをカードID配列へ正規化する。
+	受け入れ形式:
+	- Array: [1,2,3]
+	- Dictionary(数値キー): {"0":1, "1":2, "2":3}
+	"""
+	if raw_data is Array:
+		return (raw_data as Array).duplicate()
+	if raw_data is not Dictionary:
+		return []
+
+	var dict_data: Dictionary = raw_data
+	var numeric_keys: Array[int] = []
+	for key in dict_data.keys():
+		var key_str := str(key)
+		if key_str.is_valid_int():
+			numeric_keys.append(int(key_str))
+	if numeric_keys.size() == 0:
+		return []
+
+	numeric_keys.sort()
+	var ids: Array = []
+	for index in numeric_keys:
+		var value = dict_data.get(str(index), dict_data.get(index, null))
+		ids.append(value)
+	return ids
+
 func _extract_slot_counts(raw_data: Variant) -> Dictionary:
 	"""Firebaseのdecksレスポンスから {slot_index: card_count} を抽出する。"""
 	var slots := {}
 
 	if raw_data is Dictionary:
 		for key in raw_data:
-			var ids = raw_data[key]
-			if ids is Array and ids.size() > 0:
-				slots[int(key)] = ids.size()
+			var key_str := str(key)
+			if not key_str.is_valid_int():
+				continue
+			var ids: Array = _normalize_id_list(raw_data[key])
+			if ids.size() > 0:
+				slots[int(key_str)] = ids.size()
 	elif raw_data is Array:
 		# Firebaseは数値キー(0..N)が連番だとArrayで返すことがある
 		for i in range(min(raw_data.size(), MAX_DECK_SLOTS)):
-			var ids = raw_data[i]
-			if ids is Array and ids.size() > 0:
+			var ids: Array = _normalize_id_list(raw_data[i])
+			if ids.size() > 0:
 				slots[i] = ids.size()
 
 	return slots
