@@ -171,6 +171,28 @@ func _process_summon_effect(card_ui: CardUI, is_player: bool) -> void:
 	_process_single_card_timing_effect(EffectManager.Timing.ON_SUMMON, card_ui, is_player, {
 		"card_ui": card_ui
 	})
+	# 召喚されたカードに常時HPバフを適用
+	_apply_hp_bonus_on_summon(card_ui, is_player)
+
+## 召喚時の常時HPバフ適用
+func _apply_hp_bonus_on_summon(card_ui: CardUI, is_player: bool) -> void:
+	var context := _get_effect_context()
+
+	# 召喚されたカードが受けるHPバフを計算・適用
+	var hp_bonus := EffectManager.get_constant_hp_bonus(card_ui, is_player, context)
+	if hp_bonus > 0:
+		card_ui.current_hp += hp_bonus
+		_log("[color=green]%s: 味方効果でHP+%d[/color]" % [card_ui.card_data.card_name, hp_bonus])
+
+	# 召喚されたカードがHPバフ効果を持つ場合、他の味方にも適用
+	var effect_id: String = card_ui.card_data.effect_id
+	if effect_id in ["green_007", "white_017"]:
+		var bonus_amount := 1 if effect_id == "green_007" else 2
+		var ally_slots: Array = player_slots if is_player else opponent_slots
+		for slot in ally_slots:
+			if slot and not slot.is_empty() and slot.card_ui != card_ui:
+				slot.card_ui.current_hp += bonus_amount
+		_log("[color=green]%s の効果: 味方全体HP+%d[/color]" % [card_ui.card_data.card_name, bonus_amount])
 
 func _process_attack_effect(attacker_ui: CardUI, defender_ui, is_player: bool) -> Dictionary:
 	return _process_single_card_timing_effect(EffectManager.Timing.ON_ATTACK, attacker_ui, is_player, {
