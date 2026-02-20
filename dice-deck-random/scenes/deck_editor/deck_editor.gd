@@ -447,8 +447,8 @@ func _show_slot_dialog() -> void:
 	title.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	inner_vbox.add_child(title)
 
-	# スロット一覧をロード
-	_load_slot_buttons(inner_vbox)
+	# スロット一覧をロード（非同期なのでawait必須）
+	await _load_slot_buttons(inner_vbox)
 
 	# 閉じるボタン
 	var close_btn := Button.new()
