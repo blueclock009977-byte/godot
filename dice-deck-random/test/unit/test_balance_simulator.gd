@@ -7,6 +7,9 @@ const GAMES_PER_MATCHUP := 100  # 各マッチアップあたりのゲーム数
 const MAX_TURNS := 50  # 最大ターン数（無限ループ防止）
 const STARTING_HP := 20
 const STARTING_MANA := 1
+const SECOND_PLAYER_STARTING_MANA_BONUS := 0  # 後攻の恒久的な初期マナ補正は無効
+const SECOND_PLAYER_INITIAL_DRAW_BONUS := 0  # Phase 11: 初期ドロー補正を解除して補正過多を緩和
+const SECOND_PLAYER_FIRST_TURN_TEMP_MANA_BONUS := 1  # Phase 10維持: 後攻1ターン目のみ使い切りの一時マナ+1
 const MAX_MANA := 10
 const DECK_SIZE := 20
 const INITIAL_HAND_SIZE := 3
@@ -130,14 +133,22 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 	var deck_idx_p := INITIAL_HAND_SIZE
 	var deck_idx_o := INITIAL_HAND_SIZE
 
+	# Phase 8: 先後補正の弱化版として、後攻のみ初期ドロー+1
+	for _i in range(SECOND_PLAYER_INITIAL_DRAW_BONUS):
+		if deck_idx_o < deck_o.size():
+			hand_o.append(deck_o[deck_idx_o])
+			deck_idx_o += 1
+
 	var hp_p := STARTING_HP
 	var hp_o := STARTING_HP
 	var mana_p := STARTING_MANA
-	var mana_o := STARTING_MANA
+	var mana_o := STARTING_MANA + SECOND_PLAYER_STARTING_MANA_BONUS
 
 	var field_p: Array = [null, null, null, null, null, null]  # 0-2: front, 3-5: back
 	var field_o: Array = [null, null, null, null, null, null]
 
+	var player_turns_taken := 0
+	var opponent_turns_taken := 0
 	var is_player_turn := true  # プレイヤーが先攻
 	var turn_count := 0
 
@@ -164,8 +175,10 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 		else:
 			hand_o.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
 			var to_remove := []
+			var temp_mana_bonus := SECOND_PLAYER_FIRST_TURN_TEMP_MANA_BONUS if opponent_turns_taken == 0 else 0
+			var available_mana := mana_o + temp_mana_bonus
 			for card in hand_o:
-				if card.mana_cost <= mana_o:
+				if card.mana_cost <= available_mana:
 					var slot := -1
 					for i in range(6):
 						if field_o[i] == null:
@@ -173,10 +186,12 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 							break
 					if slot >= 0:
 						field_o[slot] = _make_card_dict(card, slot)
-						mana_o -= card.mana_cost
+						available_mana -= card.mana_cost
 						to_remove.append(card)
 			for card in to_remove:
 				hand_o.erase(card)
+			# 一時マナは未使用分を持ち越さない
+			mana_o = mini(mana_o, available_mana)
 
 		# ダイスロール + バトル
 		var dice_val := randi() % 6 + 1
@@ -218,6 +233,11 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 				hand_o.append(deck_o[deck_idx_o])
 				deck_idx_o += 1
 			mana_o = mini(mana_o + 1, MAX_MANA)
+
+		if is_player_turn:
+			player_turns_taken += 1
+		else:
+			opponent_turns_taken += 1
 
 		# ターン交代
 		is_player_turn = not is_player_turn
