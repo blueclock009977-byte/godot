@@ -965,6 +965,87 @@ func test_summon_effect_red_015_enemy_aoe_damage() -> void:
 	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be -2")
 	assert_eq(enemy2.current_hp, 2, "Enemy2 HP should be -2")
 
+func test_summon_effect_white_004_ally_heal() -> void:
+	# white_004: 登場時:味方全体HP+2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "white_004"
+	card_ui.card_data.card_name = "癒しの聖女"
+	
+	var ally := MockCardUI.new()
+	ally.current_hp = 3
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = ally
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_eq(ally.current_hp, 5, "Ally HP should be +2")
+
+func test_attack_effect_white_008_ally_heal() -> void:
+	# white_008: 攻撃時:味方全体HP+1
+	var attacker := MockCardUI.new()
+	attacker.card_data.effect_id = "white_008"
+	attacker.card_data.card_name = "聖なる騎士"
+	
+	var ally := MockCardUI.new()
+	ally.current_hp = 4
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = ally
+	ally_slot._empty = false
+	
+	var defender := MockCardUI.new()
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
+	
+	assert_eq(ally.current_hp, 5, "Ally HP should be +1")
+
+func test_death_effect_white_011_self_full_heal() -> void:
+	# white_011: 死亡時:自分HP全回復
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "white_011"
+	card_ui.card_data.card_name = "不死の鳳凰"
+	card_ui.current_hp = 0
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
+	
+	assert_true(result.get("revive_self", false), "Self should be marked for revival")
+
+func test_death_effect_white_014_ally_full_heal() -> void:
+	# white_014: 死亡時:味方1体HP全回復
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "white_014"
+	card_ui.card_data.card_name = "犠牲の天使"
+	
+	var ally := MockCardUI.new()
+	ally.current_hp = 2
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = ally
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
+	
+	assert_true(result.has("log"), "Result should have log")
+
 # ═══════════════════════════════════════════
 # Mocks
 # ═══════════════════════════════════════════
