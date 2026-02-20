@@ -134,6 +134,8 @@ func _register_all_effects() -> void:
 	_register("red_014", Timing.ON_DEATH, "死亡時:敵1体HP-4")
 	_register("red_015", Timing.ON_SUMMON, "登場時:敵全体HP-2")
 	_register("red_016", Timing.CONSTANT, "ATK+2(常時)")
+	_register("red_017", Timing.ON_SUMMON, "登場時:敵全体HP-3")
+	_register("red_018", Timing.CONSTANT, "常時:味方全体ATK+1")
 
 	# ═══════════════════════════════════════════
 	# 黄カード効果 (サポート、バフ、ユーティリティ)
@@ -153,6 +155,11 @@ func _register_all_effects() -> void:
 	_register("yellow_013", Timing.ON_SUMMON, "登場時:味方全体ATK+1,HP+1")
 	_register("yellow_014", Timing.ON_DEFENSE, "防御時:攻撃者にダメージ反射")
 	_register("yellow_015", Timing.TURN_START, "ターン開始時:味方1体HP+2")
+	_register("yellow_016", Timing.ON_SUMMON, "登場時:味方全体ATK+2")
+	_register("yellow_017", Timing.CONSTANT, "常時:味方全体被ダメ-1")
+	_register("yellow_018", Timing.ON_ATTACK, "攻撃時:味方全体HP+1")
+	_register("yellow_019", Timing.ON_DEATH, "死亡時:味方全体HP+3")
+	_register("yellow_020", Timing.CONSTANT, "常時:味方全体ATK+2")
 
 	# ═══════════════════════════════════════════
 	# 紫カード効果 (コントロール、デバフ、トリッキー)
@@ -171,6 +178,12 @@ func _register_all_effects() -> void:
 	_register("purple_012", Timing.ON_SUMMON, "登場時:コスト3以下の敵を破壊")
 	_register("purple_013", Timing.ON_ATTACK, "攻撃時:対象と自身入れ替え")
 	_register("purple_014", Timing.CONSTANT, "敵のドロー枚数-1")
+	_register("purple_015", Timing.ON_SUMMON, "登場時:敵1体を3ターン凍結")
+	_register("purple_016", Timing.ON_ATTACK, "攻撃時:敵全体ATK-1")
+	_register("purple_017", Timing.CONSTANT, "常時:敵の召喚コスト+2")
+	_register("purple_018", Timing.ON_SUMMON, "登場時:敵全体ATK-2,HP-2")
+	_register("purple_019", Timing.ON_SUMMON, "登場時:敵全体を2ターン凍結")
+	_register("purple_020", Timing.CONSTANT, "常時:敵全体ダイス-1")
 
 	# ═══════════════════════════════════════════
 	# 白カード効果 (回復、防御、蘇生)
@@ -190,6 +203,11 @@ func _register_all_effects() -> void:
 	_register("white_013", Timing.ON_SUMMON, "登場時:味方全体の状態異常解除")
 	_register("white_014", Timing.ON_DEATH, "死亡時:味方1体HP全回復")
 	_register("white_015", Timing.ON_SUMMON, "登場時:自分HP+6")
+	_register("white_016", Timing.CONSTANT, "常時:自身への被ダメ-2")
+	_register("white_017", Timing.CONSTANT, "常時:味方全体HP+2")
+	_register("white_018", Timing.ON_SUMMON, "登場時:味方全体状態異常解除+HP+2")
+	_register("white_019", Timing.ON_DEATH, "死亡時:墓地から2体復活")
+	_register("white_020", Timing.ON_SUMMON, "登場時:味方全体HP+3,ATK+1")
 
 func _register(effect_id: String, timing: Timing, description: String) -> void:
 	effect_definitions[effect_id] = {
@@ -453,6 +471,10 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			var enemies = _get_all_enemies(is_player, context)
 			_apply_aoe_damage_effect(enemies, 2, result, card_name, "red", "敵全体HP-2")
 
+		"red_017":  # 登場時:敵全体HP-3
+			var enemies_r17 = _get_all_enemies(is_player, context)
+			_apply_aoe_damage_effect(enemies_r17, 3, result, card_name, "red", "敵全体HP-3")
+
 		# ═══════════════════════════════════════════
 		# 黄カード登場時効果
 		# ═══════════════════════════════════════════
@@ -471,6 +493,9 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"yellow_013":  # 登場時:味方全体ATK+1,HP+1
 			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 1, result, card_name, "yellow", "味方全体ATK+1,HP+1")
+
+		"yellow_016":  # 登場時:味方全体ATK+2
+			_apply_aoe_atk_modifier_effect(_get_all_allies(is_player, context), 2, result, card_name, "yellow", "味方全体ATK+2")
 
 		# ═══════════════════════════════════════════
 		# 紫カード登場時効果
@@ -504,6 +529,27 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			if result.has("destroy_targets") and result["destroy_targets"].size() > 0:
 				result["log"] = "[color=magenta]%s の効果: コスト3以下の敵を破壊[/color]" % card_name
 
+		"purple_015":  # 登場時:敵1体を3ターン凍結
+			var target_p15 = _get_random_enemy(is_player, context)
+			if target_p15:
+				target_p15.apply_status(StatusEffect.FROZEN, 3)
+				result["log"] = "[color=magenta]%s の効果: %s を3ターン凍結[/color]" % [card_name, target_p15.card_data.card_name]
+
+		"purple_018":  # 登場時:敵全体ATK-2,HP-2
+			var enemies_p18 = _get_all_enemies(is_player, context)
+			for enemy in enemies_p18:
+				enemy.modify_atk(-2)
+			_apply_damage_to_targets_and_mark_destroy(enemies_p18, 2, result)
+			if enemies_p18.size() > 0:
+				result["log"] = "[color=magenta]%s の効果: 敵全体ATK-2,HP-2[/color]" % card_name
+
+		"purple_019":  # 登場時:敵全体を2ターン凍結
+			var enemies_p19 = _get_all_enemies(is_player, context)
+			for enemy in enemies_p19:
+				enemy.apply_status(StatusEffect.FROZEN, 2)
+			if enemies_p19.size() > 0:
+				result["log"] = "[color=magenta]%s の効果: 敵全体を2ターン凍結[/color]" % card_name
+
 		# ═══════════════════════════════════════════
 		# 白カード登場時効果
 		# ═══════════════════════════════════════════
@@ -528,6 +574,16 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 
 		"white_015":  # 登場時:自分HP+6
 			_apply_player_heal_effect(result, "white", card_name, 6)
+
+		"white_018":  # 登場時:味方全体状態異常解除+HP+2
+			var allies_w18 = _get_all_allies(is_player, context)
+			for ally in allies_w18:
+				ally.clear_status_effects()
+				ally.heal(2)
+			result["log"] = _make_effect_log("white", card_name, "味方全体状態異常解除+HP+2")
+
+		"white_020":  # 登場時:味方全体HP+3,ATK+1
+			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 3, result, card_name, "white", "味方全体HP+3,ATK+1")
 
 ## 攻撃時効果を処理
 func process_attack_effect(attacker_ui, defender_ui, is_player: bool, context: Dictionary) -> Dictionary:
@@ -624,6 +680,21 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 				result["log"] = "[color=magenta]%s の効果: %s と位置入れ替え[/color]" % [card_name, defender_ui.card_data.card_name]
 
 		# ═══════════════════════════════════════════
+		# 黄カード攻撃時効果
+		# ═══════════════════════════════════════════
+		"yellow_018":  # 攻撃時:味方全体HP+1
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, "yellow", "味方全体HP+1")
+
+		# ═══════════════════════════════════════════
+		# 紫カード攻撃時効果（追加）
+		# ═══════════════════════════════════════════
+		"purple_016":  # 攻撃時:敵全体ATK-1
+			var enemies_p16 = _get_all_enemies(is_player, context)
+			for enemy in enemies_p16:
+				enemy.modify_atk(-1)
+			result["log"] = _make_effect_log("magenta", card_name, "敵全体ATK-1")
+
+		# ═══════════════════════════════════════════
 		# 白カード攻撃時効果
 		# ═══════════════════════════════════════════
 		"white_008":  # 攻撃時:味方全体HP+1
@@ -716,6 +787,12 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 1, result, card_name, "magenta", "敵全体を凍結")
 
 		# ═══════════════════════════════════════════
+		# 黄カード死亡時効果（追加）
+		# ═══════════════════════════════════════════
+		"yellow_019":  # 死亡時:味方全体HP+3
+			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 3, result, card_name, "yellow", "味方全体HP+3")
+
+		# ═══════════════════════════════════════════
 		# 白カード死亡時効果
 		# ═══════════════════════════════════════════
 		"white_002":  # 死亡時:自分HP+3
@@ -730,6 +807,10 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 			if target:
 				target.heal(99)
 				result["log"] = "[color=white]%s の効果: %s のHP全回復[/color]" % [card_name, target.card_data.card_name]
+
+		"white_019":  # 死亡時:墓地から2体復活
+			result["revive_from_graveyard"] = 2
+			result["log"] = "[color=white]%s の効果: 墓地から2体復活[/color]" % card_name
 
 ## 防御時効果を処理
 func process_defense_effect(defender_ui, damage: int, is_player: bool, context: Dictionary) -> Dictionary:
@@ -924,6 +1005,10 @@ func get_constant_atk_modifier(card_ui, is_player: bool, context: Dictionary) ->
 					pass
 				"yellow_012":  # 味方全体ATK+1
 					modifier += 1
+				"yellow_020":  # 味方全体ATK+2
+					modifier += 2
+				"red_018":  # 味方全体ATK+1
+					modifier += 1
 
 	# 敵の常時効果による影響
 	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
@@ -976,8 +1061,60 @@ func get_dice_modifier(is_player: bool, context: Dictionary) -> Dictionary:
 						result["blocked_dice"].append(1)
 					if 6 not in result["blocked_dice"]:
 						result["blocked_dice"].append(6)
+				"purple_020":  # 敵全体ダイス-1
+					result["bonus"] -= 1
 
 	return result
+
+## 被ダメージ軽減修正を取得（カードごと）
+func get_damage_reduction_for_card(card_ui, is_player: bool, context: Dictionary) -> int:
+	var reduction := 0
+	var effect_id: String = card_ui.card_data.effect_id
+
+	# 自身の常時効果
+	match effect_id:
+		"yellow_007":  # 自身への被ダメ-1
+			reduction += 1
+		"white_016":  # 自身への被ダメ-2
+			reduction += 2
+
+	# 味方の常時効果による影響
+	var ally_slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
+	for slot in ally_slots:
+		if slot and not slot.is_empty() and slot.card_ui != card_ui:
+			var ally_effect: String = slot.card_ui.card_data.effect_id
+			match ally_effect:
+				"blue_013":  # 同列の味方への被ダメ-1
+					var card_slot = _find_slot_for_card(card_ui, ally_slots)
+					var ally_slot = slot
+					if card_slot and ally_slot:
+						if card_slot.is_front_row == ally_slot.is_front_row:
+							reduction += 1
+				"white_007":  # 味方全体被ダメ-1
+					reduction += 1
+				"yellow_017":  # 味方全体被ダメ-1
+					reduction += 1
+				"white_012":  # 自分への直接ダメージ半減 (プレイヤーへの直接ダメージ用)
+					pass
+
+	return reduction
+
+## 味方全体HP+N 常時効果を取得（カードの最大HPに加算用）
+func get_constant_hp_bonus(card_ui, is_player: bool, context: Dictionary) -> int:
+	var bonus := 0
+
+	# 味方の常時効果による影響
+	var ally_slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
+	for slot in ally_slots:
+		if slot and not slot.is_empty() and slot.card_ui != card_ui:
+			var ally_effect: String = slot.card_ui.card_data.effect_id
+			match ally_effect:
+				"green_007":  # 味方全体のHP+1
+					bonus += 1
+				"white_017":  # 味方全体HP+2
+					bonus += 2
+
+	return bonus
 
 ## 召喚コスト修正を取得
 func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
@@ -998,6 +1135,8 @@ func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
 			var effect_id: String = slot.card_ui.card_data.effect_id
 			if effect_id == "purple_004":  # 相手の召喚コスト+1
 				modifier += 1
+			if effect_id == "purple_017":  # 相手の召喚コスト+2
+				modifier += 2
 
 	return modifier
 
