@@ -11,6 +11,25 @@ var _waiting_for_opponent: bool = false
 var _action_queue: Array[Dictionary] = []
 var _processing_actions: bool = false
 
+func _mirror_slot_index(slot_idx: int) -> int:
+	if slot_idx < 0:
+		return slot_idx
+	var row := int(slot_idx / 3) # 0: front, 1: back
+	var lane := slot_idx % 3      # 0: left, 1: center, 2: right
+	return row * 3 + (2 - lane)
+
+func _to_canonical_slot_index(local_slot_idx: int) -> int:
+	# canonical = player1視点のスロット番号
+	if my_player_number == 2:
+		return _mirror_slot_index(local_slot_idx)
+	return local_slot_idx
+
+func _from_canonical_opponent_slot_index(canonical_slot_idx: int) -> int:
+	# 受信した相手アクション(canonical)を自分画面のopponent_slotsへ変換
+	if my_player_number == 2:
+		return _mirror_slot_index(canonical_slot_idx)
+	return canonical_slot_idx
+
 func _ready() -> void:
 	my_player_number = MultiplayerManager.my_player_number
 	MultiplayerManager.action_received.connect(_on_action_received)
@@ -232,16 +251,28 @@ func _execute_opponent_action(action: Dictionary) -> void:
 	var action_type: String = action.get("type", "")
 	match action_type:
 		"summon":
+			if is_player_turn:
+				_log("[color=yellow]WARN: out-of-turn summon action ignored[/color]")
+				return
 			var card_id: int = int(action.get("card_id", 0))
-			var slot_idx: int = int(action.get("slot", 0))
+			var canonical_slot_idx: int = int(action.get("slot", 0))
+			var slot_idx: int = _from_canonical_opponent_slot_index(canonical_slot_idx)
 			_opponent_summon(card_id, slot_idx)
 			await get_tree().create_timer(0.4).timeout
 		"move":
-			var from_slot: int = int(action.get("from_slot", 0))
-			var to_slot: int = int(action.get("to_slot", 0))
+			if is_player_turn:
+				_log("[color=yellow]WARN: out-of-turn move action ignored[/color]")
+				return
+			var canonical_from_slot: int = int(action.get("from_slot", 0))
+			var canonical_to_slot: int = int(action.get("to_slot", 0))
+			var from_slot: int = _from_canonical_opponent_slot_index(canonical_from_slot)
+			var to_slot: int = _from_canonical_opponent_slot_index(canonical_to_slot)
 			_opponent_move(from_slot, to_slot)
 			await get_tree().create_timer(0.3).timeout
 		"end_phase":
+			if is_player_turn:
+				_log("[color=yellow]WARN: out-of-turn end_phase action ignored[/color]")
+				return
 			var phase_name: String = action.get("phase", "main1")
 			var skip: bool = action.get("skip", false)
 			if phase_name == "main1":
@@ -258,11 +289,17 @@ func _execute_opponent_action(action: Dictionary) -> void:
 			elif phase_name == "main2":
 				_end_turn()
 		"dice_roll":
+			if is_player_turn:
+				_log("[color=yellow]WARN: out-of-turn dice_roll action ignored[/color]")
+				return
 			var dice_val: int = int(action.get("value", 1))
 			await _do_dice_and_battle(dice_val)
 			if game_over:
 				return
 		"draw":
+			if is_player_turn:
+				_log("[color=yellow]WARN: out-of-turn draw action ignored[/color]")
+				return
 			current_phase = Phase.DRAW
 			_update_all_ui()
 			await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
@@ -350,7 +387,8 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.set_card_size(175)
 	slot.place_card(card_ui)
 	_connect_card_preview_signal(card_ui)
-	var ok := await _send_action({"type": "summon", "card_id": card_ui.card_data.id, "slot": slot.slot_index})
+	var canonical_slot := _to_canonical_slot_index(slot.slot_index)
+	var ok := await _send_action({"type": "summon", "card_id": card_ui.card_data.id, "slot": canonical_slot})
 	if not ok:
 		slot.remove_card()
 		player_mana += effective_cost
@@ -372,7 +410,9 @@ func _move_card_to_slot(from_slot: FieldSlot, to_slot: FieldSlot) -> void:
 	player_mana -= MOVE_COST
 	var card := from_slot.remove_card()
 	to_slot.place_card(card)
-	var ok := await _send_action({"type": "move", "from_slot": from_slot.slot_index, "to_slot": to_slot.slot_index})
+	var canonical_from := _to_canonical_slot_index(from_slot.slot_index)
+	var canonical_to := _to_canonical_slot_index(to_slot.slot_index)
+	var ok := await _send_action({"type": "move", "from_slot": canonical_from, "to_slot": canonical_to})
 	if not ok:
 		to_slot.remove_card()
 		from_slot.place_card(card)
