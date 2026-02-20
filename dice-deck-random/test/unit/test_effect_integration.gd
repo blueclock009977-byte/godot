@@ -583,6 +583,122 @@ func test_no_effect_on_vanilla_card() -> void:
 	assert_eq(death_result.size(), 0, "Vanilla card should have no death effect")
 
 # ═══════════════════════════════════════════
+# 追加テスト: purple_015, purple_017, purple_018, purple_020, white_018
+# ═══════════════════════════════════════════
+
+func test_summon_effect_purple_015_single_freeze() -> void:
+	# purple_015: 登場時:敵1体を3ターン凍結
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "purple_015"
+	card_ui.card_data.card_name = "氷結の魔女"
+	
+	var enemy := MockCardUI.new()
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = enemy
+	enemy_slot._empty = false
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [enemy_slot]
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_true(enemy.has_status(1), "Enemy should be frozen (status 1)")
+	assert_eq(enemy._status_duration.get(1, 0), 3, "Freeze should last 3 turns")
+
+func test_summon_effect_purple_018_aoe_atk_hp_debuff() -> void:
+	# purple_018: 登場時:敵全体ATK-2,HP-2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "purple_018"
+	card_ui.card_data.card_name = "闇の支配者"
+	
+	var enemy1 := MockCardUI.new()
+	enemy1.current_hp = 5
+	var enemy_slot1 := MockSlot.new()
+	enemy_slot1._card_ui = enemy1
+	enemy_slot1._empty = false
+	
+	var enemy2 := MockCardUI.new()
+	enemy2.current_hp = 6
+	var enemy_slot2 := MockSlot.new()
+	enemy_slot2._card_ui = enemy2
+	enemy_slot2._empty = false
+	
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [enemy_slot1, enemy_slot2]
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_eq(enemy1._atk_modifier, -2, "Enemy1 ATK should be -2")
+	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be reduced by 2")
+	assert_eq(enemy2._atk_modifier, -2, "Enemy2 ATK should be -2")
+	assert_eq(enemy2.current_hp, 4, "Enemy2 HP should be reduced by 2")
+
+func test_summon_effect_white_018_clear_status_and_heal() -> void:
+	# white_018: 登場時:味方全体状態異常解除+HP+2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "white_018"
+	card_ui.card_data.card_name = "浄化の天使"
+	
+	var ally := MockCardUI.new()
+	ally.current_hp = 3
+	ally.apply_status(1, 2)  # 凍結状態
+	ally.apply_status(2, 3)  # 毒状態
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = ally
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
+	
+	assert_false(ally.has_status(1), "Ally should not be frozen")
+	assert_false(ally.has_status(2), "Ally should not be poisoned")
+	assert_eq(ally.current_hp, 5, "Ally HP should be +2")
+
+func test_constant_effect_purple_017_enemy_summon_cost() -> void:
+	# purple_017: 常時:敵の召喚コスト+2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "purple_017"
+	
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = card_ui
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var modifier := effect_manager.get_summon_cost_modifier(false, context)
+	
+	assert_eq(modifier, 2, "Enemy summon cost should be +2")
+
+func test_constant_effect_purple_020_enemy_dice_penalty() -> void:
+	# purple_020: 常時:敵全体ダイス-1
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "purple_020"
+	
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = card_ui
+	ally_slot._empty = false
+	
+	var context := {
+		"player_slots": [ally_slot],
+		"opponent_slots": []
+	}
+	
+	var dice_mod := effect_manager.get_dice_modifier(false, context)
+	
+	assert_eq(dice_mod, -1, "Enemy dice should be -1")
+
+# ═══════════════════════════════════════════
 # Mocks
 # ═══════════════════════════════════════════
 
