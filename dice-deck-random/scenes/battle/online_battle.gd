@@ -296,6 +296,7 @@ func _opponent_summon(card_id: int, slot_idx: int) -> void:
 	var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 	slot.place_card(card_ui)
 	card_ui.setup(data_copy)
+	_connect_card_preview_signal(card_ui)
 	_log("相手が %s を召喚" % data_copy.card_name)
 	# 相手の召喚時効果を発動
 	_process_summon_effect(card_ui, false)
@@ -348,6 +349,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.reset_position()
 	card_ui.set_card_size(175)
 	slot.place_card(card_ui)
+	_connect_card_preview_signal(card_ui)
 	var ok := await _send_action({"type": "summon", "card_id": card_ui.card_data.id, "slot": slot.slot_index})
 	if not ok:
 		slot.remove_card()

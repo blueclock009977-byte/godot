@@ -341,7 +341,7 @@ func _player_draw_card() -> void:
 	card_ui.setup(card_data, 120)
 	card_ui.card_clicked.connect(_on_hand_card_clicked)
 	card_ui.card_drag_ended.connect(_on_hand_card_drag_ended)
-	card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
+	_connect_card_preview_signal(card_ui)
 	player_hand.append(card_ui)
 	_update_all_ui()
 
@@ -604,6 +604,12 @@ func _on_preview_overlay_input(event: InputEvent) -> void:
 		_hide_card_preview()
 	if event is InputEventScreenTouch and event.pressed:
 		_hide_card_preview()
+
+func _connect_card_preview_signal(card_ui: CardUI) -> void:
+	if not card_ui:
+		return
+	if not card_ui.card_long_pressed.is_connected(_on_hand_card_long_pressed):
+		card_ui.card_long_pressed.connect(_on_hand_card_long_pressed)
 
 func _on_hand_card_long_pressed(card_ui: CardUI) -> void:
 	_show_card_preview(card_ui)

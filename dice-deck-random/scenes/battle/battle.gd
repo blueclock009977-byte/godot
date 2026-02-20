@@ -165,6 +165,7 @@ func _summon_card_to_slot(card_ui: CardUI, slot: FieldSlot) -> void:
 	card_ui.reset_position()
 	card_ui.set_card_size(175)
 	slot.place_card(card_ui)
+	_connect_card_preview_signal(card_ui)
 	_log("召喚: %s (コスト %d)" % [card_ui.card_data.card_name, effective_cost])
 	_process_summon_effect(card_ui, true)
 	_clear_selection()
@@ -260,6 +261,7 @@ func _ai_summon_phase() -> void:
 			var card_ui := CARD_UI_SCENE.instantiate() as CardUI
 			best_slot.place_card(card_ui)
 			card_ui.setup(card_data)
+			_connect_card_preview_signal(card_ui)
 			_log("相手が %s を召喚" % card_data.card_name)
 			_process_summon_effect(card_ui, false)
 			_update_all_ui()
