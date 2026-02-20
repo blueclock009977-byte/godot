@@ -142,10 +142,18 @@ func _start_turn() -> void:
 	if is_player_turn:
 		player_max_mana = mini(player_max_mana + 1, MAX_MANA_CAP)
 		player_mana = player_max_mana
+		# 後攻1ターン目ボーナス: 自分が後攻で最初のターン
+		if not is_player_first and turn_number == 1:
+			player_mana += 1  # 一時的な+1マナ（max_manaには加算しない）
+			_log("[color=yellow]後攻ボーナス: +1マナ[/color]")
 		_log("[color=cyan]── 自分のターン %d (マナ: %d) ──[/color]" % [turn_number, player_mana])
 	else:
 		opponent_max_mana = mini(opponent_max_mana + 1, MAX_MANA_CAP)
 		opponent_mana = opponent_max_mana
+		# 後攻1ターン目ボーナス: 相手が後攻で最初のターン（表示用）
+		if is_player_first and turn_number == 1:
+			opponent_mana += 1  # 相手の一時的な+1マナ
+			_log("[color=yellow]相手に後攻ボーナス: +1マナ[/color]")
 		_log("[color=red]── 相手のターン %d ──[/color]" % turn_number)
 
 	_process_turn_start_effects(is_player_turn)
