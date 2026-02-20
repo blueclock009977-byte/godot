@@ -332,7 +332,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 
 	var modifier_by_effect := {
 		# blue
-		"blue_001": -8, "blue_002": -12, "blue_003": -6, "blue_004": -8, "blue_005": -8, "blue_006": -8,
+		"blue_001": -8, "blue_002": -12, "blue_003": -5, "blue_004": -8, "blue_005": -8, "blue_006": -8,
 		"blue_007": -12, "blue_008": -7, "blue_009": -7, "blue_010": -8, "blue_011": -8, "blue_012": -4,
 		"blue_013": -9, "blue_014": -12, "blue_015": -9, "blue_016": -11, "blue_017": -10, "blue_018": -12,
 
@@ -342,7 +342,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"green_013": -14, "green_014": -7, "green_015": -12, "green_016": -10, "green_017": -12,
 
 		# black
-		"black_001": -3, "black_002": -11, "black_003": 10, "black_004": -6, "black_005": 12, "black_006": -8,
+		"black_001": -1, "black_002": -11, "black_003": 10, "black_004": -6, "black_005": 12, "black_006": -8,
 		"black_007": -6, "black_008": 25, "black_009": -12, "black_010": -12, "black_011": -12, "black_012": -13,
 		"black_013": -8, "black_014": -2, "black_015": -3, "black_016": -8, "black_017": 20, "black_018": -11,
 		"black_019": -14,
