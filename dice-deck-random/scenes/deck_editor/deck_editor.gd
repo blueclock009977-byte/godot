@@ -245,6 +245,7 @@ func _add_pool_card(card: CardData) -> void:
 	wrapper.add_theme_constant_override("separation", 2)
 
 	var card_ui: CardUI = CardUIScene.instantiate()
+	card_ui.mouse_force_pass_scroll_events = true
 
 	# Count in deck
 	var count := _count_in_deck(card.id)
@@ -318,6 +319,7 @@ func _update_deck_display() -> void:
 	for i in range(deck.size()):
 		var card: CardData = deck[i]
 		var card_ui: CardUI = CardUIScene.instantiate()
+		card_ui.mouse_force_pass_scroll_events = true
 		card_ui.setup(card, 180)
 
 		# Click to remove
