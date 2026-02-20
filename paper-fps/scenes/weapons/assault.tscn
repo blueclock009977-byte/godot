@@ -1,0 +1,26 @@
+[gd_scene load_steps=3 format=3 uid="uid://assault001"]
+
+[ext_resource type="Script" path="res://scripts/weapon_base.gd" id="1_weapon"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(0.05, 0.1, 0.4)
+
+[node name="Assault" type="Node3D"]
+script = ExtResource("1_weapon")
+weapon_name = "Assault Rifle"
+damage = 15
+fire_rate = 0.1
+magazine_size = 30
+reload_time = 2.0
+spread = 2.0
+range_distance = 80.0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_1")
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+target_position = Vector3(0, 0, -80)
+collision_mask = 5
+
+[node name="Muzzle" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.25)
