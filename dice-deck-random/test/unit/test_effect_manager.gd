@@ -285,6 +285,203 @@ func test_get_damage_reduction_yellow_017_ally() -> void:
 	assert_eq(reduction, 1, "yellow_017 ally should give -1 damage reduction")
 
 # ═══════════════════════════════════════════
+# get_constant_atk_modifier() テスト
+# ═══════════════════════════════════════════
+
+func test_get_constant_atk_modifier_no_effects() -> void:
+	var card_ui := MockCardUI.new()
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 0, "No effects should return 0 ATK modifier")
+
+func test_get_constant_atk_modifier_red_004() -> void:
+	# red_004: ATK+1(常時)
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "red_004"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 1, "red_004 should give +1 ATK")
+
+func test_get_constant_atk_modifier_red_016() -> void:
+	# red_016: ATK+2(常時)
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "red_016"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 2, "red_016 should give +2 ATK")
+
+func test_get_constant_atk_modifier_blue_005_with_dice_5() -> void:
+	# blue_005: ダイス5,6の時ATK+2
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "blue_005"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [],
+		"current_dice": 5
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 2, "blue_005 with dice 5 should give +2 ATK")
+
+func test_get_constant_atk_modifier_blue_005_with_dice_3() -> void:
+	# blue_005: ダイス5,6の時ATK+2 (but dice is 3)
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "blue_005"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [],
+		"current_dice": 3
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 0, "blue_005 with dice 3 should give 0 ATK")
+
+func test_get_constant_atk_modifier_red_012_with_dice_1() -> void:
+	# red_012: ダイス1でATK+3
+	var card_ui := MockCardUI.new()
+	card_ui.card_data.effect_id = "red_012"
+	var context := {
+		"player_slots": [],
+		"opponent_slots": [],
+		"current_dice": 1
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(card_ui, true, context)
+	assert_eq(modifier, 3, "red_012 with dice 1 should give +3 ATK")
+
+func test_get_constant_atk_modifier_yellow_012_ally() -> void:
+	# yellow_012: 味方全体ATK+1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "yellow_012"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, 1, "yellow_012 ally should give +1 ATK")
+
+func test_get_constant_atk_modifier_yellow_020_ally() -> void:
+	# yellow_020: 味方全体ATK+2
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "yellow_020"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, 2, "yellow_020 ally should give +2 ATK")
+
+func test_get_constant_atk_modifier_red_018_ally() -> void:
+	# red_018: 味方全体ATK+1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "red_018"
+	ally_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": []
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, 1, "red_018 ally should give +1 ATK")
+
+func test_get_constant_atk_modifier_blue_016_enemy() -> void:
+	# blue_016: 敵全体のATK-1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = MockCardUI.new()
+	enemy_slot._card_ui.card_data.effect_id = "blue_016"
+	enemy_slot._empty = false
+	var context := {
+		"player_slots": [target_slot],
+		"opponent_slots": [enemy_slot]
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, -1, "blue_016 enemy should give -1 ATK")
+
+func test_get_constant_atk_modifier_blue_015_front_row() -> void:
+	# blue_015: 敵前列のATK-1
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	target_slot.is_front_row = true
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = MockCardUI.new()
+	enemy_slot._card_ui.card_data.effect_id = "blue_015"
+	enemy_slot._empty = false
+	var context := {
+		"player_slots": [target_slot],
+		"opponent_slots": [enemy_slot]
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, -1, "blue_015 enemy should give -1 ATK to front row")
+
+func test_get_constant_atk_modifier_blue_015_back_row() -> void:
+	# blue_015: 敵前列のATK-1 (but target is back row)
+	var target_ui := MockCardUI.new()
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	target_slot.is_front_row = false
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = MockCardUI.new()
+	enemy_slot._card_ui.card_data.effect_id = "blue_015"
+	enemy_slot._empty = false
+	var context := {
+		"player_slots": [target_slot],
+		"opponent_slots": [enemy_slot]
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, 0, "blue_015 should not affect back row")
+
+func test_get_constant_atk_modifier_combined() -> void:
+	# red_004(self ATK+1) + yellow_012(ally ATK+1) + blue_016(enemy ATK-1) = +1
+	var target_ui := MockCardUI.new()
+	target_ui.card_data.effect_id = "red_004"
+	var target_slot := MockSlot.new()
+	target_slot._card_ui = target_ui
+	target_slot._empty = false
+	var ally_slot := MockSlot.new()
+	ally_slot._card_ui = MockCardUI.new()
+	ally_slot._card_ui.card_data.effect_id = "yellow_012"
+	ally_slot._empty = false
+	var enemy_slot := MockSlot.new()
+	enemy_slot._card_ui = MockCardUI.new()
+	enemy_slot._card_ui.card_data.effect_id = "blue_016"
+	enemy_slot._empty = false
+	var context := {
+		"player_slots": [target_slot, ally_slot],
+		"opponent_slots": [enemy_slot]
+	}
+	var modifier: int = effect_manager.get_constant_atk_modifier(target_ui, true, context)
+	assert_eq(modifier, 1, "Combined effects: red_004(+1) + yellow_012(+1) + blue_016(-1) = +1")
+
+# ═══════════════════════════════════════════
 # Mocks for effect manager tests
 # ═══════════════════════════════════════════
 
