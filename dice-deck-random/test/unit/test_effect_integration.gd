@@ -17,19 +17,19 @@ func test_summon_effect_blue_001_atk_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "blue_001"
 	card_ui.card_data.card_name = "氷の精霊"
-	
+
 	var enemy := MockCardUI.new()
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy._atk_modifier, -1, "Enemy ATK should be reduced by 1")
 	assert_true(result.has("log"), "Result should have log")
 
@@ -38,14 +38,14 @@ func test_summon_effect_green_001_mana_gain() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "green_001"
 	card_ui.card_data.card_name = "森の妖精"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("mana", 0), 1, "Mana should be +1")
 	assert_true(result.has("log"), "Result should have log")
 
@@ -54,14 +54,14 @@ func test_summon_effect_green_004_mana_gain_2() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "green_004"
 	card_ui.card_data.card_name = "森の守護者"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("mana", 0), 2, "Mana should be +2")
 
 func test_summon_effect_black_001_self_damage() -> void:
@@ -69,14 +69,14 @@ func test_summon_effect_black_001_self_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "black_001"
 	card_ui.card_data.card_name = "闇のコウモリ"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("self_damage", 0), 1, "Self damage should be 1")
 
 func test_summon_effect_red_001_direct_damage() -> void:
@@ -84,20 +84,20 @@ func test_summon_effect_red_001_direct_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_001"
 	card_ui.card_data.card_name = "火の精霊"
-	
+
 	var enemy := MockCardUI.new()
 	enemy.current_hp = 5
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy.current_hp, 3, "Enemy HP should be reduced by 2")
 	assert_true(result.has("log"), "Result should have log")
 
@@ -106,26 +106,26 @@ func test_summon_effect_red_017_aoe_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_017"
 	card_ui.card_data.card_name = "灼熱の魔王"
-	
+
 	var enemy1 := MockCardUI.new()
 	enemy1.current_hp = 6
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	enemy2.current_hp = 4
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be 6-3=3")
 	assert_eq(enemy2.current_hp, 1, "Enemy2 HP should be 4-3=1")
 
@@ -134,19 +134,19 @@ func test_summon_effect_yellow_016_ally_atk_buff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "yellow_016"
 	card_ui.card_data.card_name = "祝福の精霊王"
-	
+
 	var ally := MockCardUI.new()
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(ally._atk_modifier, 2, "Ally ATK should be +2")
 
 func test_summon_effect_purple_019_aoe_freeze() -> void:
@@ -154,24 +154,24 @@ func test_summon_effect_purple_019_aoe_freeze() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_019"
 	card_ui.card_data.card_name = "影の帝王"
-	
+
 	var enemy1 := MockCardUI.new()
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_true(enemy1.has_status(EffectManager.StatusEffect.FROZEN), "Enemy1 should be frozen")
 	assert_true(enemy2.has_status(EffectManager.StatusEffect.FROZEN), "Enemy2 should be frozen")
 
@@ -180,20 +180,20 @@ func test_summon_effect_white_020_ally_buff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_020"
 	card_ui.card_data.card_name = "光の創造主"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 4
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(ally.current_hp, 7, "Ally HP should be 4+3=7")
 	assert_eq(ally._atk_modifier, 1, "Ally ATK should be +1")
 
@@ -206,16 +206,16 @@ func test_attack_effect_blue_003_freeze() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "blue_003"
 	attacker.card_data.card_name = "霧の狼"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_true(defender.has_status(EffectManager.StatusEffect.FROZEN), "Defender should be frozen")
 
 func test_attack_effect_black_004_poison() -> void:
@@ -223,16 +223,16 @@ func test_attack_effect_black_004_poison() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "black_004"
 	attacker.card_data.card_name = "毒蛇"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_true(defender.has_status(EffectManager.StatusEffect.POISON), "Defender should be poisoned")
 
 func test_attack_effect_black_007_lifesteal() -> void:
@@ -240,16 +240,16 @@ func test_attack_effect_black_007_lifesteal() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "black_007"
 	attacker.card_data.card_name = "吸血鬼"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_true(result.get("lifesteal", false), "Lifesteal should be true")
 
 func test_attack_effect_red_002_extra_damage() -> void:
@@ -257,17 +257,17 @@ func test_attack_effect_red_002_extra_damage() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "red_002"
 	attacker.card_data.card_name = "炎のネズミ"
-	
+
 	var defender := MockCardUI.new()
 	defender.current_hp = 5
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(defender.current_hp, 3, "Defender HP should be 5-2=3")
 
 func test_attack_effect_red_008_double_attack() -> void:
@@ -275,16 +275,16 @@ func test_attack_effect_red_008_double_attack() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "red_008"
 	attacker.card_data.card_name = "ファイアドラゴン"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_true(result.get("double_attack", false), "Double attack should be true")
 
 func test_attack_effect_yellow_018_ally_heal() -> void:
@@ -292,22 +292,22 @@ func test_attack_effect_yellow_018_ally_heal() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "yellow_018"
 	attacker.card_data.card_name = "天空龍"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 3
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(ally.current_hp, 4, "Ally HP should be 3+1=4")
 
 func test_attack_effect_purple_016_enemy_atk_debuff() -> void:
@@ -315,21 +315,21 @@ func test_attack_effect_purple_016_enemy_atk_debuff() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "purple_016"
 	attacker.card_data.card_name = "悪夢の王"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var enemy := MockCardUI.new()
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(enemy._atk_modifier, -1, "Enemy ATK should be -1")
 
 # ═══════════════════════════════════════════
@@ -341,14 +341,14 @@ func test_death_effect_green_002_mana_gain() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "green_002"
 	card_ui.card_data.card_name = "若木のトレント"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("mana", 0), 1, "Mana should be +1")
 
 func test_death_effect_black_002_enemy_damage() -> void:
@@ -356,20 +356,20 @@ func test_death_effect_black_002_enemy_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "black_002"
 	card_ui.card_data.card_name = "呪いの人形"
-	
+
 	var enemy := MockCardUI.new()
 	enemy.current_hp = 5
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy.current_hp, 3, "Enemy HP should be 5-2=3")
 
 func test_death_effect_black_011_revive() -> void:
@@ -378,14 +378,14 @@ func test_death_effect_black_011_revive() -> void:
 	card_ui.card_data.effect_id = "black_011"
 	card_ui.card_data.card_name = "ゾンビ"
 	card_ui.has_revived = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_true(result.get("revive", false), "Revive should be true")
 
 func test_death_effect_black_011_no_revive_if_already_revived() -> void:
@@ -394,14 +394,14 @@ func test_death_effect_black_011_no_revive_if_already_revived() -> void:
 	card_ui.card_data.effect_id = "black_011"
 	card_ui.card_data.card_name = "ゾンビ"
 	card_ui.has_revived = true
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_false(result.get("revive", false), "Revive should be false if already revived")
 
 func test_death_effect_red_006_aoe_damage() -> void:
@@ -409,26 +409,26 @@ func test_death_effect_red_006_aoe_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_006"
 	card_ui.card_data.card_name = "火の鳥"
-	
+
 	var enemy1 := MockCardUI.new()
 	enemy1.current_hp = 5
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	enemy2.current_hp = 3
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be 5-2=3")
 	assert_eq(enemy2.current_hp, 1, "Enemy2 HP should be 3-2=1")
 
@@ -437,20 +437,20 @@ func test_death_effect_yellow_019_ally_heal() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "yellow_019"
 	card_ui.card_data.card_name = "希望の女神"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 3
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(ally.current_hp, 6, "Ally HP should be 3+3=6")
 
 func test_death_effect_purple_011_aoe_freeze() -> void:
@@ -458,24 +458,24 @@ func test_death_effect_purple_011_aoe_freeze() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_011"
 	card_ui.card_data.card_name = "影の龍"
-	
+
 	var enemy1 := MockCardUI.new()
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_true(enemy1.has_status(EffectManager.StatusEffect.FROZEN), "Enemy1 should be frozen")
 	assert_true(enemy2.has_status(EffectManager.StatusEffect.FROZEN), "Enemy2 should be frozen")
 
@@ -484,14 +484,14 @@ func test_death_effect_white_019_revive_from_graveyard() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_019"
 	card_ui.card_data.card_name = "復活の女神"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("revive_from_graveyard", 0), 2, "Revive from graveyard should be 2")
 
 # ═══════════════════════════════════════════
@@ -503,14 +503,14 @@ func test_defense_effect_blue_006_half_damage() -> void:
 	var defender := MockCardUI.new()
 	defender.card_data.effect_id = "blue_006"
 	defender.card_data.card_name = "海神の守護者"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_defense_effect(defender, 6, true, context)
-	
+
 	assert_eq(result.get("final_damage", 6), 3, "Damage should be halved from 6 to 3")
 
 func test_defense_effect_yellow_004_reduce_damage() -> void:
@@ -518,14 +518,14 @@ func test_defense_effect_yellow_004_reduce_damage() -> void:
 	var defender := MockCardUI.new()
 	defender.card_data.effect_id = "yellow_004"
 	defender.card_data.card_name = "星の欠片"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_defense_effect(defender, 3, true, context)
-	
+
 	assert_eq(result.get("final_damage", 3), 2, "Damage should be reduced from 3 to 2")
 
 func test_defense_effect_yellow_014_reflect() -> void:
@@ -533,14 +533,14 @@ func test_defense_effect_yellow_014_reflect() -> void:
 	var defender := MockCardUI.new()
 	defender.card_data.effect_id = "yellow_014"
 	defender.card_data.card_name = "光の龍"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_defense_effect(defender, 4, true, context)
-	
+
 	assert_true(result.get("reflect", false), "Reflect should be true")
 
 func test_defense_effect_white_005_shield() -> void:
@@ -549,14 +549,14 @@ func test_defense_effect_white_005_shield() -> void:
 	defender.card_data.effect_id = "white_005"
 	defender.card_data.card_name = "癒しの騎士"
 	defender.shield_used = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_defense_effect(defender, 5, true, context)
-	
+
 	assert_eq(result.get("final_damage", 5), 0, "Damage should be blocked")
 	assert_true(result.get("shield_consumed", false), "Shield should be consumed")
 
@@ -568,16 +568,16 @@ func test_no_effect_on_vanilla_card() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = ""
 	card_ui.card_data.card_name = "スライム"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var summon_result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
 	var attack_result: Dictionary = effect_manager.process_attack_effect(card_ui, MockCardUI.new(), true, context)
 	var death_result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(summon_result.size(), 0, "Vanilla card should have no summon effect")
 	assert_eq(attack_result.size(), 0, "Vanilla card should have no attack effect")
 	assert_eq(death_result.size(), 0, "Vanilla card should have no death effect")
@@ -591,19 +591,19 @@ func test_summon_effect_purple_015_single_freeze() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_015"
 	card_ui.card_data.card_name = "氷結の魔女"
-	
+
 	var enemy := MockCardUI.new()
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_true(enemy.has_status(1), "Enemy should be frozen (status 1)")
 	assert_eq(enemy._status_duration.get(1, 0), 3, "Freeze should last 3 turns")
 
@@ -612,26 +612,26 @@ func test_summon_effect_purple_018_aoe_atk_hp_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_018"
 	card_ui.card_data.card_name = "闇の支配者"
-	
+
 	var enemy1 := MockCardUI.new()
 	enemy1.current_hp = 5
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	enemy2.current_hp = 6
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1._atk_modifier, -2, "Enemy1 ATK should be -2")
 	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be reduced by 2")
 	assert_eq(enemy2._atk_modifier, -2, "Enemy2 ATK should be -2")
@@ -642,7 +642,7 @@ func test_summon_effect_white_018_clear_status_and_heal() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_018"
 	card_ui.card_data.card_name = "浄化の天使"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 3
 	ally.apply_status(1, 2)  # 凍結状態
@@ -650,14 +650,14 @@ func test_summon_effect_white_018_clear_status_and_heal() -> void:
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_false(ally.has_status(1), "Ally should not be frozen")
 	assert_false(ally.has_status(2), "Ally should not be poisoned")
 	assert_eq(ally.current_hp, 5, "Ally HP should be +2")
@@ -666,36 +666,36 @@ func test_constant_effect_purple_017_enemy_summon_cost() -> void:
 	# purple_017: 常時:敵の召喚コスト+2
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_017"
-	
+
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = card_ui
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var modifier: int = effect_manager.get_summon_cost_modifier(false, context)
-	
+
 	assert_eq(modifier, 2, "Enemy summon cost should be +2")
 
 func test_constant_effect_purple_020_enemy_dice_penalty() -> void:
 	# purple_020: 常時:敵全体ダイス-1
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_020"
-	
+
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = card_ui
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var dice_mod: Dictionary = effect_manager.get_dice_modifier(false, context)
-	
+
 	assert_eq(dice_mod.get("bonus", 0), -1, "Enemy dice should be -1")
 
 # ═══════════════════════════════════════════
@@ -707,19 +707,19 @@ func test_death_effect_black_013_enemy_atk_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "black_013"
 	card_ui.card_data.card_name = "闘士の魂"
-	
+
 	var enemy := MockCardUI.new()
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy._atk_modifier, -2, "Enemy ATK should be -2")
 
 func test_death_effect_black_018_aoe_damage() -> void:
@@ -727,26 +727,26 @@ func test_death_effect_black_018_aoe_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "black_018"
 	card_ui.card_data.card_name = "闇の大魔王"
-	
+
 	var enemy1 := MockCardUI.new()
 	enemy1.current_hp = 5
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	enemy2.current_hp = 6
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1.current_hp, 2, "Enemy1 HP should be reduced by 3")
 	assert_eq(enemy2.current_hp, 3, "Enemy2 HP should be reduced by 3")
 
@@ -755,20 +755,20 @@ func test_summon_effect_yellow_006_ally_heal() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "yellow_006"
 	card_ui.card_data.card_name = "光の使者"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 3
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(ally.current_hp, 4, "Ally HP should be +1")
 
 func test_summon_effect_purple_006_enemy_debuff() -> void:
@@ -776,20 +776,20 @@ func test_summon_effect_purple_006_enemy_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "purple_006"
 	card_ui.card_data.card_name = "呪いの魔術師"
-	
+
 	var enemy := MockCardUI.new()
 	enemy.current_hp = 4
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy._atk_modifier, -1, "Enemy ATK should be -1")
 	assert_eq(enemy.current_hp, 3, "Enemy HP should be -1")
 
@@ -799,16 +799,16 @@ func test_attack_effect_yellow_008_self_heal() -> void:
 	attacker.card_data.effect_id = "yellow_008"
 	attacker.card_data.card_name = "回復の戦士"
 	attacker.current_hp = 3
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(attacker.current_hp, 4, "Attacker HP should be +1")
 
 func test_summon_effect_blue_004_enemy_aoe_atk_debuff() -> void:
@@ -816,24 +816,24 @@ func test_summon_effect_blue_004_enemy_aoe_atk_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "blue_004"
 	card_ui.card_data.card_name = "氷の魔導士"
-	
+
 	var enemy1 := MockCardUI.new()
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1._atk_modifier, -1, "Enemy1 ATK should be -1")
 	assert_eq(enemy2._atk_modifier, -1, "Enemy2 ATK should be -1")
 
@@ -842,19 +842,19 @@ func test_death_effect_blue_009_single_atk_debuff() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "blue_009"
 	card_ui.card_data.card_name = "氷の精"
-	
+
 	var enemy := MockCardUI.new()
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy._atk_modifier, -1, "Enemy ATK should be -1")
 
 func test_death_effect_green_005_mana_gain() -> void:
@@ -862,14 +862,14 @@ func test_death_effect_green_005_mana_gain() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "green_005"
 	card_ui.card_data.card_name = "森の生贄"
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(result.get("mana", 0), 2, "Mana should be +2")
 
 func test_turn_start_effect_green_003_self_heal() -> void:
@@ -878,22 +878,22 @@ func test_turn_start_effect_green_003_self_heal() -> void:
 	card_ui.card_data.effect_id = "green_003"
 	card_ui.card_data.card_name = "生命の樹"
 	card_ui.current_hp = 4
-	
+
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = card_ui
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var results: Array = effect_manager.process_timing_event(EffectManager.Timing.TURN_START, {
 		"card_ui": card_ui,
 		"is_player": true,
 		"context": context
 	})
-	
+
 	assert_eq(results.size(), 1, "TURN_START should return one result for single-card payload")
 	assert_eq(card_ui.current_hp, 5, "Self HP should be +1")
 
@@ -902,16 +902,16 @@ func test_attack_effect_red_005_permanent_atk_buff() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "red_005"
 	attacker.card_data.card_name = "炎の闘士"
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(attacker._atk_modifier, 1, "Attacker ATK should be +1 permanently")
 
 func test_death_effect_red_009_self_destruct() -> void:
@@ -919,26 +919,26 @@ func test_death_effect_red_009_self_destruct() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_009"
 	card_ui.card_data.card_name = "爆弾ゴブリン"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 5
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var enemy := MockCardUI.new()
 	enemy.current_hp = 6
 	var enemy_slot := MockSlot.new()
 	enemy_slot._card_ui = enemy
 	enemy_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": [enemy_slot]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_eq(ally.current_hp, 3, "Ally HP should be -2")
 	assert_eq(enemy.current_hp, 4, "Enemy HP should be -2")
 
@@ -947,26 +947,26 @@ func test_summon_effect_red_015_enemy_aoe_damage() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_015"
 	card_ui.card_data.card_name = "炎の魔導士"
-	
+
 	var enemy1 := MockCardUI.new()
 	enemy1.current_hp = 5
 	var enemy_slot1 := MockSlot.new()
 	enemy_slot1._card_ui = enemy1
 	enemy_slot1._empty = false
-	
+
 	var enemy2 := MockCardUI.new()
 	enemy2.current_hp = 4
 	var enemy_slot2 := MockSlot.new()
 	enemy_slot2._card_ui = enemy2
 	enemy_slot2._empty = false
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": [enemy_slot1, enemy_slot2]
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be -2")
 	assert_eq(enemy2.current_hp, 2, "Enemy2 HP should be -2")
 
@@ -975,20 +975,20 @@ func test_summon_effect_white_004_ally_heal() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_004"
 	card_ui.card_data.card_name = "癒しの聖女"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 3
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
-	
+
 	assert_eq(ally.current_hp, 5, "Ally HP should be +2")
 
 func test_attack_effect_white_008_ally_heal() -> void:
@@ -996,22 +996,22 @@ func test_attack_effect_white_008_ally_heal() -> void:
 	var attacker := MockCardUI.new()
 	attacker.card_data.effect_id = "white_008"
 	attacker.card_data.card_name = "聖なる騎士"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 4
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var defender := MockCardUI.new()
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_attack_effect(attacker, defender, true, context)
-	
+
 	assert_eq(ally.current_hp, 5, "Ally HP should be +1")
 
 func test_death_effect_white_011_self_full_heal() -> void:
@@ -1020,14 +1020,14 @@ func test_death_effect_white_011_self_full_heal() -> void:
 	card_ui.card_data.effect_id = "white_011"
 	card_ui.card_data.card_name = "不死の鳳凰"
 	card_ui.current_hp = 0
-	
+
 	var context := {
 		"player_slots": [],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_true(result.get("heal_player_full", false), "Self full-heal death effect should set heal_player_full")
 
 func test_death_effect_white_014_ally_full_heal() -> void:
@@ -1035,20 +1035,20 @@ func test_death_effect_white_014_ally_full_heal() -> void:
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_014"
 	card_ui.card_data.card_name = "犠牲の天使"
-	
+
 	var ally := MockCardUI.new()
 	ally.current_hp = 2
 	var ally_slot := MockSlot.new()
 	ally_slot._card_ui = ally
 	ally_slot._empty = false
-	
+
 	var context := {
 		"player_slots": [ally_slot],
 		"opponent_slots": []
 	}
-	
+
 	var result: Dictionary = effect_manager.process_death_effect(card_ui, true, context)
-	
+
 	assert_true(result.has("log"), "Result should have log")
 
 # ═══════════════════════════════════════════
