@@ -42,17 +42,17 @@ func _generate_card_pool() -> void:
 		[3, "ナイフィンプ", 1, 3, 2, [6]],
 		# Cost 2 (budget 32)
 		[4, "シールドナイト", 2, 2, 5, [3,4]],
-		[5, "スカウト", 2, 1, 3, [1,2,3,4]],  # ATK2->1 高勝率弱体化
+		[5, "スカウト", 2, 2, 3, [1,2,3,4]],
 		[6, "ウォリアー", 2, 3, 4, [1,2]],
-		[7, "アサシン", 2, 3, 2, [4,5,6]],  # ATK4->3 高勝率弱体化
+		[7, "アサシン", 2, 4, 2, [4,5,6]],
 		# Cost 3 (budget 42)
 		[8, "フォートレス", 3, 2, 7, [1,2]],
 		[9, "ストライカー", 3, 3, 5, [1,2,3]],
 		[10, "パラディン", 3, 4, 4, [1,2,3]],
 		[11, "バーサーカー", 3, 7, 3, [2,5]],
 		# Cost 4 (budget 52)
-		[12, "アイアンゴーレム", 4, 3, 8, [1,2,3]],  # ATK2->3,HP9->8 低勝率強化
-		[13, "ブレードマスター", 4, 3, 6, [1,2,3,4]],  # HP7->6 高勝率弱体化
+		[12, "アイアンゴーレム", 4, 2, 9, [1,2,3]],
+		[13, "ブレードマスター", 4, 3, 7, [1,2,3,4]],
 		[14, "ドラゴンナイト", 4, 5, 6, [2,4,6]],
 		[15, "ウォーロード", 4, 7, 5, [2,3,6]],  # 面数 [3,6]->[2,3,6]
 		# Cost 5 (budget 62)
@@ -76,11 +76,11 @@ func _generate_card_pool() -> void:
 		[23, "霜の妖精", 1, 3, 2, [5], "blue_001"],
 		# Cost 2 (10-2=8)
 		[24, "水の使い", 2, 1, 7, [1,2,6], "blue_001"],
-		[25, "霧の狼", 2, 2, 3, [1,2,3,4], "blue_003"],  # Phase14: ATK 1->2
+		[25, "霧の狼", 2, 1, 3, [1,2,3,4], "blue_003"],
 		[26, "氷の彫刻家", 2, 2, 4, [2,3], "blue_011"],
 		[27, "海のスライム", 2, 4, 3, [3,4,5], "blue_010"],
-		# Cost 3 (13-3=10) - Phase14: 低勝率強化
-		[28, "氷結の騎士", 3, 2, 7, [4,5,6], "blue_004"],  # ATK 1->2, HP 8->7, 面数+1
+		# Cost 3 (13-3=10)
+		[28, "氷結の騎士", 3, 1, 8, [4,5], "blue_004"],
 		[29, "深海魚", 3, 2, 5, [1,2,5,6], "blue_005"],
 		[30, "吹雪の魔術師", 3, 3, 5, [1,2,6], "blue_003"],
 		[31, "氷の壁", 3, 6, 4, [1,2], "blue_013"],
@@ -113,9 +113,9 @@ func _generate_card_pool() -> void:
 		[45, "花の精", 2, 1, 4, [2,3,4,5], "green_003"],
 		[46, "蔦の魔術師", 2, 2, 5, [3,4], "green_001"],
 		[47, "木こりオーク", 2, 4, 4, [4,5], "green_010"],
-		# Cost 3 (13-3=10) - Phase14: 低勝率強化
-		[48, "森の守護者", 3, 2, 8, [1,5,6], "green_004"],  # ATK 1->2, HP 9->8
-		[49, "大樹の戦士", 3, 3, 5, [1,2,3,6], "green_005"],  # ATK 2->3, HP 6->5
+		# Cost 3 (13-3=10)
+		[48, "森の守護者", 3, 1, 9, [1,5,6], "green_004"],
+		[49, "大樹の戦士", 3, 2, 6, [1,2,3,6], "green_005"],
 		[50, "ドリアードの巫女", 3, 3, 6, [1,2], "green_011"],
 		[51, "森の巨人", 3, 6, 5, [2,3], "green_012"],
 		# Cost 4 (16-3=13)
@@ -137,16 +137,16 @@ func _generate_card_pool() -> void:
 	# 黒カード - ID 60-79 (自傷・ハイリスクハイリターン)
 	# ═══════════════════════════════════════════
 	var black_defs := [
-		# Cost 1 (7-2+selfdam) - Phase14: 低コスト弱体化
-		[60, "闇のコウモリ", 1, 1, 1, [1,2,3], "black_001"],  # ATK 2->1
-		[61, "呪いの人形", 1, 1, 2, [2], "black_002"],  # HP 3->2
-		[62, "疫病ネズミ", 1, 2, 1, [1], "black_010"],  # ATK 3->2
-		[63, "闘のインプ", 1, 3, 1, [4], "black_001"],  # ATK 4->3
-		# Cost 2 (10-2+selfdam) - Phase14: 低コスト弱体化
-		[64, "影の暗殺者", 2, 1, 4, [5,6], "black_003"],  # HP 5->4
+		# Cost 1 (7-2+selfdam)
+		[60, "闇のコウモリ", 1, 2, 1, [1,2,3], "black_001"],
+		[61, "呪いの人形", 1, 1, 3, [2], "black_002"],
+		[62, "疫病ネズミ", 1, 3, 1, [1], "black_010"],
+		[63, "闘のインプ", 1, 4, 1, [4], "black_001"],
+		# Cost 2 (10-2+selfdam)
+		[64, "影の暗殺者", 2, 1, 5, [5,6], "black_003"],
 		[65, "毒蛇", 2, 2, 1, [1,2,3,4,6], "black_004"],
-		[66, "ゾンビ", 2, 2, 2, [2,3], "black_011"],  # ATK 3->2
-		[67, "闇の魔術師", 2, 4, 1, [1,2], "black_012"],  # ATK 5->4
+		[66, "ゾンビ", 2, 3, 2, [2,3], "black_011"],
+		[67, "闇の魔術師", 2, 5, 1, [1,2], "black_012"],
 		# Cost 3 (13-3+selfdam)
 		[68, "堕天使", 3, 2, 6, [1,4], "black_005"],
 		[69, "死霊術師", 3, 3, 3, [3,4,5,6], "black_006"],
@@ -176,7 +176,7 @@ func _generate_card_pool() -> void:
 		[82, "火花インプ", 1, 5, 1, [3], "red_001"],
 		[83, "溶岩スライム", 1, 6, 1, [4], "red_003"],
 		[84, "炎の戦士", 2, 3, 4, [5,6], "red_001"],
-		[85, "火炎魔術師", 2, 3, 2, [1,2,3,6], "red_004"],  # Phase14: ATK 4->3, HP 1->2
+		[85, "火炎魔術師", 2, 4, 1, [1,2,3,6], "red_004"],
 		[86, "バーニングナイト", 2, 5, 1, [1,2], "red_005"],
 		[87, "火の鳥", 2, 7, 1, [1,3], "red_006"],
 		[88, "炎の騎士", 3, 4, 5, [3,4], "red_007"],
@@ -210,7 +210,7 @@ func _generate_card_pool() -> void:
 		[107, "光のスライム", 2, 4, 3, [1,3], "yellow_008"],
 		[108, "聖騎士", 3, 1, 8, [2,3,5], "yellow_009"],
 		[109, "光の魔術師", 3, 2, 5, [2,4,5,6], "yellow_010"],
-		[110, "天使", 3, 3, 5, [2,4,5], "yellow_011"],  # Phase14: 面数+1
+		[110, "天使", 3, 3, 5, [2,4], "yellow_011"],
 		[111, "希望の使者", 3, 6, 4, [4,6], "yellow_012"],
 		[112, "大天使", 4, 1, 10, [1,3,6], "yellow_013"],
 		[113, "光の龍", 4, 3, 6, [1,2,3,5], "yellow_014"],
@@ -234,7 +234,7 @@ func _generate_card_pool() -> void:
 		[122, "影のネズミ", 1, 3, 1, [2,5], "purple_003"],
 		[123, "夜の蝶", 1, 4, 1, [5], "purple_004"],
 		[124, "闇の魔術師", 2, 1, 6, [3,4], "purple_005"],
-		[125, "呪術師", 2, 3, 2, [1,2,4,6], "purple_006"],  # Phase14: ATK 2->3
+		[125, "呪術師", 2, 2, 2, [1,2,4,6], "purple_006"],
 		[126, "影の狼", 2, 3, 3, [1,2,6], "purple_007"],
 		[127, "夢魔", 2, 5, 2, [2,6], "purple_008"],
 		[128, "闇の騎士", 3, 2, 7, [2,5], "purple_009"],
@@ -269,7 +269,7 @@ func _generate_card_pool() -> void:
 		[148, "聖騎士団長", 3, 2, 10, [4,5], "white_009"],
 		[149, "癒しの天使長", 3, 2, 7, [1,5,6], "white_010"],
 		[150, "聖なる守護者", 3, 3, 7, [1,6], "white_011"],
-		[151, "祈りの巫女", 3, 5, 6, [1,2,3], "white_012"],  # Phase14: ATK 6->5, 面数+1
+		[151, "祈りの巫女", 3, 6, 6, [1,2], "white_012"],
 		[152, "大聖騎士", 4, 2, 12, [2,3], "white_013"],
 		[153, "神聖龍", 4, 3, 8, [3,4,5,6], "white_014"],
 		[154, "復活の天使", 4, 5, 7, [4,5,6], "white_015"],
@@ -332,40 +332,40 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 
 	var modifier_by_effect := {
 		# blue
-		"blue_001": -8, "blue_002": -12, "blue_003": -5, "blue_004": -10, "blue_005": -8, "blue_006": -8,
+		"blue_001": -8, "blue_002": -12, "blue_003": -5, "blue_004": -8, "blue_005": -8, "blue_006": -8,
 		"blue_007": -12, "blue_008": -7, "blue_009": -7, "blue_010": -8, "blue_011": -8, "blue_012": -4,
 		"blue_013": -9, "blue_014": -12, "blue_015": -9, "blue_016": -11, "blue_017": -10, "blue_018": -12,
 
 		# green
-		"green_001": -8, "green_002": -6, "green_003": -7, "green_004": -10, "green_005": -8, "green_006": -12,
+		"green_001": -8, "green_002": -6, "green_003": -3, "green_004": -8, "green_005": -6, "green_006": -12,
 		"green_007": -10, "green_008": -12, "green_009": -10, "green_010": -4, "green_011": -8, "green_012": -5,
 		"green_013": -14, "green_014": -7, "green_015": -12, "green_016": -10, "green_017": -12,
 
 		# black
-		"black_001": 5, "black_002": -7, "black_003": 10, "black_004": -6, "black_005": 15, "black_006": -8,
-		"black_007": -6, "black_008": 25, "black_009": -12, "black_010": -9, "black_011": -9, "black_012": -10,
+		"black_001": 2, "black_002": -11, "black_003": 10, "black_004": -6, "black_005": 15, "black_006": -8,
+		"black_007": -6, "black_008": 25, "black_009": -12, "black_010": -12, "black_011": -12, "black_012": -13,
 		"black_013": -8, "black_014": -2, "black_015": -3, "black_016": -8, "black_017": 20, "black_018": -11,
 		"black_019": -14,
 
 		# red
-		"red_001": -8, "red_002": -6, "red_003": -12, "red_004": -9, "red_005": -5, "red_006": -10,
+		"red_001": -8, "red_002": -6, "red_003": -12, "red_004": -8, "red_005": -5, "red_006": -10,
 		"red_007": -10, "red_008": -8, "red_009": 6, "red_010": -7, "red_011": -10, "red_012": -8,
 		"red_013": -4, "red_014": -9, "red_015": -13, "red_016": -11, "red_017": -14, "red_018": -12,
 
 		# yellow
 		"yellow_001": -8, "yellow_002": -12, "yellow_003": -12, "yellow_004": -5, "yellow_005": -12, "yellow_006": -9,
-		"yellow_007": -8, "yellow_008": -4, "yellow_009": -9, "yellow_010": -8, "yellow_011": -9, "yellow_012": -10,
+		"yellow_007": -8, "yellow_008": -4, "yellow_009": -9, "yellow_010": -8, "yellow_011": -6, "yellow_012": -10,
 		"yellow_013": -12, "yellow_014": -6, "yellow_015": -8, "yellow_016": -12, "yellow_017": -11,
 		"yellow_018": -6, "yellow_019": -11, "yellow_020": -13,
 
 		# purple
-		"purple_001": -9, "purple_002": -5, "purple_003": -10, "purple_004": -12, "purple_005": -7, "purple_006": -12,
+		"purple_001": -9, "purple_002": -5, "purple_003": -10, "purple_004": -12, "purple_005": -7, "purple_006": -9,
 		"purple_007": -8, "purple_008": -9, "purple_009": -10, "purple_010": -11, "purple_011": -11, "purple_012": -12,
 		"purple_013": -6, "purple_014": -11, "purple_015": -12, "purple_016": -7, "purple_017": -14,
 		"purple_018": -14, "purple_019": -13, "purple_020": -13,
 
 		# white
-		"white_001": -8, "white_002": -7, "white_003": -7, "white_004": -11, "white_005": -11, "white_006": -12,
+		"white_001": -8, "white_002": -7, "white_003": -7, "white_004": -11, "white_005": -11, "white_006": -7,
 		"white_007": -11, "white_008": -6, "white_009": -10, "white_010": -9, "white_011": -11, "white_012": -9,
 		"white_013": -8, "white_014": -9, "white_015": -12, "white_016": -11, "white_017": -12,
 		"white_018": -12, "white_019": -13, "white_020": -14,
@@ -422,6 +422,27 @@ func _balance_effect_card_stats(card: CardData) -> void:
 	_tune_card_stats_to_budget(card, budget)
 	_enforce_effect_min_hp(card)
 
+func _get_gray_category_budget_adjustment(card: CardData) -> int:
+	var faces := card.attack_dice.size()
+
+	# 低コスト多面アタッカー（スカウト/アサシン系）をカテゴリ弱体化
+	if card.mana_cost == 2 and faces >= 3 and card.atk >= 2:
+		return -2
+
+	# 4コスト高耐久多面（アイアンゴーレム系）をカテゴリ弱体化
+	if card.mana_cost == 4 and card.hp >= 9 and faces >= 3:
+		return -4
+
+	# 4コスト高ATK多面（ウォーロード系）をカテゴリ弱体化
+	if card.mana_cost == 4 and card.atk >= 7 and faces >= 3:
+		return -4
+
+	# 高コスト多面アタッカー（ブレードマスター系）を軽度弱体化
+	if card.mana_cost == 4 and faces == 4 and card.atk >= 3:
+		return -2
+
+	return 0
+
 func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_arr: Array, color_type: CardData.ColorType, effect_id: String) -> void:
 	var card := CardData.new()
 	card.id = id
@@ -436,7 +457,8 @@ func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_ar
 	card.color = color_by_type.get(color_type, Color.WHITE)
 	card.effect_id = effect_id
 	if color_type == CardData.ColorType.GRAY or effect_id == "":
-		_tune_card_stats_to_budget(card, maxi(MIN_CARD_SCORE, _base_budget(card.mana_cost)))
+		var gray_budget := _base_budget(card.mana_cost) + _get_gray_category_budget_adjustment(card)
+		_tune_card_stats_to_budget(card, maxi(MIN_CARD_SCORE, gray_budget))
 	else:
 		_balance_effect_card_stats(card)
 	card.icon_name = ["sword", "shield", "star", "flame", "bolt", "heart", "skull", "crown", "gem", "arrow"][id % 10]

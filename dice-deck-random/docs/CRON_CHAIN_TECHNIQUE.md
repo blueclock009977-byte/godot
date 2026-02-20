@@ -59,13 +59,33 @@ Act: 次のPhase決定 or 繰り返し
 - 判断（なぜそうした）
 - 次アクション
 
-### 6. 1cronで1報告
+### 6. 1cronで1報告（必須）
 
-各Phase完了時に人間へ進捗報告する：
-```markdown
-sessions_sendツールで Discord channel:チャンネルID に報告：
-「Phase N 完了: [やったこと] → 次: [次のPhase]」
+各Phase完了時に**必ず** sessions_send で人間へ進捗報告する。
+
+**sessionKeyの形式:**
 ```
+agent:<エージェント名>:discord:channel:<チャンネルID>
+```
+
+**報告コマンド例:**
+```gdscript
+sessions_send(
+  sessionKey="agent:godot-clock:discord:channel:1471429991005950013",
+  message="Phase N 完了: [やったこと] → 次: [次のPhase]"
+)
+```
+
+**報告フォーマット（固定）:**
+```
+Phase番号 / 変更内容 / 指標差分 / 次アクション
+```
+
+**報告に失敗した場合:**
+1. sessions_list でsessionKeyを再探索
+2. 最大3回リトライ
+3. それでも失敗なら状態ファイルにエラー記録して継続
+
 これにより人間がリアルタイムで進捗を把握でき、必要なら介入できる。
 
 ### 7. 1回のcronは小さく
