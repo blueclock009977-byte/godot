@@ -23,7 +23,7 @@ func _reset_card_stats() -> void:
 	_card_played_games.clear()
 	_card_in_deck_wins.clear()
 	_card_in_deck_games.clear()
-	
+
 	for card in CardDatabase.card_pool:
 		_card_played_wins[card.id] = 0
 		_card_played_games[card.id] = 0
@@ -243,24 +243,24 @@ func _record_game_result(result: Dictionary) -> void:
 	"""ゲーム結果をカード単位統計に記録"""
 	var p_won: bool = result["winner"] == "p"
 	var o_won: bool = result["winner"] == "o"
-	
+
 	# デッキ内カード（採用時勝率）
 	for card in result["deck_p"]:
 		_card_in_deck_games[card.id] += 1
 		if p_won:
 			_card_in_deck_wins[card.id] += 1
-	
+
 	for card in result["deck_o"]:
 		_card_in_deck_games[card.id] += 1
 		if o_won:
 			_card_in_deck_wins[card.id] += 1
-	
+
 	# プレイされたカード（出場時勝率）
 	for card_id in result["played_p"]:
 		_card_played_games[card_id] += 1
 		if p_won:
 			_card_played_wins[card_id] += 1
-	
+
 	for card_id in result["played_o"]:
 		_card_played_games[card_id] += 1
 		if o_won:
@@ -278,17 +278,17 @@ func _run_full_simulation() -> void:
 		CardData.ColorType.PURPLE,
 		CardData.ColorType.WHITE,
 	]
-	
+
 	for i in range(colors.size()):
 		for j in range(i + 1, colors.size()):
 			for _g in range(GAMES_PER_MATCHUP):
 				var deck_a := _make_mono_deck(colors[i])
 				var deck_b := _make_mono_deck(colors[j])
-				
+
 				# Aが先攻
 				var result1 := _simulate_game_with_tracking(deck_a.duplicate(true), deck_b.duplicate(true))
 				_record_game_result(result1)
-				
+
 				# Aが後攻
 				var result2 := _simulate_game_with_tracking(deck_b.duplicate(true), deck_a.duplicate(true))
 				_record_game_result(result2)
@@ -326,12 +326,12 @@ func test_card_level_balance_report():
 	"""カード単位バランスレポートを生成"""
 	_reset_card_stats()
 	_run_full_simulation()
-	
+
 	gut.p("═══════════════════════════════════════════")
 	gut.p("カード単位バランス計測結果")
 	gut.p("各マッチアップ %d ゲーム × 21ペア × 2（先後）" % GAMES_PER_MATCHUP)
 	gut.p("═══════════════════════════════════════════")
-	
+
 	# 出場時勝率を計算
 	var played_winrates: Array = []
 	for card_id in _card_played_games:
@@ -346,26 +346,26 @@ func test_card_level_balance_report():
 				"winrate": wr,
 				"games": games
 			})
-	
+
 	# 勝率でソート
 	played_winrates.sort_custom(func(a, b): return a["winrate"] > b["winrate"])
-	
+
 	# 統計計算
 	var wr_values: Array[float] = []
 	for entry in played_winrates:
 		if entry["games"] >= 10:  # 十分なサンプルがあるもののみ
 			wr_values.append(entry["winrate"])
-	
+
 	if wr_values.size() == 0:
 		gut.p("データ不足")
 		assert_true(true)
 		return
-	
+
 	wr_values.sort()
 	var median: float = wr_values[wr_values.size() / 2]
 	var min_wr: float = wr_values[0]
 	var max_wr: float = wr_values[wr_values.size() - 1]
-	
+
 	gut.p("")
 	gut.p("═══════════════════════════════════════════")
 	gut.p("出場時勝率 統計")
@@ -375,23 +375,23 @@ func test_card_level_balance_report():
 	var low_target: float = median - 7.0
 	var high_target: float = median + 7.0
 	gut.p("目標: 中央値±7%%以内 (%.1f%% ~ %.1f%%)" % [low_target, high_target])
-	
+
 	# 外れ値カード
 	var outliers_high: Array = []
 	var outliers_low: Array = []
-	
+
 	for entry in played_winrates:
 		if entry["games"] >= 10:
 			if entry["winrate"] > median + 7:
 				outliers_high.append(entry)
 			elif entry["winrate"] < median - 7:
 				outliers_low.append(entry)
-	
+
 	gut.p("")
 	gut.p("═══════════════════════════════════════════")
 	gut.p("外れ値カード（中央値±7%超）")
 	gut.p("═══════════════════════════════════════════")
-	
+
 	gut.p("")
 	gut.p("【高勝率 TOP10】")
 	var count := 0
@@ -402,7 +402,7 @@ func test_card_level_balance_report():
 		count += 1
 	if outliers_high.size() == 0:
 		gut.p("  (なし)")
-	
+
 	gut.p("")
 	gut.p("【低勝率 BOTTOM10】")
 	var low_sorted := outliers_low.duplicate()
@@ -415,23 +415,23 @@ func test_card_level_balance_report():
 		count += 1
 	if outliers_low.size() == 0:
 		gut.p("  (なし)")
-	
+
 	# 外れ値率
 	var outlier_count := outliers_high.size() + outliers_low.size()
 	var total_cards := wr_values.size()
 	var outlier_rate := float(outlier_count) / total_cards * 100
-	
+
 	gut.p("")
 	gut.p("═══════════════════════════════════════════")
 	gut.p("バランス判定")
 	gut.p("═══════════════════════════════════════════")
 	gut.p("外れ値カード: %d / %d (%.1f%%)" % [outlier_count, total_cards, outlier_rate])
-	
+
 	if outlier_rate <= 10:
 		gut.p("✓ カードバランス: 良好（外れ値%.1f%% <= 10%%）" % outlier_rate)
 	else:
 		gut.p("✗ カードバランス: 要調整（外れ値%.1f%% > 10%%）" % outlier_rate)
-	
+
 	# 全カードリスト出力（デバッグ用）
 	gut.p("")
 	gut.p("═══════════════════════════════════════════")
@@ -445,5 +445,5 @@ func test_card_level_balance_report():
 			elif entry["winrate"] < median - 7:
 				mark = " ▼"
 			gut.p("ID:%3d [%6s] %s: %.1f%% (%d)%s" % [entry["id"], entry["color"], entry["name"], entry["winrate"], entry["games"], mark])
-	
+
 	assert_true(true, "Card level balance report completed")
