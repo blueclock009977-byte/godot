@@ -482,6 +482,46 @@ func test_get_constant_atk_modifier_combined() -> void:
 	assert_eq(modifier, 1, "Combined effects: red_004(+1) + yellow_012(+1) + blue_016(-1) = +1")
 
 # ═══════════════════════════════════════════
+# _apply_aoe_atk_and_damage_effect() テスト
+# ═══════════════════════════════════════════
+
+func test_apply_aoe_atk_and_damage_effect_basic() -> void:
+	var target1 := MockCardUI.new()
+	target1.current_hp = 5
+	var target2 := MockCardUI.new()
+	target2.current_hp = 3
+	var targets := [target1, target2]
+	var result := {}
+
+	effect_manager._apply_aoe_atk_and_damage_effect(targets, -2, 1, result, "TestCard", "magenta", "敵全体ATK-2,HP-1")
+
+	assert_eq(target1._atk_modifier, -2, "Target1 ATK should be modified by -2")
+	assert_eq(target2._atk_modifier, -2, "Target2 ATK should be modified by -2")
+	assert_eq(target1.current_hp, 4, "Target1 HP should be reduced by 1")
+	assert_eq(target2.current_hp, 2, "Target2 HP should be reduced by 1")
+	assert_true(result.has("log"), "Result should have log")
+
+func test_apply_aoe_atk_and_damage_effect_lethal() -> void:
+	var target1 := MockCardUI.new()
+	target1.current_hp = 1
+	var targets := [target1]
+	var result := {}
+
+	effect_manager._apply_aoe_atk_and_damage_effect(targets, -1, 2, result, "TestCard", "magenta", "敵全体ATK-1,HP-2")
+
+	assert_eq(target1.current_hp, -1, "Target HP should go below 0")
+	assert_true(result.has("destroy_targets"), "Lethal damage should mark destroy_targets")
+	assert_eq(result["destroy_targets"].size(), 1, "One target should be destroyed")
+
+func test_apply_aoe_atk_and_damage_effect_empty_targets() -> void:
+	var targets: Array = []
+	var result := {}
+
+	effect_manager._apply_aoe_atk_and_damage_effect(targets, -1, 1, result, "TestCard", "magenta", "敵全体ATK-1,HP-1")
+
+	assert_false(result.has("log"), "No log for empty targets")
+
+# ═══════════════════════════════════════════
 # Mocks for effect manager tests
 # ═══════════════════════════════════════════
 
