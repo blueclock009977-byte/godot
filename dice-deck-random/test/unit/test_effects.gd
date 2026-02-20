@@ -1328,9 +1328,9 @@ func test_aoe_damage_helper_is_shared_for_death_damage_effects() -> void:
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _apply_aoe_damage_effect"), -1,
 		"effect_manager should define _apply_aoe_damage_effect")
-	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 1, result, card_name, \"purple\", \"敵全体HP-1\")"), -1,
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 1, result, card_name, \"dark_gray\", \"敵全体HP-1\")"), -1,
 		"black_010 should delegate to shared AOE helper")
-	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 3, result, card_name, \"purple\", \"敵全体HP-3\")"), -1,
+	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 3, result, card_name, \"dark_gray\", \"敵全体HP-3\")"), -1,
 		"black_018 should delegate to shared AOE helper")
 	assert_ne(script_text.find("_apply_aoe_damage_effect(enemies, 2, result, card_name, \"red\", \"敵全体HP-2\")"), -1,
 		"red_006 should delegate to shared AOE helper")
@@ -1400,7 +1400,7 @@ func test_death_targeted_damage_helper_is_shared_for_single_target_death_damage_
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _apply_targeted_damage_effect"), -1,
 		"effect_manager should define _apply_targeted_damage_effect")
-	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 2, result, card_name, \"purple\", \"にHP-2\")"), -1,
+	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 2, result, card_name, \"dark_gray\", \"にHP-2\")"), -1,
 		"black_002 should delegate to targeted damage helper")
 	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 4, result, card_name, \"red\", \"にHP-4\")"), -1,
 		"red_014 should delegate to targeted damage helper")
@@ -1439,7 +1439,7 @@ func test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_ef
 	var debuff_call := "_apply_targeted_atk_modifier_effect(is_player, context, -1, result, card_name, \"cyan\", \"のATK-1\")"
 	assert_true(script_text.count(debuff_call) >= 2,
 		"blue_001 and blue_009 should delegate to targeted ATK modifier helper")
-	assert_ne(script_text.find("_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, \"purple\", \"のATK-2\")"), -1,
+	assert_ne(script_text.find("_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, \"dark_gray\", \"のATK-2\")"), -1,
 		"black_013 should delegate to targeted ATK modifier helper")
 
 func test_specific_target_atk_modifier_helper_is_shared_for_attack_and_summon_effects() -> void:
@@ -1651,7 +1651,7 @@ func test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects() -
 		"blue_003 should delegate status application to shared helper")
 	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.FROZEN, 2, result, \"cyan\", card_name, \"を2ターン凍結\")"), -1,
 		"blue_008 should delegate status application to shared helper")
-	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, \"purple\", card_name, \"に毒付与\")"), -1,
+	assert_ne(script_text.find("_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, \"dark_gray\", card_name, \"に毒付与\")"), -1,
 		"black_004 should delegate status application to shared helper")
 
 func test_death_freeze_effects_use_shared_status_helpers() -> void:
@@ -1707,7 +1707,7 @@ func test_summon_hybrid_effects_use_shared_combo_helpers() -> void:
 		"effect_manager should define _apply_self_damage_and_draw_effect helper")
 	assert_ne(script_text.find("\"green_015\":  # 登場時:マナ+2,自身HP+2\n\t\t\t_apply_mana_and_self_heal_effect(card_ui, result, \"green\", card_name, 2, 2)"), -1,
 		"green_015 should delegate hybrid summon effect to _apply_mana_and_self_heal_effect helper")
-	assert_ne(script_text.find("\"black_014\":  # 登場時:自分HP-2,カード1枚ドロー\n\t\t\t_apply_self_damage_and_draw_effect(result, \"purple\", card_name, 2, 1)"), -1,
+	assert_ne(script_text.find("\"black_014\":  # 登場時:自分HP-2,カード1枚ドロー\n\t\t\t_apply_self_damage_and_draw_effect(result, \"dark_gray\", card_name, 2, 1)"), -1,
 		"black_014 should delegate hybrid summon effect to _apply_self_damage_and_draw_effect helper")
 
 func test_summon_yellow_013_uses_shared_aoe_atk_heal_helper() -> void:

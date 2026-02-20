@@ -442,7 +442,7 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 			_apply_self_damage_effect(result, card_name, 5)
 
 		"black_014":  # 登場時:自分HP-2,カード1枚ドロー
-			_apply_self_damage_and_draw_effect(result, "purple", card_name, 2, 1)
+			_apply_self_damage_and_draw_effect(result, "dark_gray", card_name, 2, 1)
 
 		"black_017":  # 登場時:自分HP-4
 			_apply_self_damage_effect(result, card_name, 4)
@@ -589,22 +589,22 @@ func _dispatch_attack_effect(effect_id: String, attacker_ui, defender_ui, is_pla
 			_apply_mana_gain_effect(result, "green", card_name, 1)
 
 		"black_004":  # 攻撃時:対象に毒
-			_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, "purple", card_name, "に毒付与")
+			_apply_status_effect_with_log(defender_ui, StatusEffect.POISON, 99, result, "dark_gray", card_name, "に毒付与")
 
 		"black_007":  # 攻撃時:与ダメ分自身HP回復
 			result["lifesteal"] = true
-			result["log"] = _make_effect_log("purple", card_name, "吸血")
+			result["log"] = _make_effect_log("dark_gray", card_name, "吸血")
 
 		"black_015":  # 攻撃時:自身HP-1,ATK+2
 			_apply_damage_and_mark_destroy(attacker_ui, 1, result)
 			result["atk_bonus"] = 2
-			result["log"] = _make_effect_log("purple", card_name, "HP-1, ATK+2")
+			result["log"] = _make_effect_log("dark_gray", card_name, "HP-1, ATK+2")
 
 		"black_016":  # 攻撃時:対象の現HP半減
 			if defender_ui and defender_ui.current_hp > 0:
 				var half_hp_damage := int(ceil(defender_ui.current_hp / 2.0))
 				_apply_damage_and_mark_destroy(defender_ui, half_hp_damage, result)
-				result["log"] = _make_effect_log("purple", card_name, "%s のHP半減" % defender_ui.card_data.card_name)
+				result["log"] = _make_effect_log("dark_gray", card_name, "%s のHP半減" % defender_ui.card_data.card_name)
 
 		# ═══════════════════════════════════════════
 		# 赤カード攻撃時効果
@@ -700,27 +700,27 @@ func _dispatch_death_effect(effect_id: String, card_ui, is_player: bool, context
 					result["log"] = _make_effect_log("green", card_name, "味方死亡で自身HP+2")
 
 		"black_002":  # 死亡時:敵1体HP-2
-			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "purple", "にHP-2")
+			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "dark_gray", "にHP-2")
 
 		"black_006":  # 死亡時:トークン召喚
 			result["spawn_token"] = {"atk": 2, "hp": 2}
-			result["log"] = _make_effect_log("purple", card_name, "トークン召喚")
+			result["log"] = _make_effect_log("dark_gray", card_name, "トークン召喚")
 
 		"black_010":  # 死亡時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_aoe_damage_effect(enemies, 1, result, card_name, "purple", "敵全体HP-1")
+			_apply_aoe_damage_effect(enemies, 1, result, card_name, "dark_gray", "敵全体HP-1")
 
 		"black_011":  # 死亡時:HP1で1度だけ復活
 			if not card_ui.has_revived:
 				result["revive"] = true
-				result["log"] = _make_effect_log("purple", card_name, "HP1で復活")
+				result["log"] = _make_effect_log("dark_gray", card_name, "HP1で復活")
 
 		"black_013":  # 死亡時:敵1体ATK-2
-			_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, "purple", "のATK-2")
+			_apply_targeted_atk_modifier_effect(is_player, context, -2, result, card_name, "dark_gray", "のATK-2")
 
 		"black_018":  # 死亡時:敵全体HP-3
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_aoe_damage_effect(enemies, 3, result, card_name, "purple", "敵全体HP-3")
+			_apply_aoe_damage_effect(enemies, 3, result, card_name, "dark_gray", "敵全体HP-3")
 
 		# ═══════════════════════════════════════════
 		# 赤カード死亡時効果
@@ -1152,7 +1152,7 @@ func _apply_self_nonlethal_damage(target, amount: int, result: Dictionary) -> vo
 
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
 	result["self_damage"] = amount
-	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
+	result["log"] = _make_effect_log("dark_gray", card_name, "自分HP-%d" % amount)
 
 func _apply_self_damage_and_draw_effect(result: Dictionary, color: String, card_name: String, self_damage: int, draw_amount: int) -> void:
 	if self_damage <= 0 or draw_amount <= 0:
