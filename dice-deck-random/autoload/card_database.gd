@@ -380,12 +380,35 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 
 	return mod
 
+func _get_required_min_hp_for_effect(effect_id: String) -> int:
+	match effect_id:
+		"black_001":
+			return 2  # 召喚時HP-1
+		"black_003":
+			return 3  # 召喚時HP-2
+		"black_005":
+			return 4  # 召喚時HP-3
+		"black_008":
+			return 6  # 召喚時HP-5
+		"black_014":
+			return 3  # 召喚時HP-2
+		"black_017":
+			return 5  # 召喚時HP-4
+		_:
+			return 1
+
+func _enforce_effect_min_hp(card: CardData) -> void:
+	var required_min_hp := _get_required_min_hp_for_effect(card.effect_id)
+	if card.hp < required_min_hp:
+		card.hp = required_min_hp
+
 func _balance_effect_card_stats(card: CardData) -> void:
 	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
 		return
 
 	var budget := _base_budget(card.mana_cost) + _get_effect_budget_modifier(card.effect_id)
 	_tune_card_stats_to_budget(card, budget)
+	_enforce_effect_min_hp(card)
 
 func _add_card(id: int, card_name: String, cost: int, atk: int, hp: int, dice_arr: Array, color_type: CardData.ColorType, effect_id: String) -> void:
 	var card := CardData.new()

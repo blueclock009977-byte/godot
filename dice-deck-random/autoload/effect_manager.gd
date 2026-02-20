@@ -1141,6 +1141,15 @@ func _apply_damage_and_mark_destroy(target, amount: int, result: Dictionary) -> 
 	if _is_target_destroyed(target):
 		_mark_destroy_target(result, target)
 
+func _apply_self_nonlethal_damage(target, amount: int, result: Dictionary) -> void:
+	if not target or amount <= 0:
+		return
+	var safe_damage := mini(amount, max(0, target.current_hp - 1))
+	if safe_damage <= 0:
+		return
+	target.take_damage(safe_damage)
+	_track_damaged_target(result, target)
+
 func _apply_self_damage_effect(result: Dictionary, card_name: String, amount: int) -> void:
 	result["self_damage"] = amount
 	result["log"] = _make_effect_log("purple", card_name, "自分HP-%d" % amount)
