@@ -118,7 +118,7 @@ func _register_all_effects() -> void:
 	# ═══════════════════════════════════════════
 	# 赤カード効果 (攻撃特化、直接ダメージ)
 	# ═══════════════════════════════════════════
-	_register("red_001", Timing.ON_SUMMON, "登場時:敵1体HP-2")
+	_register("red_001", Timing.ON_SUMMON, "登場時:敵1体HP-1")
 	_register("red_002", Timing.ON_ATTACK, "攻撃時:対象に追加2ダメージ")
 	_register("red_003", Timing.ON_SUMMON, "登場時:敵全体HP-1")
 	_register("red_004", Timing.CONSTANT, "ATK+1(常時)")
@@ -128,13 +128,13 @@ func _register_all_effects() -> void:
 	_register("red_008", Timing.ON_ATTACK, "攻撃時:2回攻撃")
 	_register("red_009", Timing.ON_DEATH, "死亡時:自爆(敵味方全体HP-2)")
 	_register("red_010", Timing.TURN_START, "ターン開始時:自身ATK+1")
-	_register("red_011", Timing.ON_SUMMON, "登場時:敵1体HP-3")
+	_register("red_011", Timing.ON_SUMMON, "登場時:敵1体HP-2")
 	_register("red_012", Timing.CONSTANT, "ダイス1でATK+3")
 	_register("red_013", Timing.ON_ATTACK, "攻撃時:相手HP直接-1")
 	_register("red_014", Timing.ON_DEATH, "死亡時:敵1体HP-4")
-	_register("red_015", Timing.ON_SUMMON, "登場時:敵全体HP-2")
+	_register("red_015", Timing.ON_SUMMON, "登場時:敵全体HP-1")
 	_register("red_016", Timing.CONSTANT, "ATK+2(常時)")
-	_register("red_017", Timing.ON_SUMMON, "登場時:敵全体HP-3")
+	_register("red_017", Timing.ON_SUMMON, "登場時:敵全体HP-2")
 	_register("red_018", Timing.CONSTANT, "常時:味方全体ATK+1")
 
 	# ═══════════════════════════════════════════
@@ -142,7 +142,7 @@ func _register_all_effects() -> void:
 	# ═══════════════════════════════════════════
 	_register("yellow_001", Timing.ON_SUMMON, "登場時:味方1体HP+2")
 	_register("yellow_002", Timing.CONSTANT, "味方全体ダイス+1追加")
-	_register("yellow_003", Timing.ON_SUMMON, "登場時:手札2枚ドロー")
+	_register("yellow_003", Timing.ON_SUMMON, "登場時:手札1枚ドロー")
 	_register("yellow_004", Timing.ON_DEFENSE, "防御時:ダメージを1軽減")
 	_register("yellow_005", Timing.TURN_START, "ターン開始時:カード1枚ドロー")
 	_register("yellow_006", Timing.ON_SUMMON, "登場時:味方全体HP+1")
@@ -181,7 +181,7 @@ func _register_all_effects() -> void:
 	_register("purple_015", Timing.ON_SUMMON, "登場時:敵1体を3ターン凍結")
 	_register("purple_016", Timing.ON_ATTACK, "攻撃時:敵全体ATK-1")
 	_register("purple_017", Timing.CONSTANT, "常時:敵の召喚コスト+2")
-	_register("purple_018", Timing.ON_SUMMON, "登場時:敵全体ATK-2,HP-2")
+	_register("purple_018", Timing.ON_SUMMON, "登場時:敵全体ATK-1,HP-1")
 	_register("purple_019", Timing.ON_SUMMON, "登場時:敵全体を2ターン凍結")
 	_register("purple_020", Timing.CONSTANT, "常時:敵全体ダイス-1")
 
@@ -205,7 +205,7 @@ func _register_all_effects() -> void:
 	_register("white_015", Timing.ON_SUMMON, "登場時:自分HP+6")
 	_register("white_016", Timing.CONSTANT, "常時:自身への被ダメ-2")
 	_register("white_017", Timing.CONSTANT, "常時:味方全体HP+2")
-	_register("white_018", Timing.ON_SUMMON, "登場時:味方全体状態異常解除+HP+2")
+	_register("white_018", Timing.ON_SUMMON, "登場時:味方全体状態異常解除+HP+1")
 	_register("white_019", Timing.ON_DEATH, "死亡時:墓地から2体復活")
 	_register("white_020", Timing.ON_SUMMON, "登場時:味方全体HP+3,ATK+1")
 
@@ -450,8 +450,8 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		# ═══════════════════════════════════════════
 		# 赤カード登場時効果
 		# ═══════════════════════════════════════════
-		"red_001":  # 登場時:敵1体HP-2
-			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "red", "にHP-2")
+		"red_001":  # 登場時:敵1体HP-1
+			_apply_targeted_damage_effect(is_player, context, 1, result, card_name, "red", "にHP-1")
 
 		"red_003":  # 登場時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
@@ -460,16 +460,16 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		"red_007":  # 登場時:味方全体ATK+1
 			_apply_aoe_atk_modifier_effect(_get_all_allies(is_player, context), 1, result, card_name, "red", "味方全体ATK+1")
 
-		"red_011":  # 登場時:敵1体HP-3
-			_apply_targeted_damage_effect(is_player, context, 3, result, card_name, "red", "にHP-3")
+		"red_011":  # 登場時:敵1体HP-2
+			_apply_targeted_damage_effect(is_player, context, 2, result, card_name, "red", "にHP-2")
 
-		"red_015":  # 登場時:敵全体HP-2
+		"red_015":  # 登場時:敵全体HP-1
 			var enemies = _get_all_enemies(is_player, context)
-			_apply_aoe_damage_effect(enemies, 2, result, card_name, "red", "敵全体HP-2")
+			_apply_aoe_damage_effect(enemies, 1, result, card_name, "red", "敵全体HP-1")
 
-		"red_017":  # 登場時:敵全体HP-3
+		"red_017":  # 登場時:敵全体HP-2
 			var enemies_r17 = _get_all_enemies(is_player, context)
-			_apply_aoe_damage_effect(enemies_r17, 3, result, card_name, "red", "敵全体HP-3")
+			_apply_aoe_damage_effect(enemies_r17, 2, result, card_name, "red", "敵全体HP-2")
 
 		# ═══════════════════════════════════════════
 		# 黄カード登場時効果
@@ -477,8 +477,8 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		"yellow_001":  # 登場時:味方1体HP+2
 			_apply_random_ally_heal_effect(is_player, context, 2, result, "yellow", card_name)
 
-		"yellow_003":  # 登場時:手札2枚ドロー
-			_apply_draw_effect(result, "yellow", card_name, 2)
+		"yellow_003":  # 登場時:手札1枚ドロー
+			_apply_draw_effect(result, "yellow", card_name, 1)
 
 		"yellow_006":  # 登場時:味方全体HP+1
 			_apply_aoe_heal_effect(_get_all_allies(is_player, context), 1, result, card_name, "yellow", "味方全体HP+1")
@@ -520,8 +520,8 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		"purple_015":  # 登場時:敵1体を3ターン凍結
 			_apply_targeted_status_effect(is_player, context, StatusEffect.FROZEN, 3, result, card_name, "magenta", "を3ターン凍結")
 
-		"purple_018":  # 登場時:敵全体ATK-2,HP-2
-			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -2, 2, result, card_name, "magenta", "敵全体ATK-2,HP-2")
+		"purple_018":  # 登場時:敵全体ATK-1,HP-1
+			_apply_aoe_atk_and_damage_effect(_get_all_enemies(is_player, context), -1, 1, result, card_name, "magenta", "敵全体ATK-1,HP-1")
 
 		"purple_019":  # 登場時:敵全体を2ターン凍結
 			_apply_aoe_status_effect(_get_all_enemies(is_player, context), StatusEffect.FROZEN, 2, result, card_name, "magenta", "敵全体を2ターン凍結")
@@ -548,8 +548,8 @@ func _dispatch_summon_effect(effect_id: String, card_ui, is_player: bool, contex
 		"white_015":  # 登場時:自分HP+6
 			_apply_player_heal_effect(result, "white", card_name, 6)
 
-		"white_018":  # 登場時:味方全体状態異常解除+HP+2
-			_apply_aoe_clear_status_effect(_get_all_allies(is_player, context), 2, result, card_name, "white", "味方全体状態異常解除+HP+2")
+		"white_018":  # 登場時:味方全体状態異常解除+HP+1
+			_apply_aoe_clear_status_effect(_get_all_allies(is_player, context), 1, result, card_name, "white", "味方全体状態異常解除+HP+1")
 
 		"white_020":  # 登場時:味方全体HP+3,ATK+1
 			_apply_aoe_atk_and_heal_effect(_get_all_allies(is_player, context), 1, 3, result, card_name, "white", "味方全体HP+3,ATK+1")

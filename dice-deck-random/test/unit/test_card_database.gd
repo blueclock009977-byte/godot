@@ -134,7 +134,7 @@ func test_effect_budget_modifier_covers_all_registered_effect_ids():
 func test_effect_budget_modifier_key_rules():
 	# ドロー 1枚=-12 / 2枚=-24
 	assert_eq(CardDatabase._get_effect_budget_modifier("blue_014"), -12, "draw 1 should be -12")
-	assert_eq(CardDatabase._get_effect_budget_modifier("yellow_003"), -24, "draw 2 should be -24")
+	assert_eq(CardDatabase._get_effect_budget_modifier("yellow_003"), -12, "draw 1 should be -12")
 
 	# 召喚時1ダメージ相当（red_001: 敵1体HP-2 は強めなので -8）
 	assert_lte(CardDatabase._get_effect_budget_modifier("red_001"), -6, "summon damage should be at least as costly as -6")

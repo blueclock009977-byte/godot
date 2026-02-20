@@ -366,7 +366,7 @@ func test_summon_effect_red_001() -> void:
 func test_summon_effect_red_001_marks_destroy_target_when_hp_zero() -> void:
 	var mock_card_ui = _create_mock_card_ui("red_001")
 	var enemy_slot = _create_mock_slot_with_ui("")
-	enemy_slot.card_ui.current_hp = 2
+	enemy_slot.card_ui.current_hp = 1
 	var context := {
 		"player_slots": [null, null, null, null, null, null],
 		"opponent_slots": [enemy_slot, null, null, null, null, null],
@@ -399,11 +399,11 @@ func test_summon_effect_yellow_001() -> void:
 	assert_true(result.has("target_ally_heal") or result.size() == 0, "yellow_001 should have target_ally_heal or be empty")
 
 func test_summon_effect_yellow_003() -> void:
-	# yellow_003: 登場時手札2枚ドロー
+	# yellow_003: 登場時手札1枚ドロー
 	var mock_card_ui = _create_mock_card_ui("yellow_003")
 	var context := _create_empty_context()
 	var result := EffectManager.process_summon_effect(mock_card_ui, true, context)
-	assert_eq(result.get("draw", 0), 2, "yellow_003 should draw 2 cards")
+	assert_eq(result.get("draw", 0), 1, "yellow_003 should draw 1 card")
 
 func test_summon_effect_yellow_009_uses_unified_log_format() -> void:
 	var mock_card_ui = _create_mock_card_ui("yellow_009")
@@ -1390,9 +1390,9 @@ func test_summon_targeted_damage_helper_is_shared_for_red_summon_effects() -> vo
 	var script_text := FileAccess.get_file_as_string("res://autoload/effect_manager.gd")
 	assert_ne(script_text.find("func _apply_targeted_damage_effect"), -1,
 		"effect_manager should define _apply_targeted_damage_effect")
-	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 2, result, card_name, \"red\", \"にHP-2\")"), -1,
+	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 1, result, card_name, \"red\", \"にHP-1\")"), -1,
 		"red_001 should delegate to targeted damage helper")
-	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 3, result, card_name, \"red\", \"にHP-3\")"), -1,
+	assert_ne(script_text.find("_apply_targeted_damage_effect(is_player, context, 2, result, card_name, \"red\", \"にHP-2\")"), -1,
 		"red_011 should delegate to targeted damage helper")
 
 func test_death_targeted_damage_helper_is_shared_for_single_target_death_damage_effects() -> void:
@@ -1527,8 +1527,8 @@ func test_draw_effect_helper_is_shared_for_basic_draw_effects() -> void:
 		"effect_manager should define _apply_draw_effect helper")
 	assert_ne(script_text.find("_apply_draw_effect(result, \"cyan\", card_name, 1)"), -1,
 		"blue_014 should delegate to draw helper")
-	assert_ne(script_text.find("_apply_draw_effect(result, \"yellow\", card_name, 2)"), -1,
-		"yellow_003 should delegate to draw helper")
+	assert_true(script_text.count("_apply_draw_effect(result, \"yellow\", card_name, 1)") >= 2,
+		"yellow_003 and yellow_005 should delegate to draw helper with draw 1")
 	assert_ne(script_text.find("_apply_draw_effect(result, \"yellow\", card_name, 1)"), -1,
 		"yellow_005 should delegate to draw helper")
 

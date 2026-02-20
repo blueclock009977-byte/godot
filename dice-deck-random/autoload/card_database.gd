@@ -22,7 +22,7 @@ func _generate_card_pool() -> void:
 
 	# ═══════════════════════════════════════════
 	# バランス計算式（2026-02-20再調整）:
-	# budget = 14 + 10 * cost
+	# budget = 12 + 8 * cost
 	# score = 5*HP + 3*ATK + 3*面数 + (ATK*面数)//4
 	# 効果カードは効果強度で予算補正（強い効果は大きく減算、デメリットは加算）
 	# 2026-02-20 調整方針:
@@ -291,9 +291,8 @@ func _score_card(card: CardData) -> int:
 const MIN_CARD_SCORE := 5  # 1/0/0 相当の最低ステータスコスト
 
 func _base_budget(cost: int) -> int:
-	# 2026-02-20 再調整: コスト1の総予算を24に設定
-	# -> 最低ステ5を確保すると、効果予算の上限は19
-	return 14 + 10 * cost
+	# パパ指定の基礎予算式
+	return 12 + 8 * cost
 
 func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 	for _i in range(64):
@@ -354,7 +353,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"red_013": -4, "red_014": -9, "red_015": -13, "red_016": -11, "red_017": -14, "red_018": -12,
 
 		# yellow
-		"yellow_001": -8, "yellow_002": -12, "yellow_003": -24, "yellow_004": -5, "yellow_005": -12, "yellow_006": -9,
+		"yellow_001": -8, "yellow_002": -12, "yellow_003": -12, "yellow_004": -5, "yellow_005": -12, "yellow_006": -9,
 		"yellow_007": -8, "yellow_008": -4, "yellow_009": -9, "yellow_010": -8, "yellow_011": -9, "yellow_012": -10,
 		"yellow_013": -12, "yellow_014": -6, "yellow_015": -8, "yellow_016": -12, "yellow_017": -11,
 		"yellow_018": -6, "yellow_019": -11, "yellow_020": -13,

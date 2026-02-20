@@ -98,11 +98,11 @@ func test_summon_effect_red_001_direct_damage() -> void:
 
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
 
-	assert_eq(enemy.current_hp, 3, "Enemy HP should be reduced by 2")
+	assert_eq(enemy.current_hp, 4, "Enemy HP should be reduced by 1")
 	assert_true(result.has("log"), "Result should have log")
 
 func test_summon_effect_red_017_aoe_damage() -> void:
-	# red_017: 登場時:敵全体HP-3
+	# red_017: 登場時:敵全体HP-2
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "red_017"
 	card_ui.card_data.card_name = "灼熱の魔王"
@@ -126,8 +126,8 @@ func test_summon_effect_red_017_aoe_damage() -> void:
 
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
 
-	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be 6-3=3")
-	assert_eq(enemy2.current_hp, 1, "Enemy2 HP should be 4-3=1")
+	assert_eq(enemy1.current_hp, 4, "Enemy1 HP should be 6-2=4")
+	assert_eq(enemy2.current_hp, 2, "Enemy2 HP should be 4-2=2")
 
 func test_summon_effect_yellow_016_ally_atk_buff() -> void:
 	# yellow_016: 登場時:味方全体ATK+2
@@ -632,13 +632,13 @@ func test_summon_effect_purple_018_aoe_atk_hp_debuff() -> void:
 
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
 
-	assert_eq(enemy1._atk_modifier, -2, "Enemy1 ATK should be -2")
-	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be reduced by 2")
-	assert_eq(enemy2._atk_modifier, -2, "Enemy2 ATK should be -2")
-	assert_eq(enemy2.current_hp, 4, "Enemy2 HP should be reduced by 2")
+	assert_eq(enemy1._atk_modifier, -1, "Enemy1 ATK should be -1")
+	assert_eq(enemy1.current_hp, 4, "Enemy1 HP should be reduced by 1")
+	assert_eq(enemy2._atk_modifier, -1, "Enemy2 ATK should be -1")
+	assert_eq(enemy2.current_hp, 5, "Enemy2 HP should be reduced by 1")
 
 func test_summon_effect_white_018_clear_status_and_heal() -> void:
-	# white_018: 登場時:味方全体状態異常解除+HP+2
+	# white_018: 登場時:味方全体状態異常解除+HP+1
 	var card_ui := MockCardUI.new()
 	card_ui.card_data.effect_id = "white_018"
 	card_ui.card_data.card_name = "浄化の天使"
@@ -660,7 +660,7 @@ func test_summon_effect_white_018_clear_status_and_heal() -> void:
 
 	assert_false(ally.has_status(1), "Ally should not be frozen")
 	assert_false(ally.has_status(2), "Ally should not be poisoned")
-	assert_eq(ally.current_hp, 5, "Ally HP should be +2")
+	assert_eq(ally.current_hp, 4, "Ally HP should be +1")
 
 func test_constant_effect_purple_017_enemy_summon_cost() -> void:
 	# purple_017: 常時:敵の召喚コスト+2
@@ -967,8 +967,8 @@ func test_summon_effect_red_015_enemy_aoe_damage() -> void:
 
 	var result: Dictionary = effect_manager.process_summon_effect(card_ui, true, context)
 
-	assert_eq(enemy1.current_hp, 3, "Enemy1 HP should be -2")
-	assert_eq(enemy2.current_hp, 2, "Enemy2 HP should be -2")
+	assert_eq(enemy1.current_hp, 4, "Enemy1 HP should be -1")
+	assert_eq(enemy2.current_hp, 3, "Enemy2 HP should be -1")
 
 func test_summon_effect_white_004_ally_heal() -> void:
 	# white_004: 登場時:味方全体HP+2
