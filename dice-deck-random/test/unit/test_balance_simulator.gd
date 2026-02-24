@@ -161,6 +161,23 @@ func _apply_sim_effect(result: Dictionary, is_player: bool, state: Dictionary,
 				state["hand_o"].append(state["deck_o"][state["deck_idx_o"]])
 				state["deck_idx_o"] += 1
 
+	if result.has("mana_full"):
+		var mk := "mana_p" if is_player else "mana_o"
+		var mmk := "max_mana_p" if is_player else "max_mana_o"
+		state[mk] = state[mmk]
+
+	if result.has("self_damage"):
+		if is_player:
+			state["hp_p"] -= result["self_damage"]
+		else:
+			state["hp_o"] -= result["self_damage"]
+
+	if result.has("heal_player_full"):
+		if is_player:
+			state["hp_p"] = STARTING_HP
+		else:
+			state["hp_o"] = STARTING_HP
+
 	# HP0になったカードを破壊
 	var to_destroy: Array = []
 	for target in result.get("damaged_targets", []):
