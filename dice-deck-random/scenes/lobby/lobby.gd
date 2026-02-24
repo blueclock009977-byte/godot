@@ -334,7 +334,7 @@ func _setup_keyboard_navigation() -> void:
 			main_buttons.append(child)
 			_apply_focus_style(child)
 	_link_buttons_vertical(main_buttons)
-	
+
 	# Get buttons from friend_menu
 	var friend_buttons: Array[Button] = []
 	for child in friend_menu.get_children():
@@ -342,7 +342,7 @@ func _setup_keyboard_navigation() -> void:
 			friend_buttons.append(child)
 			_apply_focus_style(child)
 	_link_buttons_vertical(friend_buttons)
-	
+
 	# Focus first button of main menu
 	if main_buttons.size() > 0:
 		main_buttons[0].call_deferred("grab_focus")

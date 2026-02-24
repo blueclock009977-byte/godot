@@ -610,13 +610,13 @@ func _setup_keyboard_navigation() -> void:
 		focus_style.corner_radius_bottom_left = 8
 		focus_style.corner_radius_bottom_right = 8
 		btn.add_theme_stylebox_override("focus", focus_style)
-	
+
 	# Link buttons horizontally
 	back_btn.focus_neighbor_right = clear_btn.get_path()
 	clear_btn.focus_neighbor_left = back_btn.get_path()
 	clear_btn.focus_neighbor_right = save_btn.get_path()
 	save_btn.focus_neighbor_left = clear_btn.get_path()
-	
+
 	# Initial focus visual
 	_update_focus_visual()
 
@@ -633,13 +633,13 @@ func _input(event: InputEvent) -> void:
 			slot_dialog = null
 			get_viewport().set_input_as_handled()
 		return
-	
+
 	# Escape to go back
 	if event.is_action_pressed("ui_cancel"):
 		GameManager.change_scene("res://scenes/title/title_screen.tscn")
 		get_viewport().set_input_as_handled()
 		return
-	
+
 	# Tab to switch focus area
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		if event.shift_pressed:
@@ -663,7 +663,7 @@ func _input(event: InputEvent) -> void:
 		_update_focus_visual()
 		get_viewport().set_input_as_handled()
 		return
-	
+
 	# Navigation based on focus area
 	match focus_area:
 		FocusArea.POOL:
@@ -676,7 +676,7 @@ func _input(event: InputEvent) -> void:
 func _handle_pool_input(event: InputEvent) -> void:
 	if pool_cards.is_empty():
 		return
-	
+
 	var changed := false
 	if event.is_action_pressed("ui_right"):
 		pool_focus_index = mini(pool_focus_index + 1, pool_cards.size() - 1)
@@ -696,7 +696,7 @@ func _handle_pool_input(event: InputEvent) -> void:
 			if card_ui and card_ui.card_data:
 				_add_card_to_deck(card_ui.card_data)
 		changed = true
-	
+
 	if changed:
 		_update_focus_visual()
 		get_viewport().set_input_as_handled()
@@ -705,7 +705,7 @@ func _handle_deck_input(event: InputEvent) -> void:
 	var deck_cards := deck_grid.get_children()
 	if deck_cards.is_empty():
 		return
-	
+
 	var changed := false
 	if event.is_action_pressed("ui_right"):
 		deck_focus_index = mini(deck_focus_index + 1, deck_cards.size() - 1)
@@ -718,7 +718,7 @@ func _handle_deck_input(event: InputEvent) -> void:
 			_remove_card_from_deck(deck_focus_index)
 			deck_focus_index = mini(deck_focus_index, deck.size() - 1)
 		changed = true
-	
+
 	if changed:
 		_update_focus_visual()
 		get_viewport().set_input_as_handled()
@@ -729,7 +729,7 @@ func _handle_button_input(event: InputEvent) -> void:
 	var focus_idx := buttons.find(current_focus)
 	if focus_idx == -1:
 		focus_idx = 0
-	
+
 	if event.is_action_pressed("ui_right"):
 		focus_idx = mini(focus_idx + 1, buttons.size() - 1)
 		buttons[focus_idx].grab_focus()
@@ -747,13 +747,13 @@ func _update_focus_visual() -> void:
 	for card_ui in deck_grid.get_children():
 		if card_ui and is_instance_valid(card_ui):
 			card_ui.modulate = Color.WHITE
-	
+
 	# Remove button focus if not in button area
 	if focus_area != FocusArea.BUTTONS:
 		var current_focus := get_viewport().gui_get_focus_owner()
 		if current_focus is Button:
 			current_focus.release_focus()
-	
+
 	# Apply focus visual based on area
 	match focus_area:
 		FocusArea.POOL:

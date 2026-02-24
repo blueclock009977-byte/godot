@@ -1071,7 +1071,7 @@ func _update_constant_atk_modifiers() -> void:
 func _input(event: InputEvent) -> void:
 	if game_over:
 		return
-	
+
 	# Space to advance phase (when it's player's turn)
 	if event.is_action_pressed("ui_accept") and event is InputEventKey:
 		var key_event := event as InputEventKey
@@ -1080,7 +1080,7 @@ func _input(event: InputEvent) -> void:
 				_on_end_phase()
 				get_viewport().set_input_as_handled()
 			return
-	
+
 	# Escape to cancel selection
 	if event.is_action_pressed("ui_cancel"):
 		if select_mode != SelectMode.NONE:
@@ -1088,7 +1088,7 @@ func _input(event: InputEvent) -> void:
 			_update_keyboard_focus_visual()
 			get_viewport().set_input_as_handled()
 		return
-	
+
 	# Tab to switch between hand and field
 	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
 		if keyboard_focus_area == KeyboardFocusArea.HAND:
@@ -1100,7 +1100,7 @@ func _input(event: InputEvent) -> void:
 		_update_keyboard_focus_visual()
 		get_viewport().set_input_as_handled()
 		return
-	
+
 	# Handle navigation based on focus area
 	if keyboard_focus_area == KeyboardFocusArea.HAND:
 		_handle_hand_keyboard_input(event)
@@ -1110,7 +1110,7 @@ func _input(event: InputEvent) -> void:
 func _handle_hand_keyboard_input(event: InputEvent) -> void:
 	if player_hand.is_empty():
 		return
-	
+
 	var changed := false
 	if event.is_action_pressed("ui_right"):
 		hand_focus_index = mini(hand_focus_index + 1, player_hand.size() - 1)
@@ -1129,18 +1129,18 @@ func _handle_hand_keyboard_input(event: InputEvent) -> void:
 			if card_ui:
 				_on_hand_card_clicked(card_ui)
 		changed = true
-	
+
 	if changed:
 		_update_keyboard_focus_visual()
 		get_viewport().set_input_as_handled()
 
 func _handle_field_keyboard_input(event: InputEvent) -> void:
 	var changed := false
-	
+
 	# Field layout (player slots):
 	# Front: 0, 1, 2
 	# Back:  3, 4, 5
-	
+
 	if event.is_action_pressed("ui_right"):
 		if field_focus_index in [0, 1, 3, 4]:
 			field_focus_index += 1
@@ -1175,7 +1175,7 @@ func _handle_field_keyboard_input(event: InputEvent) -> void:
 			if slot:
 				_on_player_slot_clicked(slot)
 		changed = true
-	
+
 	if changed:
 		_update_keyboard_focus_visual()
 		get_viewport().set_input_as_handled()
@@ -1187,14 +1187,14 @@ func _update_keyboard_focus_visual() -> void:
 		if card_ui and is_instance_valid(card_ui):
 			if card_ui != selected_hand_card:
 				card_ui.modulate = Color.WHITE
-	
+
 	# Clear field slot keyboard focus (don't touch highlight from selection)
 	for i in range(player_slots.size()):
 		var slot = player_slots[i]
 		if slot and is_instance_valid(slot):
 			# Only remove keyboard focus border, keep selection highlight
 			slot.set_keyboard_focused(false)
-	
+
 	# Apply keyboard focus visual
 	if keyboard_focus_area == KeyboardFocusArea.HAND:
 		if hand_focus_index < player_hand.size():

@@ -32,7 +32,7 @@ func _ready() -> void:
 	back_btn.add_theme_font_size_override("font_size", 28)
 	back_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
 	vbox.add_child(back_btn)
-	
+
 	# Setup keyboard navigation - auto focus on button
 	_setup_keyboard_navigation(back_btn)
 
