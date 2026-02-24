@@ -224,6 +224,17 @@ func _process_defense_effect(defender_ui: CardUI, damage: int, is_player: bool) 
 func _process_turn_start_effects(is_player: bool) -> void:
 	_process_turn_timing_effects(EffectManager.Timing.TURN_START, is_player)
 
+	# 敵の常時効果によるマナ減少（purple_010等）
+	var context := _build_effect_context()
+	var mana_penalty := EffectManager.get_enemy_turn_start_mana_penalty(is_player, context)
+	if mana_penalty > 0:
+		if is_player:
+			player_mana = max(0, player_mana - mana_penalty)
+			_log("[color=magenta]敵の効果でマナ-%d (マナ: %d/%d)[/color]" % [mana_penalty, player_mana, player_max_mana])
+		else:
+			opponent_mana = max(0, opponent_mana - mana_penalty)
+			_log("[color=magenta]味方の効果で敵マナ-%d[/color]" % mana_penalty)
+
 func _process_turn_end_effects(is_player: bool) -> void:
 	_process_turn_timing_effects(EffectManager.Timing.TURN_END, is_player)
 

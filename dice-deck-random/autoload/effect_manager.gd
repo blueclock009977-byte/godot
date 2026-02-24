@@ -1120,6 +1120,48 @@ func get_summon_cost_modifier(is_player: bool, context: Dictionary) -> int:
 
 	return modifier
 
+## ターン開始時の敵効果によるマナ減少を計算
+func get_enemy_turn_start_mana_penalty(is_player: bool, context: Dictionary) -> int:
+	var penalty := 0
+	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
+
+	for slot in enemy_slots:
+		if slot and not slot.is_empty():
+			var effect_id: String = slot.card_ui.card_data.effect_id
+			match effect_id:
+				"purple_010":  # 相手ターン開始時マナ-1
+					penalty += 1
+
+	return penalty
+
+## ドロー枚数修正を取得（敵の効果による減少）
+func get_draw_modifier(is_player: bool, context: Dictionary) -> int:
+	var modifier := 0
+	var enemy_slots: Array = context["opponent_slots"] if is_player else context["player_slots"]
+
+	for slot in enemy_slots:
+		if slot and not slot.is_empty():
+			var effect_id: String = slot.card_ui.card_data.effect_id
+			match effect_id:
+				"purple_014":  # 敵のドロー枚数-1
+					modifier -= 1
+
+	return modifier
+
+## プレイヤーへの直接ダメージ軽減率を取得（常時効果）
+func get_direct_damage_reduction(is_player: bool, context: Dictionary) -> float:
+	var reduction := 0.0
+	var ally_slots: Array = context["player_slots"] if is_player else context["opponent_slots"]
+
+	for slot in ally_slots:
+		if slot and not slot.is_empty():
+			var effect_id: String = slot.card_ui.card_data.effect_id
+			match effect_id:
+				"white_012":  # 自分への直接ダメージ半減
+					reduction = 0.5
+
+	return reduction
+
 # ═══════════════════════════════════════════
 # ヘルパー関数
 # ═══════════════════════════════════════════
