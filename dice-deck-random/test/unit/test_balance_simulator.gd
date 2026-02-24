@@ -6,13 +6,76 @@ extends GutTest
 const GAMES_PER_MATCHUP := 100  # 各マッチアップあたりのゲーム数
 const MAX_TURNS := 50  # 最大ターン数（無限ループ防止）
 const STARTING_HP := 20
-const STARTING_MANA := 1
-const SECOND_PLAYER_STARTING_MANA_BONUS := 0  # 後攻の恒久的な初期マナ補正は無効
-const SECOND_PLAYER_INITIAL_DRAW_BONUS := 0  # Phase 11: 初期ドロー補正を解除して補正過多を緩和
-const SECOND_PLAYER_FIRST_TURN_TEMP_MANA_BONUS := 1  # Phase 10維持: 後攻1ターン目のみ使い切りの一時マナ+1
-const MAX_MANA := 10
+const MAX_MANA_CAP := 5       # 実際のバトルに合わせて変更（旧: MAX_MANA = 10）
 const DECK_SIZE := 20
-const INITIAL_HAND_SIZE := 3
+const INITIAL_HAND_SIZE := 3  # グレー+1色=2色デッキ → 3枚
+
+
+## CardUI の軽量モック。EffectManager のダックタイピング要件を満たす。
+class SimCard:
+	var card_data: CardData
+	var current_hp: int
+	var current_atk: int
+	var attack_dice: Array
+	var has_revived: bool = false
+	var _status: Dictionary = {}  # EffectManager.StatusEffect(int) -> remaining turns
+
+	func _init(data: CardData) -> void:
+		card_data = data
+		current_hp = data.hp
+		current_atk = data.atk
+		attack_dice = data.attack_dice.duplicate()
+
+	func heal(amount: int) -> void:
+		if amount > 0:
+			current_hp += amount
+
+	func modify_atk(amount: int) -> void:
+		current_atk += amount
+
+	func apply_status(effect, duration: int = 1) -> void:
+		var s: int = int(effect)
+		_status[s] = maxi(_status.get(s, 0), duration)
+
+	func has_status(effect) -> bool:
+		return _status.get(int(effect), 0) > 0
+
+	func tick_status_effects() -> void:
+		var to_remove: Array = []
+		for s in _status:
+			_status[s] -= 1
+			if _status[s] <= 0:
+				to_remove.append(s)
+		for s in to_remove:
+			_status.erase(s)
+
+
+## FieldSlot の軽量モック。EffectManager/BattleUtils のダックタイピング要件を満たす。
+class SimSlot:
+	var card_ui  # SimCard or null
+	var slot_index: int
+	var lane: int
+	var is_front_row: bool
+	var is_player_side: bool
+
+	func _init(idx: int, is_player: bool) -> void:
+		slot_index = idx
+		lane = idx % 3
+		is_front_row = idx < 3
+		is_player_side = is_player
+		card_ui = null
+
+	func is_empty() -> bool:
+		return card_ui == null
+
+	func place_card(sim_card) -> void:
+		card_ui = sim_card
+
+	func remove_card():
+		var c = card_ui
+		card_ui = null
+		return c
+
 
 var _results: Dictionary = {}
 
@@ -133,16 +196,10 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 	var deck_idx_p := INITIAL_HAND_SIZE
 	var deck_idx_o := INITIAL_HAND_SIZE
 
-	# Phase 8: 先後補正の弱化版として、後攻のみ初期ドロー+1
-	for _i in range(SECOND_PLAYER_INITIAL_DRAW_BONUS):
-		if deck_idx_o < deck_o.size():
-			hand_o.append(deck_o[deck_idx_o])
-			deck_idx_o += 1
-
 	var hp_p := STARTING_HP
 	var hp_o := STARTING_HP
-	var mana_p := STARTING_MANA
-	var mana_o := STARTING_MANA + SECOND_PLAYER_STARTING_MANA_BONUS
+	var mana_p := 1
+	var mana_o := 1
 
 	var field_p: Array = [null, null, null, null, null, null]  # 0-2: front, 3-5: back
 	var field_o: Array = [null, null, null, null, null, null]
@@ -175,7 +232,7 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 		else:
 			hand_o.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
 			var to_remove := []
-			var temp_mana_bonus := SECOND_PLAYER_FIRST_TURN_TEMP_MANA_BONUS if opponent_turns_taken == 0 else 0
+			var temp_mana_bonus := 1 if opponent_turns_taken == 0 else 0  # 後攻1ターン目のみ使い切りの一時マナ+1
 			var available_mana := mana_o + temp_mana_bonus
 			for card in hand_o:
 				if card.mana_cost <= available_mana:
@@ -227,12 +284,12 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 			if deck_idx_p < deck_p.size():
 				hand_p.append(deck_p[deck_idx_p])
 				deck_idx_p += 1
-			mana_p = mini(mana_p + 1, MAX_MANA)
+			mana_p = mini(mana_p + 1, MAX_MANA_CAP)
 		else:
 			if deck_idx_o < deck_o.size():
 				hand_o.append(deck_o[deck_idx_o])
 				deck_idx_o += 1
-			mana_o = mini(mana_o + 1, MAX_MANA)
+			mana_o = mini(mana_o + 1, MAX_MANA_CAP)
 
 		if is_player_turn:
 			player_turns_taken += 1
