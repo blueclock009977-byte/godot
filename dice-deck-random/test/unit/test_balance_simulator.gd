@@ -118,76 +118,286 @@ func _make_mono_deck(color: CardData.ColorType) -> Array:
 	return deck
 
 
-func _make_card_dict(card: CardData, slot_idx: int) -> Dictionary:
-	"""カードデータからシミュレーション用辞書を作成"""
-	return {
-		"card": card,
-		"atk": card.atk,
-		"hp": card.hp,
-		"lane": slot_idx % 3,
-		"is_front": slot_idx < 3,
-		"dice": card.attack_dice.duplicate(),
-		"idx": slot_idx
-	}
+func _make_context(p_slots: Array, o_slots: Array, dice_val: int) -> Dictionary:
+	return {"player_slots": p_slots, "opponent_slots": o_slots, "current_dice": dice_val}
 
 
-func _find_target(attacker: Dictionary, defenders: Array) -> Variant:
-	"""攻撃対象を探す"""
-	var lane: int = attacker["lane"]
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and d["is_front"]:
-			return d
-	for d in defenders:
-		if d["hp"] > 0 and d["lane"] == lane and not d["is_front"]:
-			return d
+## EffectManager の結果 Dictionary をシミュ状態に適用する。
+func _apply_sim_effect(result: Dictionary, is_player: bool, state: Dictionary,
+		p_slots: Array, o_slots: Array) -> void:
+	if result.is_empty():
+		return
+
+	if result.has("mana"):
+		var mk := "mana_p" if is_player else "mana_o"
+		var mmk := "max_mana_p" if is_player else "max_mana_o"
+		state[mk] = mini(state[mk] + result["mana"], state[mmk])
+
+	if result.has("direct_damage"):
+		if is_player:
+			state["hp_o"] -= result["direct_damage"]
+		else:
+			state["hp_p"] -= result["direct_damage"]
+
+	if result.has("heal_player"):
+		if is_player:
+			state["hp_p"] = mini(state["hp_p"] + result["heal_player"], STARTING_HP)
+		else:
+			state["hp_o"] = mini(state["hp_o"] + result["heal_player"], STARTING_HP)
+
+	if result.has("draw"):
+		for i in range(result["draw"]):
+			if is_player and state["deck_idx_p"] < state["deck_p"].size():
+				state["hand_p"].append(state["deck_p"][state["deck_idx_p"]])
+				state["deck_idx_p"] += 1
+			elif not is_player and state["deck_idx_o"] < state["deck_o"].size():
+				state["hand_o"].append(state["deck_o"][state["deck_idx_o"]])
+				state["deck_idx_o"] += 1
+
+	# HP0になったカードを破壊
+	var to_destroy: Array = []
+	for target in result.get("damaged_targets", []):
+		if target and target.current_hp <= 0:
+			to_destroy.append(target)
+	for target in result.get("destroy_targets", []):
+		if target:
+			to_destroy.append(target)
+	_destroy_sim_cards(to_destroy, p_slots, o_slots, state)
+
+
+func _destroy_sim_cards(targets: Array, p_slots: Array, o_slots: Array, state: Dictionary) -> void:
+	for target in targets:
+		for slot in p_slots:
+			if not slot.is_empty() and slot.card_ui == target:
+				slot.remove_card()
+				# ON_DEATH 効果を発動
+				var ctx := _make_context(p_slots, o_slots, 0)
+				var result = EffectManager.process_timing_event(
+					EffectManager.Timing.ON_DEATH,
+					{"card_ui": target, "is_player": true, "context": ctx}
+				)
+				_apply_sim_effect(result, true, state, p_slots, o_slots)
+				break
+		for slot in o_slots:
+			if not slot.is_empty() and slot.card_ui == target:
+				slot.remove_card()
+				var ctx := _make_context(p_slots, o_slots, 0)
+				var result = EffectManager.process_timing_event(
+					EffectManager.Timing.ON_DEATH,
+					{"card_ui": target, "is_player": false, "context": ctx}
+				)
+				_apply_sim_effect(result, false, state, p_slots, o_slots)
+				break
+
+
+func _tick_all_statuses(p_slots: Array, o_slots: Array) -> void:
+	for slot in p_slots:
+		if not slot.is_empty():
+			slot.card_ui.tick_status_effects()
+	for slot in o_slots:
+		if not slot.is_empty():
+			slot.card_ui.tick_status_effects()
+
+
+## battle.gd の _ai_summon_phase() を移植。
+## 高コスト優先・フロント行・相手レーン・中央レーンをスコアで選択。
+func _ai_summon(is_player: bool, p_slots: Array, o_slots: Array, state: Dictionary) -> void:
+	var my_slots: Array = p_slots if is_player else o_slots
+	var opp_slots: Array = o_slots if is_player else p_slots
+	var mana_key := "mana_p" if is_player else "mana_o"
+	var hand: Array = state["hand_p"] if is_player else state["hand_o"]
+
+	var sorted_hand := hand.duplicate()
+	sorted_hand.sort_custom(func(a, b): return a.mana_cost > b.mana_cost)
+
+	for card_data in sorted_hand:
+		if card_data.mana_cost > state[mana_key]:
+			continue
+
+		# スロットスコアリング
+		var best_slot: SimSlot = null
+		var best_score := -1
+		for slot in my_slots:
+			if not slot.is_empty():
+				continue
+			var score := 0
+			if slot.is_front_row:
+				score += 10
+			if not opp_slots[slot.lane].is_empty() or not opp_slots[slot.lane + 3].is_empty():
+				score += 5
+			if slot.lane == 1:
+				score += 2
+			if score > best_score:
+				best_score = score
+				best_slot = slot
+
+		if best_slot == null:
+			break  # フィールド満杯
+
+		var sim_card := SimCard.new(card_data)
+		best_slot.place_card(sim_card)
+		hand.erase(card_data)
+		state[mana_key] -= card_data.mana_cost
+
+		# 召喚時 HP ボーナス（常時効果 green_007, white_017 など）
+		var ctx := _make_context(p_slots, o_slots, 0)
+		var hp_bonus := EffectManager.get_constant_hp_bonus(sim_card, is_player, ctx)
+		if hp_bonus > 0:
+			sim_card.current_hp += hp_bonus
+		# 自身が HP ボーナス付与効果を持つ場合、既存味方にも適用
+		var eid := card_data.effect_id
+		if eid in ["green_007", "white_017"]:
+			var bonus := 1 if eid == "green_007" else 2
+			for slot in my_slots:
+				if not slot.is_empty() and slot.card_ui != sim_card:
+					slot.card_ui.current_hp += bonus
+
+		# ON_SUMMON 効果
+		var result = EffectManager.process_timing_event(
+			EffectManager.Timing.ON_SUMMON,
+			{"card_ui": sim_card, "is_player": is_player, "context": ctx}
+		)
+		_apply_sim_effect(result, is_player, state, p_slots, o_slots)
+
+
+func _find_target_slot(attacker_slot: SimSlot, defender_slots: Array):
+	var lane := attacker_slot.lane
+	if not defender_slots[lane].is_empty():
+		return defender_slots[lane]
+	if not defender_slots[lane + 3].is_empty():
+		return defender_slots[lane + 3]
 	return null
 
 
-func _simulate_single_battle(dice_val: int, p_cards: Array, o_cards: Array, is_player_turn: bool) -> Array:
-	"""単一のダイス結果に対するバトルをシミュレート"""
-	var turn_cards := p_cards if is_player_turn else o_cards
-	var def_cards := o_cards if is_player_turn else p_cards
-
-	var dmg_to_opp := 0
-	var dmg_to_me := 0
+## バトルフェーズ全体を解決。ON_ATTACK/DEFENSE/DEATH 効果も適用。
+func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
+		is_player_turn: bool, state: Dictionary) -> void:
+	var turn_slots := p_slots if is_player_turn else o_slots
+	var def_slots := o_slots if is_player_turn else p_slots
+	var attacker_is_player := is_player_turn
 
 	# ターンプレイヤー側の攻撃
-	turn_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in turn_cards:
-		if card["hp"] <= 0:
-			continue
-		if not card["dice"].has(dice_val):
-			continue
-		var target = _find_target(card, def_cards)
-		if target == null:
-			# 直接攻撃：プレイヤーHPにダメージ
-			if is_player_turn:
-				dmg_to_opp += card["atk"]
+	if not BattleUtils.is_dice_blocked(dice_val, attacker_is_player, _make_context(p_slots, o_slots, dice_val)):
+		for i in range(6):
+			var attacker_slot: SimSlot = turn_slots[i]
+			if attacker_slot.is_empty():
+				continue
+			var attacker: SimCard = attacker_slot.card_ui
+			if attacker.current_hp <= 0:
+				continue
+			var effective_dice := BattleUtils.get_effective_attack_dice(
+				attacker, attacker_is_player, _make_context(p_slots, o_slots, dice_val))
+			if dice_val not in effective_dice:
+				continue
+
+			var target_slot = _find_target_slot(attacker_slot, def_slots)
+			var target: SimCard = target_slot.card_ui if target_slot else null
+
+			var ctx := _make_context(p_slots, o_slots, dice_val)
+			var atk_result := EffectManager.process_timing_event(
+				EffectManager.Timing.ON_ATTACK,
+				{"attacker_ui": attacker, "defender_ui": target,
+				 "is_player": attacker_is_player, "context": ctx})
+
+			var damage := attacker.current_atk
+			damage += EffectManager.get_constant_atk_modifier(attacker, attacker_is_player, ctx)
+			if atk_result.has("atk_bonus"):
+				damage += atk_result["atk_bonus"]
+
+			if target_slot == null:
+				# 直接ダメージ
+				if attacker_is_player:
+					state["hp_o"] -= damage
+				else:
+					state["hp_p"] -= damage
+			elif atk_result.get("instant_kill", false):
+				target.current_hp = 0
 			else:
-				dmg_to_me += card["atk"]
-		else:
-			# カードへの攻撃：カードHPにのみダメージ（プレイヤーHPには影響なし）
-			target["hp"] -= card["atk"]
+				var def_result := EffectManager.process_timing_event(
+					EffectManager.Timing.ON_DEFENSE,
+					{"defender_ui": target, "damage": damage,
+					 "is_player": not attacker_is_player, "context": ctx})
+				var final_damage: int = def_result.get("final_damage", damage)
+				var reduction := EffectManager.get_damage_reduction_for_card(
+					target, not attacker_is_player, ctx)
+				final_damage = maxi(0, final_damage - reduction)
+				target.current_hp -= final_damage
+
+				if atk_result.get("lifesteal", false) and final_damage > 0:
+					attacker.current_hp += final_damage
+
+				if def_result.get("reflect", false) and final_damage > 0:
+					var refl_reduction := EffectManager.get_damage_reduction_for_card(
+						attacker, attacker_is_player, ctx)
+					var reflected := maxi(0, final_damage - refl_reduction)
+					if reflected > 0:
+						attacker.current_hp -= reflected
+						if attacker.current_hp <= 0:
+							attacker_slot.remove_card()
+
+			if target and target_slot and target.current_hp <= 0:
+				_destroy_sim_cards([target], p_slots, o_slots, state)
 
 	# 防御側の反撃
-	def_cards.sort_custom(func(a, b): return a["idx"] < b["idx"])
-	for card in def_cards:
-		if card["hp"] <= 0:
-			continue
-		if not card["dice"].has(dice_val):
-			continue
-		var target = _find_target(card, turn_cards)
-		if target == null:
-			# 直接攻撃：プレイヤーHPにダメージ
-			if is_player_turn:
-				dmg_to_me += card["atk"]
-			else:
-				dmg_to_opp += card["atk"]
-		else:
-			# カードへの攻撃：カードHPにのみダメージ
-			target["hp"] -= card["atk"]
+	if not BattleUtils.is_dice_blocked(dice_val, not attacker_is_player, _make_context(p_slots, o_slots, dice_val)):
+		for i in range(6):
+			var defender_slot: SimSlot = def_slots[i]
+			if defender_slot.is_empty():
+				continue
+			var defender: SimCard = defender_slot.card_ui
+			if defender.current_hp <= 0:
+				continue
+			var effective_dice := BattleUtils.get_effective_attack_dice(
+				defender, not attacker_is_player, _make_context(p_slots, o_slots, dice_val))
+			if dice_val not in effective_dice:
+				continue
 
-	return [dmg_to_opp, dmg_to_me]
+			var target_slot = _find_target_slot(defender_slot, turn_slots)
+			var target: SimCard = target_slot.card_ui if target_slot else null
+
+			var ctx := _make_context(p_slots, o_slots, dice_val)
+			var atk_result := EffectManager.process_timing_event(
+				EffectManager.Timing.ON_ATTACK,
+				{"attacker_ui": defender, "defender_ui": target,
+				 "is_player": not attacker_is_player, "context": ctx})
+
+			var damage := defender.current_atk
+			damage += EffectManager.get_constant_atk_modifier(defender, not attacker_is_player, ctx)
+			if atk_result.has("atk_bonus"):
+				damage += atk_result["atk_bonus"]
+
+			if target_slot == null:
+				if attacker_is_player:
+					state["hp_p"] -= damage
+				else:
+					state["hp_o"] -= damage
+			elif atk_result.get("instant_kill", false):
+				target.current_hp = 0
+			else:
+				var def_result := EffectManager.process_timing_event(
+					EffectManager.Timing.ON_DEFENSE,
+					{"defender_ui": target, "damage": damage,
+					 "is_player": attacker_is_player, "context": ctx})
+				var final_damage: int = def_result.get("final_damage", damage)
+				var reduction := EffectManager.get_damage_reduction_for_card(
+					target, attacker_is_player, ctx)
+				final_damage = maxi(0, final_damage - reduction)
+				target.current_hp -= final_damage
+
+				if atk_result.get("lifesteal", false) and final_damage > 0:
+					defender.current_hp += final_damage
+
+				if def_result.get("reflect", false) and final_damage > 0:
+					var refl_reduction := EffectManager.get_damage_reduction_for_card(
+						defender, not attacker_is_player, ctx)
+					var reflected := maxi(0, final_damage - refl_reduction)
+					if reflected > 0:
+						defender.current_hp -= reflected
+						if defender.current_hp <= 0:
+							defender_slot.remove_card()
+
+			if target and target_slot and target.current_hp <= 0:
+				_destroy_sim_cards([target], p_slots, o_slots, state)
 
 
 func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
