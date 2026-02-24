@@ -26,6 +26,10 @@ class SimCard:
 		current_atk = data.atk
 		attack_dice = data.attack_dice.duplicate()
 
+	func take_damage(amount: int) -> void:
+		if amount > 0:
+			current_hp -= amount
+
 	func heal(amount: int) -> void:
 		if amount > 0:
 			current_hp = mini(current_hp + amount, card_data.hp)
@@ -40,6 +44,9 @@ class SimCard:
 
 	func has_status(effect: int) -> bool:
 		return _status.get(effect, 0) > 0
+
+	func clear_status_effects() -> void:
+		_status.clear()
 
 	func tick_status_effects() -> void:
 		var to_remove: Array = []
@@ -245,7 +252,7 @@ func _ai_summon(is_player: bool, p_slots: Array, o_slots: Array, state: Dictiona
 		if hp_bonus > 0:
 			sim_card.current_hp += hp_bonus
 		# 自身が HP ボーナス付与効果を持つ場合、既存味方にも適用
-		var eid := card_data.effect_id
+		var eid: String = card_data.effect_id
 		if eid in ["green_007", "white_017"]:
 			var bonus := 1 if eid == "green_007" else 2
 			for slot in my_slots:
@@ -294,7 +301,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			var target: SimCard = target_slot.card_ui if target_slot else null
 
 			var ctx := _make_context(p_slots, o_slots, dice_val)
-			var atk_result := EffectManager.process_timing_event(
+			var atk_result: Dictionary = EffectManager.process_timing_event(
 				EffectManager.Timing.ON_ATTACK,
 				{"attacker_ui": attacker, "defender_ui": target,
 				 "is_player": attacker_is_player, "context": ctx})
@@ -313,7 +320,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			elif atk_result.get("instant_kill", false):
 				target.current_hp = 0
 			else:
-				var def_result := EffectManager.process_timing_event(
+				var def_result: Dictionary = EffectManager.process_timing_event(
 					EffectManager.Timing.ON_DEFENSE,
 					{"defender_ui": target, "damage": damage,
 					 "is_player": not attacker_is_player, "context": ctx})
@@ -356,7 +363,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			var target: SimCard = target_slot.card_ui if target_slot else null
 
 			var ctx := _make_context(p_slots, o_slots, dice_val)
-			var atk_result := EffectManager.process_timing_event(
+			var atk_result: Dictionary = EffectManager.process_timing_event(
 				EffectManager.Timing.ON_ATTACK,
 				{"attacker_ui": defender, "defender_ui": target,
 				 "is_player": not attacker_is_player, "context": ctx})
@@ -374,7 +381,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			elif atk_result.get("instant_kill", false):
 				target.current_hp = 0
 			else:
-				var def_result := EffectManager.process_timing_event(
+				var def_result: Dictionary = EffectManager.process_timing_event(
 					EffectManager.Timing.ON_DEFENSE,
 					{"defender_ui": target, "damage": damage,
 					 "is_player": attacker_is_player, "context": ctx})
@@ -401,113 +408,107 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 
 
 func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
-	"""1ゲームをシミュレート。戻り値: {"winner": "p" or "o" or "draw", "turns": int}"""
+	# SlotとStateの初期化
+	var p_slots: Array = []
+	var o_slots: Array = []
+	for i in range(6):
+		p_slots.append(SimSlot.new(i, true))
+		o_slots.append(SimSlot.new(i, false))
+
 	var hand_p := deck_p.slice(0, INITIAL_HAND_SIZE)
 	var hand_o := deck_o.slice(0, INITIAL_HAND_SIZE)
-	var deck_idx_p := INITIAL_HAND_SIZE
-	var deck_idx_o := INITIAL_HAND_SIZE
 
-	var hp_p := STARTING_HP
-	var hp_o := STARTING_HP
-	var mana_p := 1
-	var mana_o := 1
+	var state := {
+		"hp_p": STARTING_HP, "hp_o": STARTING_HP,
+		"mana_p": 0, "max_mana_p": 0,
+		"mana_o": 0, "max_mana_o": 0,
+		"hand_p": hand_p, "hand_o": hand_o,
+		"deck_p": deck_p, "deck_o": deck_o,
+		"deck_idx_p": INITIAL_HAND_SIZE, "deck_idx_o": INITIAL_HAND_SIZE
+	}
 
-	var field_p: Array = [null, null, null, null, null, null]  # 0-2: front, 3-5: back
-	var field_o: Array = [null, null, null, null, null, null]
-
+	var is_player_turn := true   # プレイヤーは常に先行（シミュ上の慣例）
 	var player_turns_taken := 0
 	var opponent_turns_taken := 0
-	var is_player_turn := true  # プレイヤーが先攻
 	var turn_count := 0
 
 	while turn_count < MAX_TURNS:
 		turn_count += 1
+		var current_dice := 0
 
-		# Main Phase 1: 召喚（貪欲にコスト順で召喚）
+		# ── ターン開始: マナ更新 ──────────────────────────
 		if is_player_turn:
-			hand_p.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
-			var to_remove := []
-			for card in hand_p:
-				if card.mana_cost <= mana_p:
-					var slot := -1
-					for i in range(6):
-						if field_p[i] == null:
-							slot = i
-							break
-					if slot >= 0:
-						field_p[slot] = _make_card_dict(card, slot)
-						mana_p -= card.mana_cost
-						to_remove.append(card)
-			for card in to_remove:
-				hand_p.erase(card)
+			state["max_mana_p"] = mini(state["max_mana_p"] + 1, MAX_MANA_CAP)
+			state["mana_p"] = state["max_mana_p"]
 		else:
-			hand_o.sort_custom(func(a, b): return a.mana_cost < b.mana_cost)
-			var to_remove := []
-			var temp_mana_bonus := 1 if opponent_turns_taken == 0 else 0  # 後攻1ターン目のみ使い切りの一時マナ+1
-			var available_mana := mana_o + temp_mana_bonus
-			for card in hand_o:
-				if card.mana_cost <= available_mana:
-					var slot := -1
-					for i in range(6):
-						if field_o[i] == null:
-							slot = i
-							break
-					if slot >= 0:
-						field_o[slot] = _make_card_dict(card, slot)
-						available_mana -= card.mana_cost
-						to_remove.append(card)
-			for card in to_remove:
-				hand_o.erase(card)
-			# 一時マナは未使用分を持ち越さない
-			mana_o = mini(mana_o, available_mana)
+			state["max_mana_o"] = mini(state["max_mana_o"] + 1, MAX_MANA_CAP)
+			state["mana_o"] = state["max_mana_o"]
+			if opponent_turns_taken == 0:  # 後攻1ターン目ボーナス
+				state["mana_o"] += 1
 
-		# ダイスロール + バトル
-		var dice_val := randi() % 6 + 1
-		var p_cards := []
-		var o_cards := []
-		for i in range(6):
-			if field_p[i] != null and field_p[i]["hp"] > 0:
-				p_cards.append(field_p[i])
-			if field_o[i] != null and field_o[i]["hp"] > 0:
-				o_cards.append(field_o[i])
+		# ── ターン開始効果 ─────────────────────────────────
+		var ctx_start := _make_context(p_slots, o_slots, 0)
+		var start_results: Array = EffectManager.process_timing_event(
+			EffectManager.Timing.TURN_START,
+			{"is_player": is_player_turn, "context": ctx_start})
+		for res in start_results:
+			_apply_sim_effect(res, is_player_turn, state, p_slots, o_slots)
 
-		var dmg_result := _simulate_single_battle(dice_val, p_cards, o_cards, is_player_turn)
-		hp_o -= dmg_result[0]
-		hp_p -= dmg_result[1]
+		# ── Main Phase 1 ───────────────────────────────────
+		_ai_summon(is_player_turn, p_slots, o_slots, state)
 
-		# 死亡判定
-		for i in range(6):
-			if field_p[i] != null and field_p[i]["hp"] <= 0:
-				field_p[i] = null
-			if field_o[i] != null and field_o[i]["hp"] <= 0:
-				field_o[i] = null
+		# ── 先行1ターン目: Dice+Draw+M2 をスキップ ─────────
+		var is_first_player_turn1 := is_player_turn and player_turns_taken == 0
+		if not is_first_player_turn1:
+			# ── Dice + Battle ─────────────────────────────
+			current_dice = randi() % 6 + 1
+			_resolve_battle(current_dice, p_slots, o_slots, is_player_turn, state)
 
-		# 勝敗判定
-		if hp_p <= 0 and hp_o <= 0:
+			if state["hp_p"] <= 0 and state["hp_o"] <= 0:
+				return {"winner": "draw", "turns": turn_count}
+			elif state["hp_o"] <= 0:
+				return {"winner": "p", "turns": turn_count}
+			elif state["hp_p"] <= 0:
+				return {"winner": "o", "turns": turn_count}
+
+			# ── Draw + マナ回復 ───────────────────────────
+			if is_player_turn:
+				if state["deck_idx_p"] < deck_p.size():
+					state["hand_p"].append(deck_p[state["deck_idx_p"]])
+					state["deck_idx_p"] += 1
+				state["mana_p"] = mini(state["mana_p"] + 1, state["max_mana_p"])
+			else:
+				if state["deck_idx_o"] < deck_o.size():
+					state["hand_o"].append(deck_o[state["deck_idx_o"]])
+					state["deck_idx_o"] += 1
+				state["mana_o"] = mini(state["mana_o"] + 1, state["max_mana_o"])
+
+			# ── Main Phase 2 ──────────────────────────────
+			_ai_summon(is_player_turn, p_slots, o_slots, state)
+
+		# ── ターン終了効果 ─────────────────────────────────
+		var ctx_end := _make_context(p_slots, o_slots, current_dice)
+		var end_results: Array = EffectManager.process_timing_event(
+			EffectManager.Timing.TURN_END,
+			{"is_player": is_player_turn, "context": ctx_end})
+		for res in end_results:
+			_apply_sim_effect(res, is_player_turn, state, p_slots, o_slots)
+
+		# ── 状態異常 tick ──────────────────────────────────
+		_tick_all_statuses(p_slots, o_slots)
+
+		# 勝敗再確認（TURN_END効果でHPが変化した場合）
+		if state["hp_p"] <= 0 and state["hp_o"] <= 0:
 			return {"winner": "draw", "turns": turn_count}
-		elif hp_o <= 0:
+		elif state["hp_o"] <= 0:
 			return {"winner": "p", "turns": turn_count}
-		elif hp_p <= 0:
+		elif state["hp_p"] <= 0:
 			return {"winner": "o", "turns": turn_count}
-
-		# ドローフェーズ + マナ増加
-		if is_player_turn:
-			if deck_idx_p < deck_p.size():
-				hand_p.append(deck_p[deck_idx_p])
-				deck_idx_p += 1
-			mana_p = mini(mana_p + 1, MAX_MANA_CAP)
-		else:
-			if deck_idx_o < deck_o.size():
-				hand_o.append(deck_o[deck_idx_o])
-				deck_idx_o += 1
-			mana_o = mini(mana_o + 1, MAX_MANA_CAP)
 
 		if is_player_turn:
 			player_turns_taken += 1
 		else:
 			opponent_turns_taken += 1
-
-		# ターン交代
 		is_player_turn = not is_player_turn
 
 	return {"winner": "draw", "turns": MAX_TURNS}
