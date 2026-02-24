@@ -87,6 +87,9 @@ func _ready() -> void:
 	if GameManager.user_name != "":
 		await GameManager.load_deck()
 
+	# Setup keyboard navigation
+	_setup_keyboard_navigation()
+
 func _update_name_display() -> void:
 	if GameManager.user_name != "":
 		name_label.text = "プレイヤー: %s" % GameManager.user_name
@@ -192,6 +195,31 @@ func _on_logout() -> void:
 		JavaScriptBridge.eval("localStorage.removeItem('ddr_user_name')")
 	GameManager.change_scene("res://scenes/title/title_screen.tscn")
 
+func _setup_keyboard_navigation() -> void:
+	# Get all buttons from main_vbox
+	var buttons: Array[Button] = []
+	for child in main_vbox.get_children():
+		if child is Button:
+			buttons.append(child)
+
+	# Setup focus neighbors for vertical navigation
+	for i in range(buttons.size()):
+		var btn := buttons[i]
+		btn.focus_mode = Control.FOCUS_ALL
+		if i > 0:
+			btn.focus_neighbor_top = buttons[i - 1].get_path()
+		if i < buttons.size() - 1:
+			btn.focus_neighbor_bottom = buttons[i + 1].get_path()
+		# Wrap around
+		if i == 0:
+			btn.focus_neighbor_top = buttons[buttons.size() - 1].get_path()
+		if i == buttons.size() - 1:
+			btn.focus_neighbor_bottom = buttons[0].get_path()
+
+	# Focus first button
+	if buttons.size() > 0:
+		buttons[0].grab_focus()
+
 func _make_button(text: String, color: Color) -> Button:
 	var btn := Button.new()
 	btn.text = text
@@ -215,6 +243,15 @@ func _make_button(text: String, color: Color) -> Button:
 	var pressed_style := style.duplicate()
 	pressed_style.bg_color = color.darkened(0.2)
 	btn.add_theme_stylebox_override("pressed", pressed_style)
+	# Focus style for keyboard navigation
+	var focus_style := style.duplicate()
+	focus_style.bg_color = color.darkened(0.3)
+	focus_style.border_color = Color(1, 1, 1)
+	focus_style.border_width_left = 4
+	focus_style.border_width_right = 4
+	focus_style.border_width_top = 4
+	focus_style.border_width_bottom = 4
+	btn.add_theme_stylebox_override("focus", focus_style)
 	return btn
 
 func _show_rules() -> void:
