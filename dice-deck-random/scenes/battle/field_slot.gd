@@ -11,6 +11,7 @@ var is_front_row: bool = true
 
 var background: Panel
 var is_highlighted: bool = false
+var is_keyboard_focused: bool = false
 
 func _ready() -> void:
 	var card_w := CardUI.BASE_WIDTH + 10  # カード幅 + マージン
@@ -54,12 +55,30 @@ func set_highlighted(highlight: bool) -> void:
 	is_highlighted = highlight
 	_update_display()
 
+func set_keyboard_focused(focused: bool) -> void:
+	is_keyboard_focused = focused
+	_update_display()
+
 func _update_display() -> void:
 	if not is_inside_tree():
 		return
 	var style := StyleBoxFlat.new()
 	if card_ui != null:
 		style.bg_color = Color(0, 0, 0, 0)
+		# Show keyboard focus border even when card is present
+		if is_keyboard_focused:
+			style.border_width_left = 3
+			style.border_width_right = 3
+			style.border_width_top = 3
+			style.border_width_bottom = 3
+			style.border_color = Color(1, 1, 0.5, 0.9)  # Yellow border for keyboard focus
+	elif is_keyboard_focused:
+		style.bg_color = Color(1.0, 1.0, 0.5, 0.15)
+		style.border_width_left = 3
+		style.border_width_right = 3
+		style.border_width_top = 3
+		style.border_width_bottom = 3
+		style.border_color = Color(1, 1, 0.5, 0.9)  # Yellow border for keyboard focus
 	elif is_highlighted:
 		style.bg_color = Color(0.2, 1.0, 0.2, 0.15)
 		style.border_width_left = 2

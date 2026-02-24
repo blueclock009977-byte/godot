@@ -13,6 +13,7 @@ var _searching: bool = false
 func _ready() -> void:
 	_build_ui()
 	MultiplayerManager.opponent_joined.connect(_on_opponent_joined)
+	_setup_keyboard_navigation()
 
 func _build_ui() -> void:
 	var bg := ColorRect.new()
@@ -324,3 +325,67 @@ func _update_deck_status() -> void:
 	else:
 		deck_status_label.text = "デッキ: 設定済み (%d枚)" % GameManager.player_deck.size()
 		deck_status_label.add_theme_color_override("font_color", Color(0.4, 1, 0.6))
+
+func _setup_keyboard_navigation() -> void:
+	# Get buttons from main_menu
+	var main_buttons: Array[Button] = []
+	for child in main_menu.get_children():
+		if child is Button:
+			main_buttons.append(child)
+			_apply_focus_style(child)
+	_link_buttons_vertical(main_buttons)
+	
+	# Get buttons from friend_menu
+	var friend_buttons: Array[Button] = []
+	for child in friend_menu.get_children():
+		if child is Button:
+			friend_buttons.append(child)
+			_apply_focus_style(child)
+	_link_buttons_vertical(friend_buttons)
+	
+	# Focus first button of main menu
+	if main_buttons.size() > 0:
+		main_buttons[0].call_deferred("grab_focus")
+
+func _link_buttons_vertical(buttons: Array[Button]) -> void:
+	for i in range(buttons.size()):
+		var btn := buttons[i]
+		btn.focus_mode = Control.FOCUS_ALL
+		if i > 0:
+			btn.focus_neighbor_top = buttons[i - 1].get_path()
+		if i < buttons.size() - 1:
+			btn.focus_neighbor_bottom = buttons[i + 1].get_path()
+		# Wrap around
+		if i == 0:
+			btn.focus_neighbor_top = buttons[buttons.size() - 1].get_path()
+		if i == buttons.size() - 1:
+			btn.focus_neighbor_bottom = buttons[0].get_path()
+
+func _apply_focus_style(btn: Button) -> void:
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = Color(0.25, 0.25, 0.35)
+	focus_style.border_width_left = 4
+	focus_style.border_width_right = 4
+	focus_style.border_width_top = 4
+	focus_style.border_width_bottom = 4
+	focus_style.border_color = Color(1, 1, 1)
+	focus_style.corner_radius_top_left = 8
+	focus_style.corner_radius_top_right = 8
+	focus_style.corner_radius_bottom_left = 8
+	focus_style.corner_radius_bottom_right = 8
+	btn.add_theme_stylebox_override("focus", focus_style)
+
+func _input(event: InputEvent) -> void:
+	# Handle Escape to go back
+	if event.is_action_pressed("ui_cancel"):
+		if friend_menu.visible:
+			_show_main_menu()
+			# Focus first button after switching menu
+			for child in main_menu.get_children():
+				if child is Button:
+					child.grab_focus()
+					break
+			get_viewport().set_input_as_handled()
+		elif main_menu.visible:
+			_on_back()
+			get_viewport().set_input_as_handled()

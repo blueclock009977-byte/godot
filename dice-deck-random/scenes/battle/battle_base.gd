@@ -15,6 +15,7 @@ const MOVE_COST := BattleConstants.MOVE_COST
 # ─── Enums ───
 enum Phase { MAIN1, DICE, DRAW, MAIN2, END }
 enum SelectMode { NONE, SUMMON_SELECT_SLOT, MOVE_SELECT_SLOT }
+enum KeyboardFocusArea { HAND, FIELD }
 
 # ─── Game State ───
 var game_rng: RandomNumberGenerator = RandomNumberGenerator.new()  # Shared RNG for deterministic gameplay
@@ -38,6 +39,11 @@ var selected_field_card: CardUI = null
 var selected_field_slot: FieldSlot = null
 var is_animating: bool = false
 var game_over: bool = false
+
+# Keyboard navigation state
+var keyboard_focus_area: KeyboardFocusArea = KeyboardFocusArea.HAND
+var hand_focus_index: int = 0
+var field_focus_index: int = 0  # 0-5 for player slots
 
 # ─── UI References ───
 var player_slots: Array = []  # FieldSlot[6]: 0-2 front, 3-5 back
@@ -1058,6 +1064,148 @@ func _update_constant_atk_modifiers() -> void:
 			var mod := EffectManager.get_constant_atk_modifier(slot.card_ui, false, context)
 			slot.card_ui.constant_atk_mod = mod
 			slot.card_ui.update_display()
+
+# ═══════════════════════════════════════════
+# KEYBOARD NAVIGATION
+# ═══════════════════════════════════════════
+func _input(event: InputEvent) -> void:
+	if game_over:
+		return
+	
+	# Space to advance phase (when it's player's turn)
+	if event.is_action_pressed("ui_accept") and event is InputEventKey:
+		var key_event := event as InputEventKey
+		if key_event.keycode == KEY_SPACE:
+			if _is_my_input_allowed():
+				_on_end_phase()
+				get_viewport().set_input_as_handled()
+			return
+	
+	# Escape to cancel selection
+	if event.is_action_pressed("ui_cancel"):
+		if select_mode != SelectMode.NONE:
+			_clear_selection()
+			_update_keyboard_focus_visual()
+			get_viewport().set_input_as_handled()
+		return
+	
+	# Tab to switch between hand and field
+	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+		if keyboard_focus_area == KeyboardFocusArea.HAND:
+			keyboard_focus_area = KeyboardFocusArea.FIELD
+			field_focus_index = 0
+		else:
+			keyboard_focus_area = KeyboardFocusArea.HAND
+			hand_focus_index = 0 if player_hand.size() > 0 else 0
+		_update_keyboard_focus_visual()
+		get_viewport().set_input_as_handled()
+		return
+	
+	# Handle navigation based on focus area
+	if keyboard_focus_area == KeyboardFocusArea.HAND:
+		_handle_hand_keyboard_input(event)
+	else:
+		_handle_field_keyboard_input(event)
+
+func _handle_hand_keyboard_input(event: InputEvent) -> void:
+	if player_hand.is_empty():
+		return
+	
+	var changed := false
+	if event.is_action_pressed("ui_right"):
+		hand_focus_index = mini(hand_focus_index + 1, player_hand.size() - 1)
+		changed = true
+	elif event.is_action_pressed("ui_left"):
+		hand_focus_index = maxi(hand_focus_index - 1, 0)
+		changed = true
+	elif event.is_action_pressed("ui_down"):
+		# Move to field
+		keyboard_focus_area = KeyboardFocusArea.FIELD
+		field_focus_index = 3  # Back row center
+		changed = true
+	elif event.is_action_pressed("ui_accept"):
+		if hand_focus_index < player_hand.size():
+			var card_ui = player_hand[hand_focus_index]
+			if card_ui:
+				_on_hand_card_clicked(card_ui)
+		changed = true
+	
+	if changed:
+		_update_keyboard_focus_visual()
+		get_viewport().set_input_as_handled()
+
+func _handle_field_keyboard_input(event: InputEvent) -> void:
+	var changed := false
+	
+	# Field layout (player slots):
+	# Front: 0, 1, 2
+	# Back:  3, 4, 5
+	
+	if event.is_action_pressed("ui_right"):
+		if field_focus_index in [0, 1, 3, 4]:
+			field_focus_index += 1
+		elif field_focus_index == 2:
+			field_focus_index = 0  # Wrap
+		elif field_focus_index == 5:
+			field_focus_index = 3  # Wrap
+		changed = true
+	elif event.is_action_pressed("ui_left"):
+		if field_focus_index in [1, 2, 4, 5]:
+			field_focus_index -= 1
+		elif field_focus_index == 0:
+			field_focus_index = 2  # Wrap
+		elif field_focus_index == 3:
+			field_focus_index = 5  # Wrap
+		changed = true
+	elif event.is_action_pressed("ui_up"):
+		if field_focus_index >= 3:
+			field_focus_index -= 3  # Move to front row
+		else:
+			# Move to hand
+			keyboard_focus_area = KeyboardFocusArea.HAND
+			hand_focus_index = mini(hand_focus_index, maxi(0, player_hand.size() - 1))
+		changed = true
+	elif event.is_action_pressed("ui_down"):
+		if field_focus_index < 3:
+			field_focus_index += 3  # Move to back row
+		changed = true
+	elif event.is_action_pressed("ui_accept"):
+		if field_focus_index < player_slots.size():
+			var slot = player_slots[field_focus_index]
+			if slot:
+				_on_player_slot_clicked(slot)
+		changed = true
+	
+	if changed:
+		_update_keyboard_focus_visual()
+		get_viewport().set_input_as_handled()
+
+func _update_keyboard_focus_visual() -> void:
+	# Clear all keyboard focus visuals from hand
+	for i in range(player_hand.size()):
+		var card_ui = player_hand[i]
+		if card_ui and is_instance_valid(card_ui):
+			if card_ui != selected_hand_card:
+				card_ui.modulate = Color.WHITE
+	
+	# Clear field slot keyboard focus (don't touch highlight from selection)
+	for i in range(player_slots.size()):
+		var slot = player_slots[i]
+		if slot and is_instance_valid(slot):
+			# Only remove keyboard focus border, keep selection highlight
+			slot.set_keyboard_focused(false)
+	
+	# Apply keyboard focus visual
+	if keyboard_focus_area == KeyboardFocusArea.HAND:
+		if hand_focus_index < player_hand.size():
+			var card_ui = player_hand[hand_focus_index]
+			if card_ui and is_instance_valid(card_ui) and card_ui != selected_hand_card:
+				card_ui.modulate = Color(1.0, 1.0, 0.7)  # Light yellow tint
+	else:
+		if field_focus_index < player_slots.size():
+			var slot = player_slots[field_focus_index]
+			if slot and is_instance_valid(slot):
+				slot.set_keyboard_focused(true)
 
 # ═══════════════════════════════════════════
 # STUBS (override in subclasses)

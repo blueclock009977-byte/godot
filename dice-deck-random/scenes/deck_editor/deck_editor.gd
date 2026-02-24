@@ -20,6 +20,16 @@ var slot_dialog: Control
 var card_preview_overlay: ColorRect
 var card_preview_container: CenterContainer
 
+# Keyboard navigation state
+enum FocusArea { POOL, DECK, BUTTONS }
+var focus_area: FocusArea = FocusArea.POOL
+var pool_focus_index: int = 0
+var deck_focus_index: int = 0
+var pool_cards: Array = []  # カードUIのリスト（フィルタ後）
+var back_btn: Button
+var clear_btn: Button
+var save_btn: Button
+
 func _ready() -> void:
 	var bg := ColorRect.new()
 	bg.color = Color(0.08, 0.08, 0.12)
@@ -136,21 +146,21 @@ func _ready() -> void:
 	btn_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	main_vbox.add_child(btn_row)
 
-	var back_btn := Button.new()
+	back_btn = Button.new()
 	back_btn.text = "戻る"
 	back_btn.custom_minimum_size = Vector2(200, 70)
 	back_btn.add_theme_font_size_override("font_size", 26)
 	back_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
 	btn_row.add_child(back_btn)
 
-	var clear_btn := Button.new()
+	clear_btn = Button.new()
 	clear_btn.text = "全削除"
 	clear_btn.custom_minimum_size = Vector2(200, 70)
 	clear_btn.add_theme_font_size_override("font_size", 26)
 	clear_btn.pressed.connect(_on_clear)
 	btn_row.add_child(clear_btn)
 
-	var save_btn := Button.new()
+	save_btn = Button.new()
 	save_btn.text = "保存/読込"
 	save_btn.custom_minimum_size = Vector2(200, 70)
 	save_btn.add_theme_font_size_override("font_size", 26)
@@ -165,6 +175,7 @@ func _ready() -> void:
 	_update_pool_display()
 	_update_deck_display()
 	_update_filter_buttons()
+	_setup_keyboard_navigation()
 	# カードプレビューオーバーレイ作成
 	card_preview_overlay = ColorRect.new()
 	card_preview_overlay.color = Color(0, 0, 0, 0.8)
@@ -229,6 +240,8 @@ func _update_pool_display() -> void:
 	for child in pool_grid.get_children():
 		child.queue_free()
 	cards_in_row = 0
+	pool_cards.clear()
+	pool_focus_index = 0
 
 	var cards := CardDatabase.get_all_cards()
 	for card in cards:
@@ -281,6 +294,8 @@ func _add_pool_card(card: CardData) -> void:
 	# シーンツリーに入った後にsetupを呼ぶ
 	card_ui.setup(card, 300)
 	cards_in_row += 1
+	# Add to pool_cards array for keyboard navigation
+	pool_cards.append(card_ui)
 
 func _get_deck_colors() -> Array:
 	var colors := []
@@ -575,3 +590,192 @@ func _on_preview_overlay_input(event: InputEvent) -> void:
 		_hide_card_preview()
 	if event is InputEventScreenTouch and event.pressed:
 		_hide_card_preview()
+
+# === KEYBOARD NAVIGATION ===
+
+func _setup_keyboard_navigation() -> void:
+	# Apply focus styles to buttons
+	var buttons := [back_btn, clear_btn, save_btn]
+	for btn in buttons:
+		btn.focus_mode = Control.FOCUS_ALL
+		var focus_style := StyleBoxFlat.new()
+		focus_style.bg_color = Color(0.25, 0.25, 0.35)
+		focus_style.border_width_left = 4
+		focus_style.border_width_right = 4
+		focus_style.border_width_top = 4
+		focus_style.border_width_bottom = 4
+		focus_style.border_color = Color(1, 1, 1)
+		focus_style.corner_radius_top_left = 8
+		focus_style.corner_radius_top_right = 8
+		focus_style.corner_radius_bottom_left = 8
+		focus_style.corner_radius_bottom_right = 8
+		btn.add_theme_stylebox_override("focus", focus_style)
+	
+	# Link buttons horizontally
+	back_btn.focus_neighbor_right = clear_btn.get_path()
+	clear_btn.focus_neighbor_left = back_btn.get_path()
+	clear_btn.focus_neighbor_right = save_btn.get_path()
+	save_btn.focus_neighbor_left = clear_btn.get_path()
+	
+	# Initial focus visual
+	_update_focus_visual()
+
+func _input(event: InputEvent) -> void:
+	# Ignore if card preview or slot dialog is open
+	if card_preview_overlay.visible:
+		if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_accept"):
+			_hide_card_preview()
+			get_viewport().set_input_as_handled()
+		return
+	if slot_dialog:
+		if event.is_action_pressed("ui_cancel"):
+			slot_dialog.queue_free()
+			slot_dialog = null
+			get_viewport().set_input_as_handled()
+		return
+	
+	# Escape to go back
+	if event.is_action_pressed("ui_cancel"):
+		GameManager.change_scene("res://scenes/title/title_screen.tscn")
+		get_viewport().set_input_as_handled()
+		return
+	
+	# Tab to switch focus area
+	if event is InputEventKey and event.pressed and event.keycode == KEY_TAB:
+		if event.shift_pressed:
+			# Shift+Tab: reverse cycle
+			match focus_area:
+				FocusArea.POOL:
+					focus_area = FocusArea.BUTTONS
+				FocusArea.DECK:
+					focus_area = FocusArea.POOL
+				FocusArea.BUTTONS:
+					focus_area = FocusArea.DECK
+		else:
+			# Tab: forward cycle
+			match focus_area:
+				FocusArea.POOL:
+					focus_area = FocusArea.DECK
+				FocusArea.DECK:
+					focus_area = FocusArea.BUTTONS
+				FocusArea.BUTTONS:
+					focus_area = FocusArea.POOL
+		_update_focus_visual()
+		get_viewport().set_input_as_handled()
+		return
+	
+	# Navigation based on focus area
+	match focus_area:
+		FocusArea.POOL:
+			_handle_pool_input(event)
+		FocusArea.DECK:
+			_handle_deck_input(event)
+		FocusArea.BUTTONS:
+			_handle_button_input(event)
+
+func _handle_pool_input(event: InputEvent) -> void:
+	if pool_cards.is_empty():
+		return
+	
+	var changed := false
+	if event.is_action_pressed("ui_right"):
+		pool_focus_index = mini(pool_focus_index + 1, pool_cards.size() - 1)
+		changed = true
+	elif event.is_action_pressed("ui_left"):
+		pool_focus_index = maxi(pool_focus_index - 1, 0)
+		changed = true
+	elif event.is_action_pressed("ui_down"):
+		pool_focus_index = mini(pool_focus_index + CARDS_PER_ROW, pool_cards.size() - 1)
+		changed = true
+	elif event.is_action_pressed("ui_up"):
+		pool_focus_index = maxi(pool_focus_index - CARDS_PER_ROW, 0)
+		changed = true
+	elif event.is_action_pressed("ui_accept"):
+		if pool_focus_index < pool_cards.size():
+			var card_ui = pool_cards[pool_focus_index]
+			if card_ui and card_ui.card_data:
+				_add_card_to_deck(card_ui.card_data)
+		changed = true
+	
+	if changed:
+		_update_focus_visual()
+		get_viewport().set_input_as_handled()
+
+func _handle_deck_input(event: InputEvent) -> void:
+	var deck_cards := deck_grid.get_children()
+	if deck_cards.is_empty():
+		return
+	
+	var changed := false
+	if event.is_action_pressed("ui_right"):
+		deck_focus_index = mini(deck_focus_index + 1, deck_cards.size() - 1)
+		changed = true
+	elif event.is_action_pressed("ui_left"):
+		deck_focus_index = maxi(deck_focus_index - 1, 0)
+		changed = true
+	elif event.is_action_pressed("ui_accept"):
+		if deck_focus_index < deck.size():
+			_remove_card_from_deck(deck_focus_index)
+			deck_focus_index = mini(deck_focus_index, deck.size() - 1)
+		changed = true
+	
+	if changed:
+		_update_focus_visual()
+		get_viewport().set_input_as_handled()
+
+func _handle_button_input(event: InputEvent) -> void:
+	var buttons := [back_btn, clear_btn, save_btn]
+	var current_focus := get_viewport().gui_get_focus_owner()
+	var focus_idx := buttons.find(current_focus)
+	if focus_idx == -1:
+		focus_idx = 0
+	
+	if event.is_action_pressed("ui_right"):
+		focus_idx = mini(focus_idx + 1, buttons.size() - 1)
+		buttons[focus_idx].grab_focus()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_left"):
+		focus_idx = maxi(focus_idx - 1, 0)
+		buttons[focus_idx].grab_focus()
+		get_viewport().set_input_as_handled()
+
+func _update_focus_visual() -> void:
+	# Clear all focus visuals
+	for card_ui in pool_cards:
+		if card_ui and is_instance_valid(card_ui):
+			card_ui.modulate = Color.WHITE if card_ui.modulate.a > 0.9 else Color(0.5, 0.5, 0.5, 0.7)
+	for card_ui in deck_grid.get_children():
+		if card_ui and is_instance_valid(card_ui):
+			card_ui.modulate = Color.WHITE
+	
+	# Remove button focus if not in button area
+	if focus_area != FocusArea.BUTTONS:
+		var current_focus := get_viewport().gui_get_focus_owner()
+		if current_focus is Button:
+			current_focus.release_focus()
+	
+	# Apply focus visual based on area
+	match focus_area:
+		FocusArea.POOL:
+			if pool_focus_index < pool_cards.size():
+				var card_ui = pool_cards[pool_focus_index]
+				if card_ui and is_instance_valid(card_ui):
+					card_ui.modulate = Color(1.2, 1.2, 0.8)  # Yellow tint for focus
+		FocusArea.DECK:
+			var deck_cards := deck_grid.get_children()
+			if deck_focus_index < deck_cards.size():
+				var card_ui = deck_cards[deck_focus_index]
+				if card_ui and is_instance_valid(card_ui):
+					card_ui.modulate = Color(1.2, 1.2, 0.8)  # Yellow tint for focus
+		FocusArea.BUTTONS:
+			back_btn.grab_focus()
+
+func _collect_pool_cards() -> void:
+	pool_cards.clear()
+	for row in pool_grid.get_children():
+		if row is HBoxContainer:
+			for wrapper in row.get_children():
+				if wrapper is VBoxContainer:
+					for child in wrapper.get_children():
+						if child is CardUI:
+							pool_cards.append(child)

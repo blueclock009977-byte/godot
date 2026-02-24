@@ -32,3 +32,24 @@ func _ready() -> void:
 	back_btn.add_theme_font_size_override("font_size", 28)
 	back_btn.pressed.connect(func(): GameManager.change_scene("res://scenes/title/title_screen.tscn"))
 	vbox.add_child(back_btn)
+	
+	# Setup keyboard navigation - auto focus on button
+	_setup_keyboard_navigation(back_btn)
+
+func _setup_keyboard_navigation(btn: Button) -> void:
+	btn.focus_mode = Control.FOCUS_ALL
+	# Apply focus style (white border)
+	var focus_style := StyleBoxFlat.new()
+	focus_style.bg_color = Color(0.3, 0.3, 0.4)
+	focus_style.border_width_left = 4
+	focus_style.border_width_right = 4
+	focus_style.border_width_top = 4
+	focus_style.border_width_bottom = 4
+	focus_style.border_color = Color(1, 1, 1)
+	focus_style.corner_radius_top_left = 8
+	focus_style.corner_radius_top_right = 8
+	focus_style.corner_radius_bottom_left = 8
+	focus_style.corner_radius_bottom_right = 8
+	btn.add_theme_stylebox_override("focus", focus_style)
+	# Auto grab focus
+	btn.call_deferred("grab_focus")
