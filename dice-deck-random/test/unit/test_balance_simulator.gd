@@ -197,6 +197,10 @@ func _destroy_sim_cards(targets: Array, p_slots: Array, o_slots: Array, state: D
 				break
 
 
+## _simulate_game からは直接呼ばない。
+## EffectManager.process_turn_end_effects が内部で SimCard.tick_status_effects() を
+## 呼ぶため（effect_manager.gd:948-952）、状態異常は自動的にtickされる。
+## このメソッドは将来的な用途のために定義を残している。
 func _tick_all_statuses(p_slots: Array, o_slots: Array) -> void:
 	for slot in p_slots:
 		if not slot.is_empty():
