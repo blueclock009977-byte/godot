@@ -373,7 +373,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			var atk_result: Dictionary = EffectManager.process_timing_event(
 				EffectManager.Timing.ON_ATTACK,
 				{"attacker_ui": attacker, "defender_ui": target,
-				 "is_player": attacker_is_player, "context": ctx})
+					"is_player": attacker_is_player, "context": ctx})
 
 			var damage := attacker.current_atk
 			damage += EffectManager.get_constant_atk_modifier(attacker, attacker_is_player, ctx)
@@ -392,7 +392,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 				var def_result: Dictionary = EffectManager.process_timing_event(
 					EffectManager.Timing.ON_DEFENSE,
 					{"defender_ui": target, "damage": damage,
-					 "is_player": not attacker_is_player, "context": ctx})
+						"is_player": not attacker_is_player, "context": ctx})
 				var final_damage: int = def_result.get("final_damage", damage)
 				var reduction := EffectManager.get_damage_reduction_for_card(
 					target, not attacker_is_player, ctx)
@@ -435,7 +435,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 			var atk_result: Dictionary = EffectManager.process_timing_event(
 				EffectManager.Timing.ON_ATTACK,
 				{"attacker_ui": defender, "defender_ui": target,
-				 "is_player": not attacker_is_player, "context": ctx})
+					"is_player": not attacker_is_player, "context": ctx})
 
 			var damage := defender.current_atk
 			damage += EffectManager.get_constant_atk_modifier(defender, not attacker_is_player, ctx)
@@ -453,7 +453,7 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 				var def_result: Dictionary = EffectManager.process_timing_event(
 					EffectManager.Timing.ON_DEFENSE,
 					{"defender_ui": target, "damage": damage,
-					 "is_player": attacker_is_player, "context": ctx})
+						"is_player": attacker_is_player, "context": ctx})
 				var final_damage: int = def_result.get("final_damage", damage)
 				var reduction := EffectManager.get_damage_reduction_for_card(
 					target, attacker_is_player, ctx)
