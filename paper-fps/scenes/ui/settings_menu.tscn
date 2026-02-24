@@ -1,0 +1,143 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8n2c3qgvmkds"]
+
+[ext_resource type="Script" path="res://scenes/ui/settings_menu.gd" id="1_script"]
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -200.0
+offset_right = 250.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -180.0
+offset_right = 220.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "設定"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="SensitivityRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="SensitivityLabel" type="Label" parent="VBoxContainer/SensitivityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "マウス感度"
+
+[node name="SensitivitySlider" type="HSlider" parent="VBoxContainer/SensitivityRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.0
+max_value = 100.0
+value = 26.3
+
+[node name="SensitivityValue" type="Label" parent="VBoxContainer/SensitivityRow"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "0.0030"
+horizontal_alignment = 2
+
+[node name="InvertYRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="InvertYLabel" type="Label" parent="VBoxContainer/InvertYRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Y軸反転"
+
+[node name="InvertYCheck" type="CheckBox" parent="VBoxContainer/InvertYRow"]
+layout_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MasterRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="MasterLabel" type="Label" parent="VBoxContainer/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "マスター音量"
+
+[node name="MasterSlider" type="HSlider" parent="VBoxContainer/MasterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+
+[node name="SFXRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="SFXLabel" type="Label" parent="VBoxContainer/SFXRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "SE音量"
+
+[node name="SFXSlider" type="HSlider" parent="VBoxContainer/SFXRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+
+[node name="BGMRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BGMLabel" type="Label" parent="VBoxContainer/BGMRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "BGM音量"
+
+[node name="BGMSlider" type="HSlider" parent="VBoxContainer/BGMRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 100.0
+value = 100.0
+
+[node name="HSeparator3" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="ResetButton" type="Button" parent="VBoxContainer/ButtonRow"]
+layout_mode = 2
+text = "初期化"
+
+[node name="CloseButton" type="Button" parent="VBoxContainer/ButtonRow"]
+layout_mode = 2
+text = "閉じる"
+
+[connection signal="pressed" from="VBoxContainer/ButtonRow/ResetButton" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="VBoxContainer/ButtonRow/CloseButton" to="." method="_on_close_pressed"]

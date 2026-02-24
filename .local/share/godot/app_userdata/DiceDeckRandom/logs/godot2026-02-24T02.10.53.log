@@ -1,0 +1,100 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+
+
+res://test/unit/test_balance_simulator.gd
+* test_mono_deck_creation
+* test_single_game_simulation
+* test_matchup_simulation
+* test_color_balance_report
+    ═══════════════════════════════════════════
+    色別バランスシミュレーション結果
+    各マッチアップ 100 ゲーム（先攻/後攻各1回）
+    ═══════════════════════════════════════════
+    BLUE vs GREEN: 57.0% vs 42.5% (先攻有利: +0.0%, 平均23.1ターン)
+    BLUE vs BLACK: 47.0% vs 52.5% (先攻有利: -8.0%, 平均24.0ターン)
+    BLUE vs RED: 44.5% vs 55.5% (先攻有利: -5.0%, 平均22.7ターン)
+    BLUE vs YELLOW: 47.5% vs 52.0% (先攻有利: -7.0%, 平均22.8ターン)
+    BLUE vs PURPLE: 52.0% vs 48.0% (先攻有利: -14.0%, 平均24.1ターン)
+    BLUE vs WHITE: 49.0% vs 50.5% (先攻有利: -6.0%, 平均23.0ターン)
+    GREEN vs BLACK: 46.0% vs 54.0% (先攻有利: +8.0%, 平均23.7ターン)
+    GREEN vs RED: 41.5% vs 58.5% (先攻有利: -7.0%, 平均22.4ターン)
+    GREEN vs YELLOW: 50.0% vs 48.5% (先攻有利: -6.0%, 平均23.4ターン)
+    GREEN vs PURPLE: 50.5% vs 47.5% (先攻有利: -3.0%, 平均24.7ターン)
+    GREEN vs WHITE: 41.5% vs 58.5% (先攻有利: -3.0%, 平均23.4ターン)
+    BLACK vs RED: 51.0% vs 48.5% (先攻有利: -8.0%, 平均23.1ターン)
+    BLACK vs YELLOW: 53.0% vs 46.5% (先攻有利: -8.0%, 平均23.2ターン)
+    BLACK vs PURPLE: 54.0% vs 45.5% (先攻有利: -4.0%, 平均23.8ターン)
+    BLACK vs WHITE: 46.5% vs 52.0% (先攻有利: -17.0%, 平均25.0ターン)
+    RED vs YELLOW: 57.0% vs 42.5% (先攻有利: -2.0%, 平均22.7ターン)
+    RED vs PURPLE: 55.5% vs 43.0% (先攻有利: -3.0%, 平均23.2ターン)
+    RED vs WHITE: 51.0% vs 49.0% (先攻有利: -8.0%, 平均21.7ターン)
+    YELLOW vs PURPLE: 54.5% vs 45.0% (先攻有利: -11.0%, 平均25.0ターン)
+    YELLOW vs WHITE: 47.5% vs 52.5% (先攻有利: +7.0%, 平均22.9ターン)
+    PURPLE vs WHITE: 46.5% vs 52.0% (先攻有利: -3.0%, 平均23.2ターン)
+
+    ═══════════════════════════════════════════
+    総合勝率（全マッチアップ通算）
+    ═══════════════════════════════════════════
+    BLUE: 49.4% (593/1200)
+    GREEN: 45.3% (544/1200)
+    BLACK: 51.8% (622/1200)
+    RED: 54.2% (651/1200)
+    YELLOW: 48.6% (583/1200)
+    PURPLE: 45.9% (551/1200)
+    WHITE: 52.4% (629/1200)
+
+    ═══════════════════════════════════════════
+    バランス指標
+    ═══════════════════════════════════════════
+    色別勝率範囲: 45.3% - 54.2% (差: 8.9%)
+    平均先攻有利度: -5.1%
+
+    ✓ 色バランス: 良好（差8.9% <= 15%）
+    ✓ 先後バランス: 良好（先攻有利-5.1% <= ±8%）
+4/4 passed.
+
+
+res://test/unit/test_battle_base_effect_application.gd
+* test_apply_effect_result_heal_player_applies_to_owner_hp
+* test_apply_effect_result_heal_player_full_sets_owner_to_max_hp
+* test_apply_effect_result_heal_player_applies_to_opponent_side_when_is_player_false
+* test_apply_effect_result_heal_player_full_applies_to_opponent_side_when_is_player_false
+* test_apply_effect_result_direct_damage_triggers_game_end
+* test_apply_effect_result_self_damage_triggers_game_end
+* test_battle_base_uses_unified_single_card_timing_entry_helper
+* test_battle_base_uses_unified_turn_timing_entry_helper
+* test_battle_base_ally_death_reaction_uses_unified_timing_entry_helper
+* test_battle_base_ally_death_reaction_uses_single_card_timing_helper
+* test_apply_attack_effect_pre_damage_instant_kill_destroys_target_slot
+* test_apply_attack_effect_pre_damage_returns_false_without_target
+* test_apply_card_damage_and_handle_destroy_uses_slot_destruction_when_lethal
+    1 Orphans
+        * [<Control#125460022988>(card_ui.gd)]
+* test_apply_card_damage_and_handle_destroy_ignores_non_lethal_damage
+    1 Orphans
+        * [<Control#125644573714>(card_ui.gd)]
+* test_apply_effect_result_uses_destroy_targets_helper
+* test_apply_effect_result_damaged_targets_runs_slot_destroy_for_lethal_card
+    1 Orphans
+        * [<Control#125845900312>(card_ui.gd)]
+* test_apply_effect_result_damaged_targets_skips_alive_card
+    1 Orphans
+        * [<Control#126013672477>(card_ui.gd)]
+* test_apply_effect_result_does_not_double_destroy_same_target_from_damage_and_destroy_lists
+    1 Orphans
+        * [<Control#126164667426>(card_ui.gd)]
+* test_resolve_attacks_uses_shared_target_resolution_helper
+* test_apply_hp_bonus_on_summon_no_buff_allies
+    1 Orphans
+        * [<Control#126365994024>(card_ui.gd)]

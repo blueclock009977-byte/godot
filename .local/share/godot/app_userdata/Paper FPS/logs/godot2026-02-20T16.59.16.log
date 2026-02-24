@@ -1,0 +1,132 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/Paper FPS] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+
+
+res://test/unit/test_enemy.gd
+* test_enemy_initial_stats
+* test_enemy_take_damage
+ERROR: The tweened property "modulate" does not exist in object "BasicEnemy:<CharacterBody3D#58317604700>".
+   at: tween_property (scene/animation/tween.cpp:106)
+   GDScript backtrace (most recent call first):
+       [0] _on_damaged (res://scripts/enemy_base.gd:101)
+       [1] take_damage (res://scripts/enemy_base.gd:92)
+       [2] test_enemy_take_damage (res://test/unit/test_enemy.gd:21)
+       [3] _run_test (res://addons/gut/gut.gd:612)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [5] test_scripts (res://addons/gut/gut.gd:1027)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [8] main (res://addons/gut/cli/gut_cli.gd:284)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: The tweened property "modulate" does not exist in object "BasicEnemy:<CharacterBody3D#58317604700>".
+   at: tween_property (scene/animation/tween.cpp:106)
+   GDScript backtrace (most recent call first):
+       [0] _on_damaged (res://scripts/enemy_base.gd:102)
+       [1] take_damage (res://scripts/enemy_base.gd:92)
+       [2] test_enemy_take_damage (res://test/unit/test_enemy.gd:21)
+       [3] _run_test (res://addons/gut/gut.gd:612)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [5] test_scripts (res://addons/gut/gut.gd:1027)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [8] main (res://addons/gut/cli/gut_cli.gd:284)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+    [2] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+      at line -1
+* test_enemy_death
+ERROR: The tweened property "modulate" does not exist in object "BasicEnemy:<CharacterBody3D#58753812319>".
+   at: tween_property (scene/animation/tween.cpp:106)
+   GDScript backtrace (most recent call first):
+       [0] _on_damaged (res://scripts/enemy_base.gd:101)
+       [1] take_damage (res://scripts/enemy_base.gd:92)
+       [2] test_enemy_death (res://test/unit/test_enemy.gd:31)
+       [3] _run_test (res://addons/gut/gut.gd:612)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [5] test_scripts (res://addons/gut/gut.gd:1027)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [8] main (res://addons/gut/cli/gut_cli.gd:284)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: The tweened property "modulate" does not exist in object "BasicEnemy:<CharacterBody3D#58753812319>".
+   at: tween_property (scene/animation/tween.cpp:106)
+   GDScript backtrace (most recent call first):
+       [0] _on_damaged (res://scripts/enemy_base.gd:102)
+       [1] take_damage (res://scripts/enemy_base.gd:92)
+       [2] test_enemy_death (res://test/unit/test_enemy.gd:31)
+       [3] _run_test (res://addons/gut/gut.gd:612)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:815)
+       [5] test_scripts (res://addons/gut/gut.gd:1027)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:194)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [8] main (res://addons/gut/cli/gut_cli.gd:284)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+    [Failed]:  [-50] expected to equal [0]:  HPが0以下にならない
+      at line 32
+    [Failed]:  Unexpected Errors:
+    [1] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+    [2] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+      at line -1
+1/3 passed.
+
+
+res://test/unit/test_hitbox.gd
+* test_hitbox_scale_front
+* test_hitbox_scale_side
+* test_hitbox_scale_behind
+* test_hitbox_scale_diagonal
+* test_hitbox_width_calculation
+5/5 passed.
+
+
+res://test/unit/test_weapon.gd
+* test_pistol_stats
+* test_shotgun_stats
+* test_assault_stats
+* test_sniper_stats
+4/4 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+res://test/unit/test_enemy.gd
+- test_enemy_take_damage
+    [Failed]:  Unexpected Errors:
+    [1] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+    [2] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+          at line -1
+- test_enemy_death
+    [Failed]:  [-50] expected to equal [0]:  HPが0以下にならない
+          at line 32
+    [Failed]:  Unexpected Errors:
+    [1] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+    [2] <engine-0>Condition "!prop_valid" is true. Returning: nullptr
+          at line -1
+
+Totals
+------
+Scripts               3
+Tests                12
+Passing Tests        10
+Failing Tests         2
+Asserts           27/30
+Time              0.478s
+
+
+---- 2 failing tests ----
+

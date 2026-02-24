@@ -7,7 +7,6 @@ class_name Player
 # Movement
 const SPEED := 5.0
 const JUMP_VELOCITY := 4.5
-const MOUSE_SENSITIVITY := 0.003
 
 # Physics
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -34,6 +33,7 @@ signal player_died
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	add_to_group("player")
 	_setup_weapons()
 
 func _setup_weapons() -> void:
@@ -57,11 +57,33 @@ func _equip_weapon(index: int) -> void:
 	current_weapon = weapons[index]
 	current_weapon.visible = true
 
+func _get_mouse_sensitivity() -> float:
+	# GameSettingsがAutoloadとして存在すればそこから取得
+	if Engine.has_singleton("GameSettings"):
+		return Engine.get_singleton("GameSettings").mouse_sensitivity
+	elif has_node("/root/GameSettings"):
+		return get_node("/root/GameSettings").mouse_sensitivity
+	return 0.003  # デフォルト値
+
+func _get_invert_y() -> bool:
+	if Engine.has_singleton("GameSettings"):
+		return Engine.get_singleton("GameSettings").invert_y
+	elif has_node("/root/GameSettings"):
+		return get_node("/root/GameSettings").invert_y
+	return false
+
 func _input(event: InputEvent) -> void:
 	# Mouse look
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotate_y(-event.relative.x * MOUSE_SENSITIVITY)
-		camera.rotate_x(-event.relative.y * MOUSE_SENSITIVITY)
+		var sensitivity: float = _get_mouse_sensitivity()
+		var invert_y: bool = _get_invert_y()
+		
+		rotate_y(-event.relative.x * sensitivity)
+		
+		var y_input: float = event.relative.y * sensitivity
+		if invert_y:
+			y_input = -y_input
+		camera.rotate_x(-y_input)
 		camera.rotation.x = clamp(camera.rotation.x, -PI/2, PI/2)
 	
 	# Escape to release mouse

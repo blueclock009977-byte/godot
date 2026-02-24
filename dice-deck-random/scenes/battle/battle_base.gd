@@ -261,7 +261,14 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 		_apply_hp_damage_to_owner(is_player, result["self_damage"])
 
 	if result.has("direct_damage"):
-		_apply_hp_damage_to_opponent(is_player, result["direct_damage"])
+		var direct_dmg: int = result["direct_damage"]
+		# white_012: 自分への直接ダメージ半減
+		var reduction := EffectManager.get_direct_damage_reduction(not is_player, _build_effect_context())
+		if reduction > 0.0:
+			var reduced := int(ceil(float(direct_dmg) * (1.0 - reduction)))
+			_log("[color=white]直接ダメージ軽減: %d → %d[/color]" % [direct_dmg, reduced])
+			direct_dmg = reduced
+		_apply_hp_damage_to_opponent(is_player, direct_dmg)
 
 	if result.has("heal_player"):
 		_apply_hp_heal_to_owner(is_player, result["heal_player"])
@@ -498,7 +505,13 @@ func _resolve_attacks(attacker_slots: Array, defender_slots: Array, attacker_is_
 				BattleUtils.spawn_damage_popup(self, player_hp_label.global_position + Vector2(50, 0), damage)
 				BattleUtils.shake_node(self, player_hp_label)
 
-			_apply_hp_damage_to_opponent(attacker_is_player, damage)
+			# white_012: 自分への直接ダメージ半減
+			var direct_reduction := EffectManager.get_direct_damage_reduction(not attacker_is_player, _get_effect_context())
+			var final_hp_damage: int = damage
+			if direct_reduction > 0.0:
+				final_hp_damage = int(ceil(float(damage) * (1.0 - direct_reduction)))
+				_log("[color=white]直接ダメージ軽減: %d → %d[/color]" % [damage, final_hp_damage])
+			_apply_hp_damage_to_opponent(attacker_is_player, final_hp_damage)
 			if game_over:
 				return
 		elif target_slot and not target_slot.is_empty():

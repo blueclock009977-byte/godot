@@ -10,6 +10,8 @@ extends Node3D
 @onready var weapon_label: Label = $HUD/WeaponLabel
 
 var enemies_killed: int = 0
+var settings_menu: Control = null
+var is_paused: bool = false
 
 func _ready() -> void:
 	# プレイヤーのシグナル接続
@@ -61,6 +63,38 @@ func _on_player_died() -> void:
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("reload") and player.hp <= 0:
 		get_tree().reload_current_scene()
+	
+	# 設定画面を開く（Oキー）
+	if event.is_action_pressed("open_settings"):
+		_toggle_settings()
+
+func _toggle_settings() -> void:
+	if is_paused:
+		_close_settings()
+	else:
+		_open_settings()
+
+func _open_settings() -> void:
+	is_paused = true
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+	if settings_menu == null:
+		var settings_scene: PackedScene = load("res://scenes/ui/settings_menu.tscn")
+		settings_menu = settings_scene.instantiate()
+		settings_menu.closed.connect(_close_settings)
+		settings_menu.process_mode = Node.PROCESS_MODE_ALWAYS
+		hud.add_child(settings_menu)
+	else:
+		settings_menu.show()
+
+func _close_settings() -> void:
+	is_paused = false
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
+	if settings_menu:
+		settings_menu.hide()
 
 func _on_ammo_changed(current: int, max_ammo: int) -> void:
 	ammo_label.text = "Ammo: %d / %d" % [current, max_ammo]

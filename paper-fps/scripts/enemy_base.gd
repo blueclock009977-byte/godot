@@ -85,7 +85,7 @@ func take_damage(amount: int, _from_position: Vector3) -> void:
 	if is_dead:
 		return
 	
-	hp -= amount
+	hp = maxi(0, hp - amount)
 	enemy_damaged.emit(self, amount)
 	
 	# ダメージエフェクト
@@ -96,10 +96,23 @@ func take_damage(amount: int, _from_position: Vector3) -> void:
 
 func _on_damaged() -> void:
 	# ダメージリアクション（オーバーライド可能）
-	# 赤くフラッシュ
-	var tween := create_tween()
-	tween.tween_property(self, "modulate", Color(1, 0.3, 0.3), 0.05)
-	tween.tween_property(self, "modulate", Color.WHITE, 0.1)
+	# 3Dではmodulateが使えないので、メッシュを探してマテリアルを変更
+	var mesh := _find_mesh_instance()
+	if mesh:
+		var original_material: Material = mesh.get_surface_override_material(0)
+		if original_material == null:
+			original_material = mesh.mesh.surface_get_material(0) if mesh.mesh else null
+		
+		# フラッシュエフェクト（スケールで代用）
+		var tween := create_tween()
+		tween.tween_property(self, "scale", Vector3(1.1, 1.1, 1.1), 0.05)
+		tween.tween_property(self, "scale", Vector3.ONE, 0.1)
+
+func _find_mesh_instance() -> MeshInstance3D:
+	for child in get_children():
+		if child is MeshInstance3D:
+			return child
+	return null
 
 func _die() -> void:
 	is_dead = true

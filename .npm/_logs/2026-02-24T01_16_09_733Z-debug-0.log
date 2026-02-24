@@ -1,0 +1,21 @@
+0 verbose cli /usr/bin/node /usr/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.9.4
+2 info using node@v22.22.0
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/workspace/.npmrc
+5 silly config load:file:/usr/etc/npmrc
+6 verbose title npm exec mcporter call https://docs.openclaw.ai/mcp.SearchOpenClaw --args {"query":"docker.binds"} --output text
+7 verbose argv "exec" "--yes" "--" "mcporter" "call" "https://docs.openclaw.ai/mcp.SearchOpenClaw" "--args" "{\"query\":\"docker.binds\"}" "--output" "text"
+8 verbose logfile logs-max:10 dir:/workspace/.npm/_logs/2026-02-24T01_16_09_733Z-
+9 verbose logfile /workspace/.npm/_logs/2026-02-24T01_16_09_733Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:1098907648 maxSize:274726912 maxEntrySize:137363456
+12 http fetch GET 200 https://registry.npmjs.org/mcporter 105ms (cache revalidated)
+13 silly packumentCache heap:1098907648 maxSize:274726912 maxEntrySize:137363456
+14 silly packumentCache heap:1098907648 maxSize:274726912 maxEntrySize:137363456
+15 verbose cwd /workspace
+16 verbose os Linux 6.12.65-linuxkit
+17 verbose node v22.22.0
+18 verbose npm  v10.9.4
+19 verbose exit 0
+20 info ok

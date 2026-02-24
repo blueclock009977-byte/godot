@@ -1,28 +1,63 @@
 Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
 
-==================================================
-Paper FPS - Unit Tests
-==================================================
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/Paper FPS] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
 
-[Test] Hitbox Scale - Front
-  PASS: 正面からの攻撃は1.0倍 (1.000 ≈ 1.000)
 
-[Test] Hitbox Scale - Side
-  PASS: 横からの攻撃は0.8倍 (0.800 ≈ 0.800)
+res://test/unit/test_enemy.gd
+* test_enemy_initial_stats
+* test_enemy_take_damage
+* test_enemy_death
+3/3 passed.
 
-[Test] Hitbox Scale - Behind
-  PASS: 後ろからの攻撃も1.0倍 (1.000 ≈ 1.000)
 
-[Test] Hitbox Width
-  PASS: 正面向きの幅は0.8 (0.800 ≈ 0.800)
-  PASS: 横向きの幅は0.1 (0.100 ≈ 0.100)
+res://test/unit/test_hitbox.gd
+* test_hitbox_scale_front
+* test_hitbox_scale_side
+* test_hitbox_scale_behind
+* test_hitbox_scale_diagonal
+* test_hitbox_width_calculation
+5/5 passed.
 
-[Test] Damage Range
-  PASS: scale 1.00 is in range [0.8, 1.0]
-  PASS: scale 0.95 is in range [0.8, 1.0]
-  PASS: scale 0.90 is in range [0.8, 1.0]
-  PASS: scale 0.85 is in range [0.8, 1.0]
-  PASS: scale 0.80 is in range [0.8, 1.0]
-==================================================
-Results: 10 passed, 0 failed / 10 total
-==================================================
+
+res://test/unit/test_settings.gd
+* test_default_sensitivity
+* test_sensitivity_clamping
+* test_invert_y_default
+* test_volume_defaults
+4/4 passed.
+
+
+res://test/unit/test_weapon.gd
+* test_pistol_stats
+* test_shotgun_stats
+* test_assault_stats
+* test_sniper_stats
+4/4 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+Totals
+------
+Scripts               4
+Tests                16
+Passing Tests        16
+Asserts              35
+Time              0.472s
+
+
+---- All tests passed! ----
+
