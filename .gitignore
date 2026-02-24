@@ -18,3 +18,7 @@ CLAUDE.md
 # Media inbound (screenshots etc)
 media/
 .openclaw/
+
+# Large files excluded from GitHub
+.local/share/godot/export_templates/
+paper-fps/builds/
