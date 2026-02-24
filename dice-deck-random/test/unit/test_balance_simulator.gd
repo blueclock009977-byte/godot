@@ -28,17 +28,18 @@ class SimCard:
 
 	func heal(amount: int) -> void:
 		if amount > 0:
-			current_hp += amount
+			current_hp = mini(current_hp + amount, card_data.hp)
 
 	func modify_atk(amount: int) -> void:
 		current_atk += amount
 
-	func apply_status(effect, duration: int = 1) -> void:
-		var s: int = int(effect)
-		_status[s] = maxi(_status.get(s, 0), duration)
+	# NOTE: 本番 CardUI は単純上書きだが、シミュレーションでは既存の長い効果を
+	# 短縮しない保守的挙動を採用（maxi）
+	func apply_status(effect: int, duration: int = 1) -> void:
+		_status[effect] = maxi(_status.get(effect, 0), duration)
 
-	func has_status(effect) -> bool:
-		return _status.get(int(effect), 0) > 0
+	func has_status(effect: int) -> bool:
+		return _status.get(effect, 0) > 0
 
 	func tick_status_effects() -> void:
 		var to_remove: Array = []
