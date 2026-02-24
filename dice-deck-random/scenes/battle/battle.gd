@@ -126,8 +126,13 @@ func _on_end_phase() -> void:
 			current_phase = Phase.DRAW
 			_update_all_ui()
 			await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
-			_player_draw_card()
-			_log("カードを1枚ドローした。")
+			var draw_modifier := EffectManager.get_draw_modifier(true, _get_effect_context())
+			var draw_count := maxi(1 + draw_modifier, 0)
+			if draw_count > 0:
+				_player_draw_card()
+				_log("カードを1枚ドローした。")
+			else:
+				_log("[color=purple]相手の効果でドローが封じられた！[/color]")
 			player_mana = mini(player_mana + 1, player_max_mana)
 			_log("[color=cyan]1マナ回復した。(マナ: %d/%d)[/color]" % [player_mana, player_max_mana])
 			# Go to Main2
@@ -214,8 +219,13 @@ func _run_opponent_turn(skip_dice_draw: bool) -> void:
 		current_phase = Phase.DRAW
 		_update_all_ui()
 		await _show_phase_banner("ドロー & 1マナ回復", Color(0.3, 1.0, 0.5), 0.5)
-		_opponent_draw_card()
-		_log("相手がカードをドローした。")
+		var opp_draw_modifier := EffectManager.get_draw_modifier(false, _get_effect_context())
+		var opp_draw_count := maxi(1 + opp_draw_modifier, 0)
+		if opp_draw_count > 0:
+			_opponent_draw_card()
+			_log("相手がカードをドローした。")
+		else:
+			_log("[color=purple]自分の効果で相手のドローを封じた！[/color]")
 		opponent_mana = mini(opponent_mana + 1, opponent_max_mana)
 		_log("相手が1マナ回復した。")
 		await get_tree().create_timer(0.3).timeout
