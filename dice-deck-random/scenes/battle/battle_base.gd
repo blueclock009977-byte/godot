@@ -225,7 +225,7 @@ func _process_turn_start_effects(is_player: bool) -> void:
 	_process_turn_timing_effects(EffectManager.Timing.TURN_START, is_player)
 
 	# 敵の常時効果によるマナ減少（purple_010等）
-	var context := _build_effect_context()
+	var context := _get_effect_context()
 	var mana_penalty := EffectManager.get_enemy_turn_start_mana_penalty(is_player, context)
 	if mana_penalty > 0:
 		if is_player:
@@ -263,7 +263,7 @@ func _apply_effect_result(result: Dictionary, is_player: bool) -> void:
 	if result.has("direct_damage"):
 		var direct_dmg: int = result["direct_damage"]
 		# white_012: 自分への直接ダメージ半減
-		var reduction := EffectManager.get_direct_damage_reduction(not is_player, _build_effect_context())
+		var reduction := EffectManager.get_direct_damage_reduction(not is_player, _get_effect_context())
 		if reduction > 0.0:
 			var reduced := int(ceil(float(direct_dmg) * (1.0 - reduction)))
 			_log("[color=white]直接ダメージ軽減: %d → %d[/color]" % [direct_dmg, reduced])
