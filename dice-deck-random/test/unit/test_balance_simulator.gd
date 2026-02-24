@@ -494,9 +494,6 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 		for res in end_results:
 			_apply_sim_effect(res, is_player_turn, state, p_slots, o_slots)
 
-		# ── 状態異常 tick ──────────────────────────────────
-		_tick_all_statuses(p_slots, o_slots)
-
 		# 勝敗再確認（TURN_END効果でHPが変化した場合）
 		if state["hp_p"] <= 0 and state["hp_o"] <= 0:
 			return {"winner": "draw", "turns": turn_count}
