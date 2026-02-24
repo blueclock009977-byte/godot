@@ -1,74 +1,25 @@
 {
-  "taskId": "live-debug-2026-02-24-v2",
-  "goal": "本番環境（Web版）で効果カードを順番に検証",
-  "status": "paused",
-  "pauseReason": "ブラウザ経由でのGodot canvasキー入力が正常に動作しない。GUTテスト（268件）でカバー済みのため一時中断",
-  "completionCriteria": [
-    "全ユニーク効果を本番環境で実際に使って動作確認",
-    "効果が正しく発動することを目視確認",
-    "バグがあれば修正"
-  ],
-  "alternativeVerification": {
-    "method": "GUTテスト",
-    "coverage": {
-      "test_effect_integration.gd": 50,
-      "test_effect_manager.gd": 54,
-      "test_effects.gd": 164,
-      "total": 268
-    },
-    "conclusion": "効果実装はテストでカバー済み"
-  },
-  "currentPhase": 2,
-  "phaseAttempt": 2,
-  "maxAttempts": 30,
-  "startedAt": "2026-02-24T12:50:00+09:00",
-  "pausedAt": "2026-02-24T13:00:00+09:00",
+  "taskId": "effect-verify-2026-02-24",
+  "goal": "全効果カードを本番環境で検証、不具合修正",
+  "currentPhase": 1,
+  "phaseAttempt": 1,
+  "maxAttempts": 50,
+  "startedAt": "2026-02-24T16:20:00+09:00",
   "discordChannel": "channel:1471429991005950013",
   "deployUrl": "https://blueclock009977-byte.github.io/godot/",
-  "log": [
-    {
-      "phase": 2,
-      "timestamp": "2026-02-24T12:54:00+09:00",
-      "action": "青効果カード検証試行",
-      "result": "ブラウザ操作問題",
-      "details": "GodotのcanvasゲームでEnterキーによるカード配置が反映されない問題が発生。"
-    },
-    {
-      "phase": 2,
-      "attempt": 2,
-      "timestamp": "2026-02-24T12:58:00+09:00",
-      "action": "NPC対戦でカードプレイ試行",
-      "result": "ゲーム操作不可",
-      "details": "Spaceでフェーズ進行は動作するが、自分のターンでカード配置ができず、最終的に負けてタイトルに戻った。"
-    },
-    {
-      "phase": 2,
-      "attempt": 2,
-      "timestamp": "2026-02-24T13:00:00+09:00",
-      "action": "代替検証方法に切り替え",
-      "result": "GUTテスト確認",
-      "details": "効果関連のGUTテストが268件あり、効果実装は十分カバーされていることを確認。ブラウザ自動操作での検証は一時中断。"
-    }
-  ],
-  "verificationQueue": [
-    {"id": 20, "name": "氷の精霊", "effect": "blue_001", "verified": false, "testCoverage": true},
-    {"id": 21, "name": "フロストバット", "effect": "blue_002", "verified": false, "testCoverage": true},
-    {"id": 22, "name": "氷のネズミ", "effect": "blue_009", "verified": false, "testCoverage": true}
-  ],
-  "currentIndex": 0,
-  "issues": [
-    {
-      "type": "browser_operation",
-      "description": "GodotのcanvasでEnterキーでのカード配置が動作しない",
-      "severity": "high",
-      "blocksAutomation": true,
-      "workaround": "手動テストまたはGUTテストで代替"
-    }
-  ],
-  "completed": [],
-  "nextSteps": [
-    "CIテスト結果を確認して効果実装の正常性を確認",
-    "パパに手動で本番環境テストを依頼",
-    "ブラウザ自動操作の問題を調査（Godot canvasのキー入力）"
-  ]
+  "colorOrder": ["blue", "green", "black", "red", "yellow", "purple", "white"],
+  "currentColorIndex": 0,
+  "verifiedEffects": [],
+  "bugs": [],
+  "effectsByColor": {
+    "blue": ["blue_001", "blue_002", "blue_003", "blue_004", "blue_005", "blue_006", "blue_007", "blue_008", "blue_009", "blue_010", "blue_011", "blue_013", "blue_014", "blue_015", "blue_016", "blue_018"],
+    "green": ["green_001", "green_002", "green_003", "green_004", "green_005", "green_006", "green_007", "green_008", "green_009", "green_010", "green_011", "green_012", "green_013", "green_014", "green_015", "green_016"],
+    "black": ["black_001", "black_002", "black_003", "black_004", "black_005", "black_006", "black_007", "black_008", "black_009", "black_010", "black_011", "black_012", "black_013", "black_014", "black_015", "black_016", "black_017", "black_019"],
+    "red": ["red_001", "red_002", "red_003", "red_004", "red_005", "red_006", "red_007", "red_008", "red_009", "red_010", "red_011", "red_012", "red_013", "red_014", "red_015", "red_016", "red_017", "red_018"],
+    "yellow": ["yellow_001", "yellow_002", "yellow_003", "yellow_004", "yellow_005", "yellow_006", "yellow_007", "yellow_008", "yellow_009", "yellow_010", "yellow_011", "yellow_012", "yellow_013", "yellow_014", "yellow_015", "yellow_016", "yellow_017", "yellow_018", "yellow_019", "yellow_020"],
+    "purple": ["purple_001", "purple_002", "purple_003", "purple_004", "purple_005", "purple_006", "purple_007", "purple_008", "purple_009", "purple_010", "purple_011", "purple_012", "purple_013", "purple_014", "purple_015", "purple_016", "purple_017", "purple_018", "purple_019", "purple_020"],
+    "white": ["white_001", "white_002", "white_003", "white_004", "white_005", "white_006", "white_007", "white_008", "white_009", "white_010", "white_011", "white_012", "white_013", "white_014", "white_015", "white_016", "white_017", "white_018", "white_019", "white_020"]
+  },
+  "currentEffectIndex": 0,
+  "log": []
 }

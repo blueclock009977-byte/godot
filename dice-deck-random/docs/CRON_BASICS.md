@@ -217,3 +217,51 @@ openclaw cron add \
 - `--agent` を必ず明示的に指定する
 - `openclaw cron list` でジョブの設定を確認
 - `openclaw cron runs <job-id>` で実行履歴とsessionKeyを確認
+
+### ⚠️ モデル・トークンエラー（重要！）
+
+cronを設定しても、モデルやOAuthトークンの問題で実行時にエラーになることがある。
+**設定前に必ず確認し、設定後も実行結果を確認すること！**
+
+#### よくあるエラー
+
+**1. model not allowed**
+```
+"error": "model not allowed: anthropic/claude-sonnet-4"
+```
+**原因**: 指定したモデル名が間違っている、またはそのモデルへのアクセス権がない
+**対処**: `session_status`で現在使えるモデルを確認し、正しいモデル名を使う
+
+**2. OAuth token refresh failed**
+```
+"error": "FailoverError: OAuth token refresh failed for openai-codex"
+```
+**原因**: OAuthトークンが期限切れ
+**対処**: `openclaw auth` で再認証するか、別のプロバイダーのモデルを使う
+
+#### 設定前の確認手順
+
+1. **session_status** でモデル情報を確認
+   - 現在使えるモデル名をメモ
+   - OAuth認証状態を確認（🔑 oauth があるか）
+
+2. 確認できたモデルを `--model` で指定
+
+#### 設定後の確認手順
+
+登録後、必ず実行結果を確認する：
+
+```bash
+# 1. ジョブIDを確認
+openclaw cron list
+
+# 2. 実行履歴を確認（1-2分待ってから）
+openclaw cron runs --id <job-id>
+```
+
+`"status": "ok"` なら成功、`"status": "error"` ならエラー内容を確認して修正。
+
+#### 安全なモデル選択
+
+- 現在のセッションで動いているモデルを使うのが最も安全
+- 別モデルを使う場合は、先にそのモデルで何か実行してみて動作確認
