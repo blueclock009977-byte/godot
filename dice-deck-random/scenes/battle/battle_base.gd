@@ -1163,7 +1163,7 @@ func _handle_hand_keyboard_input(event: InputEvent) -> void:
 		keyboard_focus_area = KeyboardFocusArea.FIELD
 		field_focus_index = 3  # Back row center
 		changed = true
-	elif event.is_action_pressed("ui_accept"):
+	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("confirm_action"):
 		if hand_focus_index < player_hand.size():
 			var card_ui = player_hand[hand_focus_index]
 			if card_ui:
@@ -1209,7 +1209,7 @@ func _handle_field_keyboard_input(event: InputEvent) -> void:
 		if field_focus_index < 3:
 			field_focus_index += 3  # Move to back row
 		changed = true
-	elif event.is_action_pressed("ui_accept"):
+	elif event.is_action_pressed("ui_accept") or event.is_action_pressed("confirm_action"):
 		if field_focus_index < player_slots.size():
 			var slot = player_slots[field_focus_index]
 			if slot:

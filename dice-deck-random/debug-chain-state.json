@@ -1,16 +1,104 @@
 {
-  "taskId": "effect-verify-2026-02-24",
-  "goal": "全効果カードを本番環境で検証、不具合修正",
-  "currentPhase": 1,
-  "phaseAttempt": 1,
+  "taskId": "live-effect-verify-2026-02-24",
+  "goal": "全効果カードを本番環境(Web版)で実際にプレイして検証",
+  "currentPhase": 2,
+  "phaseAttempt": 3,
   "maxAttempts": 50,
-  "startedAt": "2026-02-24T16:20:00+09:00",
+  "startedAt": "2026-02-24T17:22:00+09:00",
   "discordChannel": "channel:1471429991005950013",
   "deployUrl": "https://blueclock009977-byte.github.io/godot/",
   "colorOrder": ["blue", "green", "black", "red", "yellow", "purple", "white"],
   "currentColorIndex": 0,
-  "verifiedEffects": [],
-  "bugs": [],
+  "currentEffectIndex": 0,
+  "verifiedEffects": [
+    {
+      "id": "yellow_光のスライム",
+      "color": "yellow",
+      "name": "光のスライム",
+      "effect": "攻撃時:自身HP+1",
+      "status": "OBSERVED",
+      "note": "NPC対戦で確認"
+    },
+    {
+      "id": "yellow_聖なる小鳥",
+      "color": "yellow",
+      "name": "聖なる小鳥",
+      "effect": "味方全体ダイス+1追加",
+      "status": "OBSERVED",
+      "note": "NPC対戦で確認"
+    },
+    {
+      "id": "blue_海のスライム",
+      "color": "blue",
+      "name": "海のスライム",
+      "effect": "ターン開始時:自身HP+1",
+      "status": "OBSERVED",
+      "note": "手札で確認"
+    },
+    {
+      "id": "blue_北風の精",
+      "color": "blue",
+      "name": "北風の精",
+      "effect": "離陸時:OATK-1",
+      "status": "OBSERVED",
+      "note": "手札で確認"
+    },
+    {
+      "id": "blue_吹雪の魔術師",
+      "color": "blue",
+      "name": "吹雪の魔術師",
+      "effect": "片手を凍結(次ターン後)",
+      "status": "OBSERVED",
+      "note": "手札で確認"
+    },
+    {
+      "id": "blue_氷城の騎士",
+      "color": "blue",
+      "name": "氷城の騎士",
+      "effect": "登場時:敵を凍結×1",
+      "status": "OBSERVED",
+      "note": "手札で確認"
+    },
+    {
+      "id": "purple_夜の蝶",
+      "color": "purple",
+      "name": "夜の蝶",
+      "effect": "相手の召喚コスト+1",
+      "status": "OBSERVED",
+      "note": "NPC対戦で確認"
+    },
+    {
+      "id": "blue_氷山",
+      "color": "blue",
+      "name": "氷山",
+      "effect": "敵HP-〇ATK×1",
+      "status": "OBSERVED",
+      "note": "手札で確認 (5コスト、離陸時効果)"
+    },
+    {
+      "id": "blue_深海魚",
+      "color": "blue",
+      "name": "深海魚",
+      "effect": "ダイス5以上時HP+〇",
+      "status": "OBSERVED",
+      "note": "手札で確認 (3コスト)"
+    }
+  ],
+  "bugs": [
+    {
+      "id": "bug_001",
+      "description": "キーボードでカード配置時、Enterキーがキャンセル動作になる",
+      "severity": "medium",
+      "steps": "1. 数字キーでカード選択 2. 配置可能スロットが緑表示 3. Enterで配置しようとするとキャンセルされる"
+    },
+    {
+      "id": "bug_002",
+      "description": "ブラウザ自動操作: canvasクリックが効かない",
+      "severity": "low",
+      "steps": "JavaScript MouseEventやキーボードイベントがGodotに届かない。手動操作必要",
+      "workaround": "手動でゲームをプレイして確認するか、GUTテストで効果ロジックを検証"
+    }
+  ],
   "effectsByColor": {
     "blue": ["blue_001", "blue_002", "blue_003", "blue_004", "blue_005", "blue_006", "blue_007", "blue_008", "blue_009", "blue_010", "blue_011", "blue_013", "blue_014", "blue_015", "blue_016", "blue_018"],
     "green": ["green_001", "green_002", "green_003", "green_004", "green_005", "green_006", "green_007", "green_008", "green_009", "green_010", "green_011", "green_012", "green_013", "green_014", "green_015", "green_016"],
@@ -20,6 +108,28 @@
     "purple": ["purple_001", "purple_002", "purple_003", "purple_004", "purple_005", "purple_006", "purple_007", "purple_008", "purple_009", "purple_010", "purple_011", "purple_012", "purple_013", "purple_014", "purple_015", "purple_016", "purple_017", "purple_018", "purple_019", "purple_020"],
     "white": ["white_001", "white_002", "white_003", "white_004", "white_005", "white_006", "white_007", "white_008", "white_009", "white_010", "white_011", "white_012", "white_013", "white_014", "white_015", "white_016", "white_017", "white_018", "white_019", "white_020"]
   },
-  "currentEffectIndex": 0,
-  "log": []
+  "log": [
+    {
+      "phase": 1,
+      "attempt": 1,
+      "timestamp": "2026-02-24T17:22:00+09:00",
+      "action": "NPC対戦開始、観察モードで効果カード確認",
+      "result": "2枚のyellow効果カード確認、キーボードUIバグ発見、敗北"
+    },
+    {
+      "phase": 1,
+      "attempt": 2,
+      "timestamp": "2026-02-24T17:30:00+09:00",
+      "action": "2回目のNPC対戦、青と紫の効果カード観察",
+      "result": "blue4枚、purple1枚の効果カード確認"
+    },
+    {
+      "phase": 2,
+      "attempt": 3,
+      "timestamp": "2026-02-24T17:35:00+09:00",
+      "action": "3回目のNPC対戦開始、手札で青カード確認",
+      "result": "氷山、深海魚の2枚を新規確認。ブラウザ自動操作の制限発見（canvasクリック不可）"
+    }
+  ],
+  "conclusion": "ブラウザ自動操作でGodot canvasのボタンクリックができないため、効果発動の検証は困難。GUTテストでのロジック検証に切り替えることを推奨"
 }
