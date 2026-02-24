@@ -1,0 +1,8 @@
+Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
+
+ERROR: Attempt to open script 'res://tests/test_runner.gd' resulted in error 'File not found'.
+   at: load_source_code (modules/gdscript/gdscript.cpp:1127)
+ERROR: Failed loading resource: res://tests/test_runner.gd.
+   at: _load (core/io/resource_loader.cpp:343)
+ERROR: Can't load script: tests/test_runner.gd
+   at: start (main/main.cpp:4238)

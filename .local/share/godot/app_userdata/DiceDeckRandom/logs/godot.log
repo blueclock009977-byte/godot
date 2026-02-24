@@ -1,2 +1,1070 @@
 Godot Engine v4.6.stable.official.89cea1439 - https://godotengine.org
 
+SCRIPT ERROR: Trying to assign value of type 'Nil' to a variable of type 'bool'.
+   at: _static_init (res://addons/gut/gut_loader.gd:35)
+   GDScript backtrace (most recent call first):
+       [0] _static_init (res://addons/gut/gut_loader.gd:35)
+       [1] @static_initializer (res://addons/gut/gut_loader.gd:1)
+       [2] _init (res://addons/gut/gut_cmdln.gd:23)
+---  GUT  ---
+[INFO]:  using [/workspace/.local/share/godot/app_userdata/DiceDeckRandom] for temporary output.
+Godot version:  4.6.0
+GUT version:  9.5.0
+SCRIPT ERROR: Parse Error: Could not resolve class "BattleBase".
+   at: GDScript::reload (res://test/unit/test_battle_base_effect_application.gd:3)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_battle_base_effect_application.gd" with error "Parse error".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[WARNING]:  Ignoring script res://test/unit/test_battle_base_effect_application.gd because it does not extend GutTest
+SCRIPT ERROR: Parse Error: Could not resolve class "BattleBase".
+   at: GDScript::reload (res://scenes/battle/online_battle.gd:1)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+   at: GDScript::reload (res://test/unit/test_online_battle_sync.gd:0)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed to load script "res://test/unit/test_online_battle_sync.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript.cpp:2907)
+   GDScript backtrace (most recent call first):
+       [0] load_script_using_custom_warnings (res://addons/gut/warnings_manager.gd:159)
+       [1] _parse_script (res://addons/gut/test_collector.gd:76)
+       [2] add_script (res://addons/gut/test_collector.gd:127)
+       [3] add_script (res://addons/gut/gut.gd:1050)
+       [4] add_directory (res://addons/gut/gut.gd:1073)
+       [5] _apply_options (res://addons/gut/gut_config.gd:136)
+       [6] apply_options (res://addons/gut/gut_config.gd:207)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:191)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:238)
+       [9] main (res://addons/gut/cli/gut_cli.gd:284)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+
+
+res://test/unit/test_balance_simulator.gd
+* test_mono_deck_creation
+* test_single_game_simulation
+* test_matchup_simulation
+* test_color_balance_report
+    ═══════════════════════════════════════════
+    色別バランスシミュレーション結果
+    各マッチアップ 100 ゲーム（先攻/後攻各1回）
+    ═══════════════════════════════════════════
+    BLUE vs GREEN: 59.5% vs 40.0% (先攻有利: +5.0%, 平均16.6ターン)
+    BLUE vs BLACK: 63.5% vs 36.5% (先攻有利: +5.0%, 平均16.6ターン)
+    BLUE vs RED: 34.0% vs 66.0% (先攻有利: +6.0%, 平均15.3ターン)
+    BLUE vs YELLOW: 51.5% vs 48.0% (先攻有利: +13.0%, 平均16.1ターン)
+    BLUE vs PURPLE: 55.0% vs 45.0% (先攻有利: +0.0%, 平均16.0ターン)
+    BLUE vs WHITE: 61.5% vs 38.5% (先攻有利: -1.0%, 平均16.2ターン)
+    GREEN vs BLACK: 43.5% vs 56.5% (先攻有利: +9.0%, 平均16.6ターン)
+    GREEN vs RED: 27.5% vs 72.5% (先攻有利: +7.0%, 平均14.4ターン)
+    GREEN vs YELLOW: 42.5% vs 57.0% (先攻有利: -5.0%, 平均15.5ターン)
+    GREEN vs PURPLE: 32.0% vs 68.0% (先攻有利: -10.0%, 平均16.0ターン)
+    GREEN vs WHITE: 41.5% vs 58.0% (先攻有利: +5.0%, 平均16.5ターン)
+    BLACK vs RED: 36.0% vs 64.0% (先攻有利: +0.0%, 平均15.6ターン)
+    BLACK vs YELLOW: 48.5% vs 50.5% (先攻有利: +13.0%, 平均16.1ターン)
+    BLACK vs PURPLE: 49.5% vs 50.5% (先攻有利: +11.0%, 平均16.3ターン)
+    BLACK vs WHITE: 58.0% vs 42.0% (先攻有利: +18.0%, 平均17.7ターン)
+    RED vs YELLOW: 57.0% vs 43.0% (先攻有利: +18.0%, 平均15.1ターン)
+    RED vs PURPLE: 66.5% vs 33.5% (先攻有利: +11.0%, 平均15.9ターン)
+    RED vs WHITE: 69.0% vs 31.0% (先攻有利: -4.0%, 平均15.6ターン)
+    YELLOW vs PURPLE: 50.0% vs 50.0% (先攻有利: +6.0%, 平均16.0ターン)
+    YELLOW vs WHITE: 61.5% vs 37.5% (先攻有利: -1.0%, 平均15.8ターン)
+    PURPLE vs WHITE: 58.0% vs 42.0% (先攻有利: +10.0%, 平均15.8ターン)
+
+    ═══════════════════════════════════════════
+    総合勝率（全マッチアップ通算）
+    ═══════════════════════════════════════════
+    BLUE: 54.2% (650/1200)
+    GREEN: 37.8% (454/1200)
+    BLACK: 47.3% (568/1200)
+    RED: 65.8% (789/1200)
+    YELLOW: 51.6% (619/1200)
+    PURPLE: 50.7% (609/1200)
+    WHITE: 41.4% (497/1200)
+
+    ═══════════════════════════════════════════
+    バランス指標
+    ═══════════════════════════════════════════
+    色別勝率範囲: 37.8% - 65.8% (差: 27.9%)
+    平均先攻有利度: +5.5%
+
+    ✗ 色バランス: 要調整（差27.9% > 15%）
+    ✓ 先後バランス: 良好（先攻有利+5.5% <= ±8%）
+4/4 passed.
+
+
+res://test/unit/test_battle_constants.gd
+* test_max_hp_is_20
+* test_max_mana_cap_is_5
+* test_move_cost_is_1
+* test_default_starting_hand_is_4
+* test_card_size_hand_is_120
+* test_card_size_field_is_175
+* test_card_size_preview_is_300
+* test_phase_enum_values
+* test_select_mode_enum_values
+* test_get_phase_name_main1
+* test_get_phase_name_dice
+* test_get_phase_name_draw
+* test_get_phase_name_main2
+* test_get_phase_name_end
+* test_get_phase_name_invalid
+15/15 passed.
+
+
+res://test/unit/test_battle_sim.gd
+* test_empty_field
+* test_single_card_direct_hp
+* test_single_card_wrong_dice
+* test_card_vs_card_same_lane
+* test_kill_then_direct_hp
+* test_front_blocks_back
+* test_different_lanes_no_interaction
+* test_opponent_turn
+* test_back_row_only_same_lane
+* test_back_row_direct_hp_no_defender
+* test_multiple_lanes_battle
+* test_selective_dice_activation
+* test_dead_card_no_counterattack
+* test_all_six_dice_values
+14/14 passed.
+
+
+res://test/unit/test_battle_utils.gd
+* test_get_adjacent_slots_lane0_front
+* test_get_adjacent_slots_lane1_front
+* test_get_adjacent_slots_lane2_front
+* test_get_adjacent_slots_lane0_back
+* test_get_adjacent_slots_lane1_back
+* test_get_adjacent_slots_lane2_back
+* test_build_mana_string_full
+* test_build_mana_string_partial
+* test_build_mana_string_empty
+* test_build_mana_string_max_cap
+* test_build_mana_string_overcap_max
+* test_sim_find_target_front_first
+* test_sim_find_target_back_if_no_front
+* test_sim_find_target_different_lane
+* test_sim_find_target_dead_ignored
+* test_build_dice_preview_text_format
+* test_has_empty_slot_all_empty
+* test_has_empty_slot_all_filled
+* test_has_empty_slot_mixed
+* test_has_empty_slot_one_empty
+* test_has_empty_slot_null_treated_as_occupied
+* test_is_dice_blocked_empty_context
+22/22 passed.
+
+
+res://test/unit/test_card_data.gd
+* test_default_values
+* test_color_type_enum
+* test_get_color_name_gray
+* test_get_color_name_blue
+* test_get_color_name_green
+* test_get_color_name_black
+* test_get_color_name_red
+* test_get_color_name_yellow
+* test_get_color_name_purple
+* test_get_color_name_white
+* test_has_effect_false
+* test_has_effect_true
+* test_duplicate_card_basic
+* test_duplicate_card_independent_arrays
+* test_all_color_names_are_japanese
+15/15 passed.
+
+
+res://test/unit/test_card_database.gd
+* test_card_pool_has_160_cards
+* test_all_cards_have_valid_cost
+* test_all_cards_have_positive_hp
+* test_all_cards_have_non_negative_atk
+* test_all_cards_have_attack_dice
+* test_all_dice_values_valid
+* test_all_cards_have_unique_ids
+* test_point_budget_vanilla_cards
+    [Failed]:  スカウト score=25 budget=30 should be within ±4
+      at line 45
+    [Failed]:  アサシン score=25 budget=30 should be within ±4
+      at line 45
+    [Failed]:  アイアンゴーレム score=41 budget=46 should be within ±4
+      at line 45
+    [Failed]:  ウォーロード score=40 budget=46 should be within ±4
+      at line 45
+* test_get_card_by_id
+* test_get_card_by_invalid_id
+* test_build_random_deck
+* test_build_random_battle_deck_follows_rules
+* test_each_color_has_20_cards
+* test_card_ids_are_sequential
+* test_effect_cards_have_valid_effect_id
+* test_duplicate_card_creates_copy
+* test_effect_budget_modifier_covers_all_registered_effect_ids
+* test_effect_budget_modifier_key_rules
+17/18 passed.
+
+
+res://test/unit/test_card_level_balance.gd
+* test_card_level_balance_report
+    ═══════════════════════════════════════════
+    カード単位バランス計測結果
+    各マッチアップ 100 ゲーム × 21ペア × 2（先後）
+    ═══════════════════════════════════════════
+
+    ═══════════════════════════════════════════
+    出場時勝率 統計
+    ═══════════════════════════════════════════
+    中央値: 50.7%
+    最小: 31.9% / 最大: 72.0%
+    目標: 中央値±7%以内 (43.7% ~ 57.7%)
+
+    ═══════════════════════════════════════════
+    外れ値カード（中央値±7%超）
+    ═══════════════════════════════════════════
+
+    【高勝率 TOP10】
+      火の鳥 [RED] ID:87 - 72.0% (282 games)
+      灼熱の魔王 [RED] ID:98 - 71.4% (241 games)
+      炎帝 [RED] ID:92 - 69.4% (229 games)
+      呪いの神 [PURPLE] ID:137 - 68.9% (257 games)
+      炎神 [RED] ID:96 - 66.5% (227 games)
+      悪夢の使者 [PURPLE] ID:131 - 65.9% (226 games)
+      氷帝 [BLUE] ID:36 - 64.3% (280 games)
+      溶岩巨人 [RED] ID:90 - 64.2% (229 games)
+      火炎魔術師 [RED] ID:85 - 62.6% (273 games)
+      業火の魔人 [RED] ID:91 - 62.2% (251 games)
+
+    【低勝率 BOTTOM10】
+      若木のトレント [GREEN] ID:41 - 31.9% (304 games)
+      花の精 [GREEN] ID:45 - 32.1% (305 games)
+      苔の巨人 [GREEN] ID:55 - 33.7% (258 games)
+      花のスプライト [GREEN] ID:42 - 34.2% (263 games)
+      草原の狩人 [GREEN] ID:44 - 34.3% (277 games)
+      生命の木 [GREEN] ID:59 - 34.7% (271 games)
+      木こりオーク [GREEN] ID:47 - 35.6% (270 games)
+      種まき [GREEN] ID:43 - 35.9% (284 games)
+      森林王 [GREEN] ID:56 - 36.0% (258 games)
+      エルフの賢者 [GREEN] ID:52 - 36.2% (282 games)
+
+    ═══════════════════════════════════════════
+    バランス判定
+    ═══════════════════════════════════════════
+    外れ値カード: 58 / 160 (36.2%)
+    ✗ カードバランス: 要調整（外れ値36.2% > 10%）
+
+    ═══════════════════════════════════════════
+    全カード出場時勝率（勝率順）
+    ═══════════════════════════════════════════
+    ID: 87 [   RED] 火の鳥: 72.0% (282) ▲
+    ID: 98 [   RED] 灼熱の魔王: 71.4% (241) ▲
+    ID: 92 [   RED] 炎帝: 69.4% (229) ▲
+    ID:137 [PURPLE] 呪いの神: 68.9% (257) ▲
+    ID: 96 [   RED] 炎神: 66.5% (227) ▲
+    ID:131 [PURPLE] 悪夢の使者: 65.9% (226) ▲
+    ID: 36 [  BLUE] 氷帝: 64.3% (280) ▲
+    ID: 90 [   RED] 溶岩巨人: 64.2% (229) ▲
+    ID: 85 [   RED] 火炎魔術師: 62.6% (273) ▲
+    ID: 91 [   RED] 業火の魔人: 62.2% (251) ▲
+    ID: 95 [   RED] 火山龍: 61.7% (243) ▲
+    ID:144 [ WHITE] 白の戦士: 61.7% (269) ▲
+    ID: 94 [   RED] 地獄の番犬: 61.4% (272) ▲
+    ID: 89 [   RED] ファイアドラゴン: 61.2% (237) ▲
+    ID: 83 [   RED] 溶岩スライム: 60.8% (296) ▲
+    ID: 84 [   RED] 炎の戦士: 60.4% (285) ▲
+    ID:125 [PURPLE] 呪術師: 59.9% (309) ▲
+    ID: 62 [ BLACK] 疫病ネズミ: 59.4% (303) ▲
+    ID:113 [YELLOW] 光の龍: 59.4% (266) ▲
+    ID: 33 [  BLUE] 海神の守護者: 59.3% (300) ▲
+    ID: 88 [   RED] 炎の騎士: 58.9% (246) ▲
+    ID: 97 [   RED] メテオドラゴン: 58.9% (241) ▲
+    ID:127 [PURPLE] 夢魔: 58.9% (282) ▲
+    ID: 37 [  BLUE] 凍てつく巨人: 58.8% (296) ▲
+    ID: 73 [ BLACK] 吸血鬼: 58.4% (286) ▲
+    ID: 93 [   RED] フェニックス: 57.8% (249) ▲
+    ID:117 [YELLOW] 天空龍: 57.5% (266)
+    ID: 86 [   RED] バーニングナイト: 57.3% (260)
+    ID: 70 [ BLACK] 骸骨剣士: 56.6% (242)
+    ID:134 [PURPLE] 影の支配者: 56.5% (246)
+    ID: 17 [  GRAY] ドラゴン: 56.3% (1852)
+    ID: 21 [  BLUE] フロストバット: 56.0% (277)
+    ID:129 [PURPLE] 呪いの魔女: 55.8% (242)
+    ID: 13 [  GRAY] ブレードマスター: 55.8% (1845)
+    ID: 81 [   RED] 炎のネズミ: 55.7% (244)
+    ID: 80 [   RED] 火の精霊: 55.7% (298)
+    ID: 82 [   RED] 火花インプ: 55.5% (265)
+    ID: 99 [   RED] 太陽神: 55.4% (242)
+    ID: 31 [  BLUE] 氷の壁: 55.3% (257)
+    ID: 38 [  BLUE] 氷山: 55.2% (277)
+    ID: 78 [ BLACK] 堕落の竜: 54.7% (296)
+    ID:126 [PURPLE] 影の狼: 54.7% (256)
+    ID: 61 [ BLACK] 呪いの人形: 54.5% (312)
+    ID: 72 [ BLACK] 漆黒の騎士: 54.3% (282)
+    ID:109 [YELLOW] 光の魔術師: 54.1% (231)
+    ID:132 [PURPLE] 闇の王: 54.1% (244)
+    ID: 71 [ BLACK] 悪魔の契約者: 54.1% (259)
+    ID: 28 [  BLUE] 氷結の騎士: 53.8% (249)
+    ID: 27 [  BLUE] 海のスライム: 53.7% (281)
+    ID: 34 [  BLUE] 海賊船長: 53.4% (249)
+    ID: 26 [  BLUE] 氷の彫刻家: 53.1% (260)
+    ID: 24 [  BLUE] 水の使い: 53.1% (260)
+    ID: 76 [ BLACK] 魔王の影: 53.0% (315)
+    ID: 64 [ BLACK] 影の暗殺者: 52.9% (263)
+    ID:128 [PURPLE] 闇の騎士: 52.8% (233)
+    ID: 53 [ GREEN] 古代樹: 52.6% (228)
+    ID:135 [PURPLE] 悪夢の王: 52.6% (249)
+    ID: 69 [ BLACK] 死霊術師: 52.6% (234)
+    ID: 14 [  GRAY] ドラゴンナイト: 52.4% (1776)
+    ID:110 [YELLOW] 天使: 52.3% (218)
+    ID: 65 [ BLACK] 毒蛇: 52.2% (268)
+    ID:121 [PURPLE] 呪いのコウモリ: 52.2% (272)
+    ID: 29 [  BLUE] 深海魚: 52.1% (257)
+    ID:  5 [  GRAY] スカウト: 52.1% (1845)
+    ID: 39 [  BLUE] 絶対零度: 52.0% (271)
+    ID:123 [PURPLE] 夜の蝶: 52.0% (302)
+    ID: 18 [  GRAY] デスブリンガー: 51.9% (1858)
+    ID:115 [YELLOW] 祝福の精霊王: 51.8% (220)
+    ID: 10 [  GRAY] パラディン: 51.6% (1753)
+    ID:  9 [  GRAY] ストライカー: 51.5% (1729)
+    ID:108 [YELLOW] 聖騎士: 51.4% (247)
+    ID:105 [YELLOW] 癒しの天使: 51.4% (292)
+    ID:  6 [  GRAY] ウォリアー: 51.3% (1829)
+    ID: 77 [ BLACK] 深淵の王: 51.2% (287)
+    ID:107 [YELLOW] 光のスライム: 51.2% (289)
+    ID:133 [PURPLE] 呪いの竜: 51.1% (237)
+    ID: 22 [  BLUE] 氷のネズミ: 51.0% (339)
+    ID: 35 [  BLUE] 北風の精: 50.8% (248)
+    ID:157 [ WHITE] 神聖の化身: 50.8% (260)
+    ID:138 [PURPLE] 影の帝王: 50.7% (268)
+    ID:124 [PURPLE] 闇の魔術師: 50.6% (243)
+    ID:111 [YELLOW] 希望の使者: 50.6% (247)
+    ID: 32 [  BLUE] 吹雪のドラゴン: 50.6% (259)
+    ID:102 [YELLOW] 祝福のスプライト: 50.5% (285)
+    ID:112 [YELLOW] 大天使: 50.4% (234)
+    ID:  1 [  GRAY] ストーンウォール: 50.3% (2092)
+    ID:  7 [  GRAY] アサシン: 50.2% (1866)
+    ID: 68 [ BLACK] 堕天使: 50.2% (247)
+    ID:106 [YELLOW] 守護の騎士: 50.2% (291)
+    ID: 12 [  GRAY] アイアンゴーレム: 49.9% (1776)
+    ID:  4 [  GRAY] シールドナイト: 49.8% (1945)
+    ID: 74 [ BLACK] ダークナイト: 49.5% (275)
+    ID:104 [YELLOW] 光の戦士: 49.4% (269)
+    ID:130 [PURPLE] 影の龍: 49.4% (239)
+    ID: 60 [ BLACK] 闇のコウモリ: 49.4% (316)
+    ID: 20 [  BLUE] 氷の精霊: 49.2% (301)
+    ID:122 [PURPLE] 影のネズミ: 49.1% (293)
+    ID: 15 [  GRAY] ウォーロード: 49.0% (1742)
+    ID:  8 [  GRAY] フォートレス: 48.9% (1756)
+    ID:136 [PURPLE] 闇神: 48.8% (281)
+    ID: 30 [  BLUE] 吹雪の魔術師: 48.8% (240)
+    ID:153 [ WHITE] 神聖龍: 48.5% (270)
+    ID:114 [YELLOW] 聖者: 48.3% (292)
+    ID:  2 [  GRAY] ゴブリン: 48.3% (2121)
+    ID:  0 [  GRAY] スライム: 48.3% (2087)
+    ID: 16 [  GRAY] タイタン: 48.2% (1926)
+    ID:  3 [  GRAY] ナイフィンプ: 48.0% (2110)
+    ID: 23 [  BLUE] 霜の妖精: 47.9% (292)
+    ID:103 [YELLOW] 星の欠片: 47.9% (328)
+    ID: 75 [ BLACK] 死神: 47.7% (277)
+    ID:120 [PURPLE] 闇の精霊: 47.5% (305)
+    ID: 19 [  GRAY] エンシェント: 47.3% (1917)
+    ID:119 [YELLOW] 太陽の化身: 47.1% (240)
+    ID:118 [YELLOW] 希望の女神: 47.0% (287)
+    ID:159 [ WHITE] 光の創造主: 47.0% (232)
+    ID: 11 [  GRAY] バーサーカー: 46.9% (1676)
+    ID:145 [ WHITE] 癒しの騎士: 46.9% (271)
+    ID:116 [YELLOW] 光神: 46.8% (278)
+    ID:139 [PURPLE] 虚無の王: 46.6% (279)
+    ID: 66 [ BLACK] ゾンビ: 46.1% (310)
+    ID: 63 [ BLACK] 闘のインプ: 46.0% (300)
+    ID:154 [ WHITE] 復活の天使: 45.9% (255)
+    ID: 25 [  BLUE] 霧の狼: 45.7% (269)
+    ID:100 [YELLOW] 光の精霊: 45.3% (289)
+    ID:147 [ WHITE] 祝福の僧侶: 45.2% (272)
+    ID:101 [YELLOW] 聖なる小鳥: 44.3% (314)
+    ID:150 [ WHITE] 聖なる守護者: 43.9% (239)
+    ID:151 [ WHITE] 祈りの巫女: 43.8% (235)
+    ID:149 [ WHITE] 癒しの天使長: 42.9% (233) ▼
+    ID: 67 [ BLACK] 闇の魔術師: 42.3% (274) ▼
+    ID:152 [ WHITE] 大聖騎士: 41.6% (250) ▼
+    ID: 51 [ GREEN] 森の巨人: 41.4% (237) ▼
+    ID: 50 [ GREEN] ドリアードの巫女: 41.3% (288) ▼
+    ID: 58 [ GREEN] 大地の精霊: 41.2% (245) ▼
+    ID:142 [ WHITE] 守護の精霊: 41.2% (311) ▼
+    ID:148 [ WHITE] 聖騎士団長: 41.1% (236) ▼
+    ID:146 [ WHITE] 聖なる盾: 41.1% (292) ▼
+    ID: 57 [ GREEN] 世界樹の化身: 41.1% (263) ▼
+    ID:158 [ WHITE] 復活の女神: 40.7% (241) ▼
+    ID:156 [ WHITE] 聖神: 40.3% (263) ▼
+    ID:141 [ WHITE] 癒しの光: 39.5% (276) ▼
+    ID:140 [ WHITE] 聖なる精霊: 39.3% (333) ▼
+    ID: 48 [ GREEN] 森の守護者: 38.3% (261) ▼
+    ID: 54 [ GREEN] 春風の使者: 38.0% (229) ▼
+    ID:143 [ WHITE] 祈りの天使: 37.3% (287) ▼
+    ID: 49 [ GREEN] 大樹の戦士: 37.2% (231) ▼
+    ID:155 [ WHITE] 聖域の守護者: 37.2% (242) ▼
+    ID: 40 [ GREEN] 森の妖精: 37.1% (283) ▼
+    ID: 46 [ GREEN] 蔦の魔術師: 37.0% (308) ▼
+    ID: 79 [ BLACK] 暗黒神: 36.7% (289) ▼
+    ID: 52 [ GREEN] エルフの賢者: 36.2% (282) ▼
+    ID: 56 [ GREEN] 森林王: 36.0% (258) ▼
+    ID: 43 [ GREEN] 種まき: 35.9% (284) ▼
+    ID: 47 [ GREEN] 木こりオーク: 35.6% (270) ▼
+    ID: 59 [ GREEN] 生命の木: 34.7% (271) ▼
+    ID: 44 [ GREEN] 草原の狩人: 34.3% (277) ▼
+    ID: 42 [ GREEN] 花のスプライト: 34.2% (263) ▼
+    ID: 55 [ GREEN] 苔の巨人: 33.7% (258) ▼
+    ID: 45 [ GREEN] 花の精: 32.1% (305) ▼
+    ID: 41 [ GREEN] 若木のトレント: 31.9% (304) ▼
+1/1 passed.
+
+
+res://test/unit/test_effect_integration.gd
+* test_summon_effect_blue_001_atk_debuff
+* test_summon_effect_green_001_mana_gain
+* test_summon_effect_green_004_mana_gain_2
+* test_summon_effect_black_001_self_damage
+* test_summon_effect_red_001_direct_damage
+* test_summon_effect_red_017_aoe_damage
+* test_summon_effect_yellow_016_ally_atk_buff
+* test_summon_effect_purple_019_aoe_freeze
+* test_summon_effect_white_020_ally_buff
+* test_attack_effect_blue_003_freeze
+* test_attack_effect_black_004_poison
+* test_attack_effect_black_007_lifesteal
+* test_attack_effect_red_002_extra_damage
+* test_attack_effect_red_008_double_attack
+* test_attack_effect_yellow_018_ally_heal
+* test_attack_effect_purple_016_enemy_atk_debuff
+* test_death_effect_green_002_mana_gain
+* test_death_effect_black_002_enemy_damage
+* test_death_effect_black_011_revive
+* test_death_effect_black_011_no_revive_if_already_revived
+* test_death_effect_red_006_aoe_damage
+* test_death_effect_yellow_019_ally_heal
+* test_death_effect_purple_011_aoe_freeze
+* test_death_effect_white_019_revive_from_graveyard
+* test_defense_effect_blue_006_half_damage
+* test_defense_effect_yellow_004_reduce_damage
+* test_defense_effect_yellow_014_reflect
+* test_defense_effect_white_005_shield
+* test_no_effect_on_vanilla_card
+* test_summon_effect_purple_015_single_freeze
+* test_summon_effect_purple_018_aoe_atk_hp_debuff
+* test_summon_effect_white_018_clear_status_and_heal
+* test_constant_effect_purple_017_enemy_summon_cost
+* test_constant_effect_purple_020_enemy_dice_penalty
+* test_death_effect_black_013_enemy_atk_debuff
+* test_death_effect_black_018_aoe_damage
+* test_summon_effect_yellow_006_ally_heal
+* test_summon_effect_purple_006_enemy_debuff
+* test_attack_effect_yellow_008_self_heal
+* test_summon_effect_blue_004_enemy_aoe_atk_debuff
+* test_death_effect_blue_009_single_atk_debuff
+* test_death_effect_green_005_mana_gain
+* test_turn_start_effect_green_003_self_heal
+* test_attack_effect_red_005_permanent_atk_buff
+* test_death_effect_red_009_self_destruct
+* test_summon_effect_red_015_enemy_aoe_damage
+* test_summon_effect_white_004_ally_heal
+* test_attack_effect_white_008_ally_heal
+* test_death_effect_white_011_self_full_heal
+* test_death_effect_white_014_ally_full_heal
+50/50 passed.
+
+
+res://test/unit/test_effect_manager.gd
+* test_timing_enum_values
+* test_status_effect_enum_values
+* test_effect_definitions_exist
+* test_blue_effects_registered
+* test_green_effects_registered
+* test_black_effects_registered
+* test_red_effects_registered
+* test_yellow_effects_registered
+* test_purple_effects_registered
+* test_white_effects_registered
+* test_get_effect_description_blue_001
+* test_get_effect_description_green_001
+* test_get_effect_description_black_004
+* test_get_effect_description_invalid
+* test_get_effect_timing_on_summon
+* test_get_effect_timing_on_attack
+* test_get_effect_timing_on_death
+* test_get_effect_timing_on_defense
+* test_get_effect_timing_constant
+* test_get_effect_timing_turn_start
+* test_get_effect_timing_turn_end
+* test_has_timing_true
+* test_has_timing_false
+* test_get_summon_cost_modifier_no_effects
+* test_get_dice_modifier_no_effects
+* test_make_effect_log_format
+* test_get_constant_hp_bonus_no_allies
+* test_get_constant_hp_bonus_green_007
+* test_get_constant_hp_bonus_white_017
+* test_get_constant_hp_bonus_multiple_buffs
+* test_get_damage_reduction_no_effects
+* test_get_damage_reduction_yellow_007
+* test_get_damage_reduction_white_016
+* test_get_damage_reduction_white_007_ally
+* test_get_damage_reduction_yellow_017_ally
+* test_get_constant_atk_modifier_no_effects
+* test_get_constant_atk_modifier_red_004
+* test_get_constant_atk_modifier_red_016
+* test_get_constant_atk_modifier_blue_005_with_dice_5
+* test_get_constant_atk_modifier_blue_005_with_dice_3
+* test_get_constant_atk_modifier_red_012_with_dice_1
+* test_get_constant_atk_modifier_yellow_012_ally
+* test_get_constant_atk_modifier_yellow_020_ally
+* test_get_constant_atk_modifier_red_018_ally
+* test_get_constant_atk_modifier_blue_016_enemy
+* test_get_constant_atk_modifier_blue_015_front_row
+* test_get_constant_atk_modifier_blue_015_back_row
+* test_get_constant_atk_modifier_combined
+* test_apply_aoe_atk_and_damage_effect_basic
+* test_apply_aoe_atk_and_damage_effect_lethal
+* test_apply_aoe_atk_and_damage_effect_empty_targets
+* test_apply_aoe_clear_status_effect_basic
+* test_apply_aoe_clear_status_effect_with_heal
+* test_apply_aoe_clear_status_effect_no_heal_when_zero
+54/54 passed.
+
+
+res://test/unit/test_effects.gd
+* test_effect_manager_exists
+* test_effect_definitions_registered
+* test_blue_effects_registered
+* test_green_effects_registered
+* test_black_effects_registered
+* test_red_effects_registered
+* test_yellow_effects_registered
+* test_purple_effects_registered
+* test_white_effects_registered
+* test_get_effect_description
+* test_get_effect_timing
+* test_has_timing
+* test_unknown_effect
+* test_dice_modifier_blue_002
+* test_dice_modifier_black_009
+* test_summon_cost_modifier_green_006
+* test_all_timings_covered
+* test_effect_count
+* test_summon_effect_mana_green_001
+* test_summon_effect_mana_green_004
+* test_summon_effect_mana_full_green_013_uses_shared_helper
+* test_summon_effect_self_damage_black
+* test_summon_effect_draw_blue_014
+* test_summon_effect_blue_011_uses_unified_log_format
+* test_summon_effect_blue_018_uses_unified_log_format
+* test_summon_effect_draw_and_damage_black_014
+* test_attack_effect_direct_damage_blue_012
+* test_attack_effect_mana_green_010
+* test_attack_effect_lifesteal_black_007
+* test_attack_effect_black_015_marks_self_destroy_when_hp_zero
+* test_attack_effect_black_016_halves_odd_hp_and_marks_destroy_on_hp1
+* test_attack_effect_blue_017_sets_instant_kill_for_low_hp_target
+* test_death_effect_red_014_marks_destroy_target_when_hp_zero
+* test_death_effect_mana_green_002
+* test_death_effect_green_014_triggers_on_ally_death
+* test_death_effect_spawn_token_black_006
+* test_death_effect_black_010_marks_destroy_targets_when_hp_zero
+* test_death_effect_black_002_marks_destroy_target_when_hp_zero
+* test_defense_effect_half_damage_blue_006
+* test_defense_effect_half_damage_blue_006_rounds_down_and_keeps_int
+* test_defense_effect_mana_on_damage_green_012
+* test_no_effect_vanilla_card
+* test_multiple_cost_modifiers
+* test_summon_effect_red_001
+* test_summon_effect_red_001_marks_destroy_target_when_hp_zero
+* test_summon_effect_red_007_buffs_all_allies
+* test_summon_effect_yellow_001
+* test_summon_effect_yellow_003
+* test_summon_effect_yellow_009_uses_unified_log_format
+* test_summon_effect_white_001
+* test_summon_effect_white_009
+* test_attack_effect_red_013
+* test_attack_effect_red_002_marks_destroy_target_when_hp_zero
+* test_attack_effect_red_002_tracks_damaged_target_for_post_damage_finalize
+* test_death_effect_white_002
+* test_defense_effect_yellow_004
+* test_cost_modifier_purple_004
+* test_turn_start_effects_mana_green_009
+* test_turn_start_effects_draw_yellow_005
+* test_turn_start_effects_heal_player_white_003
+* test_turn_start_effects_self_heal_blue_010
+* test_turn_start_effects_atk_up_red_010
+* test_turn_end_effects_mana_yellow_010
+* test_turn_end_effects_heal_player_white_010
+* test_turn_end_effects_purple_008_marks_destroy_target_when_hp_zero
+* test_turn_start_effects_multiple_cards
+* test_turn_start_effects_skips_malformed_slot_and_continues
+* test_turn_start_no_effect_vanilla
+* test_turn_start_poison_damage_marks_destroy_target_when_hp_zero
+* test_attack_effect_freeze_blue_003
+* test_attack_effect_freeze_2turn_blue_008
+* test_attack_effect_poison_black_004
+* test_summon_effect_freeze_all_blue_018
+* test_summon_effect_purple_001
+* test_summon_effect_freeze_one_purple_009
+* test_summon_effect_clear_status_white_013
+* test_summon_effect_clear_status_white_013_uses_unified_log_format
+* test_death_effect_freeze_purple_005
+* test_process_timing_event_dispatch_on_summon
+* test_process_timing_event_dispatch_on_summon_with_summon_card_ui_fallback
+* test_process_timing_event_dispatch_on_summon_with_summoned_card_ui_alias
+* test_process_timing_event_dispatch_on_attack
+* test_process_timing_event_dispatch_on_attack_with_generic_card_ui
+* test_process_timing_event_dispatch_on_attack_with_attack_card_ui_alias
+* test_process_timing_event_dispatch_on_attack_with_target_ui_alias
+* test_timing_dispatch_method_table_routes_all_event_timings
+* test_dispatch_timing_via_fallback_match_covers_on_summon_and_on_attack
+* test_process_timing_event_dispatch_on_death
+* test_process_timing_event_dispatch_on_death_with_dead_card_ui_fallback
+* test_process_timing_event_dispatch_on_death_with_death_card_ui_alias
+* test_process_timing_event_dispatch_on_defense
+* test_process_timing_event_dispatch_on_defense_with_generic_card_ui
+* test_process_timing_event_dispatch_on_defense_with_final_damage_alias
+* test_process_timing_event_dispatch_on_defense_with_target_ui_alias
+* test_process_timing_event_dispatch_on_defense_with_defend_card_ui_alias
+* test_process_timing_event_dispatch_on_turn_start
+* test_process_timing_event_dispatch_on_turn_start_with_card_ui_payload
+* test_process_timing_event_turn_start_single_card_payload_does_not_trigger_board_wide_scan
+* test_process_timing_event_dispatch_on_turn_end
+* test_process_timing_event_dispatch_on_turn_end_with_turn_end_card_ui_alias
+* test_process_timing_event_missing_required_payload_is_safe
+* test_process_summon_effect_with_missing_slot_context_is_safe
+* test_smoke_effects_trigger_on_each_timing
+* test_smoke_summon_effect_returns_log_as_activation_evidence
+* test_summon_effect_emits_effect_triggered_signal
+* test_attack_effect_emits_effect_triggered_signal
+* test_defense_effect_emits_effect_triggered_signal
+* test_death_effect_emits_effect_triggered_signal
+* test_turn_start_effect_emits_effect_triggered_signal
+* test_turn_end_effect_emits_effect_triggered_signal
+* test_turn_start_poison_tick_emits_effect_triggered_signal
+* test_detect_unimplemented_on_summon_effect_ids
+* test_detect_unimplemented_on_attack_effect_ids
+* test_detect_unimplemented_on_death_effect_ids
+* test_detect_unimplemented_on_defense_effect_ids
+* test_detect_unimplemented_turn_start_effect_ids
+* test_detect_unimplemented_turn_end_effect_ids
+* test_summon_effect_uses_prepare_helper_for_entry_guard
+* test_attack_effect_uses_prepare_helper_for_entry_guard
+* test_death_effect_uses_prepare_helper_for_entry_guard
+* test_defense_effect_uses_prepare_helper_for_entry_guard
+* test_single_card_timing_effect_helper_is_used_for_all_single_card_timings
+* test_turn_timing_effect_helper_is_used_for_turn_start_and_end
+* test_turn_timing_effect_helper_has_single_definition_and_uses_prepare_guard
+* test_target_collection_helper_is_shared_by_ally_enemy_getters
+* test_aoe_damage_helper_is_shared_for_death_damage_effects
+* test_self_damage_helper_is_shared_for_black_summon_effects
+* test_summon_effect_dispatcher_helper_is_used
+* test_attack_effect_dispatcher_helper_is_used
+* test_death_effect_dispatcher_helper_is_used
+* test_defense_effect_dispatcher_helper_is_used
+* test_summon_targeted_damage_helper_is_shared_for_red_summon_effects
+* test_death_targeted_damage_helper_is_shared_for_single_target_death_damage_effects
+* test_summon_aoe_damage_helper_is_shared_for_red_summon_effects
+* test_destroy_mark_helper_is_shared_for_lethal_and_instant_destroy_paths
+* test_damage_destroy_check_is_centralized_after_apply_damage
+* test_targeted_atk_modifier_helper_is_shared_for_single_target_atk_debuff_effects
+* test_specific_target_atk_modifier_helper_is_shared_for_attack_and_summon_effects
+* test_turn_start_self_heal_helper_is_shared_for_blue_010_and_green_003
+* test_summon_mana_gain_helper_is_shared_for_green_001_004_008
+* test_turn_mana_gain_helper_is_shared_for_green_009_and_yellow_010
+* test_turn_dispatch_helper_exists_and_is_used_for_start_end
+* test_summon_enemy_aoe_atk_debuff_helper_is_shared_for_blue_004_007
+* test_player_heal_helper_is_shared_for_white_heal_effects
+* test_draw_effect_helper_is_shared_for_basic_draw_effects
+* test_random_ally_heal_helper_is_shared_for_green_011_yellow_001_015
+* test_aoe_heal_helper_is_shared_for_team_heal_effects
+* test_timing_payload_value_helper_is_used_for_attack_defense_and_turn_context
+* test_timing_payload_alias_table_is_used_by_resolvers
+* test_timing_dispatcher_helper_handles_on_summon_route
+* test_timing_dispatcher_helper_handles_on_attack_route
+* test_timing_dispatcher_helpers_cover_all_event_routes
+* test_turn_start_poison_tick_processing_is_extracted_to_helper
+* test_status_apply_helper_is_shared_for_freeze_and_poison_attack_effects
+* test_death_freeze_effects_use_shared_status_helpers
+* test_attack_direct_damage_logs_use_make_effect_log_helper
+* test_attack_instant_kill_effect_uses_shared_helper
+* test_death_mana_gain_effects_use_shared_mana_helper
+* test_attack_mana_gain_effect_uses_shared_mana_helper
+* test_summon_hybrid_effects_use_shared_combo_helpers
+* test_summon_yellow_013_uses_shared_aoe_atk_heal_helper
+* test_summon_red_007_uses_shared_aoe_atk_modifier_helper
+* test_defense_final_damage_log_helper_is_shared_for_damage_reduction_effects
+* test_disable_dice_effect_helper_is_shared_for_summon_and_attack
+164/164 passed.
+
+
+res://test/unit/test_firebase_manager.gd
+* test_firebase_url_defined
+* test_firebase_url_is_https
+* test_player_id_is_string
+* test_has_put_data_method
+* test_has_post_data_method
+* test_has_patch_data_method
+* test_has_get_data_method
+* test_has_delete_data_method
+* test_has_create_request_method
+* test_has_parse_response_method
+* test_has_load_or_create_player_id_method
+11/11 passed.
+
+
+res://test/unit/test_game_logic.gd
+* test_mana_cap
+* test_mana_recovery_in_draw_phase
+* test_damage_calculation
+* test_lane_assignment
+* test_first_player_turn1_skips_dice
+* test_second_player_turn1_no_skip
+* test_move_cost
+* test_deck_size
+* test_starting_hand
+* test_max_hp
+* test_win_condition_opponent_hp_zero
+* test_win_condition_opponent_hp_negative
+* test_lose_condition_player_hp_zero
+* test_lose_condition_player_hp_negative
+* test_game_continues_both_positive
+* test_both_hp_zero_draw
+* test_point_budget_cost_0
+* test_point_budget_cost_1
+* test_point_budget_cost_2
+* test_point_budget_cost_3
+* test_point_budget_cost_4
+* test_point_budget_cost_5
+* test_can_summon_with_exact_mana
+* test_can_summon_with_excess_mana
+* test_cannot_summon_insufficient_mana
+* test_can_summon_cost_zero
+* test_slot_indices
+* test_front_to_back_mapping
+* test_back_to_front_mapping
+* test_ai_summon_calls_summon_effect_processing
+* test_turn_start_effects_are_not_double_processed_in_local_battle
+* test_attack_resolution_skips_destroyed_target_slot_after_attack_effect
+* test_defense_reflect_effect_is_applied_to_attacker
+* test_attack_resolution_skips_when_attacker_is_destroyed_by_own_attack_effect
+* test_attack_resolution_uses_shared_hp_damage_helper_for_direct_hits
+    [Failed]:  [-1] expected to not equal [-1]:  BattleBase should route direct attack damage via shared HP damage helper
+      at line 223
+* test_attack_resolution_applies_lifesteal_post_damage_hook
+* test_defense_resolution_consumes_one_time_shield_flag
+36/37 passed.
+
+
+res://test/unit/test_game_manager.gd
+* test_game_state_enum_values
+* test_max_deck_slots_constant
+* test_initial_current_state
+* test_initial_player_deck_is_array
+* test_initial_battle_result_is_string
+* test_initial_user_name_is_string
+* test_initial_current_deck_slot_type
+* test_has_required_methods
+* test_save_deck_to_slot_rejects_negative_slot
+* test_save_deck_to_slot_rejects_slot_too_large
+* test_valid_slot_range
+* test_extract_slot_counts_from_dictionary_response
+* test_extract_slot_counts_from_array_response
+* test_normalize_id_list_accepts_dictionary_shape
+* test_extract_slot_counts_accepts_dictionary_shaped_slot_values
+15/15 passed.
+
+
+res://test/unit/test_game_manager_deck_slot.gd
+* test_deck_slot_is_persisted_and_restored_locally
+1/1 passed.
+
+
+res://test/unit/test_multiplayer_manager.gd
+* test_heartbeat_interval_constant
+* test_heartbeat_timeout_constant
+* test_room_code_retry_limit_constant
+* test_initial_room_code_is_empty
+* test_initial_is_host_type
+* test_initial_my_player_number_type
+* test_initial_opponent_id_type
+* test_initial_opponent_name_type
+* test_initial_is_in_room_type
+* test_initial_last_error_type
+* test_has_room_created_signal
+* test_has_opponent_joined_signal
+* test_has_game_starting_signal
+* test_has_action_received_signal
+* test_has_game_state_updated_signal
+* test_has_opponent_disconnected_signal
+* test_has_create_room_method
+* test_has_join_room_method
+* test_has_leave_room_method
+* test_has_send_action_method
+* test_has_send_game_state_method
+* test_has_get_room_data_method
+* test_has_get_opponent_deck_method
+* test_has_find_waiting_room_method
+* test_player_number_host_is_1
+* test_player_number_guest_is_2
+* test_player_number_range
+27/27 passed.
+
+
+res://test/unit/test_online_battle_sync.gd
+* test_mirror_slot_index_player_view_flip
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_mirror_slot_index_player_view_flip (res://test/unit/test_online_battle_sync.gd:9)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid call. Nonexistent function '_mirror_slot_index' in base 'Nil'.
+   at: test_mirror_slot_index_player_view_flip (res://test/unit/test_online_battle_sync.gd:10)
+   GDScript backtrace (most recent call first):
+       [0] test_mirror_slot_index_player_view_flip (res://test/unit/test_online_battle_sync.gd:10)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid call. Nonexistent function '_mirror_slot_index' in base 'Nil'.
+      at line -1
+* test_to_canonical_slot_index_player1_identity
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_to_canonical_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:18)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+   at: test_to_canonical_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:19)
+   GDScript backtrace (most recent call first):
+       [0] test_to_canonical_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:19)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+      at line -1
+* test_to_canonical_slot_index_player2_mirrored
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_to_canonical_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:25)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+   at: test_to_canonical_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:26)
+   GDScript backtrace (most recent call first):
+       [0] test_to_canonical_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:26)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+      at line -1
+* test_from_canonical_opponent_slot_index_player1_identity
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_from_canonical_opponent_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:33)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+   at: test_from_canonical_opponent_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:34)
+   GDScript backtrace (most recent call first):
+       [0] test_from_canonical_opponent_slot_index_player1_identity (res://test/unit/test_online_battle_sync.gd:34)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+      at line -1
+* test_from_canonical_opponent_slot_index_player2_mirrored
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_from_canonical_opponent_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:40)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+   at: test_from_canonical_opponent_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:41)
+   GDScript backtrace (most recent call first):
+       [0] test_from_canonical_opponent_slot_index_player2_mirrored (res://test/unit/test_online_battle_sync.gd:41)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+      at line -1
+* test_out_of_turn_summon_is_ignored
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_out_of_turn_summon_is_ignored (res://test/unit/test_online_battle_sync.gd:48)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+   at: test_out_of_turn_summon_is_ignored (res://test/unit/test_online_battle_sync.gd:49)
+   GDScript backtrace (most recent call first):
+       [0] test_out_of_turn_summon_is_ignored (res://test/unit/test_online_battle_sync.gd:49)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+      at line -1
+* test_out_of_turn_dice_roll_is_ignored
+SCRIPT ERROR: Invalid call. Nonexistent function 'new' in base 'GDScript'.
+   at: _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+   GDScript backtrace (most recent call first):
+       [0] _new_online_battle (res://test/unit/test_online_battle_sync.gd:6)
+       [1] test_out_of_turn_dice_roll_is_ignored (res://test/unit/test_online_battle_sync.gd:55)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:815)
+SCRIPT ERROR: Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+   at: test_out_of_turn_dice_roll_is_ignored (res://test/unit/test_online_battle_sync.gd:56)
+   GDScript backtrace (most recent call first):
+       [0] test_out_of_turn_dice_roll_is_ignored (res://test/unit/test_online_battle_sync.gd:56)
+       [1] _run_test (res://addons/gut/gut.gd:612)
+       [2] _test_the_scripts (res://addons/gut/gut.gd:815)
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+      at line -1
+0/7 passed.
+
+
+res://test/unit/test_scene_transitions.gd
+* test_title_to_lobby_transition
+    タイトル画面ロード成功
+* test_lobby_scene_load
+    ロビー画面ロード成功
+* test_online_battle_scene_load
+    オンラインバトル画面ロード成功
+3/3 passed.
+
+
+
+
+==============================================
+= Run Summary
+==============================================
+
+res://test/unit/test_card_database.gd
+- test_point_budget_vanilla_cards
+    [Failed]:  スカウト score=25 budget=30 should be within ±4
+          at line 45
+    [Failed]:  アサシン score=25 budget=30 should be within ±4
+          at line 45
+    [Failed]:  アイアンゴーレム score=41 budget=46 should be within ±4
+          at line 45
+    [Failed]:  ウォーロード score=40 budget=46 should be within ±4
+          at line 45
+
+res://test/unit/test_game_logic.gd
+- test_attack_resolution_uses_shared_hp_damage_helper_for_direct_hits
+    [Failed]:  [-1] expected to not equal [-1]:  BattleBase should route direct attack damage via shared HP damage helper
+          at line 223
+
+res://test/unit/test_online_battle_sync.gd
+- test_mirror_slot_index_player_view_flip
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid call. Nonexistent function '_mirror_slot_index' in base 'Nil'.
+          at line -1
+- test_to_canonical_slot_index_player1_identity
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+          at line -1
+- test_to_canonical_slot_index_player2_mirrored
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+          at line -1
+- test_from_canonical_opponent_slot_index_player1_identity
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+          at line -1
+- test_from_canonical_opponent_slot_index_player2_mirrored
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'my_player_number' with value of type 'int' on a base object of type 'Nil'.
+          at line -1
+- test_out_of_turn_summon_is_ignored
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+          at line -1
+- test_out_of_turn_dice_roll_is_ignored
+    [Failed]:  Unexpected Errors:
+    [1] <engine-2>Invalid call. Nonexistent function 'new' in base 'GDScript'.
+    [2] <engine-2>Invalid assignment of property or key 'is_player_turn' with value of type 'bool' on a base object of type 'Nil'.
+          at line -1
+
+Totals
+------
+Warnings              1
+
+Scripts              17
+Tests               458
+Passing Tests       449
+Failing Tests         9
+Asserts           2554/2566
+Time              12.716s
+
+
+---- 9 failing tests ----
+

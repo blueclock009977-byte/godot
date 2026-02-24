@@ -1125,6 +1125,22 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
+	# Number keys 1-9 to select hand cards directly
+	for i in range(1, 10):
+		if event.is_action_pressed("select_card_%d" % i):
+			var card_index := i - 1  # 1 -> index 0, etc.
+			if card_index < player_hand.size():
+				keyboard_focus_area = KeyboardFocusArea.HAND
+				hand_focus_index = card_index
+				_update_keyboard_focus_visual()
+				# Also trigger card selection
+				if _is_my_input_allowed():
+					var card_ui = player_hand[card_index]
+					if card_ui:
+						_on_hand_card_clicked(card_ui)
+				get_viewport().set_input_as_handled()
+			return
+
 	# Handle navigation based on focus area
 	if keyboard_focus_area == KeyboardFocusArea.HAND:
 		_handle_hand_keyboard_input(event)
