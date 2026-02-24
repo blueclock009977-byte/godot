@@ -1096,12 +1096,18 @@ func _input(event: InputEvent) -> void:
 	if game_over:
 		return
 
-	# Space to advance phase (when it's player's turn)
-	if event.is_action_pressed("ui_accept") and event is InputEventKey:
+	# Space/N to advance phase (when it's player's turn)
+	if event is InputEventKey and event.pressed:
 		var key_event := event as InputEventKey
-		if key_event.keycode == KEY_SPACE:
+		if key_event.keycode == KEY_SPACE or key_event.keycode == KEY_N:
 			if _is_my_input_allowed():
 				_on_end_phase()
+				get_viewport().set_input_as_handled()
+			return
+		# E to end turn immediately
+		if key_event.keycode == KEY_E:
+			if _is_my_input_allowed():
+				_on_end_turn()
 				get_viewport().set_input_as_handled()
 			return
 
