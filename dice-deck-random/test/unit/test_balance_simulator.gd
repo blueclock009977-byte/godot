@@ -194,13 +194,26 @@ func _destroy_sim_cards(targets: Array, p_slots: Array, o_slots: Array, state: D
 		for slot in p_slots:
 			if not slot.is_empty() and slot.card_ui == target:
 				slot.remove_card()
-				# ON_DEATH 効果を発動
+				# 死亡カード自身の ON_DEATH 効果
 				var ctx := _make_context(p_slots, o_slots, 0)
 				var result = EffectManager.process_timing_event(
 					EffectManager.Timing.ON_DEATH,
 					{"card_ui": target, "is_player": true, "context": ctx}
 				)
 				_apply_sim_effect(result, true, state, p_slots, o_slots)
+				# 味方死亡反応（生き残り味方全員に ally_died イベントを発火）
+				for ally_slot in p_slots:
+					if ally_slot.is_empty():
+						continue
+					var ally: SimCard = ally_slot.card_ui
+					var ally_ctx := _make_context(p_slots, o_slots, 0)
+					ally_ctx["ally_died"] = true
+					ally_ctx["dead_card_ui"] = target
+					var ally_result = EffectManager.process_timing_event(
+						EffectManager.Timing.ON_DEATH,
+						{"card_ui": ally, "is_player": true, "context": ally_ctx}
+					)
+					_apply_sim_effect(ally_result, true, state, p_slots, o_slots)
 				break
 		for slot in o_slots:
 			if not slot.is_empty() and slot.card_ui == target:
@@ -211,6 +224,19 @@ func _destroy_sim_cards(targets: Array, p_slots: Array, o_slots: Array, state: D
 					{"card_ui": target, "is_player": false, "context": ctx}
 				)
 				_apply_sim_effect(result, false, state, p_slots, o_slots)
+				# 味方死亡反応
+				for ally_slot in o_slots:
+					if ally_slot.is_empty():
+						continue
+					var ally: SimCard = ally_slot.card_ui
+					var ally_ctx := _make_context(p_slots, o_slots, 0)
+					ally_ctx["ally_died"] = true
+					ally_ctx["dead_card_ui"] = target
+					var ally_result = EffectManager.process_timing_event(
+						EffectManager.Timing.ON_DEATH,
+						{"card_ui": ally, "is_player": false, "context": ally_ctx}
+					)
+					_apply_sim_effect(ally_result, false, state, p_slots, o_slots)
 				break
 
 
