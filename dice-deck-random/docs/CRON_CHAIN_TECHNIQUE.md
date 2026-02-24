@@ -353,7 +353,7 @@ openclaw cron add \\
 
 毎回チェックして、超えたら強制終了。
 
-### 2. Usage監視（cron登録前に必須）
+### 2. Usage監視 & OAuth確認（cron登録前に必須）
 
 ```markdown
 ## cron登録前の確認手順
@@ -361,7 +361,25 @@ openclaw cron add \\
 1. session_statusツールで**紐づいている全モデル**のusageを確認
 2. 各モデルの残り使用量をチェック
 3. 残り10%以上（使用率90%未満）のモデルを選ぶ
-4. そのモデルを `--model` オプションで指定してcron登録
+4. **OAuthトークンが有効か確認**（後述）
+5. そのモデルを `--model` オプションで指定してcron登録
+
+## OAuthトークン確認（重要！）
+
+cronはisolated sessionで実行されるため、OAuthトークンが切れていると失敗する。
+
+### 確認方法
+session_statusの出力で認証状態を確認：
+- `🔑 oauth (provider:default)` → OAuthで認証済み
+- トークン切れの場合、cronが `FailoverError: OAuth token refresh failed` で失敗する
+
+### トークン切れの対処
+1. 別のモデル（別プロバイダー）を `--model` で指定
+2. または、人間に再認証を依頼
+
+### 安全な選択
+- 複数プロバイダーのモデルが使える場合、OAuthが確実に有効なものを選ぶ
+- 不明な場合は、現在のセッションで使用中のモデルと同じプロバイダーを選ぶ
 
 ## 確認例
 session_statusを実行 → 以下のような情報を確認：
