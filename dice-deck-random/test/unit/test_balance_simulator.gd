@@ -359,11 +359,17 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 				damage += atk_result["atk_bonus"]
 
 			if target_slot == null:
-				# 直接ダメージ
+				# 直接ダメージ（white_012 軽減を適用）
+				var ctx_direct := _make_context(p_slots, o_slots, dice_val)
+				var direct_reduction := EffectManager.get_direct_damage_reduction(
+					not attacker_is_player, ctx_direct)
+				var final_direct := damage
+				if direct_reduction > 0.0:
+					final_direct = int(ceil(float(damage) * (1.0 - direct_reduction)))
 				if attacker_is_player:
-					state["hp_o"] -= damage
+					state["hp_o"] -= final_direct
 				else:
-					state["hp_p"] -= damage
+					state["hp_p"] -= final_direct
 			elif atk_result.get("instant_kill", false):
 				target.current_hp = 0
 			else:
@@ -421,10 +427,17 @@ func _resolve_battle(dice_val: int, p_slots: Array, o_slots: Array,
 				damage += atk_result["atk_bonus"]
 
 			if target_slot == null:
+				# 直接ダメージ（white_012 軽減を適用）
+				var ctx_direct := _make_context(p_slots, o_slots, dice_val)
+				var direct_reduction := EffectManager.get_direct_damage_reduction(
+					attacker_is_player, ctx_direct)
+				var final_direct := damage
+				if direct_reduction > 0.0:
+					final_direct = int(ceil(float(damage) * (1.0 - direct_reduction)))
 				if attacker_is_player:
-					state["hp_p"] -= damage
+					state["hp_p"] -= final_direct
 				else:
-					state["hp_o"] -= damage
+					state["hp_o"] -= final_direct
 			elif atk_result.get("instant_kill", false):
 				target.current_hp = 0
 			else:
