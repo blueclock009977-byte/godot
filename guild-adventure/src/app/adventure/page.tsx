@@ -42,9 +42,10 @@ export default function AdventurePage() {
       setProgress(newProgress);
       
       // 現在何番目のエンカウントまで表示すべきか
+      // 10, 20, 30秒地点で1, 2, 3回目のログ（0秒では表示しない）
       const shouldShowEncounter = Math.min(
         encounterCount,
-        Math.floor(elapsed / timePerEncounter) + 1
+        Math.floor(elapsed / timePerEncounter)
       );
       
       // 新しいエンカウントがあれば表示
