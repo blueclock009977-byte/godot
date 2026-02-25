@@ -101,7 +101,7 @@ function decideAction(
   unit: BattleUnit, 
   allies: BattleUnit[], 
   enemies: BattleUnit[]
-): { type: 'attack' | 'skill'; target: BattleUnit | BattleUnit[] } {
+): { type: 'attack' | 'skill'; skillIndex?: number; target: BattleUnit | BattleUnit[] } {
   const aliveEnemies = enemies.filter(e => e.stats.hp > 0);
   const aliveAllies = allies.filter(a => a.stats.hp > 0);
   
@@ -111,36 +111,34 @@ function decideAction(
   
   // スキル使用判定
   if (unit.skills && unit.skills.length > 0) {
-    const skill = unit.skills[0];
+    // 使用可能なスキルをフィルタ（MP足りるもの）
+    const usableSkills = unit.skills
+      .map((skill, index) => ({ skill, index }))
+      .filter(({ skill }) => unit.stats.mp >= skill.mpCost);
     
-    if (skill.condition) {
-      const { type, value, target } = skill.condition;
-      
-      if (type === 'hpAbove' && target === 'self') {
-        const hpPercent = (unit.stats.hp / unit.stats.maxHp) * 100;
-        if (hpPercent >= value) {
-          return { 
-            type: 'skill', 
-            target: skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies)
-          };
+    if (usableSkills.length > 0) {
+      // 回復スキルの優先判定（味方HPが50%以下なら）
+      const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
+      if (healSkills.length > 0) {
+        const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.5);
+        if (lowHpAlly) {
+          const { skill, index } = healSkills[0];
+          const target = skill.target === 'allAllies' ? aliveAllies : lowHpAlly;
+          return { type: 'skill', skillIndex: index, target };
         }
       }
       
-      if (type === 'hpBelow' && target === 'ally') {
-        const lowHpAlly = aliveAllies.find(a => 
-          (a.stats.hp / a.stats.maxHp) * 100 < value
+      // 60%の確率でスキル使用
+      if (Math.random() < 0.6) {
+        // 攻撃/魔法スキルをランダム選択
+        const attackSkills = usableSkills.filter(({ skill }) => 
+          skill.type === 'attack' || skill.type === 'magic'
         );
-        if (lowHpAlly && skill.type === 'heal') {
-          return { type: 'skill', target: lowHpAlly };
-        }
-      }
-      
-      if (type === 'enemyCount' && target === 'enemy') {
-        if (aliveEnemies.length >= value) {
-          return { 
-            type: 'skill', 
-            target: skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies)
-          };
+        
+        if (attackSkills.length > 0) {
+          const { skill, index } = pickRandom(attackSkills);
+          const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+          return { type: 'skill', skillIndex: index, target };
         }
       }
     }
@@ -206,8 +204,11 @@ function processTurn(
       if (target.stats.hp <= 0) {
         logs.push(`${target.name}を倒した！`);
       }
-    } else if (action.type === 'skill' && unit.skills) {
-      const skill = unit.skills[0];
+    } else if (action.type === 'skill' && unit.skills && action.skillIndex !== undefined) {
+      const skill = unit.skills[action.skillIndex];
+      
+      // MP消費
+      unit.stats.mp = Math.max(0, unit.stats.mp - skill.mpCost);
       
       if (skill.type === 'attack' || skill.type === 'magic') {
         const targets = Array.isArray(action.target) ? action.target : [action.target];
@@ -222,17 +223,19 @@ function processTurn(
             damage = Math.floor(result.damage * skill.multiplier);
           }
           target.stats.hp = Math.max(0, target.stats.hp - damage);
-          logs.push(`${unit.name}の${skill.name}！ ${target.name}に${damage}ダメージ！`);
+          logs.push(`${unit.name}の${skill.name}！ ${target.name}に${damage}ダメージ！(MP-${skill.mpCost})`);
           
           if (target.stats.hp <= 0) {
             logs.push(`${target.name}を倒した！`);
           }
         }
       } else if (skill.type === 'heal') {
-        const target = action.target as BattleUnit;
-        const heal = calculateHeal(unit, skill.multiplier);
-        target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
-        logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！`);
+        const targets = Array.isArray(action.target) ? action.target : [action.target as BattleUnit];
+        for (const target of targets) {
+          const heal = calculateHeal(unit, skill.multiplier);
+          target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
+          logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！(MP-${skill.mpCost})`);
+        }
       }
     }
   }
