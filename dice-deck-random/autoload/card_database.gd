@@ -338,7 +338,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"blue_004": -9,   # ON_SUMMON 敵全体ATK-1: -9×1.0
 		"blue_005": -7,   # CONSTANT ATK+2(ダイス5,6条件): -5×2×2.0×0.33
 		"blue_006": -4,   # ON_DEFENSE 被ダメ半減: -5×0.7
-		"blue_007": -18,  # ON_SUMMON 敵全体ATK-2: -9×2×1.0
+		"blue_007": -20,  # ON_SUMMON 敵全体ATK-2: →調整+2
 		"blue_008": -5,   # ON_ATTACK 凍結2t: -4×2×0.6
 		"blue_009": -4,   # ON_DEATH 敵1体ATK-1: -5×0.7
 		"blue_010": -3,   # TURN_START 自身HP+1: -2×1.4
@@ -347,7 +347,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"blue_013": -4,   # CONSTANT 同列味方被ダメ-1: -2×2.0
 		"blue_014": -7,   # ON_SUMMON ドロー1: -7×1.0
 		"blue_015": -9,   # CONSTANT 敵前列ATK-1: -9×2.0×0.5
-		"blue_016": -18,  # CONSTANT 敵全体ATK-1: -9×2.0
+		"blue_016": -20,  # CONSTANT 敵全体ATK-1: →調整+2
 		"blue_017": -5,   # ON_ATTACK HP5以下即破壊: 特殊-8×0.6
 		"blue_018": -10,  # ON_SUMMON 敵全体凍結1t: -8×1.0(AoEプレミアム)
 
@@ -357,18 +357,18 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"green_003": -3,  # TURN_START 自身HP+1: -2×1.4
 		"green_004": -6,  # ON_SUMMON マナ+2: -3×2
 		"green_005": -4,  # ON_DEATH マナ+2: -3×2×0.7
-		"green_006": -12, # CONSTANT 味方コスト-1: 特殊(維持)
-		"green_007": -10, # CONSTANT 味方全体HP+1: -5×2.0
+		"green_006": -8,  # CONSTANT 味方コスト-1: 特殊(維持)→調整-4
+		"green_007": -7,  # CONSTANT 味方全体HP+1: HP効果は弱め→調整-3
 		"green_008": -9,  # ON_SUMMON マナ+3: -3×3
 		"green_009": -4,  # TURN_START マナ+1: -3×1.4
 		"green_010": -2,  # ON_ATTACK マナ+1: -3×0.6
 		"green_011": -4,  # ON_SUMMON 味方1体HP+2: -2×2
 		"green_012": -2,  # ON_DEFENSE マナ+1: -3×0.7
-		"green_013": -10, # ON_SUMMON マナ全回復: -3×3.5
+		"green_013": -7,  # ON_SUMMON マナ全回復: マナ+3相当→調整-3
 		"green_014": -3,  # ON_DEATH 自身HP+2(味方死亡時): -2×2×0.7
-		"green_015": -10, # ON_SUMMON マナ+2+自身HP+2: -6+(-4)
-		"green_016": -7,  # TURN_END 味方全体HP+1: -5×1.4
-		"green_017": -10, # ON_SUMMON 味方全体HP+2: -5×2
+		"green_015": -8,  # ON_SUMMON マナ+2+自身HP+2: -6+(-2)→調整-2
+		"green_016": -5,  # TURN_END 味方全体HP+1: HP効果弱め→調整-2
+		"green_017": -8,  # ON_SUMMON 味方全体HP+2: HP弱め→調整-2
 
 		# ─── BLACK ───
 		"black_001": 5,   # ON_SUMMON 自分HP-1: +5
@@ -395,21 +395,21 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"red_001": -6,    # ON_SUMMON 敵1体HP-1: -6×1.0
 		"red_002": -7,    # ON_ATTACK 対象追加2ダメ: -6×2×0.6
 		"red_003": -10,   # ON_SUMMON 敵全体HP-1: -10×1.0
-		"red_004": -10,   # CONSTANT ATK+1: -5×2.0
-		"red_005": -5,    # ON_ATTACK 自身ATK+1永続: -5×1.5×0.6
+		"red_004": -12,   # CONSTANT ATK+1: →調整+2
+		"red_005": -7,    # ON_ATTACK 自身ATK+1永続: 永続ATK強力→調整+2
 		"red_006": -14,   # ON_DEATH 敵全体HP-2: -10×2×0.7
-		"red_007": -9,    # ON_SUMMON 味方全体ATK+1: -9×1.0
-		"red_008": -10,   # ON_ATTACK 2回攻撃: 特殊
+		"red_007": -12,   # ON_SUMMON 味方全体ATK+1: -9×1.0→調整+3
+		"red_008": -18,   # ON_ATTACK 2回攻撃: 実質ATK×2相当, 大幅増
 		"red_009": -7,    # ON_DEATH 敵味方全体HP-2: -10×2×0.7×0.5
-		"red_010": -7,    # TURN_START 自身ATK+1: -5×1.4
+		"red_010": -9,    # TURN_START 自身ATK+1: -5×1.4→調整+2
 		"red_011": -12,   # ON_SUMMON 敵1体HP-2: -6×2
 		"red_012": -5,    # CONSTANT ATK+3(ダイス1条件): -5×3×2.0×0.17
 		"red_013": -4,    # ON_ATTACK 相手HP直接-1: -6×0.6
 		"red_014": -17,   # ON_DEATH 敵1体HP-4: -6×4×0.7
 		"red_015": -10,   # ON_SUMMON 敵全体HP-1: -10×1.0
-		"red_016": -20,   # CONSTANT ATK+2: -5×2×2.0
-		"red_017": -20,   # ON_SUMMON 敵全体HP-2: -10×2
-		"red_018": -18,   # CONSTANT 味方全体ATK+1: -9×2.0
+		"red_016": -22,   # CONSTANT ATK+2: →調整+2
+		"red_017": -22,   # ON_SUMMON 敵全体HP-2: →調整+2
+		"red_018": -20,   # CONSTANT 味方全体ATK+1: →調整+2
 
 		# ─── YELLOW ───
 		"yellow_001": -4,  # ON_SUMMON 味方1体HP+2: -2×2
@@ -459,23 +459,23 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"white_001": -4,  # ON_SUMMON 自分HP+2: -2×2
 		"white_002": -4,  # ON_DEATH 自分HP+3: -2×3×0.7
 		"white_003": -3,  # TURN_START 自分HP+1: -2×1.4
-		"white_004": -10, # ON_SUMMON 味方全体HP+2: -5×2
+		"white_004": -7,  # ON_SUMMON 味方全体HP+2: HP効果弱め→調整-3
 		"white_005": -4,  # ON_DEFENSE 被ダメ無効(1回): -6×0.7
 		"white_006": -6,  # ON_SUMMON 墓地から1体復活: 特殊
-		"white_007": -10, # CONSTANT 味方全体被ダメ-1: -5×2.0
+		"white_007": -8,  # CONSTANT 味方全体被ダメ-1: →調整-2
 		"white_008": -3,  # ON_ATTACK 味方全体HP+1: -5×0.6
-		"white_009": -8,  # ON_SUMMON 自分HP+4: -2×4
+		"white_009": -5,  # ON_SUMMON 自分HP+4: HP弱め→調整-3
 		"white_010": -6,  # TURN_END 自分HP+2: -2×2×1.4
 		"white_011": -10, # ON_DEATH 自分HP全回復: -2×7×0.7
-		"white_012": -10, # CONSTANT 直接ダメ半減: -5×2.0
+		"white_012": -7,  # CONSTANT 直接ダメ半減: 状況依存→調整-3
 		"white_013": -3,  # ON_SUMMON 全状態異常解除: 微小効果
 		"white_014": -7,  # ON_DEATH 味方1体HP全回復: -2×5×0.7
-		"white_015": -12, # ON_SUMMON 自分HP+6: -2×6
+		"white_015": -8,  # ON_SUMMON 自分HP+6: HP弱め→調整-4
 		"white_016": -8,  # CONSTANT 自身被ダメ-2: -2×2×2.0
-		"white_017": -16, # CONSTANT 味方全体HP+2: -5×2×2.0=-20, 上限-16
+		"white_017": -12, # CONSTANT 味方全体HP+2: HP効果弱め→調整-4
 		"white_018": -8,  # ON_SUMMON 全状態解除+HP+1: -3+(-5)
 		"white_019": -8,  # ON_DEATH 墓地から2体復活: -6×2×0.7
-		"white_020": -24, # ON_SUMMON 味方全体HP+3,ATK+1: -5×3+(-9)
+		"white_020": -20, # ON_SUMMON 味方全体HP+3,ATK+1: -5×2+(-9)→調整-4
 	}
 
 	if modifier_by_effect.has(effect_id):
