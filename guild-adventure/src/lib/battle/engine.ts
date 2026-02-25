@@ -179,8 +179,10 @@ function processTurn(
   const alivePlayers = playerUnits.filter(u => u.stats.hp > 0);
   const aliveEnemies = enemyUnits.filter(u => u.stats.hp > 0);
   
-  logs.push(`【味方】${alivePlayers.map(formatUnitStatus).join(' / ')}`);
-  logs.push(`【敵】${aliveEnemies.map(formatUnitStatus).join(' / ')}`);
+  logs.push(`【味方】`);
+  alivePlayers.forEach(u => logs.push(`  ${formatUnitStatus(u)}`));
+  logs.push(`【敵】`);
+  aliveEnemies.forEach(u => logs.push(`  ${formatUnitStatus(u)}`));
   
   for (const unit of allUnits) {
     if (unit.stats.hp <= 0) continue;

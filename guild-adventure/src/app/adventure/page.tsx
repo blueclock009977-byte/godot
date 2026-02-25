@@ -186,8 +186,9 @@ export default function AdventurePage() {
                   className={`${
                     log.includes('【BOSS') ? 'text-red-500 font-bold mt-4 text-lg' :
                     log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
-                    log.includes('【味方】') ? 'text-cyan-400 text-xs bg-slate-700/50 px-2 py-1 rounded' :
-                    log.includes('【敵】') ? 'text-rose-400 text-xs bg-slate-700/50 px-2 py-1 rounded mb-2' :
+                    log.includes('【味方】') ? 'text-cyan-400 text-xs font-bold mt-1' :
+                    log.includes('【敵】') ? 'text-rose-400 text-xs font-bold mt-1' :
+                    log.startsWith('  ') && log.includes('HP') ? 'text-slate-300 text-xs ml-2 bg-slate-700/30 px-2 py-0.5 rounded' :
                     log.includes('勝利') ? 'text-green-400 font-bold' :
                     log.includes('全滅') ? 'text-red-400 font-bold' :
                     log.includes('倒した') ? 'text-green-300' :
