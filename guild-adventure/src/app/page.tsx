@@ -121,7 +121,14 @@ function LoginScreen() {
 }
 
 function GameScreen() {
-  const { characters, party, currentAdventure, username, logout } = useGameStore();
+  const { characters, party, currentAdventure, username, logout, autoLogin } = useGameStore();
+  
+  // マウント時にデータを再取得（キャラが空なら）
+  useEffect(() => {
+    if (characters.length === 0 && username) {
+      autoLogin();
+    }
+  }, [characters.length, username, autoLogin]);
   
   const partyCount = [...party.front, ...party.back].filter(Boolean).length;
   

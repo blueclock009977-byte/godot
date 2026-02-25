@@ -193,8 +193,28 @@ export const useGameStore = create<GameStore>()(
         const storedUsername = getStoredUsername();
         if (!storedUsername) return false;
         
-        const result = await get().login(storedUsername);
-        return result.success;
+        // サーバーからデータを取得
+        set({ isLoading: true });
+        try {
+          const userData = await getUserData(storedUsername);
+          if (userData) {
+            set({
+              isLoggedIn: true,
+              username: storedUsername,
+              characters: userData.characters || [],
+              party: userData.party || { front: [null, null, null], back: [null, null, null] },
+              isLoading: false,
+            });
+            return true;
+          }
+        } catch (e) {
+          console.error('Auto login failed:', e);
+        }
+        
+        // 失敗したらログアウト状態に
+        clearStoredUsername();
+        set({ isLoggedIn: false, username: null, isLoading: false });
+        return false;
       },
       
       // サーバー同期
