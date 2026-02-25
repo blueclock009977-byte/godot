@@ -16,6 +16,15 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
+import { 
+  getUserData, 
+  saveUserData, 
+  createUser, 
+  userExists,
+  getStoredUsername,
+  setStoredUsername,
+  clearStoredUsername,
+} from '@/lib/firebase';
 
 // ============================================
 // ステータス計算
@@ -57,10 +66,20 @@ function calculateStats(
 // ============================================
 
 interface GameStore {
-  // 状態
+  // 認証状態
+  isLoggedIn: boolean;
+  username: string | null;
+  isLoading: boolean;
+  
+  // ゲーム状態
   characters: Character[];
   party: Party;
   currentAdventure: Adventure | null;
+  
+  // 認証
+  login: (username: string) => Promise<{ success: boolean; isNew: boolean; error?: string }>;
+  logout: () => void;
+  autoLogin: () => Promise<boolean>;
   
   // キャラクター管理
   createCharacter: (
@@ -69,24 +88,30 @@ interface GameStore {
     job: JobType,
     trait: TraitType,
     environment: EnvironmentType,
-  ) => Character;
-  deleteCharacter: (id: string) => void;
+  ) => Promise<Character>;
+  deleteCharacter: (id: string) => Promise<void>;
   
   // パーティ管理
-  addToParty: (characterId: string, position: Position, slot: number) => void;
-  removeFromParty: (position: Position, slot: number) => void;
-  clearParty: () => void;
+  addToParty: (characterId: string, position: Position, slot: number) => Promise<void>;
+  removeFromParty: (position: Position, slot: number) => Promise<void>;
+  clearParty: () => Promise<void>;
   
   // 冒険管理
   startAdventure: (dungeon: DungeonType) => void;
   completeAdventure: (result: Adventure['result']) => void;
   cancelAdventure: () => void;
+  
+  // サーバー同期
+  syncToServer: () => Promise<void>;
 }
 
 export const useGameStore = create<GameStore>()(
   persist(
     (set, get) => ({
       // 初期状態
+      isLoggedIn: false,
+      username: null,
+      isLoading: false,
       characters: [],
       party: {
         front: [null, null, null],
@@ -94,8 +119,97 @@ export const useGameStore = create<GameStore>()(
       },
       currentAdventure: null,
       
+      // ログイン
+      login: async (username: string) => {
+        set({ isLoading: true });
+        
+        // ユーザー名のバリデーション
+        if (!username || username.length < 2 || username.length > 20) {
+          set({ isLoading: false });
+          return { success: false, isNew: false, error: 'ユーザー名は2〜20文字で入力してください' };
+        }
+        
+        // 使用不可文字チェック
+        if (!/^[a-zA-Z0-9_\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+$/.test(username)) {
+          set({ isLoading: false });
+          return { success: false, isNew: false, error: '使用できない文字が含まれています' };
+        }
+        
+        try {
+          const exists = await userExists(username);
+          
+          if (exists) {
+            // 既存ユーザー: データを読み込み
+            const userData = await getUserData(username);
+            if (userData) {
+              set({
+                isLoggedIn: true,
+                username,
+                characters: userData.characters || [],
+                party: userData.party || { front: [null, null, null], back: [null, null, null] },
+                isLoading: false,
+              });
+              setStoredUsername(username);
+              return { success: true, isNew: false };
+            }
+          } else {
+            // 新規ユーザー: 作成
+            const created = await createUser(username);
+            if (created) {
+              set({
+                isLoggedIn: true,
+                username,
+                characters: [],
+                party: { front: [null, null, null], back: [null, null, null] },
+                isLoading: false,
+              });
+              setStoredUsername(username);
+              return { success: true, isNew: true };
+            }
+          }
+          
+          set({ isLoading: false });
+          return { success: false, isNew: false, error: 'サーバーエラーが発生しました' };
+        } catch (e) {
+          set({ isLoading: false });
+          return { success: false, isNew: false, error: 'ネットワークエラーが発生しました' };
+        }
+      },
+      
+      // ログアウト
+      logout: () => {
+        clearStoredUsername();
+        set({
+          isLoggedIn: false,
+          username: null,
+          characters: [],
+          party: { front: [null, null, null], back: [null, null, null] },
+          currentAdventure: null,
+        });
+      },
+      
+      // 自動ログイン
+      autoLogin: async () => {
+        const storedUsername = getStoredUsername();
+        if (!storedUsername) return false;
+        
+        const result = await get().login(storedUsername);
+        return result.success;
+      },
+      
+      // サーバー同期
+      syncToServer: async () => {
+        const { username, characters, party } = get();
+        if (!username) return;
+        
+        await saveUserData(username, {
+          characters,
+          party,
+        });
+      },
+      
       // キャラクター作成
-      createCharacter: (name, race, job, trait, environment) => {
+      createCharacter: async (name, race, job, trait, environment) => {
         const stats = calculateStats(race, job, trait, environment);
         const newCharacter: Character = {
           id: crypto.randomUUID(),
@@ -111,11 +225,14 @@ export const useGameStore = create<GameStore>()(
           characters: [...state.characters, newCharacter],
         }));
         
+        // サーバーに同期
+        await get().syncToServer();
+        
         return newCharacter;
       },
       
       // キャラクター削除
-      deleteCharacter: (id) => {
+      deleteCharacter: async (id) => {
         set((state) => {
           // パーティからも削除
           const newParty = {
@@ -132,10 +249,12 @@ export const useGameStore = create<GameStore>()(
             party: newParty,
           };
         });
+        
+        await get().syncToServer();
       },
       
       // パーティに追加
-      addToParty: (characterId, position, slot) => {
+      addToParty: async (characterId, position, slot) => {
         const character = get().characters.find((c) => c.id === characterId);
         if (!character) return;
         
@@ -160,10 +279,12 @@ export const useGameStore = create<GameStore>()(
             party: { front: newFront, back: newBack },
           };
         });
+        
+        await get().syncToServer();
       },
       
       // パーティから削除
-      removeFromParty: (position, slot) => {
+      removeFromParty: async (position, slot) => {
         set((state) => {
           const newParty = { ...state.party };
           if (position === 'front') {
@@ -175,19 +296,23 @@ export const useGameStore = create<GameStore>()(
           }
           return { party: newParty };
         });
+        
+        await get().syncToServer();
       },
       
       // パーティクリア
-      clearParty: () => {
+      clearParty: async () => {
         set({
           party: {
             front: [null, null, null],
             back: [null, null, null],
           },
         });
+        
+        await get().syncToServer();
       },
       
-      // 冒険開始
+      // 冒険開始（ローカルのみ）
       startAdventure: (dungeon) => {
         const { party } = get();
         const { dungeons } = require('@/lib/data/dungeons');
@@ -220,6 +345,11 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'guild-adventure-storage',
+      partialize: (state) => ({
+        // ローカルには認証情報のみ保存
+        username: state.username,
+        isLoggedIn: state.isLoggedIn,
+      }),
     }
   )
 );
