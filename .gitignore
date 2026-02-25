@@ -22,3 +22,5 @@ media/
 # Large files excluded from GitHub
 .local/share/godot/export_templates/
 paper-fps/builds/
+.npm/
+package-lock.json

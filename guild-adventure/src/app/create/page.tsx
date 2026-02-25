@@ -1,0 +1,191 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useGameStore } from '@/store/gameStore';
+import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
+import { races, raceList } from '@/lib/data/races';
+import { jobs, jobList } from '@/lib/data/jobs';
+import { traits, traitList } from '@/lib/data/traits';
+import { environments, environmentList } from '@/lib/data/environments';
+
+export default function CreatePage() {
+  const router = useRouter();
+  const createCharacter = useGameStore((s) => s.createCharacter);
+  
+  const [name, setName] = useState('');
+  const [race, setRace] = useState<RaceType>('human');
+  const [job, setJob] = useState<JobType>('warrior');
+  const [trait, setTrait] = useState<TraitType>('brave');
+  const [environment, setEnvironment] = useState<EnvironmentType>('grassland');
+  
+  // ステータスプレビュー計算
+  const previewStats = {
+    maxHp: races[race].baseStats.maxHp + (jobs[job].statModifiers.maxHp || 0),
+    atk: races[race].baseStats.atk + (jobs[job].statModifiers.atk || 0),
+    def: races[race].baseStats.def + (jobs[job].statModifiers.def || 0),
+    agi: races[race].baseStats.agi + (jobs[job].statModifiers.agi || 0),
+    mag: races[race].baseStats.mag + (jobs[job].statModifiers.mag || 0),
+  };
+  
+  const handleCreate = () => {
+    if (!name.trim()) {
+      alert('名前を入力してください');
+      return;
+    }
+    
+    createCharacter(name.trim(), race, job, trait, environment);
+    router.push('/');
+  };
+  
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        {/* ヘッダー */}
+        <div className="flex items-center gap-4 mb-6">
+          <Link href="/" className="text-slate-400 hover:text-white">
+            ← 戻る
+          </Link>
+          <h1 className="text-2xl font-bold">キャラクター作成</h1>
+        </div>
+        
+        {/* 名前入力 */}
+        <div className="mb-6">
+          <label className="block text-sm text-slate-400 mb-2">名前</label>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="冒険者の名前"
+            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-amber-500"
+            maxLength={20}
+          />
+        </div>
+        
+        {/* 種族選択 */}
+        <div className="mb-6">
+          <label className="block text-sm text-slate-400 mb-2">種族</label>
+          <div className="grid grid-cols-3 gap-2">
+            {raceList.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => setRace(r.id)}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  race === r.id
+                    ? 'bg-amber-600 border-amber-500'
+                    : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                }`}
+              >
+                <div className="font-semibold">{r.name}</div>
+                <div className="text-xs text-slate-300 mt-1">{r.passive}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* 職業選択 */}
+        <div className="mb-6">
+          <label className="block text-sm text-slate-400 mb-2">職業</label>
+          <div className="grid grid-cols-3 gap-2">
+            {jobList.map((j) => (
+              <button
+                key={j.id}
+                onClick={() => setJob(j.id)}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  job === j.id
+                    ? 'bg-amber-600 border-amber-500'
+                    : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                }`}
+              >
+                <div className="font-semibold">{j.name}</div>
+                <div className="text-xs text-slate-300 mt-1">{j.skill.name}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {/* 個性選択 */}
+        <div className="mb-6">
+          <label className="block text-sm text-slate-400 mb-2">個性</label>
+          <div className="grid grid-cols-3 gap-2">
+            {traitList.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTrait(t.id)}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  trait === t.id
+                    ? 'bg-amber-600 border-amber-500'
+                    : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                }`}
+              >
+                <div className="font-semibold">{t.name}</div>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            {traits[trait].description}
+          </p>
+        </div>
+        
+        {/* 環境選択 */}
+        <div className="mb-6">
+          <label className="block text-sm text-slate-400 mb-2">育った環境</label>
+          <div className="grid grid-cols-3 gap-2">
+            {environmentList.map((e) => (
+              <button
+                key={e.id}
+                onClick={() => setEnvironment(e.id)}
+                className={`p-3 rounded-lg border text-center transition-colors ${
+                  environment === e.id
+                    ? 'bg-amber-600 border-amber-500'
+                    : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                }`}
+              >
+                <div className="font-semibold">{e.name}</div>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mt-2">
+            {environments[environment].description}
+          </p>
+        </div>
+        
+        {/* ステータスプレビュー */}
+        <div className="mb-6 bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-3">ステータスプレビュー</h3>
+          <div className="grid grid-cols-5 gap-2 text-center">
+            <div>
+              <div className="text-xs text-slate-400">HP</div>
+              <div className="text-lg font-bold text-red-400">{previewStats.maxHp}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-400">ATK</div>
+              <div className="text-lg font-bold text-orange-400">{previewStats.atk}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-400">DEF</div>
+              <div className="text-lg font-bold text-blue-400">{previewStats.def}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-400">AGI</div>
+              <div className="text-lg font-bold text-green-400">{previewStats.agi}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-400">MAG</div>
+              <div className="text-lg font-bold text-purple-400">{previewStats.mag}</div>
+            </div>
+          </div>
+        </div>
+        
+        {/* 作成ボタン */}
+        <button
+          onClick={handleCreate}
+          className="w-full bg-amber-600 hover:bg-amber-500 transition-colors rounded-lg py-3 font-semibold"
+        >
+          作成する
+        </button>
+      </div>
+    </main>
+  );
+}
