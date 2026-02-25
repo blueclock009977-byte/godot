@@ -154,11 +154,12 @@ function decideAction(
 // 1ターンの処理
 // ============================================
 
-// HP状態を生成
+// HP/MP状態を生成
 function formatUnitStatus(unit: BattleUnit): string {
   const hpPercent = Math.floor((unit.stats.hp / unit.stats.maxHp) * 100);
-  const hpBar = hpPercent > 50 ? '🟢' : hpPercent > 25 ? '🟡' : '🔴';
-  return `${unit.name}: ${unit.stats.hp}/${unit.stats.maxHp}${hpBar}`;
+  const hpIcon = hpPercent > 50 ? '🟢' : hpPercent > 25 ? '🟡' : '🔴';
+  const mpText = unit.stats.maxMp > 0 ? ` MP${unit.stats.mp}/${unit.stats.maxMp}` : '';
+  return `${unit.name}: HP${unit.stats.hp}/${unit.stats.maxHp}${hpIcon}${mpText}`;
 }
 
 function processTurn(
