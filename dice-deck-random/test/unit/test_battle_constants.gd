@@ -7,8 +7,8 @@ extends GutTest
 # 定数テスト
 # ═══════════════════════════════════════════
 
-func test_max_hp_is_20() -> void:
-	assert_eq(BattleConstants.MAX_HP, 20, "MAX_HP should be 20")
+func test_max_hp_is_15() -> void:
+	assert_eq(BattleConstants.MAX_HP, 15, "MAX_HP should be 15")
 
 func test_max_mana_cap_is_5() -> void:
 	assert_eq(BattleConstants.MAX_MANA_CAP, 5, "MAX_MANA_CAP should be 5")

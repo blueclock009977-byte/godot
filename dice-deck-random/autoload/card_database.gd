@@ -2,6 +2,17 @@ extends Node
 
 var card_pool: Array[CardData] = []
 
+# ON_ATTACK タイミングの効果ID一覧（faces数でスケーリング対象）
+const ON_ATTACK_EFFECTS: Array[String] = [
+	"blue_003", "blue_008", "blue_012", "blue_017",
+	"green_010",
+	"black_004", "black_007", "black_015", "black_016",
+	"red_002", "red_005", "red_008", "red_013",
+	"yellow_008", "yellow_018",
+	"purple_002", "purple_007", "purple_013", "purple_016",
+	"white_008",
+]
+
 # 色ごとのカラー定義
 var color_by_type: Dictionary = {
 	CardData.ColorType.GRAY: Color(0.5, 0.5, 0.55),
@@ -320,8 +331,9 @@ func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 			else:
 				return
 
-func _get_effect_budget_modifier(effect_id: String) -> int:
+func _get_effect_budget_modifier(effect_id: String, faces: int = 3) -> int:
 	# アクション単位コスト表（2026-02-25）:
+	# ON_ATTACK効果はfaces=3を基準にfaces/3.0でスケール
 	# マナ+1(召喚)=-3, ドロー=-7, ダメージ1HP(単体)=-6, ダメージ1HP(全体)=-10
 	# 回復1HP(単体)=-2, 回復1HP(全体)=-5, ATK+/-1(単体)=-5, ATK+/-1(全体)=-9
 	# 凍結1t(単体)=-4, 凍結1t(全体)=-8, 自傷HP-1=+5
@@ -392,9 +404,9 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"black_019": -16, # CONSTANT 相手ダイス1,6無効: -4×2×2.0
 
 		# ─── RED ───
-		"red_001": -6,    # ON_SUMMON 敵1体HP-1: -6×1.0
+		"red_001": -7,    # ON_SUMMON 敵1体HP-1: HP15調整+1
 		"red_002": -7,    # ON_ATTACK 対象追加2ダメ: -6×2×0.6
-		"red_003": -10,   # ON_SUMMON 敵全体HP-1: -10×1.0
+		"red_003": -13,   # ON_SUMMON 敵全体HP-1: HP15調整+3
 		"red_004": -12,   # CONSTANT ATK+1: →調整+2
 		"red_005": -7,    # ON_ATTACK 自身ATK+1永続: 永続ATK強力→調整+2
 		"red_006": -14,   # ON_DEATH 敵全体HP-2: -10×2×0.7
@@ -402,13 +414,13 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"red_008": -18,   # ON_ATTACK 2回攻撃: 実質ATK×2相当, 大幅増
 		"red_009": -7,    # ON_DEATH 敵味方全体HP-2: -10×2×0.7×0.5
 		"red_010": -9,    # TURN_START 自身ATK+1: -5×1.4→調整+2
-		"red_011": -12,   # ON_SUMMON 敵1体HP-2: -6×2
+		"red_011": -14,   # ON_SUMMON 敵1体HP-2: HP15調整+2
 		"red_012": -5,    # CONSTANT ATK+3(ダイス1条件): -5×3×2.0×0.17
 		"red_013": -4,    # ON_ATTACK 相手HP直接-1: -6×0.6
-		"red_014": -17,   # ON_DEATH 敵1体HP-4: -6×4×0.7
-		"red_015": -10,   # ON_SUMMON 敵全体HP-1: -10×1.0
+		"red_014": -18,   # ON_DEATH 敵1体HP-4: HP15調整+1
+		"red_015": -13,   # ON_SUMMON 敵全体HP-1: HP15調整+3
 		"red_016": -22,   # CONSTANT ATK+2: →調整+2
-		"red_017": -22,   # ON_SUMMON 敵全体HP-2: →調整+2
+		"red_017": -26,   # ON_SUMMON 敵全体HP-2: HP15で13%ダメ、大幅増
 		"red_018": -20,   # CONSTANT 味方全体ATK+1: →調整+2
 
 		# ─── YELLOW ───
@@ -456,9 +468,9 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"purple_020": -10, # CONSTANT 敵全体ダイス-1: -5×2.0
 
 		# ─── WHITE ───
-		"white_001": -4,  # ON_SUMMON 自分HP+2: -2×2
-		"white_002": -4,  # ON_DEATH 自分HP+3: -2×3×0.7
-		"white_003": -3,  # TURN_START 自分HP+1: -2×1.4
+		"white_001": -3,  # ON_SUMMON 自分HP+2: HP15調整-1
+		"white_002": -3,  # ON_DEATH 自分HP+3: HP15調整-1
+		"white_003": -2,  # TURN_START 自分HP+1: HP15調整-1
 		"white_004": -7,  # ON_SUMMON 味方全体HP+2: HP効果弱め→調整-3
 		"white_005": -4,  # ON_DEFENSE 被ダメ無効(1回): -6×0.7
 		"white_006": -6,  # ON_SUMMON 墓地から1体復活: 特殊
@@ -478,11 +490,17 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"white_020": -20, # ON_SUMMON 味方全体HP+3,ATK+1: -5×2+(-9)→調整-4
 	}
 
-	if modifier_by_effect.has(effect_id):
-		return int(modifier_by_effect[effect_id])
+	if not modifier_by_effect.has(effect_id):
+		push_error("[CardDatabase] 未分類のeffect_id: %s" % effect_id)
+		return 0
 
-	push_error("[CardDatabase] 未分類のeffect_id: %s" % effect_id)
-	return 0
+	var base := int(modifier_by_effect[effect_id])
+
+	# ON_ATTACK効果: faces/3.0 でスケール（faces=3が基準値）
+	if effect_id in ON_ATTACK_EFFECTS and faces != 3:
+		base = int(round(base * faces / 3.0))
+
+	return base
 
 func _get_required_min_hp_for_effect(effect_id: String) -> int:
 	match effect_id:
@@ -510,12 +528,28 @@ func _get_color_balance_budget_adjustment(color_type: CardData.ColorType) -> int
 	# 色別調整なし: 効果コストのみでバランス判断
 	return 0
 
+func _get_faces_adjustment_for_effect(faces: int) -> int:
+	# 効果カード汎用: face数に基づくバジェット調整（多面 = 攻撃機会増）
+	# faces=3を基準とし、少ない場合は微ボーナス、多い場合は微ペナルティ
+	match faces:
+		1: return 2
+		2: return 1
+		3: return 0
+		4: return -2
+		5: return -3
+		_: return -4  # 6以上
+
 func _balance_effect_card_stats(card: CardData) -> void:
 	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
 		return
 
+	var faces := card.attack_dice.size()
 	var base_budget := _base_budget(card.mana_cost)
-	var requested_budget := base_budget + _get_effect_budget_modifier(card.effect_id) + _get_color_balance_budget_adjustment(card.color_type)
+	var effect_modifier := _get_effect_budget_modifier(card.effect_id, faces)
+	var color_adj := _get_color_balance_budget_adjustment(card.color_type)
+	var faces_adj := _get_faces_adjustment_for_effect(faces)
+
+	var requested_budget := base_budget + effect_modifier + color_adj + faces_adj
 	# 最低ステータス(1/0/0相当=score5)を下回らないようにする
 	var budget := maxi(MIN_CARD_SCORE, requested_budget)
 	_tune_card_stats_to_budget(card, budget)

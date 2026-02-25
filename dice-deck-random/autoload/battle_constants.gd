@@ -5,7 +5,7 @@ class_name BattleConstants
 # ─── Core Constants ───
 const CARD_UI_SCENE_PATH := "res://scenes/battle/card_ui.tscn"
 const FIELD_SLOT_SCENE_PATH := "res://scenes/battle/field_slot.tscn"
-const MAX_HP := 20
+const MAX_HP := 15
 const MAX_MANA_CAP := 5
 const DEFAULT_STARTING_HAND := 4
 const MOVE_COST := 1

@@ -5,7 +5,7 @@ extends GutTest
 
 const GAMES_PER_MATCHUP := 100  # 各マッチアップあたりのゲーム数
 const MAX_TURNS := 50  # 最大ターン数（無限ループ防止）
-const STARTING_HP := 20
+const STARTING_HP := 15
 const MAX_MANA_CAP := 5       # 実際のバトルに合わせて変更（旧: MAX_MANA = 10）
 const DECK_SIZE := 20
 const INITIAL_HAND_SIZE := 3  # グレー+1色=2色デッキ → 3枚

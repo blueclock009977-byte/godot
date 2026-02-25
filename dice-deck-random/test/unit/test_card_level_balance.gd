@@ -5,7 +5,7 @@ extends GutTest
 
 const GAMES_PER_MATCHUP := 100  # 各マッチアップあたりのゲーム数（Phase24: 乱数揺れ低減のため増加）
 const MAX_TURNS := 50
-const STARTING_HP := 20
+const STARTING_HP := 15
 const MAX_MANA_CAP := 5       # 実際のバトルに合わせて変更
 const DECK_SIZE := 20
 const INITIAL_HAND_SIZE := 3
