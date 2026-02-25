@@ -20,13 +20,28 @@ export default function CreatePage() {
   const [trait, setTrait] = useState<TraitType>('brave');
   const [environment, setEnvironment] = useState<EnvironmentType>('grassland');
   
-  // ステータスプレビュー計算
+  // ステータスプレビュー計算（種族 + 職業 + 個性 + 環境）
   const previewStats = {
-    maxHp: races[race].baseStats.maxHp + (jobs[job].statModifiers.maxHp || 0),
-    atk: races[race].baseStats.atk + (jobs[job].statModifiers.atk || 0),
-    def: races[race].baseStats.def + (jobs[job].statModifiers.def || 0),
-    agi: races[race].baseStats.agi + (jobs[job].statModifiers.agi || 0),
-    mag: races[race].baseStats.mag + (jobs[job].statModifiers.mag || 0),
+    maxHp: races[race].baseStats.maxHp 
+      + (jobs[job].statModifiers.maxHp || 0)
+      + (traits[trait].statModifiers?.maxHp || 0)
+      + (environments[environment].statModifiers?.maxHp || 0),
+    atk: races[race].baseStats.atk 
+      + (jobs[job].statModifiers.atk || 0)
+      + (traits[trait].statModifiers?.atk || 0)
+      + (environments[environment].statModifiers?.atk || 0),
+    def: races[race].baseStats.def 
+      + (jobs[job].statModifiers.def || 0)
+      + (traits[trait].statModifiers?.def || 0)
+      + (environments[environment].statModifiers?.def || 0),
+    agi: races[race].baseStats.agi 
+      + (jobs[job].statModifiers.agi || 0)
+      + (traits[trait].statModifiers?.agi || 0)
+      + (environments[environment].statModifiers?.agi || 0),
+    mag: races[race].baseStats.mag 
+      + (jobs[job].statModifiers.mag || 0)
+      + (traits[trait].statModifiers?.mag || 0)
+      + (environments[environment].statModifiers?.mag || 0),
   };
   
   const handleCreate = () => {
@@ -78,10 +93,13 @@ export default function CreatePage() {
                 }`}
               >
                 <div className="font-semibold">{r.name}</div>
-                <div className="text-xs text-slate-300 mt-1">{r.passive}</div>
+                <div className="text-xs text-slate-300 mt-1 line-clamp-2">{r.passive}</div>
               </button>
             ))}
           </div>
+          <p className="text-xs text-slate-400 mt-2">
+            {races[race].description}
+          </p>
         </div>
         
         {/* 職業選択 */}
@@ -103,6 +121,10 @@ export default function CreatePage() {
               </button>
             ))}
           </div>
+          <p className="text-xs text-slate-400 mt-2">
+            {jobs[job].description}
+            {jobs[job].passive && <span className="text-amber-400"> ({jobs[job].passive})</span>}
+          </p>
         </div>
         
         {/* 個性選択 */}

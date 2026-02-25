@@ -14,6 +14,8 @@ import {
 } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
+import { traits } from '@/lib/data/traits';
+import { environments } from '@/lib/data/environments';
 
 // ============================================
 // ステータス計算
@@ -22,20 +24,28 @@ import { jobs } from '@/lib/data/jobs';
 function calculateStats(
   race: RaceType,
   job: JobType,
+  trait: TraitType,
+  environment: EnvironmentType,
 ): Stats {
   const raceData = races[race];
   const jobData = jobs[job];
+  const traitData = traits[trait];
+  const envData = environments[environment];
   
   const baseStats = raceData.baseStats;
-  const modifiers = jobData.statModifiers;
+  const jobMods = jobData.statModifiers;
+  const traitMods = traitData.statModifiers || {};
+  const envMods = envData.statModifiers || {};
+  
+  const maxHp = baseStats.maxHp + (jobMods.maxHp || 0) + (traitMods.maxHp || 0) + (envMods.maxHp || 0);
   
   return {
-    maxHp: baseStats.maxHp + (modifiers.maxHp || 0),
-    hp: baseStats.maxHp + (modifiers.maxHp || 0),
-    atk: baseStats.atk + (modifiers.atk || 0),
-    def: baseStats.def + (modifiers.def || 0),
-    agi: baseStats.agi + (modifiers.agi || 0),
-    mag: baseStats.mag + (modifiers.mag || 0),
+    maxHp,
+    hp: maxHp,
+    atk: baseStats.atk + (jobMods.atk || 0) + (traitMods.atk || 0) + (envMods.atk || 0),
+    def: baseStats.def + (jobMods.def || 0) + (traitMods.def || 0) + (envMods.def || 0),
+    agi: baseStats.agi + (jobMods.agi || 0) + (traitMods.agi || 0) + (envMods.agi || 0),
+    mag: baseStats.mag + (jobMods.mag || 0) + (traitMods.mag || 0) + (envMods.mag || 0),
   };
 }
 
@@ -83,7 +93,7 @@ export const useGameStore = create<GameStore>()(
       
       // キャラクター作成
       createCharacter: (name, race, job, trait, environment) => {
-        const stats = calculateStats(race, job);
+        const stats = calculateStats(race, job, trait, environment);
         const newCharacter: Character = {
           id: crypto.randomUUID(),
           name,

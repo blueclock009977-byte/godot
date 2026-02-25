@@ -23,6 +23,32 @@ export interface Stats {
 }
 
 // ============================================
+// 効果タイプ
+// ============================================
+
+export type EffectType = 
+  | 'damageBonus'       // 与ダメージ+%
+  | 'damageReduction'   // 被ダメージ-%
+  | 'critBonus'         // クリティカル率+%
+  | 'evasionBonus'      // 回避率+%
+  | 'firstStrikeBonus'  // 先制率+%
+  | 'expBonus'          // 経験値+%
+  | 'dropBonus'         // ドロップ率+%
+  | 'magicBonus'        // 魔法威力+%
+  | 'physicalBonus'     // 物理攻撃+%
+  | 'healBonus'         // 回復量+%（与える）
+  | 'healReceived'      // 回復量+%（受ける）
+  | 'mpReduction'       // MP消費-%
+  | 'statusResist'      // 状態異常耐性+%
+  | 'poisonResist'      // 毒耐性+%
+  ;
+
+export interface Effect {
+  type: EffectType;
+  value: number;
+}
+
+// ============================================
 // 種族・職業・個性・環境
 // ============================================
 
@@ -32,6 +58,7 @@ export interface RaceData {
   description: string;
   baseStats: Omit<Stats, 'hp'> & { maxHp: number };
   passive: string;
+  effects?: Effect[];
 }
 
 export interface JobData {
@@ -39,6 +66,8 @@ export interface JobData {
   name: string;
   description: string;
   statModifiers: Partial<Stats>;
+  passive?: string;
+  effects?: Effect[];
   skill: SkillData;
 }
 
@@ -46,22 +75,20 @@ export interface TraitData {
   id: TraitType;
   name: string;
   description: string;
-  effects: TraitEffect[];
-}
-
-export interface TraitEffect {
-  type: 'damageBonus' | 'damageReduction' | 'critBonus' | 'evasionBonus' | 'firstStrikeBonus';
-  value: number;
+  statModifiers?: Partial<Stats>;
+  effects: Effect[];
 }
 
 export interface EnvironmentData {
   id: EnvironmentType;
   name: string;
   description: string;
-  bonusDungeon: DungeonType;
-  bonusStats: Partial<Stats>;
-  bonusEffects?: TraitEffect[];
+  statModifiers?: Partial<Stats>;
+  effects?: Effect[];
 }
+
+// 後方互換のため
+export type TraitEffect = Effect;
 
 // ============================================
 // スキル
