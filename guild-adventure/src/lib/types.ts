@@ -2,10 +2,10 @@
 // 基本型定義
 // ============================================
 
-export type RaceType = 'human' | 'elf' | 'dwarf';
-export type JobType = 'warrior' | 'mage' | 'priest';
-export type TraitType = 'brave' | 'cautious' | 'lucky';
-export type EnvironmentType = 'grassland' | 'forest' | 'sea';
+export type RaceType = 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardman' | 'fairy' | 'undead';
+export type JobType = 'warrior' | 'mage' | 'priest' | 'thief' | 'knight' | 'hunter' | 'ninja' | 'sage';
+export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
+export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
 export type DungeonType = 'grassland' | 'forest' | 'sea' | 'cave';
 export type Position = 'front' | 'back';
 

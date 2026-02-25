@@ -81,67 +81,67 @@ export default function CreatePage() {
         {/* 種族選択 */}
         <div className="mb-6">
           <label className="block text-sm text-slate-400 mb-2">種族</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {raceList.map((r) => (
               <button
                 key={r.id}
                 onClick={() => setRace(r.id)}
-                className={`p-3 rounded-lg border text-center transition-colors ${
+                className={`p-2 rounded-lg border text-center transition-colors ${
                   race === r.id
                     ? 'bg-amber-600 border-amber-500'
                     : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                 }`}
               >
-                <div className="font-semibold">{r.name}</div>
-                <div className="text-xs text-slate-300 mt-1 line-clamp-2">{r.passive}</div>
+                <div className="font-semibold text-sm">{r.name}</div>
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-2">
-            {races[race].description}
-          </p>
+          <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
+            <div className="text-amber-400">{races[race].passive}</div>
+            <div className="text-slate-400 mt-1">{races[race].description}</div>
+          </div>
         </div>
         
         {/* 職業選択 */}
         <div className="mb-6">
           <label className="block text-sm text-slate-400 mb-2">職業</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {jobList.map((j) => (
               <button
                 key={j.id}
                 onClick={() => setJob(j.id)}
-                className={`p-3 rounded-lg border text-center transition-colors ${
+                className={`p-2 rounded-lg border text-center transition-colors ${
                   job === j.id
                     ? 'bg-amber-600 border-amber-500'
                     : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                 }`}
               >
-                <div className="font-semibold">{j.name}</div>
-                <div className="text-xs text-slate-300 mt-1">{j.skill.name}</div>
+                <div className="font-semibold text-sm">{j.name}</div>
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-2">
-            {jobs[job].description}
-            {jobs[job].passive && <span className="text-amber-400"> ({jobs[job].passive})</span>}
-          </p>
+          <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
+            <div className="text-amber-400">{jobs[job].passive}</div>
+            <div className="text-slate-400 mt-1">{jobs[job].description}</div>
+            <div className="text-green-400 mt-1">スキル: {jobs[job].skill.name}</div>
+          </div>
         </div>
         
         {/* 個性選択 */}
         <div className="mb-6">
           <label className="block text-sm text-slate-400 mb-2">個性</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {traitList.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTrait(t.id)}
-                className={`p-3 rounded-lg border text-center transition-colors ${
+                className={`p-2 rounded-lg border text-center transition-colors ${
                   trait === t.id
                     ? 'bg-amber-600 border-amber-500'
                     : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                 }`}
               >
-                <div className="font-semibold">{t.name}</div>
+                <div className="font-semibold text-sm">{t.name}</div>
               </button>
             ))}
           </div>
@@ -153,18 +153,18 @@ export default function CreatePage() {
         {/* 環境選択 */}
         <div className="mb-6">
           <label className="block text-sm text-slate-400 mb-2">育った環境</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {environmentList.map((e) => (
               <button
                 key={e.id}
                 onClick={() => setEnvironment(e.id)}
-                className={`p-3 rounded-lg border text-center transition-colors ${
+                className={`p-2 rounded-lg border text-center transition-colors ${
                   environment === e.id
                     ? 'bg-amber-600 border-amber-500'
                     : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                 }`}
               >
-                <div className="font-semibold">{e.name}</div>
+                <div className="font-semibold text-sm">{e.name}</div>
               </button>
             ))}
           </div>
