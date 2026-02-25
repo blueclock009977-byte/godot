@@ -1,50 +1,96 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { runBattle } from '@/lib/battle/engine';
+import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
   const router = useRouter();
   const { currentAdventure, party, completeAdventure, cancelAdventure } = useGameStore();
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
+  const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const battleResultRef = useRef<BattleResult | null>(null);
+  const logContainerRef = useRef<HTMLDivElement>(null);
   
+  // 開始時にバトルを事前計算
   useEffect(() => {
-    if (!currentAdventure) {
-      router.push('/');
-      return;
-    }
+    if (!currentAdventure || battleResultRef.current) return;
+    
+    // バトルを先に計算しておく
+    const result = runBattle(party, currentAdventure.dungeon);
+    battleResultRef.current = result;
+  }, [currentAdventure, party]);
+  
+  // 時間経過に応じてログを表示
+  useEffect(() => {
+    if (!currentAdventure || !battleResultRef.current) return;
     
     const dungeon = dungeons[currentAdventure.dungeon];
     const totalTime = dungeon.durationSeconds * 1000;
     const startTime = currentAdventure.startTime;
+    const encounterCount = dungeon.encounterCount;
+    const timePerEncounter = totalTime / encounterCount;
     
-    // 進捗更新
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const newProgress = Math.min(100, (elapsed / totalTime) * 100);
       setProgress(newProgress);
       
+      // 現在何番目のエンカウントまで表示すべきか
+      const shouldShowEncounter = Math.min(
+        encounterCount,
+        Math.floor(elapsed / timePerEncounter) + 1
+      );
+      
+      // 新しいエンカウントがあれば表示
+      if (shouldShowEncounter > currentEncounter && battleResultRef.current) {
+        const result = battleResultRef.current;
+        
+        // 新しいエンカウントのログを追加
+        for (let i = currentEncounter; i < shouldShowEncounter; i++) {
+          if (result.logs[i]) {
+            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
+            setDisplayedLogs(prev => [...prev, ...newLogs]);
+          }
+        }
+        setCurrentEncounter(shouldShowEncounter);
+      }
+      
+      // 完了判定
       if (newProgress >= 100 && !isComplete) {
         setIsComplete(true);
         clearInterval(interval);
         
-        // バトル実行
-        const result = runBattle(party, currentAdventure.dungeon);
-        setLogs(result.logs.flatMap(l => l.message.split('\n')));
-        completeAdventure(result);
+        // 最終結果のログを追加（クリアメッセージなど）
+        if (battleResultRef.current) {
+          const result = battleResultRef.current;
+          // 残りのログを全部表示
+          for (let i = currentEncounter; i < result.logs.length; i++) {
+            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
+            setDisplayedLogs(prev => [...prev, ...newLogs]);
+          }
+          completeAdventure(result);
+        }
       }
     }, 100);
     
     return () => clearInterval(interval);
-  }, [currentAdventure, party, completeAdventure, isComplete, router]);
+  }, [currentAdventure, currentEncounter, completeAdventure, isComplete]);
+  
+  // ログが追加されたら自動スクロール
+  useEffect(() => {
+    if (logContainerRef.current) {
+      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
+    }
+  }, [displayedLogs]);
   
   if (!currentAdventure) {
+    router.push('/');
     return null;
   }
   
@@ -81,6 +127,9 @@ export default function AdventurePage() {
           <h1 className="text-2xl font-bold">
             {isComplete ? '🎉 探索完了！' : `🔥 ${dungeon.name}を探索中...`}
           </h1>
+          <div className="text-sm text-slate-400 mt-1">
+            遭遇: {currentEncounter}/{dungeon.encounterCount}
+          </div>
         </div>
         
         {/* プログレスバー */}
@@ -110,7 +159,7 @@ export default function AdventurePage() {
               : 'bg-red-900/50 border-red-700'
           }`}>
             <div className="text-xl font-bold mb-2">
-              {currentAdventure.result.victory ? '勝利！' : '敗北...'}
+              {currentAdventure.result.victory ? '🏆 勝利！' : '💀 敗北...'}
             </div>
             <div className="text-sm text-slate-300">
               クリア: {currentAdventure.result.encountersCleared}/{currentAdventure.result.totalEncounters} 遭遇
@@ -119,16 +168,32 @@ export default function AdventurePage() {
         )}
         
         {/* 戦闘ログ */}
-        <div className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-64 overflow-y-auto">
-          <h2 className="text-sm text-slate-400 mb-2">戦闘ログ</h2>
-          {logs.length === 0 ? (
+        <div 
+          ref={logContainerRef}
+          className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-72 overflow-y-auto"
+        >
+          <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
+          {displayedLogs.length === 0 ? (
             <div className="text-slate-500 text-sm animate-pulse">
               探索中...
             </div>
           ) : (
-            <div className="space-y-1 text-sm">
-              {logs.map((log, i) => (
-                <div key={i} className="text-slate-300">
+            <div className="space-y-1 text-sm font-mono">
+              {displayedLogs.map((log, i) => (
+                <div 
+                  key={i} 
+                  className={`${
+                    log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
+                    log.includes('勝利') ? 'text-green-400 font-bold' :
+                    log.includes('全滅') ? 'text-red-400 font-bold' :
+                    log.includes('倒した') ? 'text-green-300' :
+                    log.includes('ダメージ') ? 'text-orange-300' :
+                    log.includes('回復') ? 'text-blue-300' :
+                    log.includes('会心') ? 'text-yellow-300' :
+                    log.includes('ターン') ? 'text-slate-500 text-xs' :
+                    'text-slate-300'
+                  }`}
+                >
                   {log}
                 </div>
               ))}
