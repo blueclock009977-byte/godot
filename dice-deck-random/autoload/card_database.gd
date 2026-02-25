@@ -344,12 +344,12 @@ func _get_effect_budget_modifier(effect_id: String, faces: int = 3) -> int:
 
 	var modifier_by_effect := {
 		# ─── BLUE ───
-		"blue_001": -5,   # ON_SUMMON 敵1体ATK-1: -5×1.0
+		"blue_001": -3,   # ON_SUMMON 敵1体ATK-1: 氷の精霊42% → -2
 		"blue_002": -8,   # CONSTANT ダイス3,4追加: 2面×2.0
 		"blue_003": -2,   # ON_ATTACK 凍結1t: -4×0.6
 		"blue_004": -9,   # ON_SUMMON 敵全体ATK-1: -9×1.0
 		"blue_005": -7,   # CONSTANT ATK+2(ダイス5,6条件): -5×2×2.0×0.33
-		"blue_006": -4,   # ON_DEFENSE 被ダメ半減: -5×0.7
+		"blue_006": -8,   # ON_DEFENSE 被ダメ半減: 海神の守護者67% → +4
 		"blue_007": -20,  # ON_SUMMON 敵全体ATK-2: →調整+2
 		"blue_008": -5,   # ON_ATTACK 凍結2t: -4×2×0.6
 		"blue_009": -4,   # ON_DEATH 敵1体ATK-1: -5×0.7
@@ -365,77 +365,77 @@ func _get_effect_budget_modifier(effect_id: String, faces: int = 3) -> int:
 
 		# ─── GREEN ───
 		"green_001": -3,  # ON_SUMMON マナ+1: -3×1.0
-		"green_002": -2,  # ON_DEATH マナ+1: -3×0.7
-		"green_003": -3,  # TURN_START 自身HP+1: -2×1.4
+		"green_002": -1,  # ON_DEATH マナ+1: 若木のトレント43% → -1
+		"green_003": -1,  # TURN_START 自身HP+1: 花の精41% → -2
 		"green_004": -6,  # ON_SUMMON マナ+2: -3×2
 		"green_005": -4,  # ON_DEATH マナ+2: -3×2×0.7
-		"green_006": -8,  # CONSTANT 味方コスト-1: 特殊(維持)→調整-4
+		"green_006": -4,  # CONSTANT 味方コスト-1: エルフの賢者41% → -4
 		"green_007": -7,  # CONSTANT 味方全体HP+1: HP効果は弱め→調整-3
 		"green_008": -9,  # ON_SUMMON マナ+3: -3×3
-		"green_009": -4,  # TURN_START マナ+1: -3×1.4
+		"green_009": -1,  # TURN_START マナ+1: 世界樹の化身40% → -3
 		"green_010": -2,  # ON_ATTACK マナ+1: -3×0.6
 		"green_011": -4,  # ON_SUMMON 味方1体HP+2: -2×2
 		"green_012": -2,  # ON_DEFENSE マナ+1: -3×0.7
 		"green_013": -7,  # ON_SUMMON マナ全回復: マナ+3相当→調整-3
-		"green_014": -3,  # ON_DEATH 自身HP+2(味方死亡時): -2×2×0.7
+		"green_014": -1,  # ON_DEATH 自身HP+2(味方死亡時): 苔の巨人41% → -2
 		"green_015": -8,  # ON_SUMMON マナ+2+自身HP+2: -6+(-2)→調整-2
-		"green_016": -5,  # TURN_END 味方全体HP+1: HP効果弱め→調整-2
+		"green_016": -2,  # TURN_END 味方全体HP+1: 生命の木39% → -3
 		"green_017": -8,  # ON_SUMMON 味方全体HP+2: HP弱め→調整-2
 
 		# ─── BLACK ───
 		"black_001": 5,   # ON_SUMMON 自分HP-1: +5
-		"black_002": -8,  # ON_DEATH 敵1体HP-2: -6×2×0.7
+		"black_002": -13, # ON_DEATH 敵1体HP-2: 呪いの人形63% → +5
 		"black_003": 10,  # ON_SUMMON 自分HP-2: +5×2
 		"black_004": -11, # ON_ATTACK 毒(HP-1/t×3turns): -6×3×0.6
 		"black_005": 14,  # ON_SUMMON 自分HP-3: +5×3-1
 		"black_006": -6,  # ON_DEATH トークン2/2: -8×0.7
 		"black_007": -5,  # ON_ATTACK ライフスティール: -2×ATK×0.6≈
-		"black_008": 22,  # ON_SUMMON 自分HP-5: +5×5-3
+		"black_008": 28,  # ON_SUMMON 自分HP-5: 魔王の影39% → +6
 		"black_009": -8,  # CONSTANT 相手ダイス6無効: -4×2.0
-		"black_010": -7,  # ON_DEATH 敵全体HP-1: -10×0.7
+		"black_010": -15, # ON_DEATH 敵全体HP-1: 疫病ネズミ66% → +4
 		"black_011": -6,  # ON_DEATH 自身復活(1回,HP1): 特殊
-		"black_012": -8,  # CONSTANT 相手ダイス1無効: -4×2.0
+		"black_012": -5,  # CONSTANT 相手ダイス1無効: 闇の魔術師41% → -3
 		"black_013": -7,  # ON_DEATH 敵1体ATK-2: -5×2×0.7
 		"black_014": 3,   # ON_SUMMON 自分HP-2+ドロー1: +10-7
 		"black_015": -3,  # ON_ATTACK 自分HP-1+ATK+2永続: (+5-10)×0.6
 		"black_016": -7,  # ON_ATTACK 対象HP半減: -12×0.6
 		"black_017": 18,  # ON_SUMMON 自分HP-4: +5×4-2
 		"black_018": -21, # ON_DEATH 敵全体HP-3: -10×3×0.7
-		"black_019": -16, # CONSTANT 相手ダイス1,6無効: -4×2×2.0
+		"black_019": -10, # CONSTANT 相手ダイス1,6無効: 暗黒神35% → -6
 
 		# ─── RED ───
-		"red_001": -7,    # ON_SUMMON 敵1体HP-1: HP15調整+1
+		"red_001": -13,   # ON_SUMMON 敵1体HP-1: 火花インプ60% → +4
 		"red_002": -7,    # ON_ATTACK 対象追加2ダメ: -6×2×0.6
 		"red_003": -13,   # ON_SUMMON 敵全体HP-1: HP15調整+3
 		"red_004": -12,   # CONSTANT ATK+1: →調整+2
 		"red_005": -7,    # ON_ATTACK 自身ATK+1永続: 永続ATK強力→調整+2
-		"red_006": -14,   # ON_DEATH 敵全体HP-2: -10×2×0.7
+		"red_006": -30,   # ON_DEATH 敵全体HP-2: 火の鳥66% → +4
 		"red_007": -12,   # ON_SUMMON 味方全体ATK+1: -9×1.0→調整+3
 		"red_008": -18,   # ON_ATTACK 2回攻撃: 実質ATK×2相当, 大幅増
-		"red_009": -7,    # ON_DEATH 敵味方全体HP-2: -10×2×0.7×0.5
+		"red_009": -10,   # ON_DEATH 敵味方全体HP-2: 溶岩巨人62% → +3
 		"red_010": -9,    # TURN_START 自身ATK+1: -5×1.4→調整+2
 		"red_011": -14,   # ON_SUMMON 敵1体HP-2: HP15調整+2
-		"red_012": -5,    # CONSTANT ATK+3(ダイス1条件): -5×3×2.0×0.17
+		"red_012": -8,    # CONSTANT ATK+3(ダイス1条件): フェニックス64% → +3
 		"red_013": -4,    # ON_ATTACK 相手HP直接-1: -6×0.6
-		"red_014": -18,   # ON_DEATH 敵1体HP-4: HP15調整+1
-		"red_015": -13,   # ON_SUMMON 敵全体HP-1: HP15調整+3
-		"red_016": -22,   # CONSTANT ATK+2: →調整+2
-		"red_017": -26,   # ON_SUMMON 敵全体HP-2: HP15で13%ダメ、大幅増
+		"red_014": -23,   # ON_DEATH 敵1体HP-4: 火山龍69% → +5
+		"red_015": -19,   # ON_SUMMON 敵全体HP-1: 炎神69% → +4
+		"red_016": -25,   # CONSTANT ATK+2: メテオドラゴン64% → +3
+		"red_017": -36,   # ON_SUMMON 敵全体HP-2: 灼熱の魔王67% → +6
 		"red_018": -20,   # CONSTANT 味方全体ATK+1: →調整+2
 
 		# ─── YELLOW ───
 		"yellow_001": -4,  # ON_SUMMON 味方1体HP+2: -2×2
 		"yellow_002": -10, # CONSTANT 味方全体ダイス+1: -5×2.0
-		"yellow_003": -7,  # ON_SUMMON ドロー1: -7
+		"yellow_003": -10, # ON_SUMMON ドロー1: 祝福スプライト61% → +3
 		"yellow_004": -1,  # ON_DEFENSE 被ダメ-1: -2×0.7
 		"yellow_005": -10, # TURN_START ドロー1: -7×1.4
 		"yellow_006": -5,  # ON_SUMMON 味方全体HP+1: -5×1
 		"yellow_007": -4,  # CONSTANT 自身被ダメ-1: -2×2.0
 		"yellow_008": -1,  # ON_ATTACK 自身HP+1: -2×0.6
 		"yellow_009": -10, # ON_SUMMON 味方1体ATK+2: -5×2
-		"yellow_010": -4,  # TURN_END マナ+1: -3×1.4
+		"yellow_010": -1,  # TURN_END マナ+1: 光の魔術師41% → -3
 		"yellow_011": -7,  # ON_DEATH 味方全体HP+2: -5×2×0.7
-		"yellow_012": -18, # CONSTANT 味方全体ATK+1: -9×2.0
+		"yellow_012": -13, # CONSTANT 味方全体ATK+1: 希望の使者41% → -5
 		"yellow_013": -14, # ON_SUMMON 味方全体ATK+1,HP+1: -9+(-5)
 		"yellow_014": -4,  # ON_DEFENSE ダメージ反射: -5×0.7
 		"yellow_015": -6,  # TURN_START 味方1体HP+2: -2×2×1.4
@@ -454,25 +454,25 @@ func _get_effect_budget_modifier(effect_id: String, faces: int = 3) -> int:
 		"purple_006": -19, # ON_SUMMON 敵全体ATK-1,HP-1: -9+(-10)
 		"purple_007": -5,  # ON_ATTACK 対象ダイス2つ無効: -4×2×0.6
 		"purple_008": -14, # TURN_END 敵全体HP-1: -10×1.4
-		"purple_009": -8,  # ON_SUMMON 敵1体凍結2t: -4×2
+		"purple_009": -5,  # ON_SUMMON 敵1体凍結2t: 闇の騎士40% → -3
 		"purple_010": -8,  # CONSTANT 相手マナ-1/t: -3×1.4×2.0
 		"purple_011": -6,  # ON_DEATH 敵全体凍結: -8×0.7
-		"purple_012": -14, # ON_SUMMON コスト3以下の敵破壊: 特殊
+		"purple_012": -20, # ON_SUMMON コスト3以下の敵破壊: 悪夢の使者61% → +6
 		"purple_013": -3,  # ON_ATTACK 対象と自身入替: 状況依存
 		"purple_014": -14, # CONSTANT 敵ドロー-1: -7×2.0
 		"purple_015": -12, # ON_SUMMON 敵1体凍結3t: -4×3
 		"purple_016": -5,  # ON_ATTACK 敵全体ATK-1: -9×0.6
-		"purple_017": -20, # CONSTANT 敵召喚コスト+2: -5×2×2.0
+		"purple_017": -15, # CONSTANT 敵召喚コスト+2: 闇神41% → -5
 		"purple_018": -19, # ON_SUMMON 敵全体ATK-1,HP-1: -9+(-10), 同効果
 		"purple_019": -16, # ON_SUMMON 敵全体凍結2t: -8×2
-		"purple_020": -10, # CONSTANT 敵全体ダイス-1: -5×2.0
+		"purple_020": -5,  # CONSTANT 敵全体ダイス-1: 虚無の王41% → -5
 
 		# ─── WHITE ───
 		"white_001": -3,  # ON_SUMMON 自分HP+2: HP15調整-1
-		"white_002": -3,  # ON_DEATH 自分HP+3: HP15調整-1
+		"white_002": -1,  # ON_DEATH 自分HP+3: 癒しの光41% → -2
 		"white_003": -2,  # TURN_START 自分HP+1: HP15調整-1
 		"white_004": -7,  # ON_SUMMON 味方全体HP+2: HP効果弱め→調整-3
-		"white_005": -4,  # ON_DEFENSE 被ダメ無効(1回): -6×0.7
+		"white_005": -12, # ON_DEFENSE 被ダメ無効(1回): 白の戦士69% → +5
 		"white_006": -6,  # ON_SUMMON 墓地から1体復活: 特殊
 		"white_007": -8,  # CONSTANT 味方全体被ダメ-1: →調整-2
 		"white_008": -3,  # ON_ATTACK 味方全体HP+1: -5×0.6

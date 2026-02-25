@@ -134,7 +134,8 @@ func test_effect_budget_modifier_covers_all_registered_effect_ids():
 func test_effect_budget_modifier_key_rules():
 	# ドロー 1枚=-7（アクション単位コスト2026-02-25改訂）
 	assert_eq(CardDatabase._get_effect_budget_modifier("blue_014"), -7, "draw 1 should be -7")
-	assert_eq(CardDatabase._get_effect_budget_modifier("yellow_003"), -7, "draw 1 should be -7")
+	# yellow_003 は外れ値調整で-10（祝福スプライト61%対策）
+	assert_eq(CardDatabase._get_effect_budget_modifier("yellow_003"), -10, "yellow_003 draw 1 tuned to -10")
 
 	# 召喚時1ダメージ相当（red_001: 敵1体HP-2 は強めなので -8）
 	assert_lte(CardDatabase._get_effect_budget_modifier("red_001"), -6, "summon damage should be at least as costly as -6")
