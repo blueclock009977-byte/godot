@@ -319,6 +319,7 @@ func _tune_card_stats_to_budget(card: CardData, budget: int) -> void:
 				card.atk -= 1
 			else:
 				return
+
 func _get_effect_budget_modifier(effect_id: String) -> int:
 	# アクション単位コスト表（2026-02-25）:
 	# マナ+1(召喚)=-3, ドロー=-7, ダメージ1HP(単体)=-6, ダメージ1HP(全体)=-10
@@ -429,8 +430,8 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"yellow_016": -18, # ON_SUMMON 味方全体ATK+2: -9×2
 		"yellow_017": -10, # CONSTANT 味方全体被ダメ-1: -5×2.0
 		"yellow_018": -3,  # ON_ATTACK 味方全体HP+1: -5×0.6
-		"yellow_019": -11, # ON_DEATH 味方全体HP+3: -5×3×0.7
-		"yellow_020": -18, # CONSTANT 味方全体ATK+2: cap -18
+		"yellow_019": -10, # ON_DEATH 味方全体HP+3: -5×3×0.7
+		"yellow_020": -18, # CONSTANT 味方全体ATK+2: -9×2×2.0=-36, 上限-18
 
 		# ─── PURPLE ───
 		"purple_001": -4,  # ON_SUMMON 敵1体ダイス1つ無効: -4
@@ -450,7 +451,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"purple_015": -12, # ON_SUMMON 敵1体凍結3t: -4×3
 		"purple_016": -5,  # ON_ATTACK 敵全体ATK-1: -9×0.6
 		"purple_017": -20, # CONSTANT 敵召喚コスト+2: -5×2×2.0
-		"purple_018": -19, # ON_SUMMON 敵全体ATK-1,HP-1: 同purple_006
+		"purple_018": -19, # ON_SUMMON 敵全体ATK-1,HP-1: -9+(-10), 同効果
 		"purple_019": -16, # ON_SUMMON 敵全体凍結2t: -8×2
 		"purple_020": -10, # CONSTANT 敵全体ダイス-1: -5×2.0
 
@@ -471,7 +472,7 @@ func _get_effect_budget_modifier(effect_id: String) -> int:
 		"white_014": -7,  # ON_DEATH 味方1体HP全回復: -2×5×0.7
 		"white_015": -12, # ON_SUMMON 自分HP+6: -2×6
 		"white_016": -8,  # CONSTANT 自身被ダメ-2: -2×2×2.0
-		"white_017": -16, # CONSTANT 味方全体HP+2: cap -16
+		"white_017": -16, # CONSTANT 味方全体HP+2: -5×2×2.0=-20, 上限-16
 		"white_018": -8,  # ON_SUMMON 全状態解除+HP+1: -3+(-5)
 		"white_019": -8,  # ON_DEATH 墓地から2体復活: -6×2×0.7
 		"white_020": -24, # ON_SUMMON 味方全体HP+3,ATK+1: -5×3+(-9)
