@@ -16,6 +16,8 @@ export type Position = 'front' | 'back';
 export interface Stats {
   hp: number;
   maxHp: number;
+  mp: number;
+  maxMp: number;
   atk: number;
   def: number;
   agi: number;
@@ -30,17 +32,22 @@ export type EffectType =
   | 'damageBonus'       // 与ダメージ+%
   | 'damageReduction'   // 被ダメージ-%
   | 'critBonus'         // クリティカル率+%
+  | 'critDamage'        // クリティカルダメージ+%
   | 'evasionBonus'      // 回避率+%
+  | 'accuracyBonus'     // 命中率+%
   | 'firstStrikeBonus'  // 先制率+%
-  | 'expBonus'          // 経験値+%
-  | 'dropBonus'         // ドロップ率+%
   | 'magicBonus'        // 魔法威力+%
   | 'physicalBonus'     // 物理攻撃+%
   | 'healBonus'         // 回復量+%（与える）
   | 'healReceived'      // 回復量+%（受ける）
   | 'mpReduction'       // MP消費-%
+  | 'mpRegen'           // 毎ターンMP回復
+  | 'hpRegen'           // 毎ターンHP回復
   | 'statusResist'      // 状態異常耐性+%
   | 'poisonResist'      // 毒耐性+%
+  | 'stunResist'        // スタン耐性+%
+  | 'counterRate'       // 反撃率+%
+  | 'doubleAttack'      // 2回攻撃率+%
   ;
 
 export interface Effect {
@@ -56,9 +63,8 @@ export interface RaceData {
   id: RaceType;
   name: string;
   description: string;
-  baseStats: Omit<Stats, 'hp'> & { maxHp: number };
-  passive: string;
-  effects?: Effect[];
+  baseStats: Omit<Stats, 'hp' | 'mp'> & { maxHp: number; maxMp: number };
+  passives: PassiveSkill[];
 }
 
 export interface JobData {
@@ -66,9 +72,14 @@ export interface JobData {
   name: string;
   description: string;
   statModifiers: Partial<Stats>;
-  passive?: string;
-  effects?: Effect[];
-  skill: SkillData;
+  passives: PassiveSkill[];
+  skills: SkillData[];
+}
+
+export interface PassiveSkill {
+  name: string;
+  description: string;
+  effects: Effect[];
 }
 
 export interface TraitData {
@@ -98,10 +109,19 @@ export interface SkillData {
   id: string;
   name: string;
   description: string;
-  type: 'attack' | 'magic' | 'heal';
-  target: 'single' | 'all' | 'ally';
+  type: 'attack' | 'magic' | 'heal' | 'buff' | 'debuff';
+  target: 'single' | 'all' | 'ally' | 'self' | 'allAllies';
   multiplier: number;
+  mpCost: number;
   condition?: SkillCondition;
+  effect?: SkillEffect;
+}
+
+export interface SkillEffect {
+  type: 'poison' | 'stun' | 'atkUp' | 'defUp' | 'agiUp' | 'atkDown' | 'defDown';
+  chance?: number;  // 発動確率（%）
+  duration?: number; // 持続ターン
+  value?: number;    // 効果量（%）
 }
 
 export interface SkillCondition {

@@ -7,8 +7,8 @@ export const environments: Record<string, EnvironmentData> = {
     description: '広大な草原で育った。バランスの良い成長。',
     statModifiers: { atk: 1, def: 1, agi: 1, mag: 1 },
     effects: [
-      { type: 'expBonus', value: 10 },
-      { type: 'healReceived', value: 10 },
+      { type: 'healReceived', value: 15 },
+      { type: 'hpRegen', value: 2 },
     ],
   },
   forest: {
@@ -46,12 +46,11 @@ export const environments: Record<string, EnvironmentData> = {
   city: {
     id: 'city',
     name: '都市',
-    description: '大都市で育った。知識と商売に長ける。',
-    statModifiers: { mag: 2, agi: 1 },
+    description: '大都市で育った。魔法と知識に長ける。',
+    statModifiers: { mag: 3, maxMp: 10 },
     effects: [
-      { type: 'expBonus', value: 25 },
-      { type: 'dropBonus', value: 20 },
-      { type: 'mpReduction', value: 10 },
+      { type: 'mpReduction', value: 15 },
+      { type: 'magicBonus', value: 10 },
     ],
   },
 };

@@ -26,6 +26,10 @@ export default function CreatePage() {
       + (jobs[job].statModifiers.maxHp || 0)
       + (traits[trait].statModifiers?.maxHp || 0)
       + (environments[environment].statModifiers?.maxHp || 0),
+    maxMp: races[race].baseStats.maxMp 
+      + (jobs[job].statModifiers.maxMp || 0)
+      + (traits[trait].statModifiers?.maxMp || 0)
+      + (environments[environment].statModifiers?.maxMp || 0),
     atk: races[race].baseStats.atk 
       + (jobs[job].statModifiers.atk || 0)
       + (traits[trait].statModifiers?.atk || 0)
@@ -56,7 +60,7 @@ export default function CreatePage() {
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
+      <div className="container mx-auto px-4 py-8 max-w-lg">
         {/* ヘッダー */}
         <div className="flex items-center gap-4 mb-6">
           <Link href="/" className="text-slate-400 hover:text-white">
@@ -97,8 +101,11 @@ export default function CreatePage() {
             ))}
           </div>
           <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
-            <div className="text-amber-400">{races[race].passive}</div>
-            <div className="text-slate-400 mt-1">{races[race].description}</div>
+            <div className="text-slate-300 mb-1">{races[race].description}</div>
+            <div className="text-amber-400 font-semibold mb-1">パッシブ:</div>
+            {races[race].passives.map((p, i) => (
+              <div key={i} className="text-slate-400 ml-2">• {p.name}: {p.description}</div>
+            ))}
           </div>
         </div>
         
@@ -121,9 +128,15 @@ export default function CreatePage() {
             ))}
           </div>
           <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
-            <div className="text-amber-400">{jobs[job].passive}</div>
-            <div className="text-slate-400 mt-1">{jobs[job].description}</div>
-            <div className="text-green-400 mt-1">スキル: {jobs[job].skill.name}</div>
+            <div className="text-slate-300 mb-1">{jobs[job].description}</div>
+            <div className="text-amber-400 font-semibold mb-1">パッシブ:</div>
+            {jobs[job].passives.map((p, i) => (
+              <div key={i} className="text-slate-400 ml-2">• {p.name}</div>
+            ))}
+            <div className="text-green-400 font-semibold mt-1">スキル:</div>
+            {jobs[job].skills.map((s, i) => (
+              <div key={i} className="text-slate-400 ml-2">• {s.name} (MP{s.mpCost})</div>
+            ))}
           </div>
         </div>
         
@@ -176,10 +189,14 @@ export default function CreatePage() {
         {/* ステータスプレビュー */}
         <div className="mb-6 bg-slate-800 rounded-lg p-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-3">ステータスプレビュー</h3>
-          <div className="grid grid-cols-5 gap-2 text-center">
+          <div className="grid grid-cols-6 gap-2 text-center">
             <div>
               <div className="text-xs text-slate-400">HP</div>
               <div className="text-lg font-bold text-red-400">{previewStats.maxHp}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-400">MP</div>
+              <div className="text-lg font-bold text-blue-300">{previewStats.maxMp}</div>
             </div>
             <div>
               <div className="text-xs text-slate-400">ATK</div>

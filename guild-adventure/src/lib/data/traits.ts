@@ -26,21 +26,21 @@ export const traits: Record<string, TraitData> = {
   lucky: {
     id: 'lucky',
     name: '幸運',
-    description: '生まれながらの強運。良いことが起きやすい。',
+    description: '生まれながらの強運。急所を突くのが得意。',
     statModifiers: { agi: 2 },
     effects: [
-      { type: 'critBonus', value: 15 },
+      { type: 'critBonus', value: 20 },
+      { type: 'critDamage', value: 25 },
       { type: 'evasionBonus', value: 10 },
-      { type: 'dropBonus', value: 30 },
     ],
   },
   genius: {
     id: 'genius',
     name: '天才',
-    description: '優れた才能の持ち主。何でも素早く習得する。',
-    statModifiers: { atk: 1, def: 1, agi: 1, mag: 1 },
+    description: '優れた才能の持ち主。万能型。',
+    statModifiers: { atk: 1, def: 1, agi: 1, mag: 1, maxMp: 10 },
     effects: [
-      { type: 'expBonus', value: 75 },
+      { type: 'mpReduction', value: 15 },
       { type: 'critBonus', value: 5 },
     ],
   },

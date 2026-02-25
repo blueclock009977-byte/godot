@@ -40,7 +40,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): BattleUni
     position,
     job: char.job,
     trait: char.trait,
-    skills: char.job ? [jobs[char.job].skill] : [],
+    skills: char.job ? jobs[char.job].skills : [],
   };
 }
 

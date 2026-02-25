@@ -38,10 +38,13 @@ function calculateStats(
   const envMods = envData.statModifiers || {};
   
   const maxHp = baseStats.maxHp + (jobMods.maxHp || 0) + (traitMods.maxHp || 0) + (envMods.maxHp || 0);
+  const maxMp = baseStats.maxMp + (jobMods.maxMp || 0) + (traitMods.maxMp || 0) + (envMods.maxMp || 0);
   
   return {
     maxHp,
     hp: maxHp,
+    maxMp,
+    mp: maxMp,
     atk: baseStats.atk + (jobMods.atk || 0) + (traitMods.atk || 0) + (envMods.atk || 0),
     def: baseStats.def + (jobMods.def || 0) + (traitMods.def || 0) + (envMods.def || 0),
     agi: baseStats.agi + (jobMods.agi || 0) + (traitMods.agi || 0) + (envMods.agi || 0),
