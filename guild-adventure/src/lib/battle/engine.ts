@@ -238,31 +238,39 @@ function processTurn(
 function processEncounter(
   playerUnits: BattleUnit[],
   dungeon: DungeonType,
-  encounterNum: number
+  encounterNum: number,
+  isBossEncounter: boolean
 ): { logs: string[]; victory: boolean } {
   const dungeonData = dungeons[dungeon];
   const allLogs: string[] = [];
-  
-  // モンスター生成（1-3体）
-  const monsterCount = Math.floor(random(1, 4));
   const enemyUnits: BattleUnit[] = [];
   
-  for (let i = 0; i < monsterCount; i++) {
-    // 重み付きランダム選択
-    const totalWeight = dungeonData.monsters.reduce((sum, m) => sum + m.weight, 0);
-    let rand = Math.random() * totalWeight;
-    for (const spawn of dungeonData.monsters) {
-      rand -= spawn.weight;
-      if (rand <= 0) {
-        enemyUnits.push(monsterToUnit(spawn.monster));
-        break;
+  if (isBossEncounter && dungeonData.boss) {
+    // ボス戦
+    enemyUnits.push(monsterToUnit(dungeonData.boss));
+    allLogs.push(`\n【BOSS戦】`);
+    allLogs.push(`⚠️ ${dungeonData.boss.name}が立ちはだかる！`);
+  } else {
+    // 通常エンカウント（1-3体）
+    const monsterCount = Math.floor(random(1, 4));
+    
+    for (let i = 0; i < monsterCount; i++) {
+      // 重み付きランダム選択
+      const totalWeight = dungeonData.monsters.reduce((sum, m) => sum + m.weight, 0);
+      let rand = Math.random() * totalWeight;
+      for (const spawn of dungeonData.monsters) {
+        rand -= spawn.weight;
+        if (rand <= 0) {
+          enemyUnits.push(monsterToUnit(spawn.monster));
+          break;
+        }
       }
     }
+    
+    const monsterNames = enemyUnits.map(e => e.name).join('、');
+    allLogs.push(`\n【遭遇 ${encounterNum}】`);
+    allLogs.push(`${monsterNames}が現れた！`);
   }
-  
-  const monsterNames = enemyUnits.map(e => e.name).join('、');
-  allLogs.push(`\n【遭遇 ${encounterNum}】`);
-  allLogs.push(`${monsterNames}が現れた！`);
   
   // プレイヤーユニットのHP回復（遭遇ごとに少し回復）
   for (const unit of playerUnits) {
@@ -320,7 +328,8 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   
   // 各エンカウントを処理
   for (let i = 1; i <= dungeonData.encounterCount; i++) {
-    const { logs, victory } = processEncounter(playerUnits, dungeon, i);
+    const isBossEncounter = (i === dungeonData.encounterCount);
+    const { logs, victory } = processEncounter(playerUnits, dungeon, i, isBossEncounter);
     
     allLogs.push({
       turn: i,

@@ -13,9 +13,10 @@ function formatDuration(seconds: number): string {
 }
 
 function DifficultyStars({ level }: { level: number }) {
+  const maxStars = 8;
   return (
-    <span className="text-amber-400">
-      {'★'.repeat(level)}{'☆'.repeat(4 - level)}
+    <span className="text-amber-400 text-sm">
+      {'★'.repeat(level)}{'☆'.repeat(maxStars - level)}
     </span>
   );
 }

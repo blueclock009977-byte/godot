@@ -6,7 +6,7 @@ export type RaceType = 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardm
 export type JobType = 'warrior' | 'mage' | 'priest' | 'thief' | 'knight' | 'hunter' | 'ninja' | 'sage';
 export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
 export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
-export type DungeonType = 'grassland' | 'forest' | 'sea' | 'cave';
+export type DungeonType = 'grassland' | 'forest' | 'cave' | 'sea' | 'desert' | 'volcano' | 'snowfield' | 'temple';
 export type Position = 'front' | 'back';
 
 // ============================================
@@ -179,10 +179,11 @@ export interface DungeonData {
   id: DungeonType;
   name: string;
   description: string;
-  difficulty: 1 | 2 | 3 | 4;
+  difficulty: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   durationSeconds: number;
   encounterCount: number;
   monsters: MonsterSpawn[];
+  boss?: Monster;
 }
 
 // ============================================
