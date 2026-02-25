@@ -158,8 +158,7 @@ function decideAction(
 function formatUnitStatus(unit: BattleUnit): string {
   const hpPercent = Math.floor((unit.stats.hp / unit.stats.maxHp) * 100);
   const hpIcon = hpPercent > 50 ? '🟢' : hpPercent > 25 ? '🟡' : '🔴';
-  const mpText = unit.stats.maxMp > 0 ? ` MP${unit.stats.mp}/${unit.stats.maxMp}` : '';
-  return `${unit.name}: HP${unit.stats.hp}/${unit.stats.maxHp}${hpIcon}${mpText}`;
+  return `${unit.name}: HP${unit.stats.hp}/${unit.stats.maxHp}${hpIcon} MP${unit.stats.mp}/${unit.stats.maxMp}`;
 }
 
 function processTurn(
