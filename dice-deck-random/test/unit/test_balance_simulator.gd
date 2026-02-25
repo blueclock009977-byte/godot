@@ -514,6 +514,15 @@ func _simulate_game(deck_p: Array, deck_o: Array) -> Dictionary:
 		for res in start_results:
 			_apply_sim_effect(res, is_player_turn, state, p_slots, o_slots)
 
+		# ── ターン開始マナペナルティ（敵の常時効果: purple_010等）─────
+		var mana_penalty := EffectManager.get_enemy_turn_start_mana_penalty(
+			is_player_turn, _make_context(p_slots, o_slots, 0))
+		if mana_penalty > 0:
+			if is_player_turn:
+				state["mana_p"] = maxi(0, state["mana_p"] - mana_penalty)
+			else:
+				state["mana_o"] = maxi(0, state["mana_o"] - mana_penalty)
+
 		# ── Main Phase 1 ───────────────────────────────────
 		_ai_summon(is_player_turn, p_slots, o_slots, state)
 
