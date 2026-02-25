@@ -171,7 +171,7 @@ export default function AdventurePage() {
         {/* 戦闘ログ */}
         <div 
           ref={logContainerRef}
-          className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-72 overflow-y-auto"
+          className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-96 overflow-y-auto"
         >
           <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
           {displayedLogs.length === 0 ? (
@@ -184,14 +184,17 @@ export default function AdventurePage() {
                 <div 
                   key={i} 
                   className={`${
+                    log.includes('【BOSS') ? 'text-red-500 font-bold mt-4 text-lg' :
                     log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
+                    log.includes('【味方】') ? 'text-cyan-400 text-xs bg-slate-700/50 px-2 py-1 rounded' :
+                    log.includes('【敵】') ? 'text-rose-400 text-xs bg-slate-700/50 px-2 py-1 rounded mb-2' :
                     log.includes('勝利') ? 'text-green-400 font-bold' :
                     log.includes('全滅') ? 'text-red-400 font-bold' :
                     log.includes('倒した') ? 'text-green-300' :
                     log.includes('ダメージ') ? 'text-orange-300' :
                     log.includes('回復') ? 'text-blue-300' :
                     log.includes('会心') ? 'text-yellow-300' :
-                    log.includes('ターン') ? 'text-slate-500 text-xs' :
+                    log.includes('--- ターン') ? 'text-slate-400 text-xs mt-3 border-t border-slate-600 pt-2' :
                     'text-slate-300'
                   }`}
                 >

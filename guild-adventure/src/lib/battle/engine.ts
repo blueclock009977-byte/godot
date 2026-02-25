@@ -154,6 +154,13 @@ function decideAction(
 // 1ターンの処理
 // ============================================
 
+// HP状態を生成
+function formatUnitStatus(unit: BattleUnit): string {
+  const hpPercent = Math.floor((unit.stats.hp / unit.stats.maxHp) * 100);
+  const hpBar = hpPercent > 50 ? '🟢' : hpPercent > 25 ? '🟡' : '🔴';
+  return `${unit.name}: ${unit.stats.hp}/${unit.stats.maxHp}${hpBar}`;
+}
+
 function processTurn(
   playerUnits: BattleUnit[],
   enemyUnits: BattleUnit[],
@@ -167,6 +174,13 @@ function processTurn(
     .sort((a, b) => (b.stats.agi + random(0, 10)) - (a.stats.agi + random(0, 10)));
   
   logs.push(`--- ターン ${turnNum} ---`);
+  
+  // ターン開始時のHP状態を表示
+  const alivePlayers = playerUnits.filter(u => u.stats.hp > 0);
+  const aliveEnemies = enemyUnits.filter(u => u.stats.hp > 0);
+  
+  logs.push(`【味方】${alivePlayers.map(formatUnitStatus).join(' / ')}`);
+  logs.push(`【敵】${aliveEnemies.map(formatUnitStatus).join(' / ')}`);
   
   for (const unit of allUnits) {
     if (unit.stats.hp <= 0) continue;
