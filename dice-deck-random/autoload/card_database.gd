@@ -400,16 +400,8 @@ func _enforce_effect_min_hp(card: CardData) -> void:
 		card.hp = required_min_hp
 
 func _get_color_balance_budget_adjustment(color_type: CardData.ColorType) -> int:
-	# Phase 9: BLACKのみ追加で弱体化し、色差の主因を優先的に抑制
-	match color_type:
-		CardData.ColorType.GREEN:
-			return -2
-		CardData.ColorType.BLACK:
-			return -3
-		CardData.ColorType.PURPLE:
-			return 2
-		_:
-			return 0
+	# 色別調整なし: 効果コストのみでバランス判断
+	return 0
 
 func _balance_effect_card_stats(card: CardData) -> void:
 	if card.color_type == CardData.ColorType.GRAY or card.effect_id == "":
