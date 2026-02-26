@@ -194,17 +194,29 @@ function GameScreen() {
             </div>
           </Link>
           
-          <Link href="/multi" className="block">
-            <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors">
+          {currentAdventure ? (
+            <div className="bg-slate-700 rounded-lg p-4 border border-slate-600 opacity-50 cursor-not-allowed">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
-                  <p className="text-purple-200 text-sm">仲間と一緒にダンジョンへ</p>
+                  <p className="text-slate-400 text-sm">ソロ冒険中は参加できません</p>
                 </div>
-                <span className="text-white">→</span>
+                <span className="text-slate-500">🚫</span>
               </div>
             </div>
-          </Link>
+          ) : (
+            <Link href="/multi" className="block">
+              <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
+                    <p className="text-purple-200 text-sm">仲間と一緒にダンジョンへ</p>
+                  </div>
+                  <span className="text-white">→</span>
+                </div>
+              </div>
+            </Link>
+          )}
           
           <Link href="/history" className="block">
             <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors">
