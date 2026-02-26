@@ -135,11 +135,18 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const startBattle = async () => {
     if (!room || !username || room.hostId !== username) return;
     
+    // 最新のroomデータを再取得（ポーリングのタイミングで他プレイヤーのキャラ情報が古い可能性がある）
+    const latestRoom = await getRoom(code);
+    if (!latestRoom || latestRoom.status !== 'ready') {
+      console.error('Room not ready or not found');
+      return;
+    }
+    
     // 全プレイヤーのキャラを集めてパーティを作成
     const frontChars: Character[] = [];
     const backChars: Character[] = [];
     
-    Object.values(room.players).forEach(p => {
+    Object.values(latestRoom.players).forEach(p => {
       (p.characters || []).forEach((rc: RoomCharacter) => {
         if (rc.position === 'front') {
           frontChars.push(rc.character);
@@ -155,16 +162,16 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     };
     
     // ホストがバトル結果を計算
-    const result = runBattle(party, room.dungeonId as any);
+    const result = runBattle(party, latestRoom.dungeonId as any);
     
     // 勝利時は各プレイヤーのドロップを計算
     let playerDrops: Record<string, string | undefined> | undefined;
     if (result.victory) {
       playerDrops = {};
-      Object.entries(room.players).forEach(([playerName, player]) => {
+      Object.entries(latestRoom.players).forEach(([playerName, player]) => {
         // 各プレイヤーのキャラクターでドロップボーナス計算
         const chars = (player.characters || []).map(rc => rc.character);
-        const drop = rollDrop(room.dungeonId as any, chars);
+        const drop = rollDrop(latestRoom.dungeonId as any, chars);
         playerDrops![playerName] = drop;
       });
     }
@@ -174,12 +181,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     await updateRoomStatus(code, 'battle', startTime, result, playerDrops);
     
     // 各プレイヤーにマルチ冒険結果を保存（ログイン時に受け取れるように）
-    const playerNames = Object.keys(room.players);
+    const playerNames = Object.keys(latestRoom.players);
     for (const playerName of playerNames) {
       await saveMultiAdventureForUser(
         playerName,
         code,
-        room.dungeonId,
+        latestRoom.dungeonId,
         result.victory,
         playerDrops?.[playerName],
         result.logs,
