@@ -324,12 +324,13 @@ export default function Home() {
   }, []);
   
   // ログイン済みならサーバーからデータ復元（キャラ/パーティ/探索状態）
-  useEffect(() => {
-    if (mounted && isLoggedIn && username) {
-      console.log('[Home] auto login for logged in user');
-      autoLogin();
-    }
-  }, [mounted, isLoggedIn, username, autoLogin]);
+  // 一時的に無効化してエラー原因を特定
+  // useEffect(() => {
+  //   if (mounted && isLoggedIn && username) {
+  //     console.log('[Home] auto login for logged in user');
+  //     autoLogin();
+  //   }
+  // }, [mounted, isLoggedIn, username, autoLogin]);
   
   if (!mounted) {
     return (
