@@ -7,6 +7,8 @@ import {
   Character,
   Monster,
   Stats,
+  POSITION_HIT_RATE,
+  Position,
 } from '../types';
 import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
@@ -25,6 +27,33 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// 被弾確率に基づいてターゲットを選択
+function pickTargetByPosition(units: BattleUnit[]): BattleUnit {
+  const aliveUnits = units.filter(u => u.stats.hp > 0);
+  if (aliveUnits.length === 0) return units[0];
+  if (aliveUnits.length === 1) return aliveUnits[0];
+  
+  // 各ユニットの被弾確率を計算（生存者のみで再配分）
+  let totalRate = 0;
+  const rates: { unit: BattleUnit; rate: number }[] = [];
+  
+  for (const unit of aliveUnits) {
+    const rate = POSITION_HIT_RATE[unit.position as Position] || 10;
+    totalRate += rate;
+    rates.push({ unit, rate });
+  }
+  
+  // 確率に基づいてランダム選択
+  const roll = Math.random() * totalRate;
+  let cumulative = 0;
+  for (const { unit, rate } of rates) {
+    cumulative += rate;
+    if (roll < cumulative) return unit;
+  }
+  
+  return aliveUnits[0];
+}
+
 function cloneStats(stats: Stats): Stats {
   return { ...stats };
 }
@@ -33,7 +62,7 @@ function cloneStats(stats: Stats): Stats {
 // ユニット変換
 // ============================================
 
-function characterToUnit(char: Character, position: 'front' | 'back'): BattleUnit {
+function characterToUnit(char: Character, position: 1|2|3|4|5|6): BattleUnit {
   // 職業スキル + 種族スキルを結合
   const jobSkills = char.job ? jobs[char.job].skills : [];
   const raceData = char.race ? races[char.race] : null;
@@ -68,7 +97,7 @@ function monsterToUnit(monster: Monster): BattleUnit {
     name: monster.name,
     isPlayer: false,
     stats: cloneStats(monster.stats),
-    position: 'front',
+    position: 1,  // モンスターは1列目
     skills: monster.skills,
   };
 }
@@ -83,8 +112,8 @@ function calculatePhysicalDamage(attacker: BattleUnit, defender: BattleUnit): { 
   
   let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
   
-  // 隊列補正
-  const positionMod = attacker.position === 'front' ? 1.1 : 0.9;
+  // 隊列補正（1-2列目はダメージ+、5-6列目はダメージ-）
+  const positionMod = attacker.position <= 2 ? 1.1 : attacker.position >= 5 ? 0.9 : 1.0;
   damage *= positionMod;
   
   // クリティカル判定（10%基本）
@@ -155,15 +184,15 @@ function decideAction(
         
         if (attackSkills.length > 0) {
           const { skill, index } = pickRandom(attackSkills);
-          const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+          const target = skill.target === 'all' ? aliveEnemies : pickTargetByPosition(aliveEnemies);
           return { type: 'skill', skillIndex: index, target };
         }
       }
     }
   }
   
-  // 通常攻撃
-  return { type: 'attack', target: pickRandom(aliveEnemies) };
+  // 通常攻撃（被弾確率に基づいてターゲット選択）
+  return { type: 'attack', target: pickTargetByPosition(aliveEnemies) };
 }
 
 // ============================================
@@ -345,13 +374,13 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   const allLogs: BattleLog[] = [];
   let encountersCleared = 0;
   
-  // パーティをユニットに変換
+  // パーティをユニットに変換（6列制）
   const playerUnits: BattleUnit[] = [];
-  party.front.forEach((char) => {
-    if (char) playerUnits.push(characterToUnit(char, 'front'));
-  });
-  party.back.forEach((char) => {
-    if (char) playerUnits.push(characterToUnit(char, 'back'));
+  party.members.forEach((char, index) => {
+    if (char) {
+      const position = (index + 1) as 1|2|3|4|5|6;
+      playerUnits.push(characterToUnit(char, position));
+    }
   });
   
   if (playerUnits.length === 0) {

@@ -13,7 +13,17 @@ export type JobType =
 export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
 export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
 export type DungeonType = 'grassland' | 'forest' | 'cave' | 'sea' | 'desert' | 'volcano' | 'snowfield' | 'temple';
-export type Position = 'front' | 'back';
+export type Position = 1 | 2 | 3 | 4 | 5 | 6;
+
+// 各列の被弾確率（%）
+export const POSITION_HIT_RATE: Record<Position, number> = {
+  1: 30,
+  2: 20,
+  3: 15,
+  4: 15,
+  5: 10,
+  6: 10,
+};
 
 // ============================================
 // ステータス
@@ -188,8 +198,7 @@ export interface Character {
 // ============================================
 
 export interface Party {
-  front: (Character | null)[];  // 最大3人
-  back: (Character | null)[];   // 最大3人
+  members: (Character | null)[];  // 6列（インデックス0-5 = 1-6列目）
 }
 
 // ============================================
@@ -233,7 +242,7 @@ export interface BattleUnit {
   name: string;
   isPlayer: boolean;
   stats: Stats;
-  position: Position;
+  position: Position;  // 1-6列目
   race?: RaceType;
   job?: JobType;
   trait?: TraitType;
