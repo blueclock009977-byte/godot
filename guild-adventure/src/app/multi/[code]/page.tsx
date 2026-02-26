@@ -29,6 +29,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
+  const [hadRoomOnce, setHadRoomOnce] = useState(false);
   const [selectedChars, setSelectedChars] = useState<RoomCharacter[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
@@ -51,26 +52,24 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // ルーム情報をポーリング
   useEffect(() => {
-    let hadRoom = false;
-    
     const fetchRoom = async () => {
       const data = await getRoom(code);
       if (data) {
-        hadRoom = true;
+        setHadRoomOnce(true);
         setRoom(data);
         
         // 自分の選択状態を復元
-        if (username && data.players[username]) {
+        if (username && data.players && data.players[username]) {
           const myChars = data.players[username].characters || [];
           setSelectedChars(myChars);
           setIsReady(data.players[username].ready);
         }
         
         // 自分がキックされた（playersに自分がいない）場合
-        if (username && !data.players[username] && data.status === 'waiting') {
+        if (username && data.players && !data.players[username] && data.status === 'waiting') {
           setRoomDeleted(true);
         }
-      } else if (hadRoom) {
+      } else if (hadRoomOnce) {
         // ルームが存在していたのに消えた場合（ホストが退出）
         setRoomDeleted(true);
       }
@@ -79,7 +78,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     fetchRoom();
     const interval = setInterval(fetchRoom, 1000);
     return () => clearInterval(interval);
-  }, [code, username]);
+  }, [code, username, hadRoomOnce]);
   
   // キャラ選択数の上限
   const maxCharsPerPlayer = room?.maxPlayers === 2 ? 3 : 2;
