@@ -182,7 +182,7 @@ function GameScreen() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
-                  <p className="text-slate-200 text-sm">ダンジョンを探索（4人まで）</p>
+                  <p className="text-slate-200 text-sm">（4キャラまで編成可能）</p>
                 </div>
                 <span className="text-white">→</span>
               </div>
@@ -205,7 +205,7 @@ function GameScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
-                    <p className="text-purple-200 text-sm">仲間と一緒にダンジョンへ</p>
+                    <p className="text-purple-200 text-sm">（6キャラまで編成可能）</p>
                   </div>
                   <span className="text-white">→</span>
                 </div>
