@@ -1,0 +1,53 @@
+{
+  "taskId": "full-effect-verification-2026-02-24",
+  "goal": "132効果カード全てを本番環境で検証する",
+  "startedAt": "2026-02-24T20:05:00+09:00",
+  "totalEffects": 132,
+  "verifiedCount": 2,
+  "currentPhase": 1,
+  "maxBattles": 50,
+  "battlesPlayed": 3,
+  "discordChannel": "channel:1471429991005950013",
+  "consecutiveErrors": 2,
+  "effects": {
+    "red_lava_slime": {"status": "verified", "name": "溶岩スライム", "effect": "登場時:敵全体HP-1", "verifiedAt": "2026-02-24T20:10:00+09:00"},
+    "red_fire_bird": {"status": "observed", "name": "火の鳥", "effect": "死亡時:?", "verifiedAt": null},
+    "red_blade_master": {"status": "observed", "name": "ブレードマスター", "effect": "攻撃時:?", "verifiedAt": null},
+    "red_burning_knight": {"status": "observed", "name": "バーニングナイト", "effect": "侵略時:?", "verifiedAt": null},
+    "purple_shadow_ruler": {"status": "observed", "name": "影の支配者", "effect": "相手1体を2ターン凍", "verifiedAt": null},
+    "purple_shadow_dragon": {"status": "observed", "name": "影の龍", "effect": "死亡時:敵全体を凍結", "verifiedAt": null},
+    "purple_curse_dragon": {"status": "observed", "name": "呪いの竜", "effect": "敵のドロー阻害", "verifiedAt": null},
+    "purple_necromancer": {"status": "observed", "name": "死霊術師", "effect": "登場時:ATK2/HP2のトークン生成", "verifiedAt": null},
+    "brown_devil_contractor": {"status": "verified", "name": "悪魔の契約者", "effect": "登場時:自分HP-2,カード1枚ドロー", "verifiedAt": "2026-02-24T22:41:00+09:00"},
+    "blue_ice_mouse": {"status": "observed", "name": "氷のネズミ", "effect": "死亡時:敵1体ATK-1", "verifiedAt": null},
+    "green_forest_guardian": {"status": "observed", "name": "森の守護者", "effect": "登場時:マナ+?", "verifiedAt": null},
+    "purple_fallen_dragon": {"status": "observed", "name": "堕落の竜", "effect": "効果カード（詳細未確認）", "verifiedAt": null}
+  },
+  "bugs": [],
+  "log": [
+    {
+      "battle": 1,
+      "timestamp": "2026-02-24T20:10:00+09:00",
+      "action": "NPC対戦開始、溶岩スライムを配置",
+      "observed": ["溶岩スライム", "火の鳥", "ブレードマスター", "バーニングナイト"],
+      "verified": ["溶岩スライム"],
+      "notes": "ブラウザ接続タイムアウト発生"
+    },
+    {
+      "battle": 2,
+      "timestamp": "2026-02-24T22:41:00+09:00",
+      "action": "NPC対戦、キー操作が効かずカード配置できなかった",
+      "observed": ["影の支配者", "影の龍", "呪いの竜", "死霊術師", "悪魔の契約者", "パラディン", "タイタン", "ゴブリン", "スカウト"],
+      "verified": ["悪魔の契約者"],
+      "notes": "ターン8で敗北。悪魔の契約者の効果（自分HP-2）がログに表示され確認"
+    },
+    {
+      "battle": 3,
+      "timestamp": "2026-02-24T22:49:00+09:00",
+      "action": "NPC対戦開始、ブラウザ接続が2回切断",
+      "observed": ["氷のネズミ", "森の守護者", "堕落の竜", "悪魔の契約者", "ストーンウォール", "ウォリアー"],
+      "verified": [],
+      "notes": "ブラウザ接続切断が頻発。バトル途中で中断。"
+    }
+  ]
+}

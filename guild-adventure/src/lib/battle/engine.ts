@@ -407,9 +407,29 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   };
 }
 
+// キャラクターのドロップボーナスを計算
+function calculateDropBonus(characters: Character[]): number {
+  let bonus = 0;
+  for (const char of characters) {
+    if (char.race) {
+      const raceData = races[char.race];
+      for (const passive of raceData.passives) {
+        for (const effect of passive.effects) {
+          if (effect.type === 'dropBonus') {
+            bonus += effect.value;
+          }
+        }
+      }
+    }
+  }
+  return bonus;
+}
+
 // ドロップ抽選（呼び出し側で個別に実行）
-export function rollDrop(dungeon: DungeonType): string | undefined {
-  const dropRate = getDropRate(dungeon);
+export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
+  const baseRate = getDropRate(dungeon);
+  const dropBonus = calculateDropBonus(characters);
+  const dropRate = baseRate * (1 + dropBonus / 100); // ボーナスを%として適用
   if (Math.random() * 100 < dropRate) {
     const item = getRandomItem();
     return item.id;

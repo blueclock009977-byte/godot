@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
-import { BattleResult } from '@/lib/types';
+import { BattleResult, Character } from '@/lib/types';
 
 export default function AdventurePage() {
   const router = useRouter();
@@ -78,7 +78,8 @@ export default function AdventurePage() {
           }
           
           // ドロップ抽選（ソロは1人なのでここで抽選）
-          const droppedItemId = result.victory ? rollDrop(currentAdventure.dungeon) : undefined;
+          const allChars = [...party.front, ...party.back].filter((c): c is Character => c !== null);
+          const droppedItemId = result.victory ? rollDrop(currentAdventure.dungeon, allChars) : undefined;
           if (droppedItemId) {
             const itemData = getItemById(droppedItemId);
             setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || droppedItemId} を入手！`]);

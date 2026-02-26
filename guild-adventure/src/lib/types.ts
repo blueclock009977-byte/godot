@@ -79,6 +79,7 @@ export type EffectType =
   | 'autoRevive'        // 味方死亡時自動蘇生
   | 'summonUndead'      // 死霊召喚
   | 'fullRegen'         // 毎ターン全回復
+  | 'dropBonus'         // ドロップ率+%
   ;
 
 export interface Effect {

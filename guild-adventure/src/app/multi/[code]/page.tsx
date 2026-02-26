@@ -220,7 +220,10 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         return;
       }
       
-      const droppedItemId = rollDrop(room.dungeonId as any);
+      // 自分のキャラクターを取得してドロップボーナス計算
+      const myPlayer = username ? room.players[username] : null;
+      const myChars = myPlayer?.characters?.map(rc => rc.character) || [];
+      const droppedItemId = rollDrop(room.dungeonId as any, myChars);
       if (droppedItemId) {
         setMyDrop(droppedItemId);
         addItem(droppedItemId);
