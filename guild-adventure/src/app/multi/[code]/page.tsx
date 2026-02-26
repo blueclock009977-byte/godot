@@ -415,7 +415,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             <h2 className="text-3xl font-bold mb-4">
               {room.battleResult.victory ? '🎉 勝利！' : '💀 敗北...'}
             </h2>
-            <div className="text-slate-300 mb-4">{dungeonData?.name}を踏破！</div>
+            <div className="text-slate-300 mb-4">
+              {room.battleResult.victory ? `${dungeonData?.name}を踏破！` : `${dungeonData?.name}で全滅...`}
+            </div>
             {myDrop && (
               <div className="text-amber-400 text-lg mb-4">
                 💎 【あなたのドロップ】{getItemById(myDrop)?.name || myDrop}
