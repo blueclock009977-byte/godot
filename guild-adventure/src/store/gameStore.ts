@@ -125,7 +125,7 @@ export const useGameStore = create<GameStore>()(
       username: null,
       isLoading: false,
       characters: [],
-      party: { members: [null, null, null, null, null, null] },
+      party: { front: [null, null, null, null], back: [null, null, null, null] },
       currentAdventure: null,
       inventory: {},
       lastDroppedItem: null,
@@ -157,7 +157,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: userData.characters || [],
-                party: userData.party || { members: [null, null, null, null, null, null] },
+                party: userData.party || { front: [null, null, null, null], back: [null, null, null, null] },
                 inventory: userData.inventory || {},
                 isLoading: false,
               });
@@ -172,7 +172,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: [],
-                party: { members: [null, null, null, null, null, null] },
+                party: { front: [null, null, null, null], back: [null, null, null, null] },
                 inventory: { ...initialInventory },
                 isLoading: false,
               });
@@ -196,7 +196,7 @@ export const useGameStore = create<GameStore>()(
           isLoggedIn: false,
           username: null,
           characters: [],
-          party: { members: [null, null, null, null, null, null] },
+          party: { front: [null, null, null, null], back: [null, null, null, null] },
           inventory: {},
           currentAdventure: null,
         });
@@ -216,7 +216,7 @@ export const useGameStore = create<GameStore>()(
               isLoggedIn: true,
               username: storedUsername,
               characters: userData.characters || [],
-              party: userData.party || { members: [null, null, null, null, null, null] },
+              party: userData.party || { front: [null, null, null, null], back: [null, null, null, null] },
               inventory: userData.inventory || {},
               isLoading: false,
             });
@@ -348,49 +348,58 @@ export const useGameStore = create<GameStore>()(
       // キャラクター削除
       deleteCharacter: async (id) => {
         set((state) => {
-          // パーティからも削除
-          const newMembers = state.party.members.map((c) => 
-            c?.id === id ? null : c
-          );
+          const newParty = {
+            front: state.party.front.map((c) => c?.id === id ? null : c),
+            back: state.party.back.map((c) => c?.id === id ? null : c),
+          };
           
           return {
             characters: state.characters.filter((c) => c.id !== id),
-            party: { members: newMembers },
+            party: newParty,
           };
         });
         
         await get().syncToServer();
       },
       
-      // パーティに追加（slot: 0-5 = 1-6列目）
+      // パーティに追加
       addToParty: async (characterId, position, slot) => {
         const character = get().characters.find((c) => c.id === characterId);
         if (!character) return;
         
         set((state) => {
           // 既にパーティにいる場合は削除
-          const newMembers = state.party.members.map((c) => 
-            c?.id === characterId ? null : c
-          );
+          const newFront = state.party.front.map((c) => c?.id === characterId ? null : c);
+          const newBack = state.party.back.map((c) => c?.id === characterId ? null : c);
           
-          // 新しい位置に追加（positionは1-6）
-          const charWithPosition = { ...character, position: (slot + 1) as 1|2|3|4|5|6 };
-          newMembers[slot] = charWithPosition;
+          // 新しい位置に追加
+          const charWithPosition = { ...character, position };
+          if (position === 'front') {
+            newFront[slot] = charWithPosition;
+          } else {
+            newBack[slot] = charWithPosition;
+          }
           
           return {
-            party: { members: newMembers },
+            party: { front: newFront, back: newBack },
           };
         });
         
         await get().syncToServer();
       },
       
-      // パーティから削除（slot: 0-5）
+      // パーティから削除
       removeFromParty: async (position, slot) => {
         set((state) => {
-          const newMembers = [...state.party.members];
-          newMembers[slot] = null;
-          return { party: { members: newMembers } };
+          const newParty = { ...state.party };
+          if (position === 'front') {
+            newParty.front = [...newParty.front];
+            newParty.front[slot] = null;
+          } else {
+            newParty.back = [...newParty.back];
+            newParty.back[slot] = null;
+          }
+          return { party: newParty };
         });
         
         await get().syncToServer();
@@ -399,7 +408,7 @@ export const useGameStore = create<GameStore>()(
       // パーティクリア
       clearParty: async () => {
         set({
-          party: { members: [null, null, null, null, null, null] },
+          party: { front: [null, null, null, null], back: [null, null, null, null] },
         });
         
         await get().syncToServer();

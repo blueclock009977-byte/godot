@@ -13,16 +13,12 @@ export type JobType =
 export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
 export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
 export type DungeonType = 'grassland' | 'forest' | 'cave' | 'sea' | 'desert' | 'volcano' | 'snowfield' | 'temple';
-export type Position = 1 | 2 | 3 | 4 | 5 | 6;
+export type Position = 'front' | 'back';
 
-// 各列の被弾確率（%）
-export const POSITION_HIT_RATE: Record<Position, number> = {
-  1: 30,
-  2: 20,
-  3: 15,
-  4: 15,
-  5: 10,
-  6: 10,
+// 前衛/後衛の補正
+export const POSITION_MODIFIERS: Record<Position, { damage: number; defense: number }> = {
+  front: { damage: 1.2, defense: 0.8 },  // 火力+20%, 被ダメ+20%
+  back: { damage: 0.8, defense: 1.2 },   // 火力-20%, 被ダメ-20%
 };
 
 // ============================================
@@ -198,7 +194,8 @@ export interface Character {
 // ============================================
 
 export interface Party {
-  members: (Character | null)[];  // 6列（インデックス0-5 = 1-6列目）
+  front: (Character | null)[];  // 前衛4人
+  back: (Character | null)[];   // 後衛4人
 }
 
 // ============================================
@@ -242,7 +239,7 @@ export interface BattleUnit {
   name: string;
   isPlayer: boolean;
   stats: Stats;
-  position: Position;  // 1-6列目
+  position: Position;  // 前衛/後衛
   race?: RaceType;
   job?: JobType;
   trait?: TraitType;

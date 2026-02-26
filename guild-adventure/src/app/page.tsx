@@ -131,7 +131,7 @@ function GameScreen() {
     }
   }, [characters.length, username, autoLogin]);
   
-  const partyCount = party.members.filter(Boolean).length;
+  const partyCount = [...party.front, ...party.back].filter(Boolean).length;
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
