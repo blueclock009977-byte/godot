@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { allItems, getItemById } from '@/lib/data/items';
 
@@ -122,9 +123,18 @@ function LoginScreen() {
 }
 
 function GameScreen() {
+  const router = useRouter();
   const { characters, party, currentAdventure, username, logout, inventory } = useGameStore();
   
   console.log('[GameScreen] render, currentAdventure:', currentAdventure);
+  
+  // 探索中なら自動で探索画面に遷移
+  useEffect(() => {
+    if (currentAdventure && currentAdventure.status === 'inProgress') {
+      console.log('[GameScreen] redirecting to adventure');
+      router.push('/adventure');
+    }
+  }, [currentAdventure, router]);
   
   const partyCount = [...party.front, ...party.back].filter(Boolean).length;
   

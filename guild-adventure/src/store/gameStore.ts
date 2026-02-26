@@ -575,12 +575,10 @@ export const useGameStore = create<GameStore>()(
             });
           }
           
-          // 期限切れ（完了後1分以上）ならクリア
-          if (elapsed > duration + 60000) {
-            console.log('[restoreAdventure] expired, clearing');
-            await clearAdventureOnServer(username);
-            return;
-          }
+          // 完了後はクリア（ドロップと履歴は既に処理済み）
+          console.log('[restoreAdventure] adventure done, clearing server state');
+          await clearAdventureOnServer(username);
+          return;
         }
         
         // 復元（バトル結果も含む）
