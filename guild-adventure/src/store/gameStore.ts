@@ -575,6 +575,11 @@ export const useGameStore = create<GameStore>()(
         username: state.username,
         isLoggedIn: state.isLoggedIn,
       }),
+      // rehydrate時に現在のstateを保持（currentAdventureを上書きしない）
+      merge: (persistedState, currentState) => ({
+        ...currentState,
+        ...(persistedState as object),
+      }),
     }
   )
 );
