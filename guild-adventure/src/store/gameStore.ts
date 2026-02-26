@@ -543,14 +543,31 @@ export const useGameStore = create<GameStore>()(
           return;
         }
         
-        // 期限切れチェック
+        // 探索時間チェック
         const elapsed = Date.now() - adventure.startTime;
         const duration = dungeonData.durationSeconds * 1000;
-        console.log('[restoreAdventure] elapsed:', elapsed, 'duration:', duration, 'limit:', duration + 60000);
-        if (elapsed > duration + 60000) { // 完了後1分以上経過 → クリア
-          console.log('[restoreAdventure] expired, clearing');
-          await clearAdventureOnServer(username);
-          return;
+        console.log('[restoreAdventure] elapsed:', elapsed, 'duration:', duration);
+        
+        // 探索時間が終了している場合
+        if (elapsed >= duration) {
+          console.log('[restoreAdventure] adventure completed, claimed:', adventure.claimed);
+          
+          // まだドロップを受け取ってない場合は受け取る
+          if (!adventure.claimed && adventure.battleResult?.victory) {
+            const claimResult = await claimAdventureDrop(username);
+            console.log('[restoreAdventure] claimed drop:', claimResult);
+            if (claimResult.success && claimResult.itemId) {
+              get().addItem(claimResult.itemId);
+              await get().syncToServer();
+            }
+          }
+          
+          // 期限切れ（完了後1分以上）ならクリア
+          if (elapsed > duration + 60000) {
+            console.log('[restoreAdventure] expired, clearing');
+            await clearAdventureOnServer(username);
+            return;
+          }
         }
         
         // 復元（バトル結果も含む）
@@ -561,8 +578,8 @@ export const useGameStore = create<GameStore>()(
             party: adventure.party,
             startTime: adventure.startTime,
             duration,
-            status: 'inProgress',
-            result: adventure.battleResult, // サーバーから復元
+            status: elapsed >= duration ? 'completed' : 'inProgress',
+            result: adventure.battleResult,
           },
         });
         console.log('[restoreAdventure] after set, currentAdventure:', get().currentAdventure);
