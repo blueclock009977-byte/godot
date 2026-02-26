@@ -352,10 +352,10 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   
   // パーティをユニットに変換
   const playerUnits: BattleUnit[] = [];
-  party.front.forEach((char) => {
+  (party.front || []).forEach((char) => {
     if (char) playerUnits.push(characterToUnit(char, 'front'));
   });
-  party.back.forEach((char) => {
+  (party.back || []).forEach((char) => {
     if (char) playerUnits.push(characterToUnit(char, 'back'));
   });
   

@@ -27,7 +27,7 @@ export default function DungeonPage() {
   const router = useRouter();
   const { party, currentAdventure, startAdventure } = useGameStore();
   
-  const partyCount = [...party.front, ...party.back].filter(Boolean).length;
+  const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const canStart = partyCount > 0 && partyCount <= 4 && !currentAdventure;
   
   const [isStarting, setIsStarting] = useState(false);

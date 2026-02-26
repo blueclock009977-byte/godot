@@ -397,8 +397,8 @@ export const useGameStore = create<GameStore>()(
       deleteCharacter: async (id) => {
         set((state) => {
           const newParty = {
-            front: state.party.front.map((c) => c?.id === id ? null : c),
-            back: state.party.back.map((c) => c?.id === id ? null : c),
+            front: (state.party.front || []).map((c) => c?.id === id ? null : c),
+            back: (state.party.back || []).map((c) => c?.id === id ? null : c),
           };
           
           return {
@@ -417,8 +417,8 @@ export const useGameStore = create<GameStore>()(
         
         set((state) => {
           // 既にパーティにいる場合は削除
-          let newFront = state.party.front.filter((c) => c?.id !== characterId);
-          let newBack = state.party.back.filter((c) => c?.id !== characterId);
+          let newFront = (state.party.front || []).filter((c) => c?.id !== characterId);
+          let newBack = (state.party.back || []).filter((c) => c?.id !== characterId);
           
           // 新しい位置に追加
           const charWithPosition = { ...character, position };
@@ -441,9 +441,9 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           const newParty = { ...state.party };
           if (position === 'front') {
-            newParty.front = state.party.front.filter((_, i) => i !== slot);
+            newParty.front = (state.party.front || []).filter((_, i) => i !== slot);
           } else {
-            newParty.back = state.party.back.filter((_, i) => i !== slot);
+            newParty.back = (state.party.back || []).filter((_, i) => i !== slot);
           }
           return { party: newParty };
         });
@@ -474,7 +474,7 @@ export const useGameStore = create<GameStore>()(
         // ドロップ抽選（勝利時のみ）
         let droppedItemId: string | undefined;
         if (battleResult.victory) {
-          const allChars = [...party.front, ...party.back].filter((c): c is Character => c !== null);
+          const allChars = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
           droppedItemId = rollDrop(dungeon, allChars);
         }
         

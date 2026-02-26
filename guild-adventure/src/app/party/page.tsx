@@ -58,8 +58,8 @@ export default function PartyPage() {
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   
   // パーティメンバー
-  const frontMembers = party.front.filter(Boolean) as Character[];
-  const backMembers = party.back.filter(Boolean) as Character[];
+  const frontMembers = (party.front || []).filter(Boolean) as Character[];
+  const backMembers = (party.back || []).filter(Boolean) as Character[];
   const partyCharIds = [...frontMembers, ...backMembers].map(c => c.id);
   const partyCount = partyCharIds.length;
   
@@ -71,7 +71,7 @@ export default function PartyPage() {
     if (!selectedChar) return;
     
     // 空きスロットを探す
-    const arr = position === 'front' ? party.front : party.back;
+    const arr = position === 'front' ? (party.front || []) : (party.back || []);
     const emptySlot = arr.findIndex(c => c === null);
     
     if (emptySlot !== -1) {
@@ -85,12 +85,12 @@ export default function PartyPage() {
   
   // キャラをパーティから外す
   const handleRemove = (char: Character) => {
-    const frontIdx = party.front.findIndex(c => c?.id === char.id);
+    const frontIdx = (party.front || []).findIndex(c => c?.id === char.id);
     if (frontIdx !== -1) {
       removeFromParty('front', frontIdx);
       return;
     }
-    const backIdx = party.back.findIndex(c => c?.id === char.id);
+    const backIdx = (party.back || []).findIndex(c => c?.id === char.id);
     if (backIdx !== -1) {
       removeFromParty('back', backIdx);
     }

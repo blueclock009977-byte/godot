@@ -148,7 +148,7 @@ function GameScreen() {
     }
   }, [currentAdventure, router]);
   
-  const partyCount = [...party.front, ...party.back].filter(Boolean).length;
+  const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const totalNotifications = invitations.length + friendRequests.length;
   
   return (
