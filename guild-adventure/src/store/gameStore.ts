@@ -177,6 +177,7 @@ export const useGameStore = create<GameStore>()(
                 inventory: userData.inventory || {},
                 history: userData.history || [],
                 isLoading: false,
+                _dataLoaded: true,
               });
               setStoredUsername(username);
               return { success: true, isNew: false };
@@ -193,6 +194,7 @@ export const useGameStore = create<GameStore>()(
                 history: [],
                 inventory: { ...initialInventory },
                 isLoading: false,
+                _dataLoaded: true,
               });
               setStoredUsername(username);
               return { success: true, isNew: true };
@@ -533,19 +535,15 @@ export const useGameStore = create<GameStore>()(
       restoreAdventure: async () => {
         try {
         const { username } = get();
-        console.log('[restoreAdventure] username:', username);
         if (!username) return;
         
         const adventure = await getAdventureOnServer(username);
-        console.log('[restoreAdventure] adventure:', adventure);
         if (!adventure) return;
         
         const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[adventure.dungeon];
-        console.log('[restoreAdventure] dungeonData:', dungeonData?.id);
         if (!dungeonData) {
           // 無効なダンジョン → クリア
-          console.log('[restoreAdventure] invalid dungeon, clearing');
           await clearAdventureOnServer(username);
           return;
         }
@@ -553,18 +551,15 @@ export const useGameStore = create<GameStore>()(
         // 探索時間チェック
         const elapsed = Date.now() - adventure.startTime;
         const duration = dungeonData.durationSeconds * 1000;
-        console.log('[restoreAdventure] elapsed:', elapsed, 'duration:', duration);
         
         // 探索時間が終了している場合
         if (elapsed >= duration) {
-          console.log('[restoreAdventure] adventure completed, claimed:', adventure.claimed);
           
           // まだドロップを受け取ってない場合は受け取る
           if (!adventure.claimed) {
             let droppedItemId: string | undefined;
             if (adventure.battleResult?.victory) {
               const claimResult = await claimAdventureDrop(username);
-              console.log('[restoreAdventure] claimed drop:', claimResult);
               if (claimResult.success && claimResult.itemId) {
                 droppedItemId = claimResult.itemId;
                 get().addItem(claimResult.itemId);
@@ -584,12 +579,10 @@ export const useGameStore = create<GameStore>()(
           
           // 完了後はサーバーからクリア（ドロップと履歴は既に処理済み）
           // でもcurrentAdventureは復元して結果を見れるようにする
-          console.log('[restoreAdventure] adventure done, clearing server state but keeping local');
           await clearAdventureOnServer(username);
         }
         
         // 復元（バトル結果も含む）
-        console.log('[restoreAdventure] restoring adventure');
         set({
           currentAdventure: {
             dungeon: adventure.dungeon as DungeonType,
@@ -600,7 +593,6 @@ export const useGameStore = create<GameStore>()(
             result: adventure.battleResult,
           },
         });
-        console.log('[restoreAdventure] after set, currentAdventure:', get().currentAdventure);
         } catch (e) {
           console.error('[restoreAdventure] error:', e);
         }
