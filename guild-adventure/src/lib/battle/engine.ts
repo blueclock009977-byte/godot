@@ -10,6 +10,7 @@ import {
 } from '../types';
 import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
+import { getDropRate, getRandomItem } from '../data/items';
 
 // ============================================
 // ユーティリティ
@@ -369,17 +370,31 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
     }
   }
   
-  // 全エンカウントクリア
-  allLogs.push({
-    turn: dungeonData.encounterCount + 1,
-    actions: [],
-    message: `\n🎉 ${dungeonData.name}を踏破した！`,
-  });
+  // ドロップ判定
+  const dropRate = getDropRate(dungeon);
+  let droppedItemId: string | undefined;
+  
+  if (Math.random() * 100 < dropRate) {
+    const item = getRandomItem();
+    droppedItemId = item.id;
+    allLogs.push({
+      turn: dungeonData.encounterCount + 1,
+      actions: [],
+      message: `\n🎉 ${dungeonData.name}を踏破した！\n\n💎 【ドロップ】${item.name} を入手！`,
+    });
+  } else {
+    allLogs.push({
+      turn: dungeonData.encounterCount + 1,
+      actions: [],
+      message: `\n🎉 ${dungeonData.name}を踏破した！`,
+    });
+  }
   
   return {
     victory: true,
     logs: allLogs,
     encountersCleared,
     totalEncounters: dungeonData.encounterCount,
+    droppedItemId,
   };
 }

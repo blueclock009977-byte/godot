@@ -75,6 +75,8 @@ interface GameStore {
   characters: Character[];
   party: Party;
   currentAdventure: Adventure | null;
+  inventory: Record<string, number>;
+  lastDroppedItem: string | null; // 直近でドロップしたアイテム（表示用）
   
   // 認証
   login: (username: string) => Promise<{ success: boolean; isNew: boolean; error?: string }>;
@@ -101,6 +103,11 @@ interface GameStore {
   completeAdventure: (result: Adventure['result']) => void;
   cancelAdventure: () => void;
   
+  // アイテム管理
+  addItem: (itemId: string, count?: number) => void;
+  useItem: (itemId: string, count?: number) => boolean;
+  getItemCount: (itemId: string) => number;
+  
   // サーバー同期
   syncToServer: () => Promise<void>;
 }
@@ -118,6 +125,8 @@ export const useGameStore = create<GameStore>()(
         back: [null, null, null],
       },
       currentAdventure: null,
+      inventory: {},
+      lastDroppedItem: null,
       
       // ログイン
       login: async (username: string) => {
@@ -147,6 +156,7 @@ export const useGameStore = create<GameStore>()(
                 username,
                 characters: userData.characters || [],
                 party: userData.party || { front: [null, null, null], back: [null, null, null] },
+                inventory: userData.inventory || {},
                 isLoading: false,
               });
               setStoredUsername(username);
@@ -161,6 +171,7 @@ export const useGameStore = create<GameStore>()(
                 username,
                 characters: [],
                 party: { front: [null, null, null], back: [null, null, null] },
+                inventory: {},
                 isLoading: false,
               });
               setStoredUsername(username);
@@ -184,6 +195,7 @@ export const useGameStore = create<GameStore>()(
           username: null,
           characters: [],
           party: { front: [null, null, null], back: [null, null, null] },
+          inventory: {},
           currentAdventure: null,
         });
       },
@@ -203,6 +215,7 @@ export const useGameStore = create<GameStore>()(
               username: storedUsername,
               characters: userData.characters || [],
               party: userData.party || { front: [null, null, null], back: [null, null, null] },
+              inventory: userData.inventory || {},
               isLoading: false,
             });
             return true;
@@ -219,13 +232,44 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party } = get();
+        const { username, characters, party, inventory } = get();
         if (!username) return;
         
         await saveUserData(username, {
           characters,
           party,
+          inventory,
         });
+      },
+      
+      // アイテムを追加
+      addItem: (itemId: string, count: number = 1) => {
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            [itemId]: (state.inventory[itemId] || 0) + count,
+          },
+          lastDroppedItem: itemId,
+        }));
+      },
+      
+      // アイテムを消費
+      useItem: (itemId: string, count: number = 1): boolean => {
+        const { inventory } = get();
+        if ((inventory[itemId] || 0) < count) return false;
+        
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            [itemId]: (state.inventory[itemId] || 0) - count,
+          },
+        }));
+        return true;
+      },
+      
+      // アイテム所持数を取得
+      getItemCount: (itemId: string): number => {
+        return get().inventory[itemId] || 0;
       },
       
       // キャラクター作成

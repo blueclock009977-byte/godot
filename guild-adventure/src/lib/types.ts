@@ -223,6 +223,7 @@ export interface BattleResult {
   logs: BattleLog[];
   encountersCleared: number;
   totalEncounters: number;
+  droppedItemId?: string; // ボス撃破時にドロップしたアイテムID
 }
 
 // ============================================
@@ -242,8 +243,12 @@ export interface Adventure {
 // ゲーム状態
 // ============================================
 
+// インベントリ（アイテムIDと個数）
+export type Inventory = Record<string, number>;
+
 export interface GameState {
   characters: Character[];
   party: Party;
   currentAdventure: Adventure | null;
+  inventory: Inventory;
 }

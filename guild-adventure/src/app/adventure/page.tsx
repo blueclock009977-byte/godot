@@ -9,7 +9,7 @@ import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, party, completeAdventure, cancelAdventure } = useGameStore();
+  const { currentAdventure, party, completeAdventure, cancelAdventure, addItem, syncToServer } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
@@ -75,6 +75,13 @@ export default function AdventurePage() {
             const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
+          
+          // ドロップアイテムをインベントリに追加
+          if (result.droppedItemId) {
+            addItem(result.droppedItemId);
+            syncToServer();
+          }
+          
           completeAdventure(result);
         }
       }

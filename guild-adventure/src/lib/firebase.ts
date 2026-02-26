@@ -6,6 +6,7 @@ export interface UserData {
   username: string;
   characters: any[];
   party: any;
+  inventory: Record<string, number>;
   createdAt: number;
   lastLogin: number;
 }
@@ -51,6 +52,7 @@ export async function createUser(username: string): Promise<boolean> {
         front: [null, null, null],
         back: [null, null, null],
       },
+      inventory: {},
       createdAt: Date.now(),
       lastLogin: Date.now(),
     };

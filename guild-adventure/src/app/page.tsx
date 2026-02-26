@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { allItems, getItemById } from '@/lib/data/items';
 
 function LoginScreen() {
   const { login, autoLogin, isLoading } = useGameStore();
@@ -121,7 +122,7 @@ function LoginScreen() {
 }
 
 function GameScreen() {
-  const { characters, party, currentAdventure, username, logout, autoLogin } = useGameStore();
+  const { characters, party, currentAdventure, username, logout, autoLogin, inventory } = useGameStore();
   
   // マウント時にデータを再取得（キャラが空なら）
   useEffect(() => {
@@ -216,9 +217,35 @@ function GameScreen() {
           </div>
         </div>
         
+        {/* インベントリ */}
+        <div className="mt-4 bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-2">💎 アイテム</h3>
+          {Object.keys(inventory).filter(id => inventory[id] > 0).length === 0 ? (
+            <p className="text-xs text-slate-500">アイテムを持っていません</p>
+          ) : (
+            <div className="space-y-1 text-sm">
+              {Object.entries(inventory)
+                .filter(([_, count]) => count > 0)
+                .map(([itemId, count]) => {
+                  const item = getItemById(itemId);
+                  if (!item) return null;
+                  return (
+                    <div key={itemId} className="flex justify-between">
+                      <span className="text-slate-300">{item.name}</span>
+                      <span className="text-amber-400">×{count}</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+          <p className="text-xs text-slate-500 mt-2">
+            ダンジョンボス撃破でドロップ
+          </p>
+        </div>
+        
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.2.0 Beta - サーバー保存対応</p>
+          <p>v0.3.0 Beta - アイテムシステム</p>
         </div>
       </div>
     </main>
