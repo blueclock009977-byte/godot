@@ -113,7 +113,7 @@ function LoginScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.3 Beta</p>
+          <p>v0.8.5 Beta</p>
         </div>
       </div>
     </main>
@@ -302,7 +302,7 @@ function GameScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.3 Beta</p>
+          <p>v0.8.5 Beta</p>
         </div>
       </div>
     </main>
