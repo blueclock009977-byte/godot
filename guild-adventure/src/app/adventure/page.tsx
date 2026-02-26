@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
-import { runBattle } from '@/lib/battle/engine';
+import { runBattle, rollDrop } from '@/lib/battle/engine';
+import { getItemById } from '@/lib/data/items';
 import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
@@ -76,13 +77,16 @@ export default function AdventurePage() {
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
           
-          // ドロップアイテムをインベントリに追加
-          if (result.droppedItemId) {
-            addItem(result.droppedItemId);
+          // ドロップ抽選（ソロは1人なのでここで抽選）
+          const droppedItemId = result.victory ? rollDrop(currentAdventure.dungeon) : undefined;
+          if (droppedItemId) {
+            const itemData = getItemById(droppedItemId);
+            setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || droppedItemId} を入手！`]);
+            addItem(droppedItemId);
             syncToServer();
           }
           
-          completeAdventure(result);
+          completeAdventure({ ...result, droppedItemId });
         }
       }
     }, 100);

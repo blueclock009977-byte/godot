@@ -392,31 +392,27 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
     }
   }
   
-  // ドロップ判定
-  const dropRate = getDropRate(dungeon);
-  let droppedItemId: string | undefined;
-  
-  if (Math.random() * 100 < dropRate) {
-    const item = getRandomItem();
-    droppedItemId = item.id;
-    allLogs.push({
-      turn: dungeonData.encounterCount + 1,
-      actions: [],
-      message: `\n🎉 ${dungeonData.name}を踏破した！\n\n💎 【ドロップ】${item.name} を入手！`,
-    });
-  } else {
-    allLogs.push({
-      turn: dungeonData.encounterCount + 1,
-      actions: [],
-      message: `\n🎉 ${dungeonData.name}を踏破した！`,
-    });
-  }
+  // 踏破ログ（ドロップは呼び出し側で処理）
+  allLogs.push({
+    turn: dungeonData.encounterCount + 1,
+    actions: [],
+    message: `\n🎉 ${dungeonData.name}を踏破した！`,
+  });
   
   return {
     victory: true,
     logs: allLogs,
     encountersCleared,
     totalEncounters: dungeonData.encounterCount,
-    droppedItemId,
   };
+}
+
+// ドロップ抽選（呼び出し側で個別に実行）
+export function rollDrop(dungeon: DungeonType): string | undefined {
+  const dropRate = getDropRate(dungeon);
+  if (Math.random() * 100 < dropRate) {
+    const item = getRandomItem();
+    return item.id;
+  }
+  return undefined;
 }

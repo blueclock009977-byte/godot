@@ -17,7 +17,8 @@ import {
 import { dungeons } from '@/lib/data/dungeons';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
-import { runBattle } from '@/lib/battle/engine';
+import { runBattle, rollDrop } from '@/lib/battle/engine';
+import { getItemById } from '@/lib/data/items';
 import { Character, Party } from '@/lib/types';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
@@ -29,6 +30,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
+  const [myDrop, setMyDrop] = useState<string | null>(null);
+  const [dropClaimed, setDropClaimed] = useState(false);
   
   // 自動ログイン（ストアの初期化）
   useEffect(() => {
@@ -119,13 +122,31 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     await saveRoomBattleResult(code, result);
   };
   
-  // バトル完了時にドロップアイテムを受け取る
+  // バトル完了時に各プレイヤーが個別にドロップ抽選
   useEffect(() => {
-    if (room?.status === 'done' && room.battleResult?.droppedItemId) {
-      addItem(room.battleResult.droppedItemId);
-      syncToServer();
+    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimed) {
+      // 既にこのルームでドロップを受け取ったかチェック
+      const claimedKey = `multi-drop-${code}`;
+      if (typeof window !== 'undefined' && localStorage.getItem(claimedKey)) {
+        setDropClaimed(true);
+        return;
+      }
+      
+      // 各プレイヤーが個別にドロップ抽選
+      const droppedItemId = rollDrop(room.dungeonId as any);
+      if (droppedItemId) {
+        setMyDrop(droppedItemId);
+        addItem(droppedItemId);
+        syncToServer();
+      }
+      
+      // ドロップ受け取り済みをLocalStorageに記録
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(claimedKey, 'true');
+      }
+      setDropClaimed(true);
     }
-  }, [room?.status, room?.battleResult?.droppedItemId, addItem, syncToServer]);
+  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, addItem, syncToServer]);
   
   // 退出
   const handleLeave = async () => {
@@ -230,9 +251,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             <h2 className="text-xl font-bold mb-2 text-center">
               {room.battleResult.victory ? '🎉 勝利！' : '💀 敗北...'}
             </h2>
-            {room.battleResult.droppedItemId && (
+            {myDrop && (
               <div className="text-center text-amber-400">
-                💎 アイテムドロップ！
+                💎 【あなたのドロップ】{getItemById(myDrop)?.name || myDrop}
+              </div>
+            )}
+            {room.battleResult.victory && !myDrop && dropClaimed && (
+              <div className="text-center text-slate-400 text-sm">
+                ドロップなし...
               </div>
             )}
             <Link href="/" className="block mt-4 text-center text-amber-400 hover:underline">
