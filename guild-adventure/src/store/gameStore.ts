@@ -543,15 +543,21 @@ export const useGameStore = create<GameStore>()(
         // マルチ冒険の結果を確認
         const multiAdventure = await getMultiAdventure(username);
         if (multiAdventure && !multiAdventure.claimed) {
+          // 先にclaimを試みる（レースコンディション防止）
+          // claimが成功した場合のみ処理を続ける
+          const claimResult = await claimMultiAdventure(username);
+          if (!claimResult.success) {
+            // 既にclaimされている（別のタブ/デバイスで処理済み）
+            console.log('[restoreAdventure] multiAdventure already claimed');
+            return;
+          }
+          
           // ドロップを受け取る
           let droppedItemId: string | undefined;
-          if (multiAdventure.victory) {
-            const claimResult = await claimMultiAdventure(username);
-            if (claimResult.success && claimResult.itemId) {
-              droppedItemId = claimResult.itemId;
-              get().addItem(claimResult.itemId);
-              await get().syncToServer();
-            }
+          if (claimResult.itemId) {
+            droppedItemId = claimResult.itemId;
+            get().addItem(claimResult.itemId);
+            await get().syncToServer();
           }
           
           // 履歴に追加
