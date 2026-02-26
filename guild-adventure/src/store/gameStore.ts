@@ -31,6 +31,9 @@ import {
   getAdventureOnServer,
   claimAdventureDrop,
   ServerAdventure,
+  getMultiAdventure,
+  claimMultiAdventure,
+  clearMultiAdventure,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
@@ -537,6 +540,36 @@ export const useGameStore = create<GameStore>()(
         const { username } = get();
         if (!username) return;
         
+        // マルチ冒険の結果を確認
+        const multiAdventure = await getMultiAdventure(username);
+        if (multiAdventure && !multiAdventure.claimed) {
+          // ドロップを受け取る
+          let droppedItemId: string | undefined;
+          if (multiAdventure.victory) {
+            const claimResult = await claimMultiAdventure(username);
+            if (claimResult.success && claimResult.itemId) {
+              droppedItemId = claimResult.itemId;
+              get().addItem(claimResult.itemId);
+              await get().syncToServer();
+            }
+          }
+          
+          // 履歴に追加
+          await get().addHistory({
+            type: 'multi',
+            dungeonId: multiAdventure.dungeonId,
+            victory: multiAdventure.victory,
+            droppedItemId,
+            logs: multiAdventure.logs,
+            roomCode: multiAdventure.roomCode,
+            players: multiAdventure.players,
+          });
+          
+          // クリア
+          await clearMultiAdventure(username);
+        }
+        
+        // ソロ冒険を確認
         const adventure = await getAdventureOnServer(username);
         if (!adventure) return;
         

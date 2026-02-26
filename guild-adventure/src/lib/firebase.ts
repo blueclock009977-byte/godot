@@ -749,3 +749,102 @@ export async function cleanupInvitations(username: string): Promise<void> {
     // ignore
   }
 }
+
+// ============================================
+// マルチ冒険結果（ソロと同様にユーザーに保存）
+// ============================================
+
+export interface MultiAdventureResult {
+  roomCode: string;
+  dungeonId: string;
+  victory: boolean;
+  droppedItemId?: string;
+  completedAt: number;
+  logs: any[];
+  players: string[];
+  claimed: boolean;
+}
+
+// マルチ冒険結果をユーザーに保存
+export async function saveMultiAdventureForUser(
+  username: string, 
+  roomCode: string,
+  dungeonId: string,
+  victory: boolean,
+  droppedItemId: string | undefined,
+  logs: any[],
+  players: string[]
+): Promise<boolean> {
+  try {
+    const result: MultiAdventureResult = {
+      roomCode,
+      dungeonId,
+      victory,
+      droppedItemId,
+      completedAt: Date.now(),
+      logs,
+      players,
+      claimed: false,
+    };
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/multiAdventure.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    });
+    
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to save multi adventure for user:', e);
+    return false;
+  }
+}
+
+// マルチ冒険結果を取得
+export async function getMultiAdventure(username: string): Promise<MultiAdventureResult | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/multiAdventure.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+// マルチ冒険結果を受け取り済みにする
+export async function claimMultiAdventure(username: string): Promise<{ success: boolean; itemId?: string }> {
+  try {
+    const result = await getMultiAdventure(username);
+    if (!result || result.claimed) {
+      return { success: false };
+    }
+    
+    // claimed を true に更新
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/multiAdventure/claimed.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(true),
+    });
+    
+    if (res.ok) {
+      return { success: true, itemId: result.droppedItemId };
+    }
+    return { success: false };
+  } catch (e) {
+    console.error('Failed to claim multi adventure:', e);
+    return { success: false };
+  }
+}
+
+// マルチ冒険結果をクリア
+export async function clearMultiAdventure(username: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/multiAdventure.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}

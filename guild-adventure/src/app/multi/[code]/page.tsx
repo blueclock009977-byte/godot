@@ -12,6 +12,7 @@ import {
   leaveRoom,
   deleteRoom,
   claimMultiDrop,
+  saveMultiAdventureForUser,
   MultiRoom,
   RoomCharacter,
 } from '@/lib/firebase';
@@ -160,6 +161,20 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const startTime = Date.now();
     // バトル結果+ドロップもFirebaseに保存（全員が同じ結果を見る）
     await updateRoomStatus(code, 'battle', startTime, result, playerDrops);
+    
+    // 各プレイヤーにマルチ冒険結果を保存（ログイン時に受け取れるように）
+    const playerNames = Object.keys(room.players);
+    for (const playerName of playerNames) {
+      await saveMultiAdventureForUser(
+        playerName,
+        code,
+        room.dungeonId,
+        result.victory,
+        playerDrops?.[playerName],
+        result.logs,
+        playerNames
+      );
+    }
   };
   
   // バトル結果をFirebaseから読み取る
