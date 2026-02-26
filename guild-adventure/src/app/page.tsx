@@ -124,6 +124,8 @@ function LoginScreen() {
 function GameScreen() {
   const { characters, party, currentAdventure, username, logout, autoLogin, inventory } = useGameStore();
   
+  console.log('[GameScreen] render, currentAdventure:', currentAdventure);
+  
   // マウント時にデータを再取得（キャラが空なら）
   useEffect(() => {
     if (characters.length === 0 && username) {
