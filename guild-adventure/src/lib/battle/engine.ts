@@ -354,14 +354,15 @@ function calculatePhysicalDamage(
   baseHitRate += atkEffects.accuracyBonus;
   baseHitRate -= defEffects.evasionBonus;
   if (defender.position === 'back') baseHitRate -= 10;
-  baseHitRate = Math.max(30, Math.min(99, baseHitRate));
+  // 上限は撤廃（100%超えを許可）、下限のみ30%
+  baseHitRate = Math.max(30, baseHitRate);
   
   for (let i = 0; i < hitCount; i++) {
     // 連撃減衰: n撃目の係数 = 0.8^(n-1)
     const decayFactor = Math.pow(MULTI_HIT_DECAY, i);
     
-    // 命中判定（減衰適用）
-    const hitRate = baseHitRate * decayFactor;
+    // 命中判定（減衰適用、100%でキャップ）
+    const hitRate = Math.min(100, baseHitRate * decayFactor);
     if (Math.random() * 100 >= hitRate) {
       continue; // ミス
     }
