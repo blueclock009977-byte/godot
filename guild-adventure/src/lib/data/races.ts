@@ -4,7 +4,15 @@ export const races: Record<string, RaceData> = {
   human: {
     id: 'human',
     name: '人間',
-    description: 'ステータスは控えめだが、ドロップ率+40%の幸運が最大の武器。ファーム周回に最適な種族。',
+    description: `【基礎ステ】HP85 MP40 ATK8 DEF8 AGI9 MAG8
+【パッシブ】
+・適応力: クリ率+5%, 回避+5%
+・不屈の精神: ダメージ+10%
+・幸運: ドロップ率+40%
+【スキル】
+・鼓舞(MP15): 味方全体ATK+20%(3T)
+【マスタリー】
+・英雄の器: 味方全員の全ステ+10%`,
     baseStats: { maxHp: 85, maxMp: 40, atk: 8, def: 8, agi: 9, mag: 8 },
     passives: [
       { name: '適応力', description: 'クリティカル率と回避率が上昇', effects: [{ type: 'critBonus', value: 5 }, { type: 'evasionBonus', value: 5 }] },
@@ -19,7 +27,16 @@ export const races: Record<string, RaceData> = {
   elf: {
     id: 'elf',
     name: 'エルフ',
-    description: '魔法と素早さに特化した種族。悪魔に対して1.3倍のダメージを与える。',
+    description: `【基礎ステ】HP75 MP80 ATK7 DEF6 AGI16 MAG16
+【パッシブ】
+・魔力の血統: 魔法ダメ+25%
+・風の加護: 回避+15%, 先制+20%
+・MP自然回復: 毎ターンMP+3
+・悪魔狩り: 悪魔系へのダメ+30%
+【スキル】
+・精霊の矢(MP10,風): 単体魔法1.4倍
+【マスタリー】
+・精霊契約: 味方の魔法攻撃後に追撃50%`,
     baseStats: { maxHp: 75, maxMp: 80, atk: 7, def: 6, agi: 16, mag: 16 },
     passives: [
       { name: '魔力の血統', description: '魔法攻撃の威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -35,7 +52,16 @@ export const races: Record<string, RaceData> = {
   dwarf: {
     id: 'dwarf',
     name: 'ドワーフ',
-    description: '最高のHPとDEF、高いATKを持つ重装タンク。竜からの被ダメージを20%軽減。',
+    description: `【基礎ステ】HP140 MP30 ATK14 DEF16 AGI5 MAG5
+【パッシブ】
+・鋼の肉体: 被ダメ-20%
+・怪力: 物理ダメ+15%
+・毒耐性: 毒耐性+50%
+・竜殺し: 竜系からの被ダメ-20%
+【スキル】
+・鉄壁(MP12): 自身DEF+50%(3T)
+【マスタリー】
+・守護の盾: 50%で味方を庇う`,
     baseStats: { maxHp: 140, maxMp: 30, atk: 14, def: 16, agi: 5, mag: 5 },
     passives: [
       { name: '鋼の肉体', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 20 }] },
@@ -51,7 +77,16 @@ export const races: Record<string, RaceData> = {
   halfling: {
     id: 'halfling',
     name: 'ハーフリング',
-    description: '小柄で幸運な種族。人型の弱点を熟知し、人型への与ダメージ+25%。',
+    description: `【基礎ステ】HP70 MP45 ATK8 DEF8 AGI14 MAG10
+【パッシブ】
+・幸運の星: クリ率+20%
+・小さな体: 回避+25%, 被ダメ+10%
+・先制の才: 先制率+20%
+・急所知識: 人型系へのダメ+25%
+【スキル】
+・急所狙い(MP8): 単体物理1.5倍
+【マスタリー】
+・幸運の星: クリダメ+100%`,
     baseStats: { maxHp: 70, maxMp: 45, atk: 8, def: 8, agi: 14, mag: 10 },
     passives: [
       { name: '幸運の星', description: 'クリティカル率が上昇', effects: [{ type: 'critBonus', value: 20 }] },
@@ -67,7 +102,16 @@ export const races: Record<string, RaceData> = {
   orc: {
     id: 'orc',
     name: 'オーク',
-    description: '最高クラスのATKを持つ脳筋種族。獣の本能で獣系への与ダメージ+40%。',
+    description: `【基礎ステ】HP120 MP20 ATK18 DEF8 AGI7 MAG3
+【パッシブ】
+・狂戦士: 物理ダメ+30%
+・血の渇望: クリ率+10%, 毎ターンHP+5
+・無謀: 被ダメ+15%
+・獣殺し: 獣系へのダメ+40%
+【スキル】
+・怒りの一撃(MP12): 単体物理2.2倍
+【マスタリー】
+・狂戦士の魂: HP30%以下でATK+100%`,
     baseStats: { maxHp: 120, maxMp: 20, atk: 18, def: 8, agi: 7, mag: 3 },
     passives: [
       { name: '狂戦士', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 30 }] },
@@ -83,7 +127,16 @@ export const races: Record<string, RaceData> = {
   lizardman: {
     id: 'lizardman',
     name: 'リザードマン',
-    description: '毎ターンHP回復+物理魔法両方に適性を持つバランス型。獣からの被ダメージを15%軽減。',
+    description: `【基礎ステ】HP110 MP40 ATK12 DEF14 AGI9 MAG8
+【パッシブ】
+・再生能力: 毎ターンHP+8
+・硬い鱗: 被ダメ-10%
+・両刀の才: 物理+10%, 魔法+10%
+・獣耐性: 獣系からの被ダメ-15%
+【スキル】
+・再生(MP10): 自身HP回復1.5倍
+【マスタリー】
+・不死の再生: 戦闘中1回、瀕死から全回復`,
     baseStats: { maxHp: 110, maxMp: 40, atk: 12, def: 14, agi: 9, mag: 8 },
     passives: [
       { name: '再生能力', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 8 }] },
@@ -99,7 +152,16 @@ export const races: Record<string, RaceData> = {
   fairy: {
     id: 'fairy',
     name: 'フェアリー',
-    description: '最高のMAGとMP、回避率+30%を持つ魔法特化種族。聖なる力で不死系への与ダメージ+50%。',
+    description: `【基礎ステ】HP45 MP100 ATK4 DEF3 AGI18 MAG22
+【パッシブ】
+・魔力の奔流: 魔法ダメ+35%
+・妖精の翅: 回避+30%
+・癒しの力: 回復量+30%
+・聖光: 不死系へのダメ+50%
+【スキル】
+・癒しの光(MP12): 味方1人HP回復1.3倍
+【マスタリー】
+・妖精の祝福: 回復量+50%`,
     baseStats: { maxHp: 45, maxMp: 100, atk: 4, def: 3, agi: 18, mag: 22 },
     passives: [
       { name: '魔力の奔流', description: '魔法威力が大幅上昇', effects: [{ type: 'magicBonus', value: 35 }] },
@@ -115,7 +177,17 @@ export const races: Record<string, RaceData> = {
   undead: {
     id: 'undead',
     name: 'アンデッド',
-    description: '状態異常耐性80%+HP吸収を持つ不死種族。同族への耐性で不死からの被ダメージ-50%、人型への与ダメ+30%。',
+    description: `【基礎ステ】HP90 MP50 ATK11 DEF12 AGI6 MAG14
+【パッシブ】
+・不死の呪い: 状態異常耐性+80%
+・回復無効: 回復効果-50%
+・HP吸収: 与ダメの20%HP回復
+・不死耐性: 不死系からの被ダメ-50%
+・人型狩り: 人型系へのダメ+30%
+【スキル】
+・生命吸収(MP14): 単体魔法1.2倍+HP吸収
+【マスタリー】
+・死の抱擁: 与ダメの30%HP吸収`,
     baseStats: { maxHp: 90, maxMp: 50, atk: 11, def: 12, agi: 6, mag: 14 },
     passives: [
       { name: '不死の呪い', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 80 }] },
@@ -132,7 +204,16 @@ export const races: Record<string, RaceData> = {
   goblin: {
     id: 'goblin',
     name: 'ゴブリン',
-    description: '先制率+35%で確実に先手を取れる小鬼。狡猾さで人型への与ダメージ+20%。',
+    description: `【基礎ステ】HP60 MP35 ATK9 DEF5 AGI18 MAG6
+【パッシブ】
+・狡猾: 先制率+35%
+・弱者の知恵: HP低下時回避+20%
+・急所狙い: クリ率+15%
+・人型狩り: 人型系へのダメ+20%
+【スキル】
+・奇襲(MP10): 単体物理1.8倍
+【マスタリー】
+・群狼戦術: 味方1人につきダメ+10%`,
     baseStats: { maxHp: 60, maxMp: 35, atk: 9, def: 5, agi: 18, mag: 6 },
     passives: [
       { name: '狡猾', description: '先制率が大幅上昇', effects: [{ type: 'firstStrikeBonus', value: 35 }] },
@@ -148,7 +229,16 @@ export const races: Record<string, RaceData> = {
   dragonewt: {
     id: 'dragonewt',
     name: 'ドラゴニュート',
-    description: 'ATK・MAG両方が高い万能アタッカー。竜の血統で竜系への与ダメージ+80%という驚異の特攻！',
+    description: `【基礎ステ】HP115 MP55 ATK14 DEF12 AGI8 MAG14
+【パッシブ】
+・竜の血: 物理+15%, 魔法+15%
+・竜鱗: 被ダメ-10%
+・威圧: 敵ATK-10%
+・竜殺し: 竜系へのダメ+80%
+【スキル】
+・ドラゴンブレス(MP20,火): 全体魔法1.3倍
+【マスタリー】
+・竜の咆哮(MP35,火): 全体防御無視2.0倍`,
     baseStats: { maxHp: 115, maxMp: 55, atk: 14, def: 12, agi: 8, mag: 14 },
     passives: [
       { name: '竜の血', description: '物理・魔法威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
@@ -169,7 +259,16 @@ export const races: Record<string, RaceData> = {
   angel: {
     id: 'angel',
     name: 'エンジェル',
-    description: '回復量+40%、状態異常耐性を持つサポート特化種族。聖なる力で悪魔への与ダメージ+60%。',
+    description: `【基礎ステ】HP85 MP90 ATK6 DEF8 AGI12 MAG18
+【パッシブ】
+・聖なる光: 回復量+40%
+・守護の翼: 味方被ダメ-10%
+・浄化: 状態異常耐性+50%
+・悪魔狩り: 悪魔系へのダメ+60%
+【スキル】
+・聖なる祝福(MP22): 味方全体HP回復0.9倍
+【マスタリー】
+・奇跡の復活: 味方死亡時、戦闘中1回蘇生`,
     baseStats: { maxHp: 85, maxMp: 90, atk: 6, def: 8, agi: 12, mag: 18 },
     passives: [
       { name: '聖なる光', description: '回復量が大幅上昇', effects: [{ type: 'healBonus', value: 40 }] },
@@ -185,7 +284,17 @@ export const races: Record<string, RaceData> = {
   demon: {
     id: 'demon',
     name: 'デーモン',
-    description: '高いMAGとHP吸収15%を持つ闇の魔法使い。竜への耐性で被ダメ-30%、人型への与ダメ+40%。',
+    description: `【基礎ステ】HP95 MP70 ATK10 DEF9 AGI10 MAG18
+【パッシブ】
+・闇の力: 魔法ダメ+25%
+・生命吸収: 与ダメの15%HP回復
+・恐怖のオーラ: 回避+15%
+・竜耐性: 竜系からの被ダメ-30%
+・人型狩り: 人型系へのダメ+40%
+【スキル】
+・呪いの眼(MP14): 敵ATK/DEF-25%(3T)
+【マスタリー】
+・魂の契約(MP30): HP20%消費、単体4.0倍`,
     baseStats: { maxHp: 95, maxMp: 70, atk: 10, def: 9, agi: 10, mag: 18 },
     passives: [
       { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
