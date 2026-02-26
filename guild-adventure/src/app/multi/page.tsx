@@ -29,8 +29,12 @@ export default function MultiPage() {
   useEffect(() => {
     if (!username) return;
     const loadInvitations = async () => {
-      const invites = await getInvitations(username);
-      setInvitations(invites);
+      try {
+        const invites = await getInvitations(username);
+        setInvitations(invites);
+      } catch (e) {
+        console.error('Failed to load invitations:', e);
+      }
     };
     loadInvitations();
     // 5秒ごとにポーリング
@@ -42,8 +46,12 @@ export default function MultiPage() {
   useEffect(() => {
     if (!username) return;
     const loadFriends = async () => {
-      const f = await getFriends(username);
-      setFriends(f);
+      try {
+        const f = await getFriends(username);
+        setFriends(f);
+      } catch (e) {
+        console.error('Failed to load friends:', e);
+      }
     };
     loadFriends();
   }, [username]);

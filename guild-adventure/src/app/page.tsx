@@ -126,12 +126,16 @@ function GameScreen() {
   useEffect(() => {
     if (!username) return;
     const loadNotifications = async () => {
-      const [invites, requests] = await Promise.all([
-        getInvitations(username),
-        getFriendRequests(username),
-      ]);
-      setInvitations(invites);
-      setFriendRequests(requests);
+      try {
+        const [invites, requests] = await Promise.all([
+          getInvitations(username),
+          getFriendRequests(username),
+        ]);
+        setInvitations(invites);
+        setFriendRequests(requests);
+      } catch (e) {
+        console.error('Failed to load notifications:', e);
+      }
     };
     loadNotifications();
     const interval = setInterval(loadNotifications, 10000);
