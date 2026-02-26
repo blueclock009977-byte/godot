@@ -86,7 +86,8 @@ interface GameStore {
   currentAdventure: Adventure | null;
   inventory: Record<string, number>;
   history: AdventureHistory[];
-  lastDroppedItem: string | null; // 直近でドロップしたアイテム（表示用）
+  lastDroppedItem: string | null;
+  _dataLoaded: boolean; // 初回データロード完了フラグ（persistしない）
   
   // 認証
   login: (username: string) => Promise<{ success: boolean; isNew: boolean; error?: string }>;
@@ -143,6 +144,7 @@ export const useGameStore = create<GameStore>()(
       inventory: {},
       history: [],
       lastDroppedItem: null,
+      _dataLoaded: false,
       
       // ログイン
       login: async (username: string) => {
@@ -210,6 +212,7 @@ export const useGameStore = create<GameStore>()(
         clearStoredUsername();
         set({
           isLoggedIn: false,
+          _dataLoaded: false,
           username: null,
           characters: [],
           party: { front: [], back: [] },
@@ -220,6 +223,9 @@ export const useGameStore = create<GameStore>()(
       
       // 自動ログイン
       autoLogin: async () => {
+        // 既にロード済みならスキップ（ページ遷移後の再呼び出し防止）
+        if (get()._dataLoaded) return true;
+        
         const storedUsername = getStoredUsername();
         if (!storedUsername) return false;
         
@@ -239,7 +245,7 @@ export const useGameStore = create<GameStore>()(
             });
             // 既存の探索を復元
             await get().restoreAdventure();
-            console.log('[autoLogin] after restoreAdventure, currentAdventure:', get().currentAdventure);
+            set({ _dataLoaded: true });
             return true;
           }
         } catch (e) {

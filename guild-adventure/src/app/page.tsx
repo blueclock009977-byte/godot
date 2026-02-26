@@ -7,7 +7,8 @@ import { useGameStore } from '@/store/gameStore';
 import { allItems, getItemById } from '@/lib/data/items';
 
 function LoginScreen() {
-  const { login, autoLogin, isLoading } = useGameStore();
+  const { login, autoLogin, isLoading
+   } = useGameStore();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -18,9 +19,6 @@ function LoginScreen() {
     const tryAutoLogin = async () => {
       const success = await autoLogin();
       setIsAutoLogging(false);
-      if (!success) {
-        // 自動ログイン失敗時は何もしない（フォーム表示）
-      }
     };
     tryAutoLogin();
   }, [autoLogin]);
@@ -115,7 +113,7 @@ function LoginScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.2 Beta</p>
+          <p>v0.8.3 Beta</p>
         </div>
       </div>
     </main>
@@ -304,7 +302,7 @@ function GameScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.2 Beta</p>
+          <p>v0.8.3 Beta</p>
         </div>
       </div>
     </main>
@@ -312,7 +310,7 @@ function GameScreen() {
 }
 
 export default function Home() {
-  const { isLoggedIn, autoLogin, username } = useGameStore();
+  const { isLoggedIn, autoLogin, username, _dataLoaded } = useGameStore();
   
   // ハイドレーション対策
   const [mounted, setMounted] = useState(false);
@@ -320,20 +318,15 @@ export default function Home() {
     setMounted(true);
   }, []);
   
-  // 初回ロード時のみautoLogin（データ復元用）
-  // isLoggedInがtrueでもサーバーからデータ取得完了まで待つ
-  const [dataLoaded, setDataLoaded] = useState(false);
+  // 初回ロード時のみautoLogin（Zustand側でも重複チェックあり）
   useEffect(() => {
-    if (mounted && isLoggedIn && username && !dataLoaded) {
-      autoLogin().then(() => setDataLoaded(true));
-    } else if (mounted && !isLoggedIn) {
-      // ログインしてない場合はローディング不要
-      setDataLoaded(true);
+    if (mounted && isLoggedIn && username) {
+      autoLogin();
     }
-  }, [mounted, isLoggedIn, username, autoLogin, dataLoaded]);
+  }, [mounted, isLoggedIn, username, autoLogin]);
   
-  // マウント前、またはデータロード中はローディング表示
-  if (!mounted || (isLoggedIn && !dataLoaded)) {
+  // マウント前、またはログイン済みでデータロード中はローディング表示
+  if (!mounted || (isLoggedIn && !_dataLoaded)) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
         <div className="text-center">
