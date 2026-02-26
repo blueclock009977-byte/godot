@@ -19,7 +19,7 @@ function LoginScreen() {
       const success = await autoLogin();
       setIsAutoLogging(false);
       if (!success) {
-        // 自動ログイン失敗時は何もしない
+        // 自動ログイン失敗時は何もしない（フォーム表示）
       }
     };
     tryAutoLogin();
@@ -115,7 +115,7 @@ function LoginScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.2.0 Beta - サーバー保存対応</p>
+          <p>v0.8.2 Beta</p>
         </div>
       </div>
     </main>
@@ -126,12 +126,9 @@ function GameScreen() {
   const router = useRouter();
   const { characters, party, currentAdventure, username, logout, inventory } = useGameStore();
   
-  console.log('[GameScreen] render, currentAdventure:', currentAdventure);
-  
   // 探索中または完了済みなら自動で探索画面に遷移
   useEffect(() => {
     if (currentAdventure) {
-      console.log('[GameScreen] redirecting to adventure, status:', currentAdventure.status);
       router.push('/adventure');
     }
   }, [currentAdventure, router]);
@@ -307,7 +304,7 @@ function GameScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.7.0 Beta - マルチプレイ</p>
+          <p>v0.8.2 Beta</p>
         </div>
       </div>
     </main>
@@ -324,18 +321,25 @@ export default function Home() {
   }, []);
   
   // 初回ロード時のみautoLogin（データ復元用）
+  // isLoggedInがtrueでもサーバーからデータ取得完了まで待つ
   const [dataLoaded, setDataLoaded] = useState(false);
   useEffect(() => {
     if (mounted && isLoggedIn && username && !dataLoaded) {
-      console.log('[Home] auto login for logged in user (first load)');
       autoLogin().then(() => setDataLoaded(true));
+    } else if (mounted && !isLoggedIn) {
+      // ログインしてない場合はローディング不要
+      setDataLoaded(true);
     }
   }, [mounted, isLoggedIn, username, autoLogin, dataLoaded]);
   
-  if (!mounted) {
+  // マウント前、またはデータロード中はローディング表示
+  if (!mounted || (isLoggedIn && !dataLoaded)) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
-        <div className="animate-spin text-4xl">⚔️</div>
+        <div className="text-center">
+          <div className="animate-spin text-4xl mb-4">⚔️</div>
+          <p className="text-slate-400">読み込み中...</p>
+        </div>
       </main>
     );
   }
