@@ -32,7 +32,28 @@ export default function AdventurePage() {
   
   // 時間経過に応じてログを表示
   useEffect(() => {
-    if (!currentAdventure || !battleResult) return;
+    if (!currentAdventure) return;
+    
+    // battleResultがない場合は完了処理だけ行う
+    if (!battleResult) {
+      const dungeon = dungeons[currentAdventure.dungeon];
+      const totalTime = dungeon.durationSeconds * 1000;
+      const elapsed = Date.now() - currentAdventure.startTime;
+      
+      if (elapsed >= totalTime && !isComplete) {
+        setIsComplete(true);
+        setProgress(100);
+        // battleResultなしでも履歴と完了処理
+        addHistory({
+          type: 'solo',
+          dungeonId: currentAdventure.dungeon,
+          victory: false,
+          logs: [],
+        });
+        completeAdventure({ victory: false, logs: [], encountersCleared: 0, totalEncounters: 0 });
+      }
+      return;
+    }
     
     const dungeon = dungeons[currentAdventure.dungeon];
     const totalTime = dungeon.durationSeconds * 1000;
@@ -78,26 +99,34 @@ export default function AdventurePage() {
           
           // ドロップ受け取り（サーバーでclaimed=falseの場合のみ）
           const handleDrop = async () => {
-            if (!username || !battleResult.victory) return;
+            let droppedItemId: string | undefined;
             
-            const claimResult = await claimAdventureDrop(username);
-            if (claimResult.success && claimResult.itemId) {
-              const itemData = getItemById(claimResult.itemId);
-              setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
-              addItem(claimResult.itemId);
-              syncToServer();
+            try {
+              if (username && battleResult.victory) {
+                const claimResult = await claimAdventureDrop(username);
+                if (claimResult.success && claimResult.itemId) {
+                  droppedItemId = claimResult.itemId;
+                  const itemData = getItemById(claimResult.itemId);
+                  setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
+                  addItem(claimResult.itemId);
+                  syncToServer();
+                }
+              }
+            } catch (e) {
+              console.error('Failed to claim drop:', e);
             }
             
-            // 履歴を追加
+            // 履歴を追加（エラーでも必ず実行）
             addHistory({
               type: 'solo',
               dungeonId: currentAdventure.dungeon,
               victory: battleResult.victory,
-              droppedItemId: claimResult.itemId,
+              droppedItemId,
               logs: battleResult.logs,
             });
             
-            completeAdventure({ ...battleResult, droppedItemId: claimResult.itemId });
+            // 完了処理（エラーでも必ず実行）
+            completeAdventure({ ...battleResult, droppedItemId });
           };
           
           handleDrop();
