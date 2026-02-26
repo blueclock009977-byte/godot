@@ -751,6 +751,73 @@ export async function cleanupInvitations(username: string): Promise<void> {
 }
 
 // ============================================
+// オンラインステータス
+// ============================================
+
+export type UserActivity = 'lobby' | 'solo' | 'multi' | 'offline';
+
+export interface UserStatus {
+  lastSeen: number;
+  activity: UserActivity;
+  dungeonId?: string;  // ダンジョン中の場合
+  roomCode?: string;   // マルチ中の場合
+}
+
+// ステータスを更新
+export async function updateUserStatus(
+  username: string,
+  activity: UserActivity,
+  extra?: { dungeonId?: string; roomCode?: string }
+): Promise<boolean> {
+  try {
+    const status: UserStatus = {
+      lastSeen: Date.now(),
+      activity,
+      ...extra,
+    };
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(status),
+    });
+    
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ステータスを取得
+export async function getUserStatus(username: string): Promise<UserStatus | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/status.json`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+// 複数ユーザーのステータスを取得
+export async function getMultipleUserStatus(usernames: string[]): Promise<Record<string, UserStatus | null>> {
+  const results: Record<string, UserStatus | null> = {};
+  await Promise.all(
+    usernames.map(async (username) => {
+      results[username] = await getUserStatus(username);
+    })
+  );
+  return results;
+}
+
+// オンライン判定（5分以内に更新があればオンライン）
+export function isOnline(status: UserStatus | null): boolean {
+  if (!status) return false;
+  const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+  return status.lastSeen > fiveMinAgo;
+}
+
+// ============================================
 // マルチ冒険結果（ソロと同様にユーザーに保存）
 // ============================================
 

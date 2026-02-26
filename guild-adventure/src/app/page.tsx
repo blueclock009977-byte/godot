@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
-import { getInvitations, getFriendRequests, RoomInvitation, FriendRequest } from '@/lib/firebase';
+import { getInvitations, getFriendRequests, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
 
 function LoginScreen() {
   const { login, autoLogin, isLoading } = useGameStore();
@@ -122,7 +122,7 @@ function GameScreen() {
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   
-  // 通知をポーリング
+  // 通知をポーリング + ステータス更新
   useEffect(() => {
     if (!username) return;
     const loadNotifications = async () => {
@@ -133,6 +133,8 @@ function GameScreen() {
         ]);
         setInvitations(invites);
         setFriendRequests(requests);
+        // ロビーにいることを更新
+        updateUserStatus(username, 'lobby');
       } catch (e) {
         console.error('Failed to load notifications:', e);
       }

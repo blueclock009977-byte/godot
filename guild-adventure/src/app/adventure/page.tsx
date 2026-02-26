@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
-import { claimAdventureDrop } from '@/lib/firebase';
+import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
 import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
@@ -19,6 +19,16 @@ export default function AdventurePage() {
   
   // バトル結果はサーバーから取得済み（currentAdventure.result）
   const battleResult = currentAdventure?.result || null;
+  
+  // ステータス更新（ソロ冒険中）
+  useEffect(() => {
+    if (!username || !currentAdventure) return;
+    updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon });
+    const interval = setInterval(() => {
+      updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon });
+    }, 30000); // 30秒ごと
+    return () => clearInterval(interval);
+  }, [username, currentAdventure]);
   
   // 時間経過に応じてログを表示
   useEffect(() => {

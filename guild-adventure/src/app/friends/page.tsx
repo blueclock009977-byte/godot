@@ -10,12 +10,18 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   removeFriend,
+  getMultipleUserStatus,
+  isOnline,
+  updateUserStatus,
   FriendRequest,
+  UserStatus,
 } from '@/lib/firebase';
+import { dungeons } from '@/lib/data/dungeons';
 
 export default function FriendsPage() {
   const { username } = useGameStore();
   const [friends, setFriends] = useState<string[]>([]);
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, UserStatus | null>>({});
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchName, setSearchName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +38,15 @@ export default function FriendsPage() {
     ]);
     setFriends(friendList);
     setRequests(requestList);
+    
+    // フレンドのステータスを取得
+    if (friendList.length > 0) {
+      const statuses = await getMultipleUserStatus(friendList);
+      setFriendStatuses(statuses);
+    }
+    
+    // 自分のステータスを更新
+    updateUserStatus(username, 'lobby');
     setIsLoading(false);
   };
 
@@ -41,6 +56,24 @@ export default function FriendsPage() {
     const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
   }, [username]);
+  
+  // ステータス表示用のヘルパー関数
+  const getStatusDisplay = (status: UserStatus | null) => {
+    if (!status || !isOnline(status)) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+    }
+    switch (status.activity) {
+      case 'lobby':
+        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
+      case 'solo':
+        const dungeonName = status.dungeonId ? dungeons[status.dungeonId as keyof typeof dungeons]?.name : '';
+        return { text: `ソロ冒険中${dungeonName ? ` (${dungeonName})` : ''}`, color: 'text-amber-400', emoji: '⚔️' };
+      case 'multi':
+        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥' };
+      default:
+        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
+    }
+  };
 
   // フレンド申請送信
   const handleSendRequest = async () => {
@@ -156,17 +189,25 @@ export default function FriendsPage() {
             <p className="text-slate-500 text-sm">まだフレンドがいません</p>
           ) : (
             <div className="space-y-2">
-              {friends.map((friend) => (
-                <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
-                  <span className="font-semibold">{friend}</span>
-                  <button
-                    onClick={() => handleRemove(friend)}
-                    className="text-red-400 hover:text-red-300 text-sm"
-                  >
-                    削除
-                  </button>
-                </div>
-              ))}
+              {friends.map((friend) => {
+                const status = getStatusDisplay(friendStatuses[friend]);
+                return (
+                  <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
+                    <div>
+                      <span className="font-semibold">{friend}</span>
+                      <div className={`text-xs ${status.color}`}>
+                        {status.emoji} {status.text}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemove(friend)}
+                      className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                      削除
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

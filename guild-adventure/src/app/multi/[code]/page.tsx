@@ -13,6 +13,7 @@ import {
   deleteRoom,
   claimMultiDrop,
   saveMultiAdventureForUser,
+  updateUserStatus,
   MultiRoom,
   RoomCharacter,
 } from '@/lib/firebase';
@@ -80,6 +81,16 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const interval = setInterval(fetchRoom, 1000);
     return () => clearInterval(interval);
   }, [code, username, hadRoomOnce]);
+  
+  // ステータス更新（マルチ中）
+  useEffect(() => {
+    if (!username || !room) return;
+    updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId });
+    const interval = setInterval(() => {
+      updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId });
+    }, 30000); // 30秒ごと
+    return () => clearInterval(interval);
+  }, [username, room, code]);
   
   // キャラ選択数の上限
   const maxCharsPerPlayer = room?.maxPlayers === 2 ? 3 : 2;
