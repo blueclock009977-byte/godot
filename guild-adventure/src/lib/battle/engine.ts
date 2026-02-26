@@ -288,10 +288,10 @@ function processEncounter(
   const enemyUnits: BattleUnit[] = [];
   
   if (isBossEncounter && dungeonData.boss) {
-    // ボス戦
+    // ボス戦（開始のみ赤表示用マーカー）
     enemyUnits.push(monsterToUnit(dungeonData.boss));
-    allLogs.push(`\n【BOSS戦】`);
-    allLogs.push(`⚠️ ${dungeonData.boss.name}が立ちはだかる！`);
+    allLogs.push(`\n【遭遇 ${encounterNum}】`);
+    allLogs.push(`🔴BOSS: ${dungeonData.boss.name}が現れた！`);
   } else {
     // 通常エンカウント（1-3体）
     const monsterCount = Math.floor(random(1, 4));

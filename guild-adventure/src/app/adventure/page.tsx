@@ -195,7 +195,7 @@ export default function AdventurePage() {
                 <div 
                   key={i} 
                   className={`${
-                    log.includes('【BOSS') ? 'text-red-500 font-bold mt-4 text-lg' :
+                    log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
                     log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
                     log.includes('【味方】') ? 'text-cyan-400 text-xs font-bold mt-1' :
                     log.includes('【敵】') ? 'text-rose-400 text-xs font-bold mt-1' :
