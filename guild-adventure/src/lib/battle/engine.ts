@@ -9,6 +9,10 @@ import {
   Stats,
   POSITION_MODIFIERS,
   Position,
+  ElementType,
+  SpeciesType,
+  ELEMENT_ADVANTAGE,
+  ELEMENT_MULTIPLIER,
 } from '../types';
 import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
@@ -29,6 +33,81 @@ function pickRandom<T>(arr: T[]): T {
 
 function cloneStats(stats: Stats): Stats {
   return { ...stats };
+}
+
+// 属性相性によるダメージ倍率を計算
+function getElementMultiplier(attackElement: ElementType | undefined, defenderElement: ElementType | undefined): number {
+  if (!attackElement || attackElement === 'none' || !defenderElement || defenderElement === 'none') {
+    return 1.0;
+  }
+  // 有利属性なら1.3倍
+  if (ELEMENT_ADVANTAGE[attackElement] === defenderElement) {
+    return ELEMENT_MULTIPLIER;
+  }
+  return 1.0;
+}
+
+// 系統特攻によるダメージ倍率を計算（攻撃者のパッシブから）
+function getSpeciesKillerMultiplier(attacker: BattleUnit, defender: BattleUnit): number {
+  if (!defender.species) return 1.0;
+  
+  let multiplier = 1.0;
+  
+  // モンスターの場合、speciesKillerを直接参照
+  if (attacker.speciesKiller) {
+    const killer = attacker.speciesKiller.find(k => k.species === defender.species);
+    if (killer) {
+      multiplier *= (1 + killer.multiplier / 100);
+    }
+  }
+  
+  // プレイヤーキャラの場合、種族パッシブから系統特攻を取得
+  if (attacker.isPlayer && attacker.race) {
+    const raceData = races[attacker.race];
+    if (raceData?.passives) {
+      for (const passive of raceData.passives) {
+        for (const effect of passive.effects) {
+          if (effect.type === `speciesKiller_${defender.species}`) {
+            multiplier *= (1 + effect.value / 100);
+          }
+        }
+      }
+    }
+  }
+  
+  return multiplier;
+}
+
+// 系統耐性によるダメージ軽減を計算
+function getSpeciesResistMultiplier(attacker: BattleUnit, defender: BattleUnit): number {
+  // 攻撃者がプレイヤーの場合、攻撃者のspeciesは種族から推測（人型扱い）
+  const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
+  
+  let multiplier = 1.0;
+  
+  // モンスターの系統耐性
+  if (defender.speciesResist) {
+    const resist = defender.speciesResist.find(r => r.species === attackerSpecies);
+    if (resist) {
+      multiplier *= (1 - resist.multiplier / 100);
+    }
+  }
+  
+  // プレイヤーの種族パッシブから系統耐性を取得
+  if (defender.isPlayer && defender.race && attacker.species) {
+    const raceData = races[defender.race];
+    if (raceData?.passives) {
+      for (const passive of raceData.passives) {
+        for (const effect of passive.effects) {
+          if (effect.type === `speciesResist_${attacker.species}`) {
+            multiplier *= (1 - effect.value / 100);
+          }
+        }
+      }
+    }
+  }
+  
+  return multiplier;
 }
 
 // ============================================
@@ -72,6 +151,10 @@ function monsterToUnit(monster: Monster): BattleUnit {
     stats: cloneStats(monster.stats),
     position: 'front',
     skills: monster.skills,
+    species: monster.species,
+    element: monster.element || 'none',
+    speciesKiller: monster.speciesKiller,
+    speciesResist: monster.speciesResist,
   };
 }
 
@@ -86,11 +169,15 @@ function calculatePhysicalDamage(attacker: BattleUnit, defender: BattleUnit): { 
   let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
   
   // 隊列補正
-  // 攻撃者: 前衛+20%, 後衛-20%
   const attackerMod = POSITION_MODIFIERS[attacker.position as Position]?.damage || 1.0;
-  // 防御者: 前衛は被ダメ+20%(defense=0.8で割る), 後衛は被ダメ-20%(defense=1.2で割る)
   const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
   damage = damage * attackerMod / defenderMod;
+  
+  // 系統特攻補正
+  damage *= getSpeciesKillerMultiplier(attacker, defender);
+  
+  // 系統耐性補正
+  damage *= getSpeciesResistMultiplier(attacker, defender);
   
   // クリティカル判定（10%基本）
   let critRate = 0.1;
@@ -105,9 +192,19 @@ function calculatePhysicalDamage(attacker: BattleUnit, defender: BattleUnit): { 
   return { damage: Math.max(1, Math.floor(damage)), isCritical };
 }
 
-function calculateMagicDamage(attacker: BattleUnit, multiplier: number): number {
+function calculateMagicDamage(attacker: BattleUnit, defender: BattleUnit, multiplier: number, skillElement?: ElementType): number {
   const rand = random(0.9, 1.1);
   let damage = attacker.stats.mag * multiplier * rand;
+  
+  // 属性相性補正
+  damage *= getElementMultiplier(skillElement, defender.element);
+  
+  // 系統特攻補正
+  damage *= getSpeciesKillerMultiplier(attacker, defender);
+  
+  // 系統耐性補正
+  damage *= getSpeciesResistMultiplier(attacker, defender);
+  
   return Math.max(1, Math.floor(damage));
 }
 
@@ -240,7 +337,7 @@ function processTurn(
         for (const target of targets) {
           let damage: number;
           if (isMagic) {
-            damage = calculateMagicDamage(unit, skill.multiplier);
+            damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element);
           } else {
             const result = calculatePhysicalDamage(unit, target);
             damage = Math.floor(result.damage * skill.multiplier);

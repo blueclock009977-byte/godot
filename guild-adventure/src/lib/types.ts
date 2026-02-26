@@ -280,6 +280,11 @@ export interface BattleUnit {
   job?: JobType;
   trait?: TraitType;
   skills?: SkillData[];
+  // モンスター用
+  species?: SpeciesType;
+  element?: ElementType;
+  speciesKiller?: { species: SpeciesType; multiplier: number }[];
+  speciesResist?: { species: SpeciesType; multiplier: number }[];
 }
 
 export interface BattleAction {

@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
-import { DungeonType } from '@/lib/types';
-import { dungeonList } from '@/lib/data/dungeons';
+import { DungeonType, DungeonData } from '@/lib/types';
+import { dungeonList, dungeons } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
 
 function formatDuration(seconds: number): string {
@@ -23,6 +23,177 @@ function DifficultyStars({ level }: { level: number }) {
   );
 }
 
+// 系統の日本語名
+const speciesNames: Record<string, string> = {
+  humanoid: '🧑 人型',
+  beast: '🐺 獣',
+  undead: '💀 不死',
+  demon: '😈 悪魔',
+  dragon: '🐉 竜',
+};
+
+// 属性の日本語名
+const elementNames: Record<string, string> = {
+  none: '無',
+  fire: '🔥 火',
+  water: '💧 水',
+  wind: '🌪️ 風',
+  earth: '🪨 地',
+};
+
+// ダンジョン詳細モーダル
+function DungeonDetailModal({ 
+  dungeon, 
+  onClose 
+}: { 
+  dungeon: DungeonData; 
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div 
+        className="bg-slate-800 rounded-lg border border-slate-600 max-w-md w-full max-h-[80vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* ヘッダー */}
+        <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold">{dungeon.name}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">×</button>
+        </div>
+        
+        <div className="p-4 space-y-4">
+          {/* 基本情報 */}
+          <div className="bg-slate-700 rounded-lg p-3">
+            <h3 className="text-sm text-slate-400 mb-2">基本情報</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>難易度: <DifficultyStars level={dungeon.difficulty} /></div>
+              <div>探索時間: {formatDuration(dungeon.durationSeconds)}</div>
+              <div>推奨人数: {dungeon.recommendedPlayers}人</div>
+              <div>遭遇回数: {dungeon.encounterCount}回</div>
+              <div className="col-span-2 text-amber-400">ドロップ率: {getDropRate(dungeon.id)}%</div>
+            </div>
+          </div>
+          
+          {/* 出現モンスター */}
+          <div className="bg-slate-700 rounded-lg p-3">
+            <h3 className="text-sm text-slate-400 mb-2">👹 出現モンスター</h3>
+            <div className="space-y-2">
+              {dungeon.monsters.map((spawn, idx) => (
+                <div key={idx} className="flex justify-between items-center bg-slate-600 rounded p-2">
+                  <div>
+                    <span className="font-semibold">{spawn.monster.name}</span>
+                    <div className="text-xs text-slate-300">
+                      {speciesNames[spawn.monster.species] || spawn.monster.species}
+                      {spawn.monster.element && spawn.monster.element !== 'none' && (
+                        <span className="ml-2">{elementNames[spawn.monster.element]}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    HP{spawn.monster.stats.hp} ATK{spawn.monster.stats.atk}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* ボス */}
+          {dungeon.boss && (
+            <div className="bg-red-900/50 rounded-lg p-3 border border-red-700">
+              <h3 className="text-sm text-red-400 mb-2">🔴 ボス</h3>
+              <div className="bg-slate-700 rounded p-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-bold text-lg">{dungeon.boss.name}</span>
+                    <div className="text-sm text-slate-300">
+                      {speciesNames[dungeon.boss.species] || dungeon.boss.species}
+                      {dungeon.boss.element && dungeon.boss.element !== 'none' && (
+                        <span className="ml-2">{elementNames[dungeon.boss.element]}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right text-sm">
+                    <div>HP {dungeon.boss.stats.hp}</div>
+                    <div>ATK {dungeon.boss.stats.atk}</div>
+                  </div>
+                </div>
+                
+                {/* ボスの系統特攻/耐性 */}
+                {(dungeon.boss.speciesKiller || dungeon.boss.speciesResist) && (
+                  <div className="mt-2 text-xs space-y-1">
+                    {dungeon.boss.speciesKiller?.map((k, i) => (
+                      <div key={i} className="text-red-300">
+                        ⚔️ {speciesNames[k.species]}特攻 +{k.multiplier}%
+                      </div>
+                    ))}
+                    {dungeon.boss.speciesResist?.map((r, i) => (
+                      <div key={i} className="text-blue-300">
+                        🛡️ {speciesNames[r.species]}耐性 -{r.multiplier}%被ダメ
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* ボスのスキル */}
+                {dungeon.boss.skills && dungeon.boss.skills.length > 0 && (
+                  <div className="mt-2 border-t border-slate-600 pt-2">
+                    <div className="text-xs text-slate-400">スキル:</div>
+                    {dungeon.boss.skills.map((skill, i) => (
+                      <div key={i} className="text-sm">
+                        <span className="text-amber-400">{skill.name}</span>
+                        <span className="text-slate-400 text-xs ml-2">{skill.description}</span>
+                        {skill.element && skill.element !== 'none' && (
+                          <span className="text-xs ml-1">{elementNames[skill.element]}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* 有利な種族ヒント */}
+          {dungeon.boss && (
+            <div className="bg-slate-700 rounded-lg p-3">
+              <h3 className="text-sm text-slate-400 mb-2">💡 攻略ヒント</h3>
+              <div className="text-sm text-slate-300">
+                {dungeon.boss.species === 'dragon' && (
+                  <p>・ドラゴニュートの「竜殺し」が有効！</p>
+                )}
+                {dungeon.boss.species === 'demon' && (
+                  <p>・エルフやエンジェルの「悪魔特攻」が有効！</p>
+                )}
+                {dungeon.boss.species === 'undead' && (
+                  <p>・フェアリーの「聖光」やパラディンが有効！</p>
+                )}
+                {dungeon.boss.species === 'beast' && (
+                  <p>・オークの「獣殺し」が有効！</p>
+                )}
+                {dungeon.boss.species === 'humanoid' && (
+                  <p>・ハーフリングやゴブリンの「人型特攻」が有効！</p>
+                )}
+                {dungeon.boss.element === 'fire' && (
+                  <p>・水属性スキルで1.3倍ダメージ！</p>
+                )}
+                {dungeon.boss.element === 'water' && (
+                  <p>・地属性スキルで1.3倍ダメージ！</p>
+                )}
+                {dungeon.boss.element === 'wind' && (
+                  <p>・火属性スキルで1.3倍ダメージ！</p>
+                )}
+                {dungeon.boss.element === 'earth' && (
+                  <p>・風属性スキルで1.3倍ダメージ！</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DungeonPage() {
   const router = useRouter();
   const { party, currentAdventure, startAdventure } = useGameStore();
@@ -32,6 +203,7 @@ export default function DungeonPage() {
   
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
   
   const handleStart = async (dungeonId: DungeonType) => {
     if (!canStart || isStarting) return;
@@ -83,12 +255,7 @@ export default function DungeonPage() {
           {dungeonList.map((dungeon) => (
             <div
               key={dungeon.id}
-              className={`rounded-lg border p-4 transition-colors ${
-                canStart && !isStarting
-                  ? 'bg-slate-700 border-slate-600 hover:bg-slate-600 cursor-pointer'
-                  : 'bg-slate-800 border-slate-700 opacity-50'
-              }`}
-              onClick={() => canStart && !isStarting && handleStart(dungeon.id)}
+              className="rounded-lg border bg-slate-700 border-slate-600 p-4"
             >
               <div className="flex justify-between items-start mb-2">
                 <h2 className="text-xl font-bold">{dungeon.name}</h2>
@@ -99,7 +266,7 @@ export default function DungeonPage() {
                 {dungeon.description}
               </p>
               
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-3">
                 <span className="text-slate-400">
                   ⏱️ {formatDuration(dungeon.durationSeconds)}
                 </span>
@@ -114,15 +281,35 @@ export default function DungeonPage() {
                 </span>
               </div>
               
-              {canStart && (
-                <button className="mt-3 w-full bg-amber-600 hover:bg-amber-500 transition-colors rounded py-2 font-semibold">
-                  出発する
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setDetailDungeon(dungeon)}
+                  className="flex-1 bg-slate-600 hover:bg-slate-500 transition-colors rounded py-2 font-semibold"
+                >
+                  📋 詳細
                 </button>
-              )}
+                {canStart && (
+                  <button 
+                    onClick={() => handleStart(dungeon.id)}
+                    disabled={isStarting}
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 transition-colors rounded py-2 font-semibold"
+                  >
+                    ⚔️ 出発
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
+      
+      {/* 詳細モーダル */}
+      {detailDungeon && (
+        <DungeonDetailModal 
+          dungeon={detailDungeon} 
+          onClose={() => setDetailDungeon(null)} 
+        />
+      )}
     </main>
   );
 }
