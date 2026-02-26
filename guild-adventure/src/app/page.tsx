@@ -305,13 +305,21 @@ function GameScreen() {
 }
 
 export default function Home() {
-  const { isLoggedIn } = useGameStore();
+  const { isLoggedIn, restoreAdventure, username } = useGameStore();
   
   // ハイドレーション対策
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
+  
+  // ログイン済みなら探索状態を復元
+  useEffect(() => {
+    if (mounted && isLoggedIn && username) {
+      console.log('[Home] restoring adventure for logged in user');
+      restoreAdventure();
+    }
+  }, [mounted, isLoggedIn, username, restoreAdventure]);
   
   if (!mounted) {
     return (
