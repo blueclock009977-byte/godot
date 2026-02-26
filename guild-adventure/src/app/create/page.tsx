@@ -155,17 +155,52 @@ export default function CreatePage() {
               );
             })}
           </div>
-          <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
-            <div className="text-slate-300 mb-1">{races[race].description}</div>
+          <div className="mt-2 p-3 bg-slate-800 rounded text-xs space-y-2">
+            <div className="text-slate-300">{races[race].description}</div>
             {requiredRaceItem && (
-              <div className={`mb-1 ${raceItemCount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`${raceItemCount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                 必要: {getItemById(requiredRaceItem)?.name} (所持: {raceItemCount})
               </div>
             )}
-            <div className="text-amber-400 font-semibold mb-1">パッシブ:</div>
-            {races[race].passives.map((p, i) => (
-              <div key={i} className="text-slate-400 ml-2">• {p.name}: {p.description}</div>
-            ))}
+            
+            {/* ステータス */}
+            <div>
+              <div className="text-cyan-400 font-semibold">📊 ステータス</div>
+              <div className="ml-2 text-slate-400 grid grid-cols-3 gap-1">
+                <span>HP: {races[race].baseStats.maxHp}</span>
+                <span>MP: {races[race].baseStats.maxMp}</span>
+                <span>ATK: {races[race].baseStats.atk}</span>
+                <span>DEF: {races[race].baseStats.def}</span>
+                <span>AGI: {races[race].baseStats.agi}</span>
+                <span>MAG: {races[race].baseStats.mag}</span>
+              </div>
+            </div>
+            
+            {/* パッシブ */}
+            <div>
+              <div className="text-amber-400 font-semibold">🔥 パッシブ</div>
+              {races[race].passives.map((p, i) => (
+                <div key={i} className="text-slate-400 ml-2">• {p.name}: {p.description}</div>
+              ))}
+            </div>
+            
+            {/* スキル */}
+            {races[race].skills && races[race].skills.length > 0 && (
+              <div>
+                <div className="text-green-400 font-semibold">⚔️ スキル</div>
+                {races[race].skills.map((s, i) => (
+                  <div key={i} className="text-slate-400 ml-2">• {s.name}: {s.description} (MP{s.mpCost})</div>
+                ))}
+              </div>
+            )}
+            
+            {/* マスタリー */}
+            {races[race].masterySkill && (
+              <div>
+                <div className="text-purple-400 font-semibold">👑 マスタリー</div>
+                <div className="text-slate-400 ml-2">• {races[race].masterySkill.name}: {races[race].masterySkill.description}</div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -200,21 +235,50 @@ export default function CreatePage() {
               );
             })}
           </div>
-          <div className="mt-2 p-2 bg-slate-800 rounded text-xs">
-            <div className="text-slate-300 mb-1">{jobs[job].description}</div>
+          <div className="mt-2 p-3 bg-slate-800 rounded text-xs space-y-2">
+            <div className="text-slate-300">{jobs[job].description}</div>
             {requiredJobItem && (
-              <div className={`mb-1 ${jobItemCount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`${jobItemCount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                 必要: {getItemById(requiredJobItem)?.name} (所持: {jobItemCount})
               </div>
             )}
-            <div className="text-amber-400 font-semibold mb-1">パッシブ:</div>
-            {jobs[job].passives.map((p, i) => (
-              <div key={i} className="text-slate-400 ml-2">• {p.name}</div>
-            ))}
-            <div className="text-green-400 font-semibold mt-1">スキル:</div>
-            {jobs[job].skills.map((s, i) => (
-              <div key={i} className="text-slate-400 ml-2">• {s.name} (MP{s.mpCost})</div>
-            ))}
+            
+            {/* ステータス補正 */}
+            <div>
+              <div className="text-cyan-400 font-semibold">📊 ステータス補正</div>
+              <div className="ml-2 text-slate-400 flex flex-wrap gap-2">
+                {jobs[job].statModifiers.maxHp && <span>HP{jobs[job].statModifiers.maxHp > 0 ? '+' : ''}{jobs[job].statModifiers.maxHp}</span>}
+                {jobs[job].statModifiers.maxMp && <span>MP{jobs[job].statModifiers.maxMp > 0 ? '+' : ''}{jobs[job].statModifiers.maxMp}</span>}
+                {jobs[job].statModifiers.atk && <span>ATK{jobs[job].statModifiers.atk > 0 ? '+' : ''}{jobs[job].statModifiers.atk}</span>}
+                {jobs[job].statModifiers.def && <span>DEF{jobs[job].statModifiers.def > 0 ? '+' : ''}{jobs[job].statModifiers.def}</span>}
+                {jobs[job].statModifiers.agi && <span>AGI{jobs[job].statModifiers.agi > 0 ? '+' : ''}{jobs[job].statModifiers.agi}</span>}
+                {jobs[job].statModifiers.mag && <span>MAG{jobs[job].statModifiers.mag > 0 ? '+' : ''}{jobs[job].statModifiers.mag}</span>}
+              </div>
+            </div>
+            
+            {/* パッシブ */}
+            <div>
+              <div className="text-amber-400 font-semibold">🔥 パッシブ</div>
+              {jobs[job].passives.map((p, i) => (
+                <div key={i} className="text-slate-400 ml-2">• {p.name}: {p.description}</div>
+              ))}
+            </div>
+            
+            {/* スキル */}
+            <div>
+              <div className="text-green-400 font-semibold">⚔️ スキル</div>
+              {jobs[job].skills.map((s, i) => (
+                <div key={i} className="text-slate-400 ml-2">• {s.name}: {s.description} (MP{s.mpCost})</div>
+              ))}
+            </div>
+            
+            {/* マスタリー */}
+            {jobs[job].masterySkill && (
+              <div>
+                <div className="text-purple-400 font-semibold">👑 マスタリー</div>
+                <div className="text-slate-400 ml-2">• {jobs[job].masterySkill.name}: {jobs[job].masterySkill.description}</div>
+              </div>
+            )}
           </div>
         </div>
         
