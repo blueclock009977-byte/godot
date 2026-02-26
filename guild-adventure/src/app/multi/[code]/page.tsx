@@ -11,6 +11,7 @@ import {
   updateRoomStatus,
   leaveRoom,
   deleteRoom,
+  claimMultiDrop,
   MultiRoom,
   RoomCharacter,
 } from '@/lib/firebase';
@@ -107,7 +108,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const allReady = room && Object.values(room.players).length === room.maxPlayers &&
     Object.values(room.players).every(p => p.ready && p.characters.length > 0);
   
-  // バトル開始（ホストのみ）- バトル結果を事前計算してFirebaseに保存
+  // バトル開始（ホストのみ）- バトル結果+ドロップを事前計算してFirebaseに保存
   const startBattle = async () => {
     if (!room || !username || room.hostId !== username) return;
     
@@ -133,9 +134,21 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     // ホストがバトル結果を計算
     const result = runBattle(party, room.dungeonId as any);
     
+    // 勝利時は各プレイヤーのドロップを計算
+    let playerDrops: Record<string, string | undefined> | undefined;
+    if (result.victory) {
+      playerDrops = {};
+      Object.entries(room.players).forEach(([playerName, player]) => {
+        // 各プレイヤーのキャラクターでドロップボーナス計算
+        const chars = (player.characters || []).map(rc => rc.character);
+        const drop = rollDrop(room.dungeonId as any, chars);
+        playerDrops![playerName] = drop;
+      });
+    }
+    
     const startTime = Date.now();
-    // バトル結果もFirebaseに保存（全員が同じ結果を見る）
-    await updateRoomStatus(code, 'battle', startTime, result);
+    // バトル結果+ドロップもFirebaseに保存（全員が同じ結果を見る）
+    await updateRoomStatus(code, 'battle', startTime, result, playerDrops);
   };
   
   // バトル結果をFirebaseから読み取る
@@ -211,42 +224,35 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }
   }, [displayedLogs]);
   
-  // バトル完了時に各プレイヤーが個別にドロップ抽選
+  // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
   useEffect(() => {
-    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimed) {
-      const claimedKey = `multi-drop-${code}`;
-      if (typeof window !== 'undefined' && localStorage.getItem(claimedKey)) {
+    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimed && username) {
+      const handleClaim = async () => {
+        // サーバーからドロップ受け取り
+        const result = await claimMultiDrop(code, username);
+        if (result.success && result.itemId) {
+          setMyDrop(result.itemId);
+          addItem(result.itemId);
+          syncToServer();
+        }
+        
+        // 履歴を追加
+        addHistory({
+          type: 'multi',
+          dungeonId: room.dungeonId,
+          victory: room.battleResult.victory,
+          droppedItemId: result.itemId,
+          logs: room.battleResult.logs || [],
+          roomCode: code,
+          players: Object.keys(room.players),
+        });
+        
         setDropClaimed(true);
-        return;
-      }
+      };
       
-      // 自分のキャラクターを取得してドロップボーナス計算
-      const myPlayer = username ? room.players[username] : null;
-      const myChars = myPlayer?.characters?.map(rc => rc.character) || [];
-      const droppedItemId = rollDrop(room.dungeonId as any, myChars);
-      if (droppedItemId) {
-        setMyDrop(droppedItemId);
-        addItem(droppedItemId);
-        syncToServer();
-      }
-      
-      // 履歴を追加
-      addHistory({
-        type: 'multi',
-        dungeonId: room.dungeonId,
-        victory: room.battleResult.victory,
-        droppedItemId,
-        logs: room.battleResult.logs || [],
-        roomCode: code,
-        players: Object.keys(room.players),
-      });
-      
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(claimedKey, 'true');
-      }
-      setDropClaimed(true);
+      handleClaim();
     }
-  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, username, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {

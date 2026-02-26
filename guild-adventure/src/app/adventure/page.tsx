@@ -4,32 +4,25 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
-import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
-import { BattleResult, Character } from '@/lib/types';
+import { claimAdventureDrop } from '@/lib/firebase';
+import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, party, completeAdventure, cancelAdventure, addItem, syncToServer, addHistory } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, syncToServer, addHistory } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const battleResultRef = useRef<BattleResult | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
   
-  // 開始時にバトルを事前計算
-  useEffect(() => {
-    if (!currentAdventure || battleResultRef.current) return;
-    
-    // バトルを先に計算しておく
-    const result = runBattle(party, currentAdventure.dungeon);
-    battleResultRef.current = result;
-  }, [currentAdventure, party]);
+  // バトル結果はサーバーから取得済み（currentAdventure.result）
+  const battleResult = currentAdventure?.result || null;
   
   // 時間経過に応じてログを表示
   useEffect(() => {
-    if (!currentAdventure || !battleResultRef.current) return;
+    if (!currentAdventure || !battleResult) return;
     
     const dungeon = dungeons[currentAdventure.dungeon];
     const totalTime = dungeon.durationSeconds * 1000;
@@ -43,20 +36,17 @@ export default function AdventurePage() {
       setProgress(newProgress);
       
       // 現在何番目のエンカウントまで表示すべきか
-      // 10, 20, 30秒地点で1, 2, 3回目のログ（0秒では表示しない）
       const shouldShowEncounter = Math.min(
         encounterCount,
         Math.floor(elapsed / timePerEncounter)
       );
       
       // 新しいエンカウントがあれば表示
-      if (shouldShowEncounter > currentEncounter && battleResultRef.current) {
-        const result = battleResultRef.current;
-        
+      if (shouldShowEncounter > currentEncounter && battleResult) {
         // 新しいエンカウントのログを追加
         for (let i = currentEncounter; i < shouldShowEncounter; i++) {
-          if (result.logs[i]) {
-            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
+          if (battleResult.logs[i]) {
+            const newLogs = battleResult.logs[i].message.split('\n').filter(l => l.trim());
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
         }
@@ -68,41 +58,45 @@ export default function AdventurePage() {
         setIsComplete(true);
         clearInterval(interval);
         
-        // 最終結果のログを追加（クリアメッセージなど）
-        if (battleResultRef.current) {
-          const result = battleResultRef.current;
+        // 最終結果のログを追加
+        if (battleResult) {
           // 残りのログを全部表示
-          for (let i = currentEncounter; i < result.logs.length; i++) {
-            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
+          for (let i = currentEncounter; i < battleResult.logs.length; i++) {
+            const newLogs = battleResult.logs[i].message.split('\n').filter(l => l.trim());
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
           
-          // ドロップ抽選（ソロは1人なのでここで抽選）
-          const allChars = [...party.front, ...party.back].filter((c): c is Character => c !== null);
-          const droppedItemId = result.victory ? rollDrop(currentAdventure.dungeon, allChars) : undefined;
-          if (droppedItemId) {
-            const itemData = getItemById(droppedItemId);
-            setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || droppedItemId} を入手！`]);
-            addItem(droppedItemId);
-            syncToServer();
-          }
+          // ドロップ受け取り（サーバーでclaimed=falseの場合のみ）
+          const handleDrop = async () => {
+            if (!username || !battleResult.victory) return;
+            
+            const claimResult = await claimAdventureDrop(username);
+            if (claimResult.success && claimResult.itemId) {
+              const itemData = getItemById(claimResult.itemId);
+              setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
+              addItem(claimResult.itemId);
+              syncToServer();
+            }
+            
+            // 履歴を追加
+            addHistory({
+              type: 'solo',
+              dungeonId: currentAdventure.dungeon,
+              victory: battleResult.victory,
+              droppedItemId: claimResult.itemId,
+              logs: battleResult.logs,
+            });
+            
+            completeAdventure({ ...battleResult, droppedItemId: claimResult.itemId });
+          };
           
-          // 履歴を追加
-          addHistory({
-            type: 'solo',
-            dungeonId: currentAdventure.dungeon,
-            victory: result.victory,
-            droppedItemId,
-            logs: result.logs,
-          });
-          
-          completeAdventure({ ...result, droppedItemId });
+          handleDrop();
         }
       }
     }, 100);
     
     return () => clearInterval(interval);
-  }, [currentAdventure, currentEncounter, completeAdventure, isComplete]);
+  }, [currentAdventure, battleResult, currentEncounter, completeAdventure, isComplete, username, addItem, syncToServer, addHistory]);
   
   // ログが追加されたら自動スクロール
   useEffect(() => {

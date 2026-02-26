@@ -162,6 +162,8 @@ export interface MultiRoom {
   players: Record<string, RoomPlayer>;
   battleResult?: any;
   startTime?: number;  // 冒険開始時刻
+  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ
+  playerClaimed?: Record<string, boolean>;           // 受け取り済みフラグ
   createdAt: number;
   updatedAt: number;
 }
@@ -279,12 +281,13 @@ export async function updateRoomReady(code: string, username: string, ready: boo
   }
 }
 
-// ルームステータスを更新（battleの場合はstartTimeとbattleResultも設定）
+// ルームステータスを更新（battleの場合はstartTime、battleResult、ドロップも設定）
 export async function updateRoomStatus(
   code: string, 
   status: MultiRoom['status'], 
   startTime?: number,
-  battleResult?: any
+  battleResult?: any,
+  playerDrops?: Record<string, string | undefined>
 ): Promise<boolean> {
   try {
     const data: any = { status, updatedAt: Date.now() };
@@ -293,6 +296,14 @@ export async function updateRoomStatus(
     }
     if (battleResult) {
       data.battleResult = battleResult;
+    }
+    // ドロップ情報
+    if (playerDrops) {
+      data.playerDrops = playerDrops;
+      data.playerClaimed = Object.keys(playerDrops).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {} as Record<string, boolean>);
     }
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',
@@ -305,21 +316,67 @@ export async function updateRoomStatus(
   }
 }
 
-// バトル結果を保存
-export async function saveRoomBattleResult(code: string, result: any): Promise<boolean> {
+// バトル結果を保存（ドロップ情報含む）
+export async function saveRoomBattleResult(
+  code: string, 
+  result: any, 
+  playerDrops?: Record<string, string | undefined>
+): Promise<boolean> {
   try {
+    const data: Record<string, any> = { 
+      battleResult: result, 
+      status: 'done',
+      updatedAt: Date.now(),
+    };
+    
+    // ドロップ情報があれば追加
+    if (playerDrops) {
+      data.playerDrops = playerDrops;
+      // 全員分のclaimedをfalseで初期化
+      data.playerClaimed = Object.keys(playerDrops).reduce((acc, key) => {
+        acc[key] = false;
+        return acc;
+      }, {} as Record<string, boolean>);
+    }
+    
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        battleResult: result, 
-        status: 'done',
-        updatedAt: Date.now(),
-      }),
+      body: JSON.stringify(data),
     });
     return res.ok;
   } catch (e) {
     return false;
+  }
+}
+
+// マルチのドロップ受け取り
+export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string }> {
+  try {
+    const room = await getRoom(code);
+    if (!room || !room.playerDrops || !room.playerClaimed) {
+      return { success: false };
+    }
+    
+    // 既に受け取り済み
+    if (room.playerClaimed[username]) {
+      return { success: false };
+    }
+    
+    // claimed を true に更新
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/playerClaimed/${username}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(true),
+    });
+    
+    if (res.ok) {
+      return { success: true, itemId: room.playerDrops[username] };
+    }
+    return { success: false };
+  } catch (e) {
+    console.error('Failed to claim multi drop:', e);
+    return { success: false };
   }
 }
 
@@ -348,41 +405,87 @@ export async function deleteRoom(code: string): Promise<boolean> {
 }
 
 // ============================================
-// 探索状態管理（排他制御）
+// 探索状態管理（排他制御 + バトル結果保存）
 // ============================================
 
-// 探索開始（他端末で探索中ならnullを返す）
+export interface ServerAdventure {
+  dungeon: string;
+  startTime: number;
+  party: any;
+  battleResult: any;        // バトル結果
+  droppedItemId?: string;   // ドロップアイテムID
+  claimed: boolean;         // 受け取り済みフラグ
+}
+
+// 探索開始（バトル計算+ドロップ抽選済みの結果を保存）
 export async function startAdventureOnServer(
   username: string, 
   dungeon: string, 
-  party: any
-): Promise<{ success: boolean; existingAdventure?: { dungeon: string; startTime: number; party: any } }> {
+  party: any,
+  battleResult: any,
+  droppedItemId?: string
+): Promise<{ success: boolean; existingAdventure?: ServerAdventure }> {
   try {
     // 現在の探索状態を確認
-    const userData = await getUserData(username);
-    if (userData?.currentAdventure) {
+    const existing = await getAdventureOnServer(username);
+    if (existing) {
       // 既に探索中 - 期限切れチェック（探索時間 + 5分のバッファ）
-      const elapsed = Date.now() - userData.currentAdventure.startTime;
+      const elapsed = Date.now() - existing.startTime;
       const maxDuration = 3 * 60 * 60 * 1000; // 最長3時間（2h探索 + 1hバッファ）
       if (elapsed < maxDuration) {
-        return { success: false, existingAdventure: userData.currentAdventure };
+        return { success: false, existingAdventure: existing };
       }
       // 期限切れなら上書きOK
     }
     
-    // 探索開始を記録
+    // 探索開始を記録（バトル結果+ドロップ含む）
+    const adventureData: ServerAdventure = {
+      dungeon,
+      startTime: Date.now(),
+      party,
+      battleResult,
+      droppedItemId,
+      claimed: false,
+    };
+    
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        dungeon,
-        startTime: Date.now(),
-        party,
-      }),
+      body: JSON.stringify(adventureData),
     });
     return { success: res.ok };
   } catch (e) {
     console.error('Failed to start adventure on server:', e);
+    return { success: false };
+  }
+}
+
+// ドロップ受け取り（claimed=falseの場合のみ成功）
+export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string }> {
+  try {
+    const adventure = await getAdventureOnServer(username);
+    if (!adventure) {
+      return { success: false };
+    }
+    
+    // 既に受け取り済み
+    if (adventure.claimed) {
+      return { success: false };
+    }
+    
+    // claimed を true に更新
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure/claimed.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(true),
+    });
+    
+    if (res.ok) {
+      return { success: true, itemId: adventure.droppedItemId };
+    }
+    return { success: false };
+  } catch (e) {
+    console.error('Failed to claim drop:', e);
     return { success: false };
   }
 }
@@ -401,7 +504,7 @@ export async function clearAdventureOnServer(username: string): Promise<boolean>
 }
 
 // 探索状態を取得
-export async function getAdventureOnServer(username: string): Promise<{ dungeon: string; startTime: number; party: any } | null> {
+export async function getAdventureOnServer(username: string): Promise<ServerAdventure | null> {
   try {
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`);
     if (!res.ok) return null;

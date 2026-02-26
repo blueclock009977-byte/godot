@@ -29,8 +29,11 @@ import {
   startAdventureOnServer,
   clearAdventureOnServer,
   getAdventureOnServer,
+  claimAdventureDrop,
+  ServerAdventure,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
+import { runBattle, rollDrop } from '@/lib/battle/engine';
 
 // ============================================
 // ステータス計算
@@ -448,7 +451,7 @@ export const useGameStore = create<GameStore>()(
         await get().syncToServer();
       },
       
-      // 冒険開始（サーバー同期で排他制御）
+      // 冒険開始（バトル計算+ドロップ抽選→サーバー保存）
       startAdventure: async (dungeon) => {
         const { party, username } = get();
         if (!username) return { success: false, error: 'ログインしてください' };
@@ -456,8 +459,21 @@ export const useGameStore = create<GameStore>()(
         const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[dungeon];
         
-        // サーバーに探索開始を記録（他端末チェック）
-        const result = await startAdventureOnServer(username, dungeon, party);
+        // バトル計算（開始時に結果を決定）
+        const battleResult = runBattle(party, dungeon);
+        
+        // ドロップ抽選（勝利時のみ）
+        let droppedItemId: string | undefined;
+        if (battleResult.victory) {
+          const allChars = [...party.front, ...party.back].filter((c): c is Character => c !== null);
+          droppedItemId = rollDrop(dungeon, allChars);
+        }
+        
+        // バトル結果にドロップを含める
+        battleResult.droppedItemId = droppedItemId;
+        
+        // サーバーに探索開始を記録（バトル結果+ドロップ含む）
+        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemId);
         if (!result.success) {
           if (result.existingAdventure) {
             return { success: false, error: '別の端末で探索中です。そちらを完了してください。' };
@@ -472,6 +488,7 @@ export const useGameStore = create<GameStore>()(
             startTime: Date.now(),
             duration: dungeonData.durationSeconds * 1000,
             status: 'inProgress',
+            result: battleResult, // バトル結果も保持
           },
         });
         
@@ -529,7 +546,7 @@ export const useGameStore = create<GameStore>()(
           return;
         }
         
-        // 復元
+        // 復元（バトル結果も含む）
         set({
           currentAdventure: {
             dungeon: adventure.dungeon as DungeonType,
@@ -537,6 +554,7 @@ export const useGameStore = create<GameStore>()(
             startTime: adventure.startTime,
             duration,
             status: 'inProgress',
+            result: adventure.battleResult, // サーバーから復元
           },
         });
       },
