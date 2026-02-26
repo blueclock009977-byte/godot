@@ -514,3 +514,238 @@ export async function getAdventureOnServer(username: string): Promise<ServerAdve
     return null;
   }
 }
+
+// ============================================
+// フレンド機能
+// ============================================
+
+export interface FriendRequest {
+  from: string;
+  timestamp: number;
+}
+
+export interface RoomInvitation {
+  id: string;
+  from: string;
+  roomCode: string;
+  dungeonId: string;
+  timestamp: number;
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
+// フレンドリストを取得
+export async function getFriends(username: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friends.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+// フレンド申請を取得
+export async function getFriendRequests(username: string): Promise<FriendRequest[]> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friendRequests.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data) return [];
+    // オブジェクトを配列に変換
+    return Object.values(data) as FriendRequest[];
+  } catch (e) {
+    return [];
+  }
+}
+
+// フレンド申請を送信
+export async function sendFriendRequest(from: string, to: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 相手が存在するか確認
+    const exists = await userExists(to);
+    if (!exists) {
+      return { success: false, error: 'ユーザーが見つかりません' };
+    }
+    
+    // 既にフレンドか確認
+    const friends = await getFriends(from);
+    if (friends.includes(to)) {
+      return { success: false, error: '既にフレンドです' };
+    }
+    
+    // 申請を追加
+    const request: FriendRequest = {
+      from,
+      timestamp: Date.now(),
+    };
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${to}/friendRequests/${from}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+    });
+    
+    return { success: res.ok };
+  } catch (e) {
+    return { success: false, error: 'エラーが発生しました' };
+  }
+}
+
+// フレンド申請を承認
+export async function acceptFriendRequest(username: string, fromUser: string): Promise<boolean> {
+  try {
+    // 双方のフレンドリストに追加
+    const myFriends = await getFriends(username);
+    const theirFriends = await getFriends(fromUser);
+    
+    if (!myFriends.includes(fromUser)) {
+      myFriends.push(fromUser);
+    }
+    if (!theirFriends.includes(username)) {
+      theirFriends.push(username);
+    }
+    
+    // 保存
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friends.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(myFriends),
+    });
+    
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${fromUser}/friends.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(theirFriends),
+    });
+    
+    // 申請を削除
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friendRequests/${fromUser}.json`, {
+      method: 'DELETE',
+    });
+    
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// フレンド申請を拒否
+export async function rejectFriendRequest(username: string, fromUser: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friendRequests/${fromUser}.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// フレンドを削除
+export async function removeFriend(username: string, friendName: string): Promise<boolean> {
+  try {
+    // 双方から削除
+    const myFriends = await getFriends(username);
+    const theirFriends = await getFriends(friendName);
+    
+    const newMyFriends = myFriends.filter(f => f !== friendName);
+    const newTheirFriends = theirFriends.filter(f => f !== username);
+    
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/friends.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newMyFriends),
+    });
+    
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${friendName}/friends.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTheirFriends),
+    });
+    
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ============================================
+// 招待機能
+// ============================================
+
+// 招待を取得
+export async function getInvitations(username: string): Promise<RoomInvitation[]> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/invitations.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data) return [];
+    // オブジェクトを配列に変換し、pendingのみ取得
+    const invites = Object.values(data) as RoomInvitation[];
+    // 5分以内のpendingのみ
+    const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+    return invites.filter(inv => inv.status === 'pending' && inv.timestamp > fiveMinAgo);
+  } catch (e) {
+    return [];
+  }
+}
+
+// 招待を送信
+export async function sendInvitation(from: string, to: string, roomCode: string, dungeonId: string): Promise<boolean> {
+  try {
+    const invitation: RoomInvitation = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      from,
+      roomCode,
+      dungeonId,
+      timestamp: Date.now(),
+      status: 'pending',
+    };
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${to}/invitations/${invitation.id}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(invitation),
+    });
+    
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 招待に応答
+export async function respondToInvitation(username: string, invitationId: string, accept: boolean): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/invitations/${invitationId}/status.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(accept ? 'accepted' : 'rejected'),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 古い招待を削除
+export async function cleanupInvitations(username: string): Promise<void> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/invitations.json`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data) return;
+    
+    const fiveMinAgo = Date.now() - 5 * 60 * 1000;
+    for (const [id, inv] of Object.entries(data) as [string, RoomInvitation][]) {
+      if (inv.timestamp < fiveMinAgo || inv.status !== 'pending') {
+        await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/invitations/${id}.json`, {
+          method: 'DELETE',
+        });
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}

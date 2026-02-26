@@ -4,17 +4,16 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
-import { allItems, getItemById } from '@/lib/data/items';
+import { getItemById } from '@/lib/data/items';
+import { getInvitations, getFriendRequests, RoomInvitation, FriendRequest } from '@/lib/firebase';
 
 function LoginScreen() {
-  const { login, autoLogin, isLoading
-   } = useGameStore();
+  const { login, autoLogin, isLoading } = useGameStore();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isAutoLogging, setIsAutoLogging] = useState(true);
   
-  // 自動ログイン試行
   useEffect(() => {
     const tryAutoLogin = async () => {
       const success = await autoLogin();
@@ -55,7 +54,6 @@ function LoginScreen() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md flex flex-col items-center justify-center min-h-screen">
-        {/* タイトル */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
             ギルドアドベンチャー
@@ -63,7 +61,6 @@ function LoginScreen() {
           <p className="text-slate-400">放置系ビルド探索RPG</p>
         </div>
         
-        {/* ログインフォーム */}
         <div className="w-full bg-slate-800 rounded-lg p-6 border border-slate-700">
           <h2 className="text-xl font-bold mb-4 text-center">ログイン / 新規登録</h2>
           
@@ -111,9 +108,8 @@ function LoginScreen() {
           </p>
         </div>
         
-        {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.5 Beta</p>
+          <p>v0.8.6 Beta</p>
         </div>
       </div>
     </main>
@@ -123,8 +119,25 @@ function LoginScreen() {
 function GameScreen() {
   const router = useRouter();
   const { characters, party, currentAdventure, username, logout, inventory } = useGameStore();
+  const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   
-  // 探索中または完了済みなら自動で探索画面に遷移
+  // 通知をポーリング
+  useEffect(() => {
+    if (!username) return;
+    const loadNotifications = async () => {
+      const [invites, requests] = await Promise.all([
+        getInvitations(username),
+        getFriendRequests(username),
+      ]);
+      setInvitations(invites);
+      setFriendRequests(requests);
+    };
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [username]);
+  
   useEffect(() => {
     if (currentAdventure) {
       router.push('/adventure');
@@ -132,11 +145,11 @@ function GameScreen() {
   }, [currentAdventure, router]);
   
   const partyCount = [...party.front, ...party.back].filter(Boolean).length;
+  const totalNotifications = invitations.length + friendRequests.length;
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
@@ -152,7 +165,21 @@ function GameScreen() {
           </button>
         </div>
         
-        {/* メニュー */}
+        {/* 招待通知 */}
+        {invitations.length > 0 && (
+          <Link href="/multi" className="block mb-4">
+            <div className="bg-purple-900/50 rounded-lg p-4 border border-purple-600 animate-pulse">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">📨</span>
+                <div>
+                  <p className="font-semibold">マルチプレイに招待されています！</p>
+                  <p className="text-sm text-purple-300">{invitations.length}件の招待 - タップして確認</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
+        
         <div className="space-y-4">
           <Link href="/create" className="block">
             <div className="bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg p-4 border border-slate-600">
@@ -206,7 +233,7 @@ function GameScreen() {
             </div>
           ) : (
             <Link href="/multi" className="block">
-              <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors">
+              <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors relative">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
@@ -214,9 +241,32 @@ function GameScreen() {
                   </div>
                   <span className="text-white">→</span>
                 </div>
+                {invitations.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">
+                    {invitations.length}
+                  </span>
+                )}
               </div>
             </Link>
           )}
+          
+          {/* フレンド */}
+          <Link href="/friends" className="block">
+            <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors relative">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">🤝 フレンド</h2>
+                  <p className="text-slate-400 text-sm">フレンドを追加・招待</p>
+                </div>
+                <span className="text-slate-400">→</span>
+              </div>
+              {friendRequests.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-amber-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">
+                  {friendRequests.length}
+                </span>
+              )}
+            </div>
+          </Link>
           
           <Link href="/history" className="block">
             <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors">
@@ -231,7 +281,6 @@ function GameScreen() {
           </Link>
         </div>
         
-        {/* 冒険中表示 */}
         {currentAdventure && currentAdventure.status === 'inProgress' && (
           <div className="mt-8 bg-amber-900/50 rounded-lg p-4 border border-amber-700">
             <div className="flex items-center gap-2 mb-2">
@@ -244,7 +293,6 @@ function GameScreen() {
           </div>
         )}
         
-        {/* キャラクター一覧 */}
         <div className="mt-8 bg-slate-800 rounded-lg p-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">👤 所属冒険者 ({characters.length}人)</h3>
           {characters.length === 0 ? (
@@ -274,7 +322,6 @@ function GameScreen() {
           )}
         </div>
         
-        {/* インベントリ */}
         <div className="mt-4 bg-slate-800 rounded-lg p-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">💎 アイテム</h3>
           {Object.keys(inventory).filter(id => inventory[id] > 0).length === 0 ? (
@@ -300,9 +347,8 @@ function GameScreen() {
           </p>
         </div>
         
-        {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.5 Beta</p>
+          <p>v0.8.6 Beta</p>
         </div>
       </div>
     </main>
@@ -312,20 +358,17 @@ function GameScreen() {
 export default function Home() {
   const { isLoggedIn, autoLogin, username, _dataLoaded } = useGameStore();
   
-  // ハイドレーション対策
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
   }, []);
   
-  // 初回ロード時のみautoLogin（Zustand側でも重複チェックあり）
   useEffect(() => {
     if (mounted && isLoggedIn && username) {
       autoLogin();
     }
   }, [mounted, isLoggedIn, username, autoLogin]);
   
-  // マウント前、またはログイン済みでデータロード中はローディング表示
   if (!mounted || (isLoggedIn && !_dataLoaded)) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
