@@ -817,6 +817,33 @@ export function isOnline(status: UserStatus | null): boolean {
   return status.lastSeen > fiveMinAgo;
 }
 
+// フレンドの詳細ステータスを取得（冒険状態も含む）
+export interface FriendFullStatus {
+  status: UserStatus | null;
+  currentAdventure: ServerAdventure | null;
+  multiAdventure: MultiAdventureResult | null;
+}
+
+export async function getFriendFullStatus(username: string): Promise<FriendFullStatus> {
+  const [status, currentAdventure, multiAdventure] = await Promise.all([
+    getUserStatus(username),
+    getAdventureOnServer(username),
+    getMultiAdventure(username),
+  ]);
+  return { status, currentAdventure, multiAdventure };
+}
+
+// 複数フレンドの詳細ステータスを取得
+export async function getMultipleFriendFullStatus(usernames: string[]): Promise<Record<string, FriendFullStatus>> {
+  const results: Record<string, FriendFullStatus> = {};
+  await Promise.all(
+    usernames.map(async (username) => {
+      results[username] = await getFriendFullStatus(username);
+    })
+  );
+  return results;
+}
+
 // ============================================
 // マルチ冒険結果（ソロと同様にユーザーに保存）
 // ============================================

@@ -10,18 +10,18 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   removeFriend,
-  getMultipleUserStatus,
+  getMultipleFriendFullStatus,
   isOnline,
   updateUserStatus,
   FriendRequest,
-  UserStatus,
+  FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
 
 export default function FriendsPage() {
   const { username } = useGameStore();
   const [friends, setFriends] = useState<string[]>([]);
-  const [friendStatuses, setFriendStatuses] = useState<Record<string, UserStatus | null>>({});
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchName, setSearchName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -39,9 +39,9 @@ export default function FriendsPage() {
     setFriends(friendList);
     setRequests(requestList);
     
-    // フレンドのステータスを取得
+    // フレンドの詳細ステータスを取得
     if (friendList.length > 0) {
-      const statuses = await getMultipleUserStatus(friendList);
+      const statuses = await getMultipleFriendFullStatus(friendList);
       setFriendStatuses(statuses);
     }
     
@@ -58,20 +58,65 @@ export default function FriendsPage() {
   }, [username]);
   
   // ステータス表示用のヘルパー関数
-  const getStatusDisplay = (status: UserStatus | null) => {
-    if (!status || !isOnline(status)) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
+    if (!fullStatus) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
     }
+    
+    const { status, currentAdventure, multiAdventure } = fullStatus;
+    
+    // ソロ冒険中をチェック（Web閉じても表示）
+    if (currentAdventure) {
+      const dungeonName = dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.name || currentAdventure.dungeon;
+      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
+      const now = Date.now();
+      
+      if (now < endTime) {
+        // まだ冒険中
+        const remaining = Math.ceil((endTime - now) / 60000);
+        return { 
+          text: `ソロ冒険中`, 
+          color: 'text-amber-400', 
+          emoji: '⚔️',
+          detail: `${dungeonName} (残り${remaining}分)`
+        };
+      } else {
+        // 帰還待ち
+        return { 
+          text: '帰還待ち', 
+          color: 'text-orange-400', 
+          emoji: '🏠',
+          detail: `${dungeonName} の結果確認待ち`
+        };
+      }
+    }
+    
+    // マルチ結果待ちをチェック
+    if (multiAdventure && !multiAdventure.claimed) {
+      const dungeonName = dungeons[multiAdventure.dungeonId as keyof typeof dungeons]?.name || multiAdventure.dungeonId;
+      return { 
+        text: 'マルチ結果待ち', 
+        color: 'text-purple-400', 
+        emoji: '👥',
+        detail: `${dungeonName} の結果確認待ち`
+      };
+    }
+    
+    // 通常のステータス
+    if (!status || !isOnline(status)) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
+    }
+    
     switch (status.activity) {
       case 'lobby':
-        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
+        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' };
       case 'solo':
-        const dungeonName = status.dungeonId ? dungeons[status.dungeonId as keyof typeof dungeons]?.name : '';
-        return { text: `ソロ冒険中${dungeonName ? ` (${dungeonName})` : ''}`, color: 'text-amber-400', emoji: '⚔️' };
+        // currentAdventureがない場合（通常はここに来ない）
+        return { text: 'ソロ冒険中', color: 'text-amber-400', emoji: '⚔️', detail: '' };
       case 'multi':
-        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥' };
+        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ${status.roomCode}` : '' };
       default:
-        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
+        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢', detail: '' };
     }
   };
 
@@ -198,6 +243,9 @@ export default function FriendsPage() {
                       <div className={`text-xs ${status.color}`}>
                         {status.emoji} {status.text}
                       </div>
+                      {status.detail && (
+                        <div className="text-xs text-slate-400">{status.detail}</div>
+                      )}
                     </div>
                     <button
                       onClick={() => handleRemove(friend)}

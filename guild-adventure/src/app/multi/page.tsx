@@ -4,7 +4,18 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
-import { createRoom, joinRoom, getFriends, sendInvitation, getInvitations, respondToInvitation, RoomInvitation } from '@/lib/firebase';
+import { 
+  createRoom, 
+  joinRoom, 
+  getFriends, 
+  sendInvitation, 
+  getInvitations, 
+  respondToInvitation, 
+  getMultipleFriendFullStatus,
+  isOnline,
+  FriendFullStatus,
+  RoomInvitation 
+} from '@/lib/firebase';
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType } from '@/lib/types';
 
@@ -21,6 +32,7 @@ export default function MultiPage() {
   // 招待関連
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friends, setFriends] = useState<string[]>([]);
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [createdRoomCode, setCreatedRoomCode] = useState('');
   const [inviteSent, setInviteSent] = useState<string[]>([]);
@@ -49,12 +61,64 @@ export default function MultiPage() {
       try {
         const f = await getFriends(username);
         setFriends(f);
+        // フレンドの詳細ステータスを取得
+        if (f.length > 0) {
+          const statuses = await getMultipleFriendFullStatus(f);
+          setFriendStatuses(statuses);
+        }
       } catch (e) {
         console.error('Failed to load friends:', e);
       }
     };
     loadFriends();
-  }, [username]);
+    // 招待モーダル表示中は5秒ごとに更新
+    const interval = setInterval(() => {
+      if (showInviteModal) loadFriends();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [username, showInviteModal]);
+  
+  // ステータス表示用のヘルパー関数
+  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
+    if (!fullStatus) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+    }
+    
+    const { status, currentAdventure, multiAdventure } = fullStatus;
+    
+    // ソロ冒険中をチェック
+    if (currentAdventure) {
+      const dungeonName = dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.name || '';
+      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
+      const now = Date.now();
+      
+      if (now < endTime) {
+        const remaining = Math.ceil((endTime - now) / 60000);
+        return { text: `冒険中 (残り${remaining}分)`, color: 'text-amber-400', emoji: '⚔️' };
+      } else {
+        return { text: '帰還待ち', color: 'text-orange-400', emoji: '🏠' };
+      }
+    }
+    
+    // マルチ結果待ち
+    if (multiAdventure && !multiAdventure.claimed) {
+      return { text: '結果待ち', color: 'text-purple-400', emoji: '👥' };
+    }
+    
+    // 通常のステータス
+    if (!status || !isOnline(status)) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+    }
+    
+    switch (status.activity) {
+      case 'lobby':
+        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
+      case 'multi':
+        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥' };
+      default:
+        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
+    }
+  };
   
   const handleCreate = async () => {
     if (!username) return;
@@ -99,23 +163,22 @@ export default function MultiPage() {
     setIsLoading(false);
   };
   
-  // 招待に応答
-  const handleAcceptInvite = async (inv: RoomInvitation) => {
+  const handleAcceptInvite = async (invite: RoomInvitation) => {
     if (!username) return;
-    await respondToInvitation(username, inv.id, true);
-    const success = await joinRoom(inv.roomCode, username);
+    const success = await joinRoom(invite.roomCode, username);
     if (success) {
-      router.push(`/multi/${inv.roomCode}`);
+      await respondToInvitation(username, invite.id, true);
+      router.push(`/multi/${invite.roomCode}`);
     } else {
-      setError('ルームが見つからないか、満員です');
-      setInvitations(invitations.filter(i => i.id !== inv.id));
+      setError('ルームに参加できませんでした（満員または存在しない）');
+      await respondToInvitation(username, invite.id, false);
     }
   };
   
-  const handleRejectInvite = async (inv: RoomInvitation) => {
+  const handleRejectInvite = async (invite: RoomInvitation) => {
     if (!username) return;
-    await respondToInvitation(username, inv.id, false);
-    setInvitations(invitations.filter(i => i.id !== inv.id));
+    await respondToInvitation(username, invite.id, false);
+    setInvitations(invitations.filter(i => i.id !== invite.id));
   };
   
   return (
@@ -124,42 +187,36 @@ export default function MultiPage() {
         {/* ヘッダー */}
         <div className="flex items-center gap-4 mb-6">
           <Link href="/" className="text-slate-400 hover:text-white">← 戻る</Link>
-          <h1 className="text-2xl font-bold">マルチプレイ</h1>
+          <h1 className="text-2xl font-bold">👥 マルチプレイ</h1>
         </div>
         
         {/* 招待通知 */}
         {invitations.length > 0 && (
-          <div className="mb-6 bg-purple-900/50 rounded-lg p-4 border border-purple-600">
-            <h2 className="text-sm text-purple-300 mb-3">📨 招待が届いています！</h2>
-            <div className="space-y-2">
-              {invitations.map((inv) => (
-                <div key={inv.id} className="bg-slate-700 rounded-lg p-3">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="font-semibold">{inv.from}</span>
-                      <span className="text-slate-400 text-sm"> からの招待</span>
-                    </div>
-                    <span className="text-xs text-slate-400">
-                      {dungeons[inv.dungeonId as DungeonType]?.name || inv.dungeonId}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleAcceptInvite(inv)}
-                      className="flex-1 bg-green-600 hover:bg-green-500 py-2 rounded text-sm font-semibold"
-                    >
-                      参加する
-                    </button>
-                    <button
-                      onClick={() => handleRejectInvite(inv)}
-                      className="flex-1 bg-slate-600 hover:bg-slate-500 py-2 rounded text-sm"
-                    >
-                      拒否
-                    </button>
-                  </div>
+          <div className="mb-6 space-y-2">
+            {invitations.map((invite) => (
+              <div key={invite.id} className="bg-purple-900/50 rounded-lg p-4 border border-purple-700">
+                <p className="mb-2">
+                  <span className="font-semibold text-purple-300">{invite.from}</span> から招待が届いています
+                </p>
+                <p className="text-sm text-slate-400 mb-3">
+                  {dungeons[invite.dungeonId as keyof typeof dungeons]?.name || invite.dungeonId} へ冒険
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleAcceptInvite(invite)}
+                    className="flex-1 bg-green-600 hover:bg-green-500 py-2 rounded font-semibold"
+                  >
+                    参加
+                  </button>
+                  <button
+                    onClick={() => handleRejectInvite(invite)}
+                    className="flex-1 bg-slate-600 hover:bg-slate-500 py-2 rounded"
+                  >
+                    拒否
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
         
@@ -167,18 +224,15 @@ export default function MultiPage() {
           <div className="space-y-4">
             <button
               onClick={() => setMode('create')}
-              className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg p-4 text-left"
+              className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-4 font-semibold text-lg"
             >
-              <div className="text-xl font-semibold">🎮 ルームを作成</div>
-              <div className="text-sm text-amber-200">仲間を招待してダンジョンに挑む</div>
+              🏠 ルームを作成
             </button>
-            
             <button
               onClick={() => setMode('join')}
-              className="w-full bg-slate-700 hover:bg-slate-600 rounded-lg p-4 text-left border border-slate-600"
+              className="w-full bg-slate-700 hover:bg-slate-600 rounded-lg py-4 font-semibold text-lg border border-slate-600"
             >
-              <div className="text-xl font-semibold">🔗 ルームに参加</div>
-              <div className="text-sm text-slate-400">ルームコードを入力して参加</div>
+              🚪 ルームに参加
             </button>
           </div>
         )}
@@ -191,20 +245,22 @@ export default function MultiPage() {
             
             {/* ダンジョン選択 */}
             <div>
-              <h2 className="text-sm text-slate-400 mb-2">ダンジョン</h2>
-              <div className="grid grid-cols-2 gap-2">
+              <h2 className="text-sm text-slate-400 mb-2">ダンジョン選択</h2>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
                 {dungeonList.map((d) => (
                   <button
                     key={d.id}
                     onClick={() => setSelectedDungeon(d.id)}
-                    className={`p-3 rounded-lg border text-left ${
+                    className={`w-full text-left p-3 rounded-lg border ${
                       selectedDungeon === d.id
-                        ? 'bg-amber-600 border-amber-500'
+                        ? 'bg-amber-600/30 border-amber-500'
                         : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                     }`}
                   >
                     <div className="font-semibold">{d.name}</div>
-                    <div className="text-xs text-slate-300">難易度{d.difficulty}</div>
+                    <div className="text-xs text-slate-400">
+                      難易度{'★'.repeat(d.difficulty)} | {d.recommendedPlayers}人推奨
+                    </div>
                   </button>
                 ))}
               </div>
@@ -212,11 +268,11 @@ export default function MultiPage() {
             
             {/* 人数選択 */}
             <div>
-              <h2 className="text-sm text-slate-400 mb-2">プレイヤー人数</h2>
-              <div className="grid grid-cols-2 gap-2">
+              <h2 className="text-sm text-slate-400 mb-2">最大人数</h2>
+              <div className="flex gap-2">
                 <button
                   onClick={() => setMaxPlayers(2)}
-                  className={`p-3 rounded-lg border ${
+                  className={`flex-1 p-3 rounded-lg border ${
                     maxPlayers === 2
                       ? 'bg-amber-600 border-amber-500'
                       : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
@@ -227,7 +283,7 @@ export default function MultiPage() {
                 </button>
                 <button
                   onClick={() => setMaxPlayers(3)}
-                  className={`p-3 rounded-lg border ${
+                  className={`flex-1 p-3 rounded-lg border ${
                     maxPlayers === 3
                       ? 'bg-amber-600 border-amber-500'
                       : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
@@ -293,21 +349,29 @@ export default function MultiPage() {
               
               <h3 className="text-sm text-slate-400 mb-2">フレンドを招待</h3>
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                {friends.map((friend) => (
-                  <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
-                    <span>{friend}</span>
-                    {inviteSent.includes(friend) ? (
-                      <span className="text-green-400 text-sm">✓ 送信済み</span>
-                    ) : (
-                      <button
-                        onClick={() => handleInviteFriend(friend)}
-                        className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
-                      >
-                        招待
-                      </button>
-                    )}
-                  </div>
-                ))}
+                {friends.map((friend) => {
+                  const status = getStatusDisplay(friendStatuses[friend]);
+                  return (
+                    <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
+                      <div>
+                        <span className="font-semibold">{friend}</span>
+                        <div className={`text-xs ${status.color}`}>
+                          {status.emoji} {status.text}
+                        </div>
+                      </div>
+                      {inviteSent.includes(friend) ? (
+                        <span className="text-green-400 text-sm">✓ 送信済み</span>
+                      ) : (
+                        <button
+                          onClick={() => handleInviteFriend(friend)}
+                          className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
+                        >
+                          招待
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               
               <button
