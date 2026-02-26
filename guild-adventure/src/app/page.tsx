@@ -128,10 +128,10 @@ function GameScreen() {
   
   console.log('[GameScreen] render, currentAdventure:', currentAdventure);
   
-  // 探索中なら自動で探索画面に遷移
+  // 探索中または完了済みなら自動で探索画面に遷移
   useEffect(() => {
-    if (currentAdventure && currentAdventure.status === 'inProgress') {
-      console.log('[GameScreen] redirecting to adventure');
+    if (currentAdventure) {
+      console.log('[GameScreen] redirecting to adventure, status:', currentAdventure.status);
       router.push('/adventure');
     }
   }, [currentAdventure, router]);

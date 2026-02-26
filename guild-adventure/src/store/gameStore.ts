@@ -575,10 +575,10 @@ export const useGameStore = create<GameStore>()(
             });
           }
           
-          // 完了後はクリア（ドロップと履歴は既に処理済み）
-          console.log('[restoreAdventure] adventure done, clearing server state');
+          // 完了後はサーバーからクリア（ドロップと履歴は既に処理済み）
+          // でもcurrentAdventureは復元して結果を見れるようにする
+          console.log('[restoreAdventure] adventure done, clearing server state but keeping local');
           await clearAdventureOnServer(username);
-          return;
         }
         
         // 復元（バトル結果も含む）
