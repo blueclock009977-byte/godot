@@ -239,6 +239,7 @@ export const useGameStore = create<GameStore>()(
             });
             // 既存の探索を復元
             await get().restoreAdventure();
+            console.log('[autoLogin] after restoreAdventure, currentAdventure:', get().currentAdventure);
             return true;
           }
         } catch (e) {
@@ -564,6 +565,7 @@ export const useGameStore = create<GameStore>()(
             result: adventure.battleResult, // サーバーから復元
           },
         });
+        console.log('[restoreAdventure] after set, currentAdventure:', get().currentAdventure);
       },
     }),
     {
