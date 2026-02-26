@@ -525,6 +525,7 @@ export const useGameStore = create<GameStore>()(
       
       // 既存の探索を復元（ログイン時に呼ぶ）
       restoreAdventure: async () => {
+        try {
         const { username } = get();
         console.log('[restoreAdventure] username:', username);
         if (!username) return;
@@ -594,6 +595,9 @@ export const useGameStore = create<GameStore>()(
           },
         });
         console.log('[restoreAdventure] after set, currentAdventure:', get().currentAdventure);
+        } catch (e) {
+          console.error('[restoreAdventure] error:', e);
+        }
       },
     }),
     {
