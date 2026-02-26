@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
@@ -28,10 +29,21 @@ export default function DungeonPage() {
   const partyCount = [...party.front, ...party.back].filter(Boolean).length;
   const canStart = partyCount > 0 && partyCount <= 4 && !currentAdventure;
   
-  const handleStart = (dungeonId: DungeonType) => {
-    if (!canStart) return;
-    startAdventure(dungeonId);
-    router.push('/adventure');
+  const [isStarting, setIsStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const handleStart = async (dungeonId: DungeonType) => {
+    if (!canStart || isStarting) return;
+    setIsStarting(true);
+    setError(null);
+    
+    const result = await startAdventure(dungeonId);
+    if (result.success) {
+      router.push('/adventure');
+    } else {
+      setError(result.error || '探索を開始できませんでした');
+      setIsStarting(false);
+    }
   };
   
   return (
@@ -58,17 +70,24 @@ export default function DungeonPage() {
           </div>
         )}
         
+        {/* エラー表示 */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-900/50 rounded-lg border border-red-700">
+            <p>⚠️ {error}</p>
+          </div>
+        )}
+        
         {/* ダンジョンリスト */}
         <div className="space-y-4">
           {dungeonList.map((dungeon) => (
             <div
               key={dungeon.id}
               className={`rounded-lg border p-4 transition-colors ${
-                canStart 
+                canStart && !isStarting
                   ? 'bg-slate-700 border-slate-600 hover:bg-slate-600 cursor-pointer'
                   : 'bg-slate-800 border-slate-700 opacity-50'
               }`}
-              onClick={() => canStart && handleStart(dungeon.id)}
+              onClick={() => canStart && !isStarting && handleStart(dungeon.id)}
             >
               <div className="flex justify-between items-start mb-2">
                 <h2 className="text-xl font-bold">{dungeon.name}</h2>

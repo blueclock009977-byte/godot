@@ -26,6 +26,9 @@ import {
   clearStoredUsername,
   addAdventureHistory,
   AdventureHistory,
+  startAdventureOnServer,
+  clearAdventureOnServer,
+  getAdventureOnServer,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
 
@@ -103,9 +106,10 @@ interface GameStore {
   clearParty: () => Promise<void>;
   
   // 冒険管理
-  startAdventure: (dungeon: DungeonType) => void;
-  completeAdventure: (result: Adventure['result']) => void;
-  cancelAdventure: () => void;
+  startAdventure: (dungeon: DungeonType) => Promise<{ success: boolean; error?: string }>;
+  completeAdventure: (result: Adventure['result']) => Promise<void>;
+  cancelAdventure: () => Promise<void>;
+  restoreAdventure: () => Promise<void>;
   
   // アイテム管理
   addItem: (itemId: string, count?: number) => void;
@@ -230,6 +234,8 @@ export const useGameStore = create<GameStore>()(
               history: userData.history || [],
               isLoading: false,
             });
+            // 既存の探索を復元
+            await get().restoreAdventure();
             return true;
           }
         } catch (e) {
@@ -442,11 +448,22 @@ export const useGameStore = create<GameStore>()(
         await get().syncToServer();
       },
       
-      // 冒険開始（ローカルのみ）
-      startAdventure: (dungeon) => {
-        const { party } = get();
+      // 冒険開始（サーバー同期で排他制御）
+      startAdventure: async (dungeon) => {
+        const { party, username } = get();
+        if (!username) return { success: false, error: 'ログインしてください' };
+        
         const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[dungeon];
+        
+        // サーバーに探索開始を記録（他端末チェック）
+        const result = await startAdventureOnServer(username, dungeon, party);
+        if (!result.success) {
+          if (result.existingAdventure) {
+            return { success: false, error: '別の端末で探索中です。そちらを完了してください。' };
+          }
+          return { success: false, error: 'サーバーエラー。再試行してください。' };
+        }
         
         set({
           currentAdventure: {
@@ -457,20 +474,71 @@ export const useGameStore = create<GameStore>()(
             status: 'inProgress',
           },
         });
+        
+        return { success: true };
       },
       
       // 冒険完了
-      completeAdventure: (result) => {
+      completeAdventure: async (result) => {
+        const { username } = get();
+        
         set((state) => ({
           currentAdventure: state.currentAdventure
             ? { ...state.currentAdventure, status: 'completed', result }
             : null,
         }));
+        
+        // サーバーから探索状態を削除
+        if (username) {
+          await clearAdventureOnServer(username);
+        }
       },
       
       // 冒険キャンセル
-      cancelAdventure: () => {
+      cancelAdventure: async () => {
+        const { username } = get();
         set({ currentAdventure: null });
+        
+        // サーバーからも削除
+        if (username) {
+          await clearAdventureOnServer(username);
+        }
+      },
+      
+      // 既存の探索を復元（ログイン時に呼ぶ）
+      restoreAdventure: async () => {
+        const { username } = get();
+        if (!username) return;
+        
+        const adventure = await getAdventureOnServer(username);
+        if (!adventure) return;
+        
+        const { dungeons } = require('@/lib/data/dungeons');
+        const dungeonData = dungeons[adventure.dungeon];
+        if (!dungeonData) {
+          // 無効なダンジョン → クリア
+          await clearAdventureOnServer(username);
+          return;
+        }
+        
+        // 期限切れチェック
+        const elapsed = Date.now() - adventure.startTime;
+        const duration = dungeonData.durationSeconds * 1000;
+        if (elapsed > duration + 60000) { // 完了後1分以上経過 → クリア
+          await clearAdventureOnServer(username);
+          return;
+        }
+        
+        // 復元
+        set({
+          currentAdventure: {
+            dungeon: adventure.dungeon as DungeonType,
+            party: adventure.party,
+            startTime: adventure.startTime,
+            duration,
+            status: 'inProgress',
+          },
+        });
       },
     }),
     {

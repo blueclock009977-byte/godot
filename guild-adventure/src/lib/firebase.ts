@@ -21,6 +21,11 @@ export interface UserData {
   party: any;
   inventory: Record<string, number>;
   history?: AdventureHistory[];
+  currentAdventure?: {
+    dungeon: string;
+    startTime: number;
+    party: any;
+  } | null;
   createdAt: number;
   lastLogin: number;
 }
@@ -339,5 +344,70 @@ export async function deleteRoom(code: string): Promise<boolean> {
     return res.ok;
   } catch (e) {
     return false;
+  }
+}
+
+// ============================================
+// 探索状態管理（排他制御）
+// ============================================
+
+// 探索開始（他端末で探索中ならnullを返す）
+export async function startAdventureOnServer(
+  username: string, 
+  dungeon: string, 
+  party: any
+): Promise<{ success: boolean; existingAdventure?: { dungeon: string; startTime: number; party: any } }> {
+  try {
+    // 現在の探索状態を確認
+    const userData = await getUserData(username);
+    if (userData?.currentAdventure) {
+      // 既に探索中 - 期限切れチェック（探索時間 + 5分のバッファ）
+      const elapsed = Date.now() - userData.currentAdventure.startTime;
+      const maxDuration = 3 * 60 * 60 * 1000; // 最長3時間（2h探索 + 1hバッファ）
+      if (elapsed < maxDuration) {
+        return { success: false, existingAdventure: userData.currentAdventure };
+      }
+      // 期限切れなら上書きOK
+    }
+    
+    // 探索開始を記録
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dungeon,
+        startTime: Date.now(),
+        party,
+      }),
+    });
+    return { success: res.ok };
+  } catch (e) {
+    console.error('Failed to start adventure on server:', e);
+    return { success: false };
+  }
+}
+
+// 探索完了（サーバーから削除）
+export async function clearAdventureOnServer(username: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to clear adventure on server:', e);
+    return false;
+  }
+}
+
+// 探索状態を取得
+export async function getAdventureOnServer(username: string): Promise<{ dungeon: string; startTime: number; party: any } | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data || null;
+  } catch (e) {
+    return null;
   }
 }
