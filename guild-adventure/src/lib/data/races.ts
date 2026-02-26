@@ -40,7 +40,7 @@ export const races: Record<string, RaceData> = {
     passives: [
       { name: '鋼の肉体', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 20 }] },
       { name: '怪力', description: '物理攻撃の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
-      { name: '毒耐性', description: '毒への高い耐性', effects: [{ type: 'poisonResist', value: 50 }] },
+      { name: '頑強', description: '劣化耐性+50%', effects: [{ type: 'degradationResist', value: 50 }] },
       { name: '竜殺し', description: '竜系からの被ダメージ軽減', effects: [{ type: 'speciesResist_dragon', value: 20 }] },
     ],
     skills: [
@@ -71,7 +71,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 120, maxMp: 20, atk: 18, def: 8, agi: 7, mag: 3 },
     passives: [
       { name: '狂戦士', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 30 }] },
-      { name: '血の渇望', description: 'クリティカル時にHP回復', effects: [{ type: 'critBonus', value: 10 }, { type: 'hpRegen', value: 5 }] },
+      { name: '一撃必殺', description: '攻撃回数1固定、威力+50%', effects: [{ type: 'fixedHits', value: 1 }, { type: 'singleHitBonus', value: 50 }] },
       { name: '無謀', description: '被ダメージが増加', effects: [{ type: 'damageReduction', value: -15 }] },
       { name: '獣殺し', description: '獣系への与ダメージ上昇', effects: [{ type: 'speciesKiller_beast', value: 40 }] },
     ],
@@ -87,7 +87,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 110, maxMp: 40, atk: 12, def: 14, agi: 9, mag: 8 },
     passives: [
       { name: '再生能力', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 8 }] },
-      { name: '硬い鱗', description: '物理防御が上昇', effects: [{ type: 'damageReduction', value: 10 }] },
+      { name: '硬い鱗', description: '被ダメ軽減+劣化耐性30%', effects: [{ type: 'damageReduction', value: 10 }, { type: 'degradationResist', value: 30 }] },
       { name: '両刀の才', description: '物理と魔法の威力上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 10 }] },
       { name: '獣耐性', description: '獣系からの被ダメージ軽減', effects: [{ type: 'speciesResist_beast', value: 15 }] },
     ],
@@ -119,7 +119,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 90, maxMp: 50, atk: 11, def: 12, agi: 6, mag: 14 },
     passives: [
       { name: '不死の呪い', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 80 }] },
-      { name: '回復無効', description: '回復効果が半減', effects: [{ type: 'healReceived', value: -50 }] },
+      { name: '腐食攻撃', description: '与える劣化+3%', effects: [{ type: 'degradationBonus', value: 3 }] },
       { name: 'HP吸収', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 20 }] },
       { name: '不死耐性', description: '不死系からの被ダメージ軽減', effects: [{ type: 'speciesResist_undead', value: 50 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 30 }] },
@@ -136,7 +136,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 60, maxMp: 35, atk: 9, def: 5, agi: 18, mag: 6 },
     passives: [
       { name: '狡猾', description: '先制率が大幅上昇', effects: [{ type: 'firstStrikeBonus', value: 35 }] },
-      { name: '弱者の知恵', description: 'HP低下時に回避率上昇', effects: [{ type: 'evasionBonus', value: 20 }] },
+      { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '急所狙い', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 20 }] },
     ],

@@ -109,6 +109,14 @@ export type EffectType =
   | 'summonUndead'      // 死霊召喚
   | 'fullRegen'         // 毎ターン全回復
   | 'dropBonus'         // ドロップ率+%
+  // 連撃・劣化関連
+  | 'fixedHits'         // ヒット数固定（AGI無視）
+  | 'bonusHits'         // 追加ヒット数
+  | 'noDecayHits'       // 最初のN回は減衰なし
+  | 'decayReduction'    // 減衰緩和（%、80%→90%など）
+  | 'singleHitBonus'    // 単発時ダメージ+%
+  | 'degradationResist' // 劣化耐性（受ける劣化-%）
+  | 'degradationBonus'  // 劣化ボーナス（与える劣化+%）
   ;
 
 export interface Effect {

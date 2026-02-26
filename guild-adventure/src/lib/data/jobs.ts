@@ -8,7 +8,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxHp: 20, maxMp: 5, atk: 5, def: 3 },
     passives: [
       { name: '武器習熟', description: '物理攻撃の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
-      { name: '闘志', description: 'HPが減るほどクリティカル率上昇', effects: [{ type: 'critBonus', value: 10 }] },
+      { name: '不減の二撃', description: '2撃目まで減衰なし', effects: [{ type: 'noDecayHits', value: 2 }] },
     ],
     skills: [
       { id: 'power_strike', name: '強撃', description: '渾身の一撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 8 },
@@ -57,7 +57,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxMp: 15, atk: 3, agi: 8, def: -2 },
     passives: [
       { name: '急所狙い', description: 'クリティカル率が大幅上昇', effects: [{ type: 'critBonus', value: 25 }] },
-      { name: 'クリティカル強化', description: 'クリティカル時のダメージ上昇', effects: [{ type: 'critDamage', value: 30 }] },
+      { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '影潜み', description: '先制率が上昇', effects: [{ type: 'firstStrikeBonus', value: 20 }] },
     ],
     skills: [
@@ -74,7 +74,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxHp: 40, maxMp: 10, def: 8, agi: -3 },
     passives: [
       { name: '鉄壁', description: '被ダメージを大幅軽減', effects: [{ type: 'damageReduction', value: 25 }] },
-      { name: '盾の心得', description: '物理攻撃も強い', effects: [{ type: 'physicalBonus', value: 10 }] },
+      { name: '鎧の守り', description: '劣化耐性+40%', effects: [{ type: 'degradationResist', value: 40 }] },
     ],
     skills: [
       { id: 'shield_bash', name: 'シールドバッシュ', description: '盾で殴りつける', type: 'attack', target: 'single', multiplier: 1.3, mpCost: 10 },
@@ -106,7 +106,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxMp: 20, atk: 2, agi: 10, mag: 2, def: -3 },
     passives: [
       { name: '影分身', description: '回避率が大幅に上昇', effects: [{ type: 'evasionBonus', value: 30 }] },
-      { name: '疾風', description: '先制率が大幅に上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }] },
+      { name: '連撃の極み', description: '連撃の減衰を30%緩和', effects: [{ type: 'decayReduction', value: 30 }] },
       { name: '二刀流', description: '物理攻撃力上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
     ],
     skills: [
@@ -139,7 +139,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxHp: 30, maxMp: 5, atk: 10, def: -5, agi: 3 },
     passives: [
       { name: '狂乱', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 40 }] },
-      { name: '捨て身', description: '被ダメージが増加', effects: [{ type: 'damageReduction', value: -20 }] },
+      { name: '狂気の連撃', description: '3撃目まで減衰なし', effects: [{ type: 'noDecayHits', value: 3 }] },
       { name: '血の狂気', description: 'クリティカルダメージ上昇', effects: [{ type: 'critDamage', value: 50 }] },
     ],
     skills: [
@@ -172,7 +172,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxHp: -5, maxMp: 30, mag: 8, def: -2, agi: 2 },
     passives: [
       { name: '死の契約', description: '魔法攻撃力と吸収量が上昇', effects: [{ type: 'magicBonus', value: 25 }, { type: 'hpSteal', value: 25 }] },
-      { name: '冥界との繋がり', description: 'MPリジェネ', effects: [{ type: 'mpRegen', value: 4 }] },
+      { name: '腐食の呪い', description: '与える劣化+2%', effects: [{ type: 'degradationBonus', value: 2 }] },
     ],
     skills: [
       { id: 'dark_bolt', name: 'ダークボルト', description: '闇の魔法で攻撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12 },
@@ -219,7 +219,7 @@ export const jobs: Record<string, JobData> = {
     description: 'ATK+7。クリ率+25%、クリダメ+40%の一撃必殺型。ハーフリングで超クリティカル特化。',
     statModifiers: { maxHp: 15, maxMp: 10, atk: 7, def: 3, agi: 4 },
     passives: [
-      { name: '居合の構え', description: 'クリティカル率とダメージが上昇', effects: [{ type: 'critBonus', value: 25 }, { type: 'critDamage', value: 40 }] },
+      { name: '居合の構え', description: 'クリ率+25%、クリダメ+40%、2撃目まで減衰なし', effects: [{ type: 'critBonus', value: 25 }, { type: 'critDamage', value: 40 }, { type: 'noDecayHits', value: 2 }] },
       { name: '武士道', description: '物理攻撃力上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
     ],
     skills: [

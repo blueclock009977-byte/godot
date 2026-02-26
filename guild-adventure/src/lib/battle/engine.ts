@@ -75,6 +75,14 @@ interface PassiveEffects {
   // 系統特攻/耐性
   speciesKiller: Record<string, number>;
   speciesResist: Record<string, number>;
+  // 連撃・劣化関連
+  fixedHits: number;          // ヒット数固定（0=無効）
+  bonusHits: number;          // 追加ヒット数
+  noDecayHits: number;        // 最初のN回は減衰なし
+  decayReduction: number;     // 減衰緩和（%）
+  singleHitBonus: number;     // 単発時ダメージ+%
+  degradationResist: number;  // 劣化耐性（%）
+  degradationBonus: number;   // 劣化ボーナス（追加%）
 }
 
 function getEmptyPassiveEffects(): PassiveEffects {
@@ -87,6 +95,9 @@ function getEmptyPassiveEffects(): PassiveEffects {
     dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
     doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
     speciesKiller: {}, speciesResist: {},
+    // 連撃・劣化関連
+    fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
+    singleHitBonus: 0, degradationResist: 0, degradationBonus: 0,
   };
 }
 
@@ -313,10 +324,22 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
 // ============================================
 
 function getHitCount(attacker: ExtendedBattleUnit): number {
+  const effects = attacker.passiveEffects;
+  
+  // fixedHits: ヒット数固定（AGI無視）
+  if (effects.fixedHits > 0) {
+    return effects.fixedHits + effects.bonusHits;
+  }
+  
   // AGI依存: 1 + floor(AGI/5)、上限なし
-  // AGI 5: 2ヒット、AGI 15: 4ヒット、AGI 25: 6ヒット、AGI 50: 11ヒット...
+  // AGI 5: 2ヒット、AGI 15: 4ヒット、AGI 25: 6ヒット
   const agi = attacker.stats.agi;
-  return Math.max(1, 1 + Math.floor(agi / 5));
+  let hits = Math.max(1, 1 + Math.floor(agi / 5));
+  
+  // bonusHits: 追加ヒット
+  hits += effects.bonusHits;
+  
+  return Math.max(1, hits);
 }
 
 // ============================================
@@ -357,9 +380,22 @@ function calculatePhysicalDamage(
   // 上限は撤廃（100%超えを許可）、下限のみ30%
   baseHitRate = Math.max(30, baseHitRate);
   
+  // 単発ボーナス（ヒット数1の時のみ）
+  const singleHitBonus = hitCount === 1 ? atkEffects.singleHitBonus : 0;
+  
+  // 減衰緩和（decayReduction%分、減衰を弱める）
+  // 例: 減衰80%でdecayReduction=10なら、80 + (100-80)*10/100 = 82%
+  const actualDecay = MULTI_HIT_DECAY + (1 - MULTI_HIT_DECAY) * (atkEffects.decayReduction / 100);
+  
   for (let i = 0; i < hitCount; i++) {
-    // 連撃減衰: n撃目の係数 = 0.8^(n-1)
-    const decayFactor = Math.pow(MULTI_HIT_DECAY, i);
+    // noDecayHits: 最初のN回は減衰なし
+    let decayFactor: number;
+    if (i < atkEffects.noDecayHits) {
+      decayFactor = 1.0;
+    } else {
+      const decayHits = i - atkEffects.noDecayHits;
+      decayFactor = Math.pow(actualDecay, decayHits);
+    }
     
     // 命中判定（減衰適用、100%でキャップ）
     const hitRate = Math.min(100, baseHitRate * decayFactor);
@@ -434,11 +470,21 @@ function calculatePhysicalDamage(
     if (attacker.trait === 'brave') damage *= 1.05;
     if (defender.trait === 'cautious') damage *= 0.85;
     
+    // 単発ボーナス（ヒット数1の時のみ）
+    if (singleHitBonus > 0) {
+      damage *= (1 + singleHitBonus / 100);
+    }
+    
     totalDamage += Math.max(1, Math.floor(damage));
     
     // 劣化蓄積（ヒットごと）
-    defender.degradation += DEGRADATION_PER_HIT;
-    degradationAdded += DEGRADATION_PER_HIT;
+    // degradationBonus: 与える劣化を増加
+    // degradationResist: 受ける劣化を軽減
+    let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
+    addedDeg *= (1 - defEffects.degradationResist / 100);
+    addedDeg = Math.max(0, addedDeg);
+    defender.degradation += addedDeg;
+    degradationAdded += addedDeg;
   }
   
   return { damage: totalDamage, isCritical, hitCount, actualHits, degradationAdded };
@@ -490,7 +536,9 @@ function calculateMagicDamage(
   damage *= (1 + defender.degradation / 100);
   
   // 魔法は単発なので劣化1回分蓄積
-  defender.degradation += DEGRADATION_PER_HIT;
+  let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
+  addedDeg *= (1 - defEffects.degradationResist / 100);
+  defender.degradation += Math.max(0, addedDeg);
   
   return Math.max(1, Math.floor(damage));
 }
