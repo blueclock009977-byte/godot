@@ -305,7 +305,7 @@ function GameScreen() {
 }
 
 export default function Home() {
-  const { isLoggedIn, restoreAdventure, username } = useGameStore();
+  const { isLoggedIn, autoLogin, username } = useGameStore();
   
   // ハイドレーション対策
   const [mounted, setMounted] = useState(false);
@@ -313,13 +313,13 @@ export default function Home() {
     setMounted(true);
   }, []);
   
-  // ログイン済みなら探索状態を復元
+  // ログイン済みならサーバーからデータ復元（キャラ/パーティ/探索状態）
   useEffect(() => {
     if (mounted && isLoggedIn && username) {
-      console.log('[Home] restoring adventure for logged in user');
-      restoreAdventure();
+      console.log('[Home] auto login for logged in user');
+      autoLogin();
     }
-  }, [mounted, isLoggedIn, username, restoreAdventure]);
+  }, [mounted, isLoggedIn, username, autoLogin]);
   
   if (!mounted) {
     return (
