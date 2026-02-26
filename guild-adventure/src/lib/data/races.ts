@@ -5,7 +5,7 @@ export const races: Record<string, RaceData> = {
     id: 'human',
     name: '人間',
     description: 'ステータスは控えめだが、ドロップ率+40%の幸運が最大の武器。ファーム周回に最適な種族。',
-    baseStats: { maxHp: 85, maxMp: 40, atk: 8, def: 8, agi: 9, mag: 8 },
+    baseStats: { maxHp: 95, maxMp: 40, atk: 9, def: 8, agi: 9, mag: 8 },  // HP+10, ATK+1 バフ
     passives: [
       { name: '適応力', description: 'クリティカル率と回避率が上昇', effects: [{ type: 'critBonus', value: 5 }, { type: 'evasionBonus', value: 5 }] },
       { name: '不屈の精神', description: 'HPが低いほど攻撃力が上がる', effects: [{ type: 'damageBonus', value: 10 }] },
@@ -52,7 +52,7 @@ export const races: Record<string, RaceData> = {
     id: 'halfling',
     name: 'ハーフリング',
     description: '小柄で幸運な種族。クリティカルと回避に特化。盗賊やサムライで一撃必殺を狙え！',
-    baseStats: { maxHp: 70, maxMp: 45, atk: 8, def: 8, agi: 14, mag: 10 },
+    baseStats: { maxHp: 85, maxMp: 45, atk: 9, def: 9, agi: 14, mag: 10 },  // HP+15, ATK+1, DEF+1 バフ
     passives: [
       { name: '幸運の星', description: 'クリティカル率が上昇', effects: [{ type: 'critBonus', value: 20 }] },
       { name: '小さな体', description: '回避率上昇、被ダメージ増加', effects: [{ type: 'evasionBonus', value: 25 }, { type: 'damageReduction', value: -10 }] },
@@ -133,7 +133,7 @@ export const races: Record<string, RaceData> = {
     id: 'goblin',
     name: 'ゴブリン',
     description: '先制率+35%で確実に先手を取れる小鬼。忍者やレンジャーで開幕速攻型に。',
-    baseStats: { maxHp: 60, maxMp: 35, atk: 9, def: 5, agi: 18, mag: 6 },
+    baseStats: { maxHp: 80, maxMp: 40, atk: 10, def: 7, agi: 18, mag: 7 },  // 大幅バフ
     passives: [
       { name: '狡猾', description: '先制率が大幅上昇', effects: [{ type: 'firstStrikeBonus', value: 35 }] },
       { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
@@ -149,7 +149,7 @@ export const races: Record<string, RaceData> = {
     id: 'dragonewt',
     name: 'ドラゴニュート',
     description: 'ATK・MAG両方が高い万能アタッカー。竜への特攻が最強クラス。賢者やパラディンで強力！',
-    baseStats: { maxHp: 115, maxMp: 55, atk: 14, def: 12, agi: 8, mag: 14 },
+    baseStats: { maxHp: 105, maxMp: 50, atk: 13, def: 11, agi: 8, mag: 13 },  // HP-10, MP-5, ATK-1, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '竜の血', description: '物理・魔法威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
       { name: '竜鱗', description: '炎耐性と被ダメージ軽減', effects: [{ type: 'damageReduction', value: 10 }] },
@@ -170,7 +170,7 @@ export const races: Record<string, RaceData> = {
     id: 'angel',
     name: 'エンジェル',
     description: '回復量+40%、状態異常耐性を持つサポート特化種族。司祭やパラディンで最高のヒーラーに。',
-    baseStats: { maxHp: 85, maxMp: 90, atk: 6, def: 8, agi: 12, mag: 18 },
+    baseStats: { maxHp: 75, maxMp: 85, atk: 6, def: 7, agi: 12, mag: 17 },  // HP-10, MP-5, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '聖なる光', description: '回復量が大幅上昇', effects: [{ type: 'healBonus', value: 40 }] },
       { name: '守護の翼', description: '味方の被ダメージを軽減', effects: [{ type: 'allyDefense', value: 10 }] },
@@ -186,7 +186,7 @@ export const races: Record<string, RaceData> = {
     id: 'demon',
     name: 'デーモン',
     description: '高いMAGとHP吸収を持つ闘の魔法使い。ウィッチやネクロマンサーと相性◎',
-    baseStats: { maxHp: 95, maxMp: 70, atk: 10, def: 9, agi: 10, mag: 18 },
+    baseStats: { maxHp: 90, maxMp: 65, atk: 9, def: 8, agi: 10, mag: 17 },  // HP-5, MP-5, ATK-1, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
       { name: '生命吸収', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 15 }] },

@@ -413,7 +413,8 @@ function calculatePhysicalDamage(
     const randA = random(0.85, 1.15);
     const randB = random(0.85, 1.15);
     
-    let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
+    // バランス調整: ATK*0.8 - DEF*0.5 (物理火力を約20%ナーフ)
+    let damage = (attacker.stats.atk * 0.8 * randA) - (defender.stats.def * randB * 0.5);
     
     // 連撃減衰（威力）
     damage *= decayFactor;
