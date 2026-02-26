@@ -59,10 +59,26 @@ export default function CreatePage() {
     (!requiredRaceItem || raceItemCount > 0) && 
     (!requiredJobItem || jobItemCount > 0);
   
+  // 自動命名（種族・職業・個性・環境の頭文字）
+  const generateAutoName = () => {
+    const r = races[race].name.charAt(0);
+    const j = jobs[job].name.charAt(0);
+    const t = traits[trait].name.charAt(0);
+    const e = environments[environment].name.charAt(0);
+    return `${r}${j}${t}${e}`;
+  };
+  
   const handleCreate = async () => {
-    if (!name.trim()) {
-      alert('名前を入力してください');
-      return;
+    let finalName = name.trim();
+    
+    // 名前が空の場合、自動命名を提案
+    if (!finalName) {
+      const autoName = generateAutoName();
+      const confirmed = confirm(`名前が未入力です。\n「${autoName}」でよろしいですか？`);
+      if (!confirmed) {
+        return;
+      }
+      finalName = autoName;
     }
     
     // アイテム消費
@@ -79,7 +95,7 @@ export default function CreatePage() {
       }
     }
     
-    await createCharacter(name.trim(), race, job, trait, environment);
+    await createCharacter(finalName, race, job, trait, environment);
     await syncToServer();
     router.push('/');
   };
