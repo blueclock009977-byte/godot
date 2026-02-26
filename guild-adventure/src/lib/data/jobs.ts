@@ -4,7 +4,7 @@ export const jobs: Record<string, JobData> = {
   warrior: {
     id: 'warrior',
     name: '戦士',
-    description: '近接戦闘のエキスパート。バランスの取れた前衛職。',
+    description: 'HP+20、ATK+5、DEF+3。物理ダメ+15%のバランス型前衛。単体の強撃、自己バフの雄叫び、全体攻撃の薙ぎ払いと万能。初心者におすすめ。',
     statModifiers: { maxHp: 20, maxMp: 5, atk: 5, def: 3 },
     passives: [
       { name: '武器習熟', description: '物理攻撃の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
@@ -20,7 +20,7 @@ export const jobs: Record<string, JobData> = {
   mage: {
     id: 'mage',
     name: '魔法使い',
-    description: '攻撃魔法のスペシャリスト。高火力だが脆い。',
+    description: 'HP-10、MP+30、MAG+8。魔法ダメ+25%、MP消費-15%、毎ターンMP回復。全体炎魔法、単体高火力氷魔法を使う。マスタリーで全体魔法が2回発動！フェアリーやエルフで火力特化。',
     statModifiers: { maxHp: -10, maxMp: 30, mag: 8, agi: 2 },
     passives: [
       { name: '魔力増幅', description: '魔法攻撃の威力が大幅に上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -37,7 +37,7 @@ export const jobs: Record<string, JobData> = {
   priest: {
     id: 'priest',
     name: '司祭',
-    description: '回復魔法の使い手。パーティの生命線。',
+    description: 'HP+10、MP+25、MAG+5。回復量+30%、状態異常耐性+30%。単体回復・全体回復・聖なる攻撃魔法を習得。マスタリーで味方全体の被ダメ-20%！パーティに必須のヒーラー。',
     statModifiers: { maxHp: 10, maxMp: 25, def: 2, mag: 5 },
     passives: [
       { name: '聖なる力', description: '回復量が大幅に上昇', effects: [{ type: 'healBonus', value: 30 }] },
@@ -53,7 +53,7 @@ export const jobs: Record<string, JobData> = {
   thief: {
     id: 'thief',
     name: '盗賊',
-    description: '素早さと急所攻撃に特化。',
+    description: 'AGI+8、ATK+3、DEF-2。クリ率+25%、クリダメ+30%、先制+20%。バックスタブで急所を突き、暗殺で2.5倍の一撃必殺。マスタリーでHP低い敵に確定クリティカル！',
     statModifiers: { maxMp: 15, atk: 3, agi: 8, def: -2 },
     passives: [
       { name: '急所狙い', description: 'クリティカル率が大幅上昇', effects: [{ type: 'critBonus', value: 25 }] },
@@ -70,7 +70,7 @@ export const jobs: Record<string, JobData> = {
   knight: {
     id: 'knight',
     name: '騎士',
-    description: '重装甲の守護者。味方を守る鉄壁の前衛。',
+    description: 'HP+40、DEF+8、AGI-3。被ダメ-25%の最強タンク。鉄壁の構えでDEF+50%、聖なる一撃で攻撃も可能。マスタリーで50%で味方を庇う！ドワーフで最硬の壁役に。',
     statModifiers: { maxHp: 40, maxMp: 10, def: 8, agi: -3 },
     passives: [
       { name: '鉄壁', description: '被ダメージを大幅軽減', effects: [{ type: 'damageReduction', value: 25 }] },
@@ -86,7 +86,7 @@ export const jobs: Record<string, JobData> = {
   hunter: {
     id: 'hunter',
     name: '狩人',
-    description: '弓の達人。先制攻撃と確実な命中。',
+    description: 'AGI+5、ATK+4。命中+20%、先制+30%、クリ率+15%。必中の狙い撃ち、全体の矢の雨。マスタリーで回避無視+クリ率+30%！後衛から確実にダメージを出せるアタッカー。',
     statModifiers: { maxMp: 15, atk: 4, agi: 5, def: 1 },
     passives: [
       { name: '鷹の目', description: '命中率と先制率が上昇', effects: [{ type: 'accuracyBonus', value: 20 }, { type: 'firstStrikeBonus', value: 30 }] },
@@ -102,7 +102,7 @@ export const jobs: Record<string, JobData> = {
   ninja: {
     id: 'ninja',
     name: '忍者',
-    description: '影の戦士。回避と連続攻撃に長ける。',
+    description: 'AGI+10、DEF-3。回避+30%、先制+25%、物理+15%。影斬り・手裏剣・必殺と多彩な攻撃。マスタリーで25%完全回避！ゴブリンで先制特化、ハーフリングで回避特化。',
     statModifiers: { maxMp: 20, atk: 2, agi: 10, mag: 2, def: -3 },
     passives: [
       { name: '影分身', description: '回避率が大幅に上昇', effects: [{ type: 'evasionBonus', value: 30 }] },
@@ -119,7 +119,7 @@ export const jobs: Record<string, JobData> = {
   sage: {
     id: 'sage',
     name: '賢者',
-    description: '攻撃と回復を使いこなす万能魔法職。',
+    description: 'MP+25、MAG+6。魔法+15%、回復+15%、毎ターンMP回復。攻撃魔法と回復を両立でき、メテオで全体2.0倍。マスタリーでMP消費-50%！ドラゴニュートで物理魔法両刀に。',
     statModifiers: { maxHp: 5, maxMp: 25, mag: 6, def: 1 },
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
@@ -135,7 +135,7 @@ export const jobs: Record<string, JobData> = {
   berserker: {
     id: 'berserker',
     name: 'バーサーカー',
-    description: '狂戦士。超火力だが被ダメージ増加。',
+    description: 'HP+30、ATK+10、DEF-5。物理+40%だが被ダメ+20%。狂乱撃で3.0倍ダメージ、血の咆哮でATK+50%。マスタリーで攻撃ごとにATK累積上昇！オークで最高火力のロマン砲。',
     statModifiers: { maxHp: 30, maxMp: 5, atk: 10, def: -5, agi: 3 },
     passives: [
       { name: '狂乱', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 40 }] },
@@ -152,7 +152,7 @@ export const jobs: Record<string, JobData> = {
   paladin: {
     id: 'paladin',
     name: 'パラディン',
-    description: '聖騎士。攻撃と回復を両立する神聖な戦士。',
+    description: 'HP+25、DEF+5、ATK+4、MAG+4。物理+15%、回復+20%、被ダメ-15%。聖剣で攻撃、癒しの手で大回復。マスタリーで味方自動蘇生！エンジェルで最強の聖騎士に。',
     statModifiers: { maxHp: 25, maxMp: 20, atk: 4, def: 5, mag: 4 },
     passives: [
       { name: '聖騎士の誓い', description: '物理攻撃と回復量が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'healBonus', value: 20 }] },
@@ -168,7 +168,7 @@ export const jobs: Record<string, JobData> = {
   necromancer: {
     id: 'necromancer',
     name: 'ネクロマンサー',
-    description: '死霊術師。闇魔法とHP吸収が得意。',
+    description: 'HP-5、MP+30、MAG+8。魔法+25%、HP吸収+25%、毎ターンMP回復。吸魂でHP吸収しながら攻撃、死の波動で全体闘。マスタリーで倒した敵を味方に！アンデッドで自己完結型に。',
     statModifiers: { maxHp: -5, maxMp: 30, mag: 8, def: -2, agi: 2 },
     passives: [
       { name: '死の契約', description: '魔法攻撃力と吸収量が上昇', effects: [{ type: 'magicBonus', value: 25 }, { type: 'hpSteal', value: 25 }] },
@@ -184,7 +184,7 @@ export const jobs: Record<string, JobData> = {
   monk: {
     id: 'monk',
     name: 'モンク',
-    description: '格闘家。素手で戦い、回避とカウンターが得意。',
+    description: 'HP+15、ATK+6、AGI+6。物理+20%、回避+15%、クリ率+15%。百裂拳で連続攻撃、精神統一で自己回復。マスタリーで全攻撃を50%で反撃！リザードマンで再生タンクに。',
     statModifiers: { maxHp: 15, maxMp: 15, atk: 6, def: 2, agi: 6 },
     passives: [
       { name: '練気', description: '物理攻撃力と回避率が上昇', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'evasionBonus', value: 15 }] },
@@ -200,7 +200,7 @@ export const jobs: Record<string, JobData> = {
   ranger: {
     id: 'ranger',
     name: 'レンジャー',
-    description: '野伏。自然の力と先制攻撃が得意。',
+    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。狙撃で高火力、罠で敵弱体化、自然の恵みで味方回復。マスタリーで毎ターンHP/MP大幅回復！持久戦に強い万能職。',
     statModifiers: { maxHp: 10, maxMp: 15, atk: 4, def: 2, agi: 6, mag: 2 },
     passives: [
       { name: '野生の勘', description: '先制率と回避率が上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }, { type: 'evasionBonus', value: 15 }] },
@@ -216,7 +216,7 @@ export const jobs: Record<string, JobData> = {
   samurai: {
     id: 'samurai',
     name: 'サムライ',
-    description: '侍。居合斬りと一撃必殺が得意。',
+    description: 'HP+15、ATK+7。クリ率+25%、クリダメ+40%、物理+15%。居合斬りで2.0倍、必殺剣で3.0倍の一撃必殺。マスタリー一閃は防御無視全体攻撃！ハーフリングで超クリティカル特化。',
     statModifiers: { maxHp: 15, maxMp: 10, atk: 7, def: 3, agi: 4 },
     passives: [
       { name: '居合の構え', description: 'クリティカル率とダメージが上昇', effects: [{ type: 'critBonus', value: 25 }, { type: 'critDamage', value: 40 }] },
@@ -237,7 +237,7 @@ export const jobs: Record<string, JobData> = {
   witch: {
     id: 'witch',
     name: 'ウィッチ',
-    description: '魔女。呪いとデバフが得意。',
+    description: 'HP-5、MP+28、MAG+7。魔法+20%、デバフ成功+20%、MP消費-15%。呪詛で敵ステ低下、邪眼で高火力。マスタリー大呪術で敵全体ステ-30%！デーモンで呪い特化に。',
     statModifiers: { maxHp: -5, maxMp: 28, mag: 7, agi: 3, def: -1 },
     passives: [
       { name: '呪術', description: '魔法威力と状態異常成功率が上昇', effects: [{ type: 'magicBonus', value: 20 }, { type: 'debuffBonus', value: 20 }] },
@@ -258,7 +258,7 @@ export const jobs: Record<string, JobData> = {
   bard: {
     id: 'bard',
     name: 'バード',
-    description: '吟遊詩人。歌で味方を強化する支援職。',
+    description: 'MP+25、AGI+5。味方ATK+10%、毎ターンMP回復。勇気の歌で味方全体ATK+25%、子守唄で敵全体速度低下、癒しの旋律で全体回復。マスタリー英雄譚で味方全体大幅強化！',
     statModifiers: { maxHp: 5, maxMp: 25, atk: 2, def: 1, agi: 5, mag: 4 },
     passives: [
       { name: '歌声', description: '味方の攻撃力が上昇', effects: [{ type: 'allyAtkBonus', value: 10 }] },

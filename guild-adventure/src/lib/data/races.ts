@@ -4,7 +4,7 @@ export const races: Record<string, RaceData> = {
   human: {
     id: 'human',
     name: '人間',
-    description: '万能型。あらゆる職業に適性を持つ。',
+    description: '万能型。全ステータスがバランス良く、どの職業とも相性が良い。HPが減るほど攻撃力が上がる不屈の精神を持つ。初心者におすすめ。',
     baseStats: { maxHp: 100, maxMp: 50, atk: 10, def: 10, agi: 10, mag: 10 },
     passives: [
       { name: '適応力', description: 'クリティカル率と回避率が上昇', effects: [{ type: 'critBonus', value: 5 }, { type: 'evasionBonus', value: 5 }] },
@@ -18,7 +18,7 @@ export const races: Record<string, RaceData> = {
   elf: {
     id: 'elf',
     name: 'エルフ',
-    description: '魔法と俊敏に長けた長命種族。',
+    description: '魔法と素早さに特化した種族。HPは低いがMAGとAGIが高く、魔法攻撃が強力。MP自然回復で長期戦に強い。魔法使いや賢者と相性◎',
     baseStats: { maxHp: 75, maxMp: 80, atk: 7, def: 6, agi: 16, mag: 16 },
     passives: [
       { name: '魔力の血統', description: '魔法攻撃の威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -33,7 +33,7 @@ export const races: Record<string, RaceData> = {
   dwarf: {
     id: 'dwarf',
     name: 'ドワーフ',
-    description: '頑強な肉体を持つ種族。鉄壁の防御。',
+    description: '最高のHPとDEF、高いATKを持つ重装タンク。AGIとMAGは低いが、被ダメ20%軽減+毒耐性で生存力抜群。騎士やパラディンと相性◎',
     baseStats: { maxHp: 140, maxMp: 30, atk: 14, def: 16, agi: 5, mag: 5 },
     passives: [
       { name: '鋼の肉体', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 20 }] },
@@ -48,7 +48,7 @@ export const races: Record<string, RaceData> = {
   halfling: {
     id: 'halfling',
     name: 'ハーフリング',
-    description: '小柄で幸運な種族。回避と急所攻撃が得意。',
+    description: '小柄で幸運な種族。クリティカル率+20%、回避率+25%と運に特化。被ダメ増加のデメリットあり。盗賊やサムライで一撃必殺を狙え！',
     baseStats: { maxHp: 70, maxMp: 45, atk: 8, def: 8, agi: 14, mag: 10 },
     passives: [
       { name: '幸運の星', description: 'クリティカル率が上昇', effects: [{ type: 'critBonus', value: 20 }] },
@@ -63,7 +63,7 @@ export const races: Record<string, RaceData> = {
   orc: {
     id: 'orc',
     name: 'オーク',
-    description: '凶暴な戦闘種族。圧倒的な攻撃力。',
+    description: '最高クラスのATKを持つ脳筋種族。物理ダメ+30%だが被ダメ+15%。HP30%以下で攻撃力2倍のマスタリーは超火力。バーサーカーで最強火力！',
     baseStats: { maxHp: 120, maxMp: 20, atk: 18, def: 8, agi: 7, mag: 3 },
     passives: [
       { name: '狂戦士', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 30 }] },
@@ -78,7 +78,7 @@ export const races: Record<string, RaceData> = {
   lizardman: {
     id: 'lizardman',
     name: 'リザードマン',
-    description: '爬虫類系の戦士種族。再生力が高い。',
+    description: '毎ターンHP回復+物理魔法両方に適性を持つバランス型。硬い鱗で被ダメ軽減。マスタリーで瀕死から全回復！戦士やパラディンと好相性。',
     baseStats: { maxHp: 110, maxMp: 40, atk: 12, def: 14, agi: 9, mag: 8 },
     passives: [
       { name: '再生能力', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 8 }] },
@@ -93,7 +93,7 @@ export const races: Record<string, RaceData> = {
   fairy: {
     id: 'fairy',
     name: 'フェアリー',
-    description: '妖精族。極めて高い魔力だが脆い。',
+    description: '最高のMAGとMP、回避率+30%を持つ魔法特化種族。HPとDEFは最低クラス。魔法ダメ+35%、回復量+30%。司祭で最強ヒーラー、魔法使いで火力特化！',
     baseStats: { maxHp: 45, maxMp: 100, atk: 4, def: 3, agi: 18, mag: 22 },
     passives: [
       { name: '魔力の奔流', description: '魔法威力が大幅上昇', effects: [{ type: 'magicBonus', value: 35 }] },
@@ -108,7 +108,7 @@ export const races: Record<string, RaceData> = {
   undead: {
     id: 'undead',
     name: 'アンデッド',
-    description: '不死者。回復が効きにくいが状態異常に強い。',
+    description: '状態異常耐性80%+被ダメ軽減+HP吸収を持つ不死種族。回復効果半減のデメリットあり。ネクロマンサーで自己完結した闇魔法アタッカーに。',
     baseStats: { maxHp: 90, maxMp: 50, atk: 11, def: 12, agi: 6, mag: 14 },
     passives: [
       { name: '不死の呪い', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 80 }] },
@@ -124,7 +124,7 @@ export const races: Record<string, RaceData> = {
   goblin: {
     id: 'goblin',
     name: 'ゴブリン',
-    description: '狡猾で素早い小鬼。先制攻撃が得意。',
+    description: '先制率+35%で確実に先手を取れる小鬼。HPとDEFは低いが、AGIが高く奇襲が得意。忍者やレンジャーで開幕速攻型に。味方が多いほど強化されるマスタリーも◎',
     baseStats: { maxHp: 60, maxMp: 35, atk: 9, def: 5, agi: 18, mag: 6 },
     passives: [
       { name: '狡猾', description: '先制率が大幅上昇', effects: [{ type: 'firstStrikeBonus', value: 35 }] },
@@ -139,7 +139,7 @@ export const races: Record<string, RaceData> = {
   dragonewt: {
     id: 'dragonewt',
     name: 'ドラゴニュート',
-    description: '竜人族。物理・魔法両方に優れる。',
+    description: 'ATK・MAG両方が高い万能アタッカー。物理魔法+15%、被ダメ軽減、敵の攻撃力低下。マスタリーの竜の咆哮は防御無視全体攻撃。賢者やパラディンで強力！',
     baseStats: { maxHp: 115, maxMp: 55, atk: 14, def: 12, agi: 8, mag: 14 },
     passives: [
       { name: '竜の血', description: '物理・魔法威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
@@ -159,7 +159,7 @@ export const races: Record<string, RaceData> = {
   angel: {
     id: 'angel',
     name: 'エンジェル',
-    description: '天使族。回復と支援に特化。',
+    description: '回復量+40%、味方の被ダメ軽減、状態異常耐性を持つサポート特化種族。マスタリーで味方が死んでも1回自動蘇生！司祭やパラディンで最高のヒーラーに。',
     baseStats: { maxHp: 85, maxMp: 90, atk: 6, def: 8, agi: 12, mag: 18 },
     passives: [
       { name: '聖なる光', description: '回復量が大幅上昇', effects: [{ type: 'healBonus', value: 40 }] },
@@ -174,7 +174,7 @@ export const races: Record<string, RaceData> = {
   demon: {
     id: 'demon',
     name: 'デーモン',
-    description: '悪魔族。闇魔法と呪いが得意。',
+    description: '高いMAGと魔法ダメ+25%、HP吸収15%を持つ闇の魔法使い。敵の命中率を下げて生存力も高い。マスタリーでHP消費して超火力魔法！ウィッチやネクロと相性◎',
     baseStats: { maxHp: 95, maxMp: 70, atk: 10, def: 9, agi: 10, mag: 18 },
     passives: [
       { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
