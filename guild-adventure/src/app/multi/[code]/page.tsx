@@ -24,7 +24,7 @@ import { Character, Party, BattleResult } from '@/lib/types';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, syncToServer, isLoading, autoLogin } = useGameStore();
+  const { username, characters, addItem, syncToServer, isLoading, autoLogin, addHistory } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [selectedChars, setSelectedChars] = useState<RoomCharacter[]>([]);
@@ -227,12 +227,23 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         syncToServer();
       }
       
+      // 履歴を追加
+      addHistory({
+        type: 'multi',
+        dungeonId: room.dungeonId,
+        victory: room.battleResult.victory,
+        droppedItemId,
+        logs: room.battleResult.logs || [],
+        roomCode: code,
+        players: Object.keys(room.players),
+      });
+      
       if (typeof window !== 'undefined') {
         localStorage.setItem(claimedKey, 'true');
       }
       setDropClaimed(true);
     }
-  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, addItem, syncToServer]);
+  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {

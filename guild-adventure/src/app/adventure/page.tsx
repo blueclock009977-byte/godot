@@ -10,7 +10,7 @@ import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, party, completeAdventure, cancelAdventure, addItem, syncToServer } = useGameStore();
+  const { currentAdventure, party, completeAdventure, cancelAdventure, addItem, syncToServer, addHistory } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
@@ -85,6 +85,15 @@ export default function AdventurePage() {
             addItem(droppedItemId);
             syncToServer();
           }
+          
+          // 履歴を追加
+          addHistory({
+            type: 'solo',
+            dungeonId: currentAdventure.dungeon,
+            victory: result.victory,
+            droppedItemId,
+            logs: result.logs,
+          });
           
           completeAdventure({ ...result, droppedItemId });
         }

@@ -2,11 +2,25 @@
 
 const FIREBASE_URL = 'https://dicedeckrandomtcg-default-rtdb.firebaseio.com';
 
+export interface AdventureHistory {
+  id: string;
+  type: 'solo' | 'multi';
+  dungeonId: string;
+  victory: boolean;
+  droppedItemId?: string;
+  completedAt: number;
+  logs: any[];
+  // マルチの場合
+  roomCode?: string;
+  players?: string[];
+}
+
 export interface UserData {
   username: string;
   characters: any[];
   party: any;
   inventory: Record<string, number>;
+  history?: AdventureHistory[];
   createdAt: number;
   lastLogin: number;
 }
@@ -38,6 +52,28 @@ export async function saveUserData(username: string, data: Partial<UserData>): P
     return res.ok;
   } catch (e) {
     console.error('Failed to save user data:', e);
+    return false;
+  }
+}
+
+// 履歴を追加（最大20件）
+export async function addAdventureHistory(username: string, history: AdventureHistory): Promise<boolean> {
+  try {
+    // 現在の履歴を取得
+    const userData = await getUserData(username);
+    const currentHistory = userData?.history || [];
+    
+    // 新しい履歴を先頭に追加し、20件に制限
+    const newHistory = [history, ...currentHistory].slice(0, 20);
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/history.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newHistory),
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to add history:', e);
     return false;
   }
 }

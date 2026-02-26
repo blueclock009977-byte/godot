@@ -24,6 +24,8 @@ import {
   getStoredUsername,
   setStoredUsername,
   clearStoredUsername,
+  addAdventureHistory,
+  AdventureHistory,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
 
@@ -77,6 +79,7 @@ interface GameStore {
   party: Party;
   currentAdventure: Adventure | null;
   inventory: Record<string, number>;
+  history: AdventureHistory[];
   lastDroppedItem: string | null; // 直近でドロップしたアイテム（表示用）
   
   // 認証
@@ -113,6 +116,9 @@ interface GameStore {
   unlockRaceMastery: (characterId: string) => Promise<boolean>;
   unlockJobMastery: (characterId: string) => Promise<boolean>;
   
+  // 履歴管理
+  addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
+  
   // サーバー同期
   syncToServer: () => Promise<void>;
 }
@@ -128,6 +134,7 @@ export const useGameStore = create<GameStore>()(
       party: { front: [], back: [] },
       currentAdventure: null,
       inventory: {},
+      history: [],
       lastDroppedItem: null,
       
       // ログイン
@@ -159,6 +166,7 @@ export const useGameStore = create<GameStore>()(
                 characters: userData.characters || [],
                 party: userData.party || { front: [], back: [] },
                 inventory: userData.inventory || {},
+                history: userData.history || [],
                 isLoading: false,
               });
               setStoredUsername(username);
@@ -173,6 +181,7 @@ export const useGameStore = create<GameStore>()(
                 username,
                 characters: [],
                 party: { front: [], back: [] },
+                history: [],
                 inventory: { ...initialInventory },
                 isLoading: false,
               });
@@ -218,6 +227,7 @@ export const useGameStore = create<GameStore>()(
               characters: userData.characters || [],
               party: userData.party || { front: [], back: [] },
               inventory: userData.inventory || {},
+              history: userData.history || [],
               isLoading: false,
             });
             return true;
@@ -230,6 +240,26 @@ export const useGameStore = create<GameStore>()(
         clearStoredUsername();
         set({ isLoggedIn: false, username: null, isLoading: false });
         return false;
+      },
+      
+      // 履歴を追加
+      addHistory: async (historyData) => {
+        const { username } = get();
+        if (!username) return;
+        
+        const history: AdventureHistory = {
+          ...historyData,
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          completedAt: Date.now(),
+        };
+        
+        // ローカル状態を更新
+        set((state) => ({
+          history: [history, ...state.history].slice(0, 20),
+        }));
+        
+        // Firebaseに保存
+        await addAdventureHistory(username, history);
       },
       
       // サーバー同期

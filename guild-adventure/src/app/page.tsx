@@ -205,6 +205,18 @@ function GameScreen() {
               </div>
             </div>
           </Link>
+          
+          <Link href="/history" className="block">
+            <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">📜 過去の挑戦ログ</h2>
+                  <p className="text-slate-400 text-sm">過去20回分の冒険履歴</p>
+                </div>
+                <span className="text-slate-400">→</span>
+              </div>
+            </div>
+          </Link>
         </div>
         
         {/* 冒険中表示 */}
