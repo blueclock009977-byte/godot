@@ -313,11 +313,10 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
 // ============================================
 
 function getHitCount(attacker: ExtendedBattleUnit): number {
-  // AGI依存: 1 + floor(AGI/5)、最大10ヒット
-  // AGI 5: 2ヒット、AGI 15: 4ヒット、AGI 25: 6ヒット
+  // AGI依存: 1 + floor(AGI/5)、上限なし
+  // AGI 5: 2ヒット、AGI 15: 4ヒット、AGI 25: 6ヒット、AGI 50: 11ヒット...
   const agi = attacker.stats.agi;
-  const hits = 1 + Math.floor(agi / 5);
-  return Math.min(Math.max(hits, 1), 10);
+  return Math.max(1, 1 + Math.floor(agi / 5));
 }
 
 // ============================================
@@ -334,8 +333,7 @@ interface DamageResult {
 
 // 連撃減衰定数
 const MULTI_HIT_DECAY = 0.8;  // 各ヒットで80%に減衰
-const DEGRADATION_PER_HIT = 2;  // 1ヒットで劣化+2%
-const MAX_DEGRADATION = 30;  // 最大劣化30%
+const DEGRADATION_PER_HIT = 2;  // 1ヒットで劣化+2%（上限なし）
 
 function calculatePhysicalDamage(
   attacker: ExtendedBattleUnit, 
@@ -438,9 +436,8 @@ function calculatePhysicalDamage(
     totalDamage += Math.max(1, Math.floor(damage));
     
     // 劣化蓄積（ヒットごと）
-    const addDeg = Math.min(DEGRADATION_PER_HIT, MAX_DEGRADATION - defender.degradation);
-    defender.degradation += addDeg;
-    degradationAdded += addDeg;
+    defender.degradation += DEGRADATION_PER_HIT;
+    degradationAdded += DEGRADATION_PER_HIT;
   }
   
   return { damage: totalDamage, isCritical, hitCount, actualHits, degradationAdded };
@@ -492,8 +489,7 @@ function calculateMagicDamage(
   damage *= (1 + defender.degradation / 100);
   
   // 魔法は単発なので劣化1回分蓄積
-  const addDeg = Math.min(DEGRADATION_PER_HIT, MAX_DEGRADATION - defender.degradation);
-  defender.degradation += addDeg;
+  defender.degradation += DEGRADATION_PER_HIT;
   
   return Math.max(1, Math.floor(damage));
 }
