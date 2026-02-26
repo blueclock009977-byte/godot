@@ -8,16 +8,20 @@ export const grasslandMonsters: Monster[] = [
   {
     id: 'slime',
     name: 'スライム',
+    species: 'beast',
+    element: 'water',
     stats: { hp: 20, maxHp: 20, mp: 0, maxMp: 0, atk: 3, def: 1, agi: 3, mag: 0 },
   },
   {
     id: 'goblin',
     name: 'ゴブリン',
+    species: 'humanoid',
     stats: { hp: 25, maxHp: 25, mp: 0, maxMp: 0, atk: 5, def: 2, agi: 6, mag: 0 },
   },
   {
     id: 'wild_dog',
     name: '野犬',
+    species: 'beast',
     stats: { hp: 22, maxHp: 22, mp: 0, maxMp: 0, atk: 6, def: 1, agi: 8, mag: 0 },
   },
 ];
@@ -25,6 +29,8 @@ export const grasslandMonsters: Monster[] = [
 export const grasslandBoss: Monster = {
   id: 'slime_king',
   name: 'スライムキング',
+  species: 'beast',
+  element: 'water',
   stats: { hp: 80, maxHp: 80, mp: 20, maxMp: 20, atk: 8, def: 5, agi: 3, mag: 3 },
   skills: [{
     id: 'split',
@@ -45,16 +51,20 @@ export const forestMonsters: Monster[] = [
   {
     id: 'wolf',
     name: 'ウルフ',
+    species: 'beast',
     stats: { hp: 50, maxHp: 50, mp: 0, maxMp: 0, atk: 14, def: 5, agi: 20, mag: 0 },
   },
   {
     id: 'fairy_forest',
     name: 'フォレストフェアリー',
+    species: 'humanoid',
+    element: 'wind',
     stats: { hp: 35, maxHp: 35, mp: 30, maxMp: 30, atk: 4, def: 3, agi: 22, mag: 18 },
   },
   {
     id: 'archer_goblin',
     name: 'ゴブリンアーチャー',
+    species: 'humanoid',
     stats: { hp: 40, maxHp: 40, mp: 0, maxMp: 0, atk: 16, def: 4, agi: 18, mag: 0 },
   },
 ];
@@ -62,6 +72,8 @@ export const forestMonsters: Monster[] = [
 export const forestBoss: Monster = {
   id: 'treant',
   name: 'トレント',
+  species: 'beast',
+  element: 'earth',
   stats: { hp: 300, maxHp: 300, mp: 40, maxMp: 40, atk: 18, def: 25, agi: 3, mag: 12 },
   skills: [{
     id: 'root_bind',
@@ -71,6 +83,7 @@ export const forestBoss: Monster = {
     target: 'all',
     multiplier: 0,
     mpCost: 15,
+    element: 'earth',
     effect: { type: 'agiDown' as any, value: 50, duration: 2 },
   }],
 };
@@ -83,202 +96,227 @@ export const caveMonsters: Monster[] = [
   {
     id: 'bat_swarm',
     name: 'コウモリの群れ',
+    species: 'beast',
     stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 14, def: 5, agi: 25, mag: 0 },
   },
   {
     id: 'stone_golem',
     name: 'ストーンゴーレム',
+    species: 'humanoid',
+    element: 'earth',
     stats: { hp: 200, maxHp: 200, mp: 0, maxMp: 0, atk: 22, def: 35, agi: 2, mag: 0 },
   },
   {
     id: 'cave_troll',
     name: 'トロール',
+    species: 'humanoid',
     stats: { hp: 250, maxHp: 250, mp: 0, maxMp: 0, atk: 28, def: 20, agi: 5, mag: 0 },
   },
 ];
 
 export const caveBoss: Monster = {
-  id: 'golem_king',
-  name: 'ゴーレムキング',
-  stats: { hp: 700, maxHp: 700, mp: 0, maxMp: 0, atk: 35, def: 50, agi: 2, mag: 0 },
+  id: 'dark_dragon',
+  name: 'ダークドラゴン',
+  species: 'dragon',
+  element: 'fire',
+  stats: { hp: 600, maxHp: 600, mp: 60, maxMp: 60, atk: 35, def: 30, agi: 12, mag: 25 },
+  skills: [{
+    id: 'flame_breath',
+    name: '炎のブレス',
+    description: '全体に炎攻撃',
+    type: 'magic',
+    target: 'all',
+    multiplier: 1.2,
+    mpCost: 20,
+    element: 'fire',
+  }],
+  speciesKiller: [{ species: 'humanoid', multiplier: 1.3 }],
 };
 
 // ============================================
-// 海のモンスター（★★★★）- 6人推奨・魔法が有効
+// 海のモンスター（★★★★）- 6人推奨・高AGI
 // ============================================
 
 export const seaMonsters: Monster[] = [
   {
     id: 'merman',
     name: 'マーマン',
-    stats: { hp: 120, maxHp: 120, mp: 30, maxMp: 30, atk: 16, def: 25, agi: 14, mag: 18 },
+    species: 'humanoid',
+    element: 'water',
+    stats: { hp: 150, maxHp: 150, mp: 30, maxMp: 30, atk: 25, def: 15, agi: 22, mag: 20 },
   },
   {
-    id: 'jellyfish',
-    name: 'クラゲ',
-    stats: { hp: 70, maxHp: 70, mp: 20, maxMp: 20, atk: 8, def: 35, agi: 10, mag: 25 },
-    skills: [{
-      id: 'paralyze',
-      name: '麻痺毒',
-      description: 'スタン付与',
-      type: 'debuff',
-      target: 'single',
-      multiplier: 0,
-      mpCost: 10,
-      effect: { type: 'stun', chance: 50, duration: 1 },
-    }],
+    id: 'sea_serpent',
+    name: 'シーサーペント',
+    species: 'beast',
+    element: 'water',
+    stats: { hp: 180, maxHp: 180, mp: 0, maxMp: 0, atk: 30, def: 18, agi: 25, mag: 0 },
   },
   {
-    id: 'siren',
-    name: 'セイレーン',
-    stats: { hp: 100, maxHp: 100, mp: 50, maxMp: 50, atk: 12, def: 20, agi: 16, mag: 30 },
+    id: 'ghost_ship',
+    name: 'ゴーストシップ',
+    species: 'undead',
+    element: 'water',
+    stats: { hp: 200, maxHp: 200, mp: 40, maxMp: 40, atk: 20, def: 25, agi: 10, mag: 30 },
   },
 ];
 
 export const seaBoss: Monster = {
   id: 'kraken',
   name: 'クラーケン',
-  stats: { hp: 900, maxHp: 900, mp: 60, maxMp: 60, atk: 32, def: 40, agi: 6, mag: 25 },
+  species: 'beast',
+  element: 'water',
+  stats: { hp: 800, maxHp: 800, mp: 50, maxMp: 50, atk: 40, def: 25, agi: 18, mag: 30 },
   skills: [{
-    id: 'tentacle_storm',
-    name: '触手嵐',
-    description: '全体攻撃',
-    type: 'attack',
+    id: 'tidal_wave',
+    name: '大津波',
+    description: '全体に水属性大ダメージ',
+    type: 'magic',
     target: 'all',
-    multiplier: 1.2,
-    mpCost: 20,
+    multiplier: 1.5,
+    mpCost: 25,
+    element: 'water',
   }],
 };
 
 // ============================================
-// 砂漠のモンスター（★★★★★）- 6人推奨・連続攻撃が有効
+// 砂漠のモンスター（★★★★★）- 6人推奨・スタン注意
 // ============================================
 
 export const desertMonsters: Monster[] = [
   {
-    id: 'scorpion',
-    name: '大サソリ',
-    stats: { hp: 150, maxHp: 150, mp: 0, maxMp: 0, atk: 28, def: 25, agi: 16, mag: 0 },
-    skills: [{
-      id: 'poison_sting',
-      name: '毒針',
-      description: '毒付与',
-      type: 'attack',
-      target: 'single',
-      multiplier: 1.0,
-      mpCost: 0,
-      effect: { type: 'poison', chance: 60, duration: 3 },
-    }],
-  },
-  {
-    id: 'sand_elemental',
-    name: 'サンドエレメンタル',
-    stats: { hp: 120, maxHp: 120, mp: 0, maxMp: 0, atk: 22, def: 15, agi: 18, mag: 15 },
+    id: 'sand_worm',
+    name: 'サンドワーム',
+    species: 'beast',
+    element: 'earth',
+    stats: { hp: 250, maxHp: 250, mp: 0, maxMp: 0, atk: 38, def: 20, agi: 8, mag: 0 },
   },
   {
     id: 'mummy',
     name: 'マミー',
-    stats: { hp: 180, maxHp: 180, mp: 20, maxMp: 20, atk: 25, def: 18, agi: 6, mag: 20 },
+    species: 'undead',
+    stats: { hp: 200, maxHp: 200, mp: 30, maxMp: 30, atk: 30, def: 30, agi: 5, mag: 25 },
+  },
+  {
+    id: 'scorpion_king',
+    name: 'スコーピオン',
+    species: 'beast',
+    stats: { hp: 220, maxHp: 220, mp: 0, maxMp: 0, atk: 35, def: 35, agi: 15, mag: 0 },
   },
 ];
 
 export const desertBoss: Monster = {
-  id: 'sandworm',
-  name: 'サンドワーム',
-  stats: { hp: 1200, maxHp: 1200, mp: 0, maxMp: 0, atk: 45, def: 30, agi: 8, mag: 0 },
+  id: 'sphinx',
+  name: 'スフィンクス',
+  species: 'beast',
+  element: 'earth',
+  stats: { hp: 1000, maxHp: 1000, mp: 80, maxMp: 80, atk: 45, def: 40, agi: 20, mag: 40 },
   skills: [{
-    id: 'devour',
-    name: '丸呑み',
-    description: '即死級ダメージ',
-    type: 'attack',
-    target: 'single',
-    multiplier: 3.0,
-    mpCost: 0,
+    id: 'riddle',
+    name: '謎かけ',
+    description: '全体をスタン',
+    type: 'debuff',
+    target: 'all',
+    multiplier: 0,
+    mpCost: 30,
+    effect: { type: 'stun', chance: 50, duration: 1 },
   }],
+  speciesKiller: [{ species: 'humanoid', multiplier: 1.4 }],
 };
 
 // ============================================
-// 火山のモンスター（★★★★★★）- 6人推奨・再生する敵
+// 火山のモンスター（★★★★★★）- 6人推奨・高火力
 // ============================================
 
 export const volcanoMonsters: Monster[] = [
   {
     id: 'fire_elemental',
     name: 'ファイアエレメンタル',
-    stats: { hp: 180, maxHp: 180, mp: 40, maxMp: 40, atk: 30, def: 15, agi: 14, mag: 35 },
+    species: 'demon',
+    element: 'fire',
+    stats: { hp: 200, maxHp: 200, mp: 50, maxMp: 50, atk: 25, def: 15, agi: 20, mag: 45 },
   },
   {
     id: 'lava_golem',
     name: 'ラーヴァゴーレム',
-    stats: { hp: 300, maxHp: 300, mp: 0, maxMp: 0, atk: 35, def: 40, agi: 3, mag: 0 },
+    species: 'humanoid',
+    element: 'fire',
+    stats: { hp: 350, maxHp: 350, mp: 0, maxMp: 0, atk: 45, def: 45, agi: 3, mag: 0 },
   },
   {
     id: 'salamander',
     name: 'サラマンダー',
-    stats: { hp: 200, maxHp: 200, mp: 30, maxMp: 30, atk: 32, def: 20, agi: 18, mag: 25 },
+    species: 'beast',
+    element: 'fire',
+    stats: { hp: 280, maxHp: 280, mp: 40, maxMp: 40, atk: 40, def: 25, agi: 22, mag: 35 },
   },
 ];
 
 export const volcanoBoss: Monster = {
   id: 'ifrit',
   name: 'イフリート',
-  stats: { hp: 1500, maxHp: 1500, mp: 80, maxMp: 80, atk: 50, def: 35, agi: 12, mag: 40 },
+  species: 'demon',
+  element: 'fire',
+  stats: { hp: 1200, maxHp: 1200, mp: 100, maxMp: 100, atk: 55, def: 35, agi: 25, mag: 55 },
   skills: [{
     id: 'hellfire',
-    name: '獄炎',
-    description: '全体に大ダメージ',
+    name: '地獄の業火',
+    description: '全体に炎大ダメージ',
     type: 'magic',
     target: 'all',
     multiplier: 1.8,
-    mpCost: 30,
+    mpCost: 35,
+    element: 'fire',
   }],
+  speciesResist: [{ species: 'humanoid', multiplier: 0.7 }],
 };
 
 // ============================================
-// 雪原のモンスター（★★★★★★★）- 6人推奨・凍結
+// 雪原のモンスター（★★★★★★★）- 6人推奨・AGIデバフ
 // ============================================
 
 export const snowfieldMonsters: Monster[] = [
   {
     id: 'ice_wolf',
     name: 'アイスウルフ',
-    stats: { hp: 200, maxHp: 200, mp: 0, maxMp: 0, atk: 35, def: 20, agi: 25, mag: 0 },
+    species: 'beast',
+    element: 'water',
+    stats: { hp: 300, maxHp: 300, mp: 0, maxMp: 0, atk: 45, def: 25, agi: 35, mag: 0 },
   },
   {
     id: 'frost_giant',
     name: 'フロストジャイアント',
-    stats: { hp: 400, maxHp: 400, mp: 0, maxMp: 0, atk: 45, def: 35, agi: 5, mag: 0 },
+    species: 'humanoid',
+    element: 'water',
+    stats: { hp: 450, maxHp: 450, mp: 30, maxMp: 30, atk: 55, def: 40, agi: 8, mag: 25 },
   },
   {
-    id: 'ice_elemental',
-    name: 'アイスエレメンタル',
-    stats: { hp: 180, maxHp: 180, mp: 50, maxMp: 50, atk: 20, def: 25, agi: 16, mag: 40 },
-    skills: [{
-      id: 'freeze',
-      name: '凍結',
-      description: '行動不能にする',
-      type: 'debuff',
-      target: 'single',
-      multiplier: 0,
-      mpCost: 15,
-      effect: { type: 'stun', chance: 70, duration: 1 },
-    }],
+    id: 'ice_wraith',
+    name: 'アイスレイス',
+    species: 'undead',
+    element: 'water',
+    stats: { hp: 250, maxHp: 250, mp: 60, maxMp: 60, atk: 30, def: 20, agi: 30, mag: 50 },
   },
 ];
 
 export const snowfieldBoss: Monster = {
-  id: 'ice_dragon',
-  name: 'アイスドラゴン',
-  stats: { hp: 1800, maxHp: 1800, mp: 100, maxMp: 100, atk: 55, def: 45, agi: 15, mag: 45 },
+  id: 'ice_queen',
+  name: 'アイスクイーン',
+  species: 'demon',
+  element: 'water',
+  stats: { hp: 1400, maxHp: 1400, mp: 120, maxMp: 120, atk: 50, def: 45, agi: 30, mag: 65 },
   skills: [{
-    id: 'blizzard',
-    name: 'ブリザード',
-    description: '全体に氷属性大ダメージ',
+    id: 'absolute_zero',
+    name: '絶対零度',
+    description: '全体に氷大ダメージ＋AGIダウン',
     type: 'magic',
     target: 'all',
-    multiplier: 2.0,
-    mpCost: 35,
+    multiplier: 1.6,
+    mpCost: 40,
+    element: 'water',
+    effect: { type: 'agiDown', value: 30, duration: 2 },
   }],
+  speciesKiller: [{ species: 'beast', multiplier: 1.5 }],
 };
 
 // ============================================
@@ -287,59 +325,66 @@ export const snowfieldBoss: Monster = {
 
 export const templeMonsters: Monster[] = [
   {
-    id: 'guardian',
-    name: 'ガーディアン',
-    stats: { hp: 350, maxHp: 350, mp: 0, maxMp: 0, atk: 45, def: 50, agi: 10, mag: 0 },
+    id: 'fallen_angel',
+    name: '堕天使',
+    species: 'demon',
+    element: 'wind',
+    stats: { hp: 400, maxHp: 400, mp: 80, maxMp: 80, atk: 50, def: 35, agi: 40, mag: 55 },
   },
   {
-    id: 'dark_priest',
-    name: 'ダークプリースト',
-    stats: { hp: 200, maxHp: 200, mp: 80, maxMp: 80, atk: 20, def: 25, agi: 12, mag: 50 },
-    skills: [{
-      id: 'dark_heal',
-      name: '暗黒回復',
-      description: '味方を回復',
-      type: 'heal',
-      target: 'ally',
-      multiplier: 0.5,
-      mpCost: 20,
-    }],
+    id: 'ancient_dragon',
+    name: 'エンシェントドラゴン',
+    species: 'dragon',
+    element: 'fire',
+    stats: { hp: 600, maxHp: 600, mp: 50, maxMp: 50, atk: 65, def: 50, agi: 25, mag: 40 },
   },
   {
-    id: 'ancient_golem',
-    name: 'エンシェントゴーレム',
-    stats: { hp: 500, maxHp: 500, mp: 0, maxMp: 0, atk: 50, def: 60, agi: 2, mag: 0 },
+    id: 'lich',
+    name: 'リッチ',
+    species: 'undead',
+    stats: { hp: 350, maxHp: 350, mp: 100, maxMp: 100, atk: 35, def: 30, agi: 20, mag: 70 },
   },
 ];
 
 export const templeBoss: Monster = {
-  id: 'demon_lord',
-  name: '魔王',
-  stats: { hp: 2500, maxHp: 2500, mp: 150, maxMp: 150, atk: 60, def: 50, agi: 18, mag: 55 },
+  id: 'god_of_destruction',
+  name: '破壊神',
+  species: 'demon',
+  element: 'fire',
+  stats: { hp: 2000, maxHp: 2000, mp: 150, maxMp: 150, atk: 70, def: 50, agi: 35, mag: 70 },
   skills: [
     {
-      id: 'dark_wave',
-      name: '暗黒波',
-      description: '全体に闇属性大ダメージ',
+      id: 'apocalypse',
+      name: 'アポカリプス',
+      description: '全体に超大ダメージ',
       type: 'magic',
       target: 'all',
-      multiplier: 2.2,
-      mpCost: 40,
+      multiplier: 2.0,
+      mpCost: 50,
+      element: 'fire',
     },
     {
-      id: 'death_grip',
-      name: '死の握撃',
-      description: '単体に即死級ダメージ',
-      type: 'attack',
-      target: 'single',
-      multiplier: 4.0,
-      mpCost: 50,
+      id: 'curse_of_god',
+      name: '神の呪い',
+      description: '全体の攻撃力と防御力を下げる',
+      type: 'debuff',
+      target: 'all',
+      multiplier: 0,
+      mpCost: 30,
+      effect: { type: 'statDown', value: 25, duration: 3 },
     },
+  ],
+  speciesKiller: [
+    { species: 'humanoid', multiplier: 1.5 },
+    { species: 'beast', multiplier: 1.3 },
+  ],
+  speciesResist: [
+    { species: 'dragon', multiplier: 0.5 },
   ],
 };
 
 // ============================================
-// エクスポート
+// ダンジョン別モンスターマップ
 // ============================================
 
 export const monstersByDungeon = {

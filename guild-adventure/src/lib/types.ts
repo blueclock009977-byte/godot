@@ -15,6 +15,23 @@ export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'cit
 export type DungeonType = 'grassland' | 'forest' | 'cave' | 'sea' | 'desert' | 'volcano' | 'snowfield' | 'temple';
 export type Position = 'front' | 'back';
 
+// 系統（モンスター分類）
+export type SpeciesType = 'humanoid' | 'beast' | 'undead' | 'demon' | 'dragon';
+
+// 属性
+export type ElementType = 'none' | 'fire' | 'water' | 'wind' | 'earth';
+
+// 属性相性（1.3倍ダメージ）
+export const ELEMENT_ADVANTAGE: Record<ElementType, ElementType | null> = {
+  none: null,
+  fire: 'wind',    // 火 → 風に強い
+  water: 'fire',   // 水 → 火に強い
+  wind: 'earth',   // 風 → 地に強い
+  earth: 'water',  // 地 → 水に強い
+};
+
+export const ELEMENT_MULTIPLIER = 1.3;
+
 // 前衛/後衛の補正
 export const POSITION_MODIFIERS: Record<Position, { damage: number; defense: number }> = {
   front: { damage: 1.2, defense: 0.8 },  // 火力+20%, 被ダメ+20%
@@ -65,6 +82,18 @@ export type EffectType =
   | 'allyAtkBonus'      // 味方攻撃+%
   | 'intimidate'        // 威圧（敵攻撃-%）
   | 'debuffBonus'       // デバフ成功率+%
+  // 系統特攻（1.2〜1.8倍）
+  | 'speciesKiller_humanoid'  // 人型特攻
+  | 'speciesKiller_beast'     // 獣特攻
+  | 'speciesKiller_undead'    // 不死特攻
+  | 'speciesKiller_demon'     // 悪魔特攻
+  | 'speciesKiller_dragon'    // 竜特攻
+  // 系統耐性（被ダメ軽減）
+  | 'speciesResist_humanoid'  // 人型耐性
+  | 'speciesResist_beast'     // 獣耐性
+  | 'speciesResist_undead'    // 不死耐性
+  | 'speciesResist_demon'     // 悪魔耐性
+  | 'speciesResist_dragon'    // 竜耐性
   // マスタリー用
   | 'allStats'          // 全ステータス+%
   | 'followUp'          // 追撃率+%
@@ -156,6 +185,7 @@ export interface SkillData {
   target: 'single' | 'all' | 'ally' | 'self' | 'allAllies';
   multiplier: number;
   mpCost: number;
+  element?: ElementType;  // スキル属性（省略時はnone）
   condition?: SkillCondition;
   effect?: SkillEffect;
 }
@@ -209,6 +239,10 @@ export interface Monster {
   stats: Stats;
   skills?: SkillData[];
   dropRate?: number;
+  species: SpeciesType;           // 系統
+  element?: ElementType;          // 属性（省略時はnone）
+  speciesKiller?: { species: SpeciesType; multiplier: number }[];  // 系統特攻
+  speciesResist?: { species: SpeciesType; multiplier: number }[];  // 系統耐性
 }
 
 export interface MonsterSpawn {
