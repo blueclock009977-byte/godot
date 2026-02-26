@@ -525,15 +525,19 @@ export const useGameStore = create<GameStore>()(
       // 既存の探索を復元（ログイン時に呼ぶ）
       restoreAdventure: async () => {
         const { username } = get();
+        console.log('[restoreAdventure] username:', username);
         if (!username) return;
         
         const adventure = await getAdventureOnServer(username);
+        console.log('[restoreAdventure] adventure:', adventure);
         if (!adventure) return;
         
         const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[adventure.dungeon];
+        console.log('[restoreAdventure] dungeonData:', dungeonData?.id);
         if (!dungeonData) {
           // 無効なダンジョン → クリア
+          console.log('[restoreAdventure] invalid dungeon, clearing');
           await clearAdventureOnServer(username);
           return;
         }
@@ -541,12 +545,15 @@ export const useGameStore = create<GameStore>()(
         // 期限切れチェック
         const elapsed = Date.now() - adventure.startTime;
         const duration = dungeonData.durationSeconds * 1000;
+        console.log('[restoreAdventure] elapsed:', elapsed, 'duration:', duration, 'limit:', duration + 60000);
         if (elapsed > duration + 60000) { // 完了後1分以上経過 → クリア
+          console.log('[restoreAdventure] expired, clearing');
           await clearAdventureOnServer(username);
           return;
         }
         
         // 復元（バトル結果も含む）
+        console.log('[restoreAdventure] restoring adventure');
         set({
           currentAdventure: {
             dungeon: adventure.dungeon as DungeonType,
