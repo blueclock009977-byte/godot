@@ -204,6 +204,7 @@ interface ExtendedBattleUnit extends BattleUnit {
   reviveUsed: boolean;
   raceMastery?: boolean;
   jobMastery?: boolean;
+  degradation: number;  // 劣化%（被ダメ増加）
 }
 
 function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedBattleUnit {
@@ -236,6 +237,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
+    degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
@@ -271,6 +273,7 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
+    degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   return unit;
@@ -310,18 +313,11 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
 // ============================================
 
 function getHitCount(attacker: ExtendedBattleUnit): number {
-  // AGI依存: 基本1回、AGI15以上で2回、AGI25以上で3回の可能性
-  let hits = 1;
+  // AGI依存: 1 + floor(AGI/5)、最大10ヒット
+  // AGI 5: 2ヒット、AGI 15: 4ヒット、AGI 25: 6ヒット
   const agi = attacker.stats.agi;
-  
-  if (agi >= 15 && Math.random() < 0.3 + (agi - 15) * 0.02) {
-    hits++;
-  }
-  if (agi >= 25 && Math.random() < 0.2 + (agi - 25) * 0.02) {
-    hits++;
-  }
-  
-  return Math.min(hits, 3);
+  const hits = 1 + Math.floor(agi / 5);
+  return Math.min(Math.max(hits, 1), 10);
 }
 
 // ============================================
@@ -331,8 +327,15 @@ function getHitCount(attacker: ExtendedBattleUnit): number {
 interface DamageResult {
   damage: number;
   isCritical: boolean;
-  hitCount: number;
+  hitCount: number;      // 最大ヒット数
+  actualHits: number;    // 実際に当たったヒット数
+  degradationAdded: number;  // 付与した劣化%
 }
+
+// 連撃減衰定数
+const MULTI_HIT_DECAY = 0.8;  // 各ヒットで80%に減衰
+const DEGRADATION_PER_HIT = 2;  // 1ヒットで劣化+2%
+const MAX_DEGRADATION = 30;  // 最大劣化30%
 
 function calculatePhysicalDamage(
   attacker: ExtendedBattleUnit, 
@@ -345,12 +348,40 @@ function calculatePhysicalDamage(
   const hitCount = getHitCount(attacker);
   let totalDamage = 0;
   let isCritical = false;
+  let actualHits = 0;
+  let degradationAdded = 0;
+  
+  // 基本命中率を計算
+  let baseHitRate = 90 + (attacker.stats.agi - defender.stats.agi);
+  baseHitRate += atkEffects.accuracyBonus;
+  baseHitRate -= defEffects.evasionBonus;
+  if (defender.position === 'back') baseHitRate -= 10;
+  baseHitRate = Math.max(30, Math.min(99, baseHitRate));
   
   for (let i = 0; i < hitCount; i++) {
+    // 連撃減衰: n撃目の係数 = 0.8^(n-1)
+    const decayFactor = Math.pow(MULTI_HIT_DECAY, i);
+    
+    // 命中判定（減衰適用）
+    const hitRate = baseHitRate * decayFactor;
+    if (Math.random() * 100 >= hitRate) {
+      continue; // ミス
+    }
+    
+    // 完全回避判定
+    if (defEffects.perfectEvasion > 0 && Math.random() * 100 < defEffects.perfectEvasion) {
+      continue; // 完全回避
+    }
+    
+    actualHits++;
+    
     const randA = random(0.85, 1.15);
     const randB = random(0.85, 1.15);
     
     let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
+    
+    // 連撃減衰（威力）
+    damage *= decayFactor;
     
     // attackStack累積
     const stackBonus = 1 + (atkEffects.attackStack * attacker.attackStackCount) / 100;
@@ -387,6 +418,9 @@ function calculatePhysicalDamage(
     // damageReduction
     damage *= (1 - defEffects.damageReduction / 100);
     
+    // 劣化による被ダメ増加
+    damage *= (1 + defender.degradation / 100);
+    
     // クリティカル判定
     let critRate = 10 + atkEffects.critBonus;
     if (attacker.trait === 'lucky') critRate += 20;
@@ -402,9 +436,14 @@ function calculatePhysicalDamage(
     if (defender.trait === 'cautious') damage *= 0.85;
     
     totalDamage += Math.max(1, Math.floor(damage));
+    
+    // 劣化蓄積（ヒットごと）
+    const addDeg = Math.min(DEGRADATION_PER_HIT, MAX_DEGRADATION - defender.degradation);
+    defender.degradation += addDeg;
+    degradationAdded += addDeg;
   }
   
-  return { damage: totalDamage, isCritical, hitCount };
+  return { damage: totalDamage, isCritical, hitCount, actualHits, degradationAdded };
 }
 
 function calculateMagicDamage(
@@ -448,6 +487,13 @@ function calculateMagicDamage(
   
   // damageReduction
   damage *= (1 - defEffects.damageReduction / 100);
+  
+  // 劣化による被ダメ増加
+  damage *= (1 + defender.degradation / 100);
+  
+  // 魔法は単発なので劣化1回分蓄積
+  const addDeg = Math.min(DEGRADATION_PER_HIT, MAX_DEGRADATION - defender.degradation);
+  defender.degradation += addDeg;
   
   return Math.max(1, Math.floor(damage));
 }
@@ -627,25 +673,22 @@ function processTurn(
         target = cover;
       }
       
-      // 命中判定
-      const hitResult = checkHit(unit, target);
-      if (!hitResult.hit) {
-        if (hitResult.perfectEvade) {
-          logs.push(`${unit.name}の攻撃！ ${target.name}は完全に回避した！`);
-        } else {
-          logs.push(`${unit.name}の攻撃！ ${target.name}に外れた！MISS!`);
-        }
-        unit.attackStackCount++;
+      // ダメージ計算（命中判定は内部で行う）
+      const { damage, isCritical, hitCount, actualHits, degradationAdded } = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
+      unit.attackStackCount++;
+      
+      if (actualHits === 0) {
+        // 全弾ミス
+        logs.push(`${unit.name}の攻撃！ ${target.name}に外れた！MISS!`);
         continue;
       }
       
-      const { damage, isCritical, hitCount } = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
       target.stats.hp = Math.max(0, target.stats.hp - damage);
-      unit.attackStackCount++;
       
       const critText = isCritical ? '【会心】' : '';
-      const hitText = hitCount > 1 ? `${hitCount}HIT! ` : '';
-      logs.push(`${unit.name}の攻撃！ ${hitText}${target.name}に${damage}ダメージ！${critText}`);
+      const hitText = actualHits > 1 ? `${actualHits}HIT! ` : (hitCount > 1 ? `${actualHits}/${hitCount}HIT ` : '');
+      const degText = degradationAdded > 0 ? ` [劣化+${degradationAdded}%]` : '';
+      logs.push(`${unit.name}の攻撃！ ${hitText}${target.name}に${damage}ダメージ！${critText}${degText}`);
       
       // HP吸収
       if (unit.passiveEffects.hpSteal > 0) {
@@ -657,9 +700,8 @@ function processTurn(
       // 反撃判定
       if (target.stats.hp > 0 && target.passiveEffects.counterRate > 0) {
         if (Math.random() * 100 < target.passiveEffects.counterRate) {
-          const counterHit = checkHit(target, unit);
-          if (counterHit.hit) {
-            const counterResult = calculatePhysicalDamage(target, unit, enemies.filter(e => e.stats.hp > 0).length);
+          const counterResult = calculatePhysicalDamage(target, unit, enemies.filter(e => e.stats.hp > 0).length);
+          if (counterResult.actualHits > 0) {
             unit.stats.hp = Math.max(0, unit.stats.hp - counterResult.damage);
             logs.push(`${target.name}の反撃！ ${unit.name}に${counterResult.damage}ダメージ！`);
           }
@@ -695,21 +737,19 @@ function processTurn(
             let target = t as ExtendedBattleUnit;
             if (target.stats.hp <= 0) continue;
             
-            // 命中判定（魔法は必中にするか、物理スキルのみ判定）
-            if (!isMagic) {
-              const hitResult = checkHit(unit, target);
-              if (!hitResult.hit) {
-                logs.push(`${unit.name}の${skill.name}！ ${target.name}に外れた！MISS!`);
-                continue;
-              }
-            }
-            
             let damage: number;
+            let actualHits = 1;
             if (isMagic) {
               damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element, aliveAlliesNow.length);
             } else {
+              // 物理スキル: 命中判定は内部で行う
               const result = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
+              if (result.actualHits === 0) {
+                logs.push(`${unit.name}の${skill.name}！ ${target.name}に外れた！MISS!`);
+                continue;
+              }
               damage = Math.floor(result.damage * skill.multiplier);
+              actualHits = result.actualHits;
             }
             target.stats.hp = Math.max(0, target.stats.hp - damage);
             
