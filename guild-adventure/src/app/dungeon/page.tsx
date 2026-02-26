@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { DungeonType } from '@/lib/types';
 import { dungeonList } from '@/lib/data/dungeons';
+import { getDropRate } from '@/lib/data/items';
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) return `${seconds}秒`;
@@ -98,7 +99,7 @@ export default function DungeonPage() {
                 {dungeon.description}
               </p>
               
-              <div className="flex justify-between text-sm">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                 <span className="text-slate-400">
                   ⏱️ {formatDuration(dungeon.durationSeconds)}
                 </span>
@@ -107,6 +108,9 @@ export default function DungeonPage() {
                 </span>
                 <span className="text-slate-400">
                   👹 {dungeon.encounterCount}回遭遇
+                </span>
+                <span className="text-amber-400">
+                  📦 ドロップ: {getDropRate(dungeon.id)}%
                 </span>
               </div>
               

@@ -4,12 +4,12 @@ export const races: Record<string, RaceData> = {
   human: {
     id: 'human',
     name: '人間',
-    description: '万能型。全ステータスがバランス良く、どの職業とも相性が良い。ドロップ率+15%の幸運と、HPが減るほど強くなる不屈の精神を持つ。初心者におすすめ。',
-    baseStats: { maxHp: 100, maxMp: 50, atk: 10, def: 10, agi: 10, mag: 10 },
+    description: 'ステータスは控えめだが、ドロップ率+40%の幸運が最大の武器。ファーム周回に最適な種族。',
+    baseStats: { maxHp: 85, maxMp: 40, atk: 8, def: 8, agi: 9, mag: 8 },
     passives: [
       { name: '適応力', description: 'クリティカル率と回避率が上昇', effects: [{ type: 'critBonus', value: 5 }, { type: 'evasionBonus', value: 5 }] },
       { name: '不屈の精神', description: 'HPが低いほど攻撃力が上がる', effects: [{ type: 'damageBonus', value: 10 }] },
-      { name: '幸運', description: 'アイテムのドロップ率が上昇', effects: [{ type: 'dropBonus', value: 15 }] },
+      { name: '幸運', description: 'アイテムのドロップ率が上昇', effects: [{ type: 'dropBonus', value: 40 }] },
     ],
     skills: [
       { id: 'inspire', name: '鼓舞', description: '味方全体の攻撃力を上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 20, duration: 3 } },
