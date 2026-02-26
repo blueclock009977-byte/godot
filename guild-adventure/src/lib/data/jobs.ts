@@ -4,16 +4,7 @@ export const jobs: Record<string, JobData> = {
   warrior: {
     id: 'warrior',
     name: '戦士',
-    description: `【ステ補正】HP+20 MP+5 ATK+5 DEF+3
-【パッシブ】
-・武器習熟: 物理ダメ+15%
-・闘志: HP低下時クリ率+10%
-【スキル】
-・強撃(MP8): 単体物理1.8倍
-・雄叫び(MP10): 自身ATK+30%(3T)
-・薙ぎ払い(MP15): 全体物理1.0倍
-【マスタリー】
-・武神の構え: 物理ダメ+30%`,
+    description: 'HP+20、ATK+5、DEF+3。物理ダメ+15%のバランス型前衛。初心者におすすめ。',
     statModifiers: { maxHp: 20, maxMp: 5, atk: 5, def: 3 },
     passives: [
       { name: '武器習熟', description: '物理攻撃の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
@@ -29,17 +20,7 @@ export const jobs: Record<string, JobData> = {
   mage: {
     id: 'mage',
     name: '魔法使い',
-    description: `【ステ補正】HP-10 MP+30 MAG+8 AGI+2
-【パッシブ】
-・魔力増幅: 魔法ダメ+25%
-・詠唱効率: MP消費-15%
-・魔力の泉: 毎ターンMP+5
-【スキル】
-・ファイアボール(MP18,火): 全体魔法1.2倍
-・アイスランス(MP15,水): 単体魔法2.0倍
-・サンダー(MP12,風): 単体魔法1.4倍
-【マスタリー】
-・魔力解放: 全体魔法が2回発動`,
+    description: 'MP+30、MAG+8。魔法ダメ+25%の火力特化。フェアリーやエルフと相性◎',
     statModifiers: { maxHp: -10, maxMp: 30, mag: 8, agi: 2 },
     passives: [
       { name: '魔力増幅', description: '魔法攻撃の威力が大幅に上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -56,16 +37,7 @@ export const jobs: Record<string, JobData> = {
   priest: {
     id: 'priest',
     name: '司祭',
-    description: `【ステ補正】HP+10 MP+25 DEF+2 MAG+5
-【パッシブ】
-・聖なる力: 回復量+30%
-・神の加護: 状態異常耐性+30%
-【スキル】
-・ヒール(MP12): 味方1人HP回復1.5倍
-・ヒールオール(MP25): 味方全体HP回復0.8倍
-・ホーリーライト(MP14): 単体魔法1.4倍
-【マスタリー】
-・聖域: 味方全体の被ダメ-20%`,
+    description: 'MP+25、MAG+5。回復量+30%のヒーラー。パーティに必須の支援職。',
     statModifiers: { maxHp: 10, maxMp: 25, def: 2, mag: 5 },
     passives: [
       { name: '聖なる力', description: '回復量が大幅に上昇', effects: [{ type: 'healBonus', value: 30 }] },
@@ -81,17 +53,7 @@ export const jobs: Record<string, JobData> = {
   thief: {
     id: 'thief',
     name: '盗賊',
-    description: `【ステ補正】MP+15 ATK+3 AGI+8 DEF-2
-【パッシブ】
-・急所狙い: クリ率+25%
-・クリティカル強化: クリダメ+30%
-・影潜み: 先制率+20%
-【スキル】
-・バックスタブ(MP10): 単体物理1.6倍
-・毒刃(MP12): 単体物理1.2倍+毒
-・暗殺(MP25): 単体物理2.5倍
-【マスタリー】
-・暗殺術: HP低い敵に確定クリ`,
+    description: 'AGI+8。クリ率+25%、クリダメ+30%の一撃必殺型。ハーフリングと相性◎',
     statModifiers: { maxMp: 15, atk: 3, agi: 8, def: -2 },
     passives: [
       { name: '急所狙い', description: 'クリティカル率が大幅上昇', effects: [{ type: 'critBonus', value: 25 }] },
@@ -108,16 +70,7 @@ export const jobs: Record<string, JobData> = {
   knight: {
     id: 'knight',
     name: '騎士',
-    description: `【ステ補正】HP+40 MP+10 DEF+8 AGI-3
-【パッシブ】
-・鉄壁: 被ダメ-25%
-・盾の心得: 物理ダメ+10%
-【スキル】
-・シールドバッシュ(MP10): 単体物理1.3倍
-・鉄壁の構え(MP15): 自身DEF+50%(3T)
-・聖なる一撃(MP18): 単体物理1.8倍
-【マスタリー】
-・鉄壁の守護: 50%で味方を庇う`,
+    description: 'HP+40、DEF+8。被ダメ-25%の最強タンク。ドワーフで最硬の壁役に。',
     statModifiers: { maxHp: 40, maxMp: 10, def: 8, agi: -3 },
     passives: [
       { name: '鉄壁', description: '被ダメージを大幅軽減', effects: [{ type: 'damageReduction', value: 25 }] },
@@ -133,16 +86,7 @@ export const jobs: Record<string, JobData> = {
   hunter: {
     id: 'hunter',
     name: '狩人',
-    description: `【ステ補正】MP+15 ATK+4 AGI+5 DEF+1
-【パッシブ】
-・鷹の目: 命中+20%, 先制+30%
-・狩りの心得: クリ率+15%
-【スキル】
-・狙い撃ち(MP10): 単体物理1.7倍
-・矢の雨(MP18): 全体物理0.9倍
-・速射(MP12): 単体物理1.4倍
-【マスタリー】
-・必中の矢: 回避無視+クリ率+30%`,
+    description: 'AGI+5、ATK+4。命中+20%、先制+30%。後衛から確実にダメージを出せる。',
     statModifiers: { maxMp: 15, atk: 4, agi: 5, def: 1 },
     passives: [
       { name: '鷹の目', description: '命中率と先制率が上昇', effects: [{ type: 'accuracyBonus', value: 20 }, { type: 'firstStrikeBonus', value: 30 }] },
@@ -158,17 +102,7 @@ export const jobs: Record<string, JobData> = {
   ninja: {
     id: 'ninja',
     name: '忍者',
-    description: `【ステ補正】MP+20 ATK+2 AGI+10 MAG+2 DEF-3
-【パッシブ】
-・影分身: 回避+30%
-・疾風: 先制+25%
-・二刀流: 物理ダメ+15%
-【スキル】
-・影斬り(MP8): 単体物理1.4倍
-・手裏剣(MP12): 全体物理0.8倍
-・必殺(MP25): 単体物理2.2倍
-【マスタリー】
-・分身の術: 25%で完全回避`,
+    description: 'AGI+10。回避+30%、先制+25%。ゴブリンで先制特化、ハーフリングで回避特化。',
     statModifiers: { maxMp: 20, atk: 2, agi: 10, mag: 2, def: -3 },
     passives: [
       { name: '影分身', description: '回避率が大幅に上昇', effects: [{ type: 'evasionBonus', value: 30 }] },
@@ -185,16 +119,7 @@ export const jobs: Record<string, JobData> = {
   sage: {
     id: 'sage',
     name: '賢者',
-    description: `【ステ補正】HP+5 MP+25 MAG+6 DEF+1
-【パッシブ】
-・叡智: 魔法ダメ+15%, 回復量+15%
-・瞑想: 毎ターンMP+4
-【スキル】
-・賢者の炎(MP12,火): 単体魔法1.5倍
-・癒しの光(MP14): 味方1人HP回復1.3倍
-・メテオ(MP40,火): 全体魔法2.0倍
-【マスタリー】
-・叡智の結晶: MP消費-50%`,
+    description: 'MP+25、MAG+6。魔法+15%、回復+15%の万能魔法職。ドラゴニュートで両刀に。',
     statModifiers: { maxHp: 5, maxMp: 25, mag: 6, def: 1 },
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
@@ -210,17 +135,7 @@ export const jobs: Record<string, JobData> = {
   berserker: {
     id: 'berserker',
     name: 'バーサーカー',
-    description: `【ステ補正】HP+30 MP+5 ATK+10 DEF-5 AGI+3
-【パッシブ】
-・狂乱: 物理ダメ+40%
-・捨て身: 被ダメ+20%
-・血の狂気: クリダメ+50%
-【スキル】
-・狂乱撃(MP15): 単体物理3.0倍
-・暴走(MP20): 全体物理1.5倍
-・血の咆哮(MP12): 自身ATK+50%(3T)
-【マスタリー】
-・血の狂宴: 攻撃ごとにATK+5%累積`,
+    description: 'ATK+10。物理+40%だが被ダメ+20%。オークで最高火力のロマン砲。',
     statModifiers: { maxHp: 30, maxMp: 5, atk: 10, def: -5, agi: 3 },
     passives: [
       { name: '狂乱', description: '物理攻撃力が大幅上昇', effects: [{ type: 'physicalBonus', value: 40 }] },
@@ -237,16 +152,7 @@ export const jobs: Record<string, JobData> = {
   paladin: {
     id: 'paladin',
     name: 'パラディン',
-    description: `【ステ補正】HP+25 MP+20 ATK+4 DEF+5 MAG+4
-【パッシブ】
-・聖騎士の誓い: 物理+15%, 回復量+20%
-・神の盾: 被ダメ-15%
-【スキル】
-・聖剣(MP12): 単体物理1.7倍
-・癒しの手(MP18): 味方1人HP回復1.8倍
-・聖なる盾(MP20): 味方全体DEF+30%(3T)
-【マスタリー】
-・聖騎士の誓約: 味方死亡時1回自動蘇生`,
+    description: 'HP+25、DEF+5、MAG+4。物理+15%、回復+20%の聖騎士。エンジェルで最強に。',
     statModifiers: { maxHp: 25, maxMp: 20, atk: 4, def: 5, mag: 4 },
     passives: [
       { name: '聖騎士の誓い', description: '物理攻撃と回復量が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'healBonus', value: 20 }] },
@@ -255,23 +161,14 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'holy_blade', name: '聖剣', description: '聖なる力で斬りつける', type: 'attack', target: 'single', multiplier: 1.7, mpCost: 12 },
       { id: 'lay_on_hands', name: '癒しの手', description: '味方一人を大回復', type: 'heal', target: 'ally', multiplier: 1.8, mpCost: 18 },
-      { id: 'divine_shield', name: '聖なる盾', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 20, effect: { type: 'defUp', value: 30, duration: 3 } },
+      { name: 'divine_shield', id: 'divine_shield', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 20, effect: { type: 'defUp', value: 30, duration: 3 } },
     ],
     masterySkill: { name: '聖騎士の誓約', description: '味方死亡時、自動で1回蘇生', type: 'passive', effects: [{ type: 'autoRevive', value: 1 }] },
   },
   necromancer: {
     id: 'necromancer',
     name: 'ネクロマンサー',
-    description: `【ステ補正】HP-5 MP+30 MAG+8 DEF-2 AGI+2
-【パッシブ】
-・死の契約: 魔法ダメ+25%, HP吸収+25%
-・冥界との繋がり: 毎ターンMP+4
-【スキル】
-・ダークボルト(MP12): 単体魔法1.6倍
-・吸魂(MP15): 単体魔法1.2倍+HP吸収
-・死の波動(MP28): 全体魔法1.4倍
-【マスタリー】
-・死霊召喚: 50%で倒した敵を味方に`,
+    description: 'MP+30、MAG+8。魔法+25%、HP吸収+25%の闘魔法使い。アンデッドで自己完結型に。',
     statModifiers: { maxHp: -5, maxMp: 30, mag: 8, def: -2, agi: 2 },
     passives: [
       { name: '死の契約', description: '魔法攻撃力と吸収量が上昇', effects: [{ type: 'magicBonus', value: 25 }, { type: 'hpSteal', value: 25 }] },
@@ -287,16 +184,7 @@ export const jobs: Record<string, JobData> = {
   monk: {
     id: 'monk',
     name: 'モンク',
-    description: `【ステ補正】HP+15 MP+15 ATK+6 DEF+2 AGI+6
-【パッシブ】
-・練気: 物理ダメ+20%, 回避+15%
-・心眼: クリ率+15%
-【スキル】
-・百裂拳(MP12): 単体物理1.8倍
-・気功波(MP18): 全体魔法1.0倍
-・精神統一(MP15): 自身HP回復1.5倍
-【マスタリー】
-・無我の境地: 50%で反撃`,
+    description: 'ATK+6、AGI+6。物理+20%、回避+15%の格闘家。リザードマンで再生タンクに。',
     statModifiers: { maxHp: 15, maxMp: 15, atk: 6, def: 2, agi: 6 },
     passives: [
       { name: '練気', description: '物理攻撃力と回避率が上昇', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'evasionBonus', value: 15 }] },
@@ -312,16 +200,7 @@ export const jobs: Record<string, JobData> = {
   ranger: {
     id: 'ranger',
     name: 'レンジャー',
-    description: `【ステ補正】HP+10 MP+15 ATK+4 DEF+2 AGI+6 MAG+2
-【パッシブ】
-・野生の勘: 先制+25%, 回避+15%
-・自然治癒: 毎ターンHP+5
-【スキル】
-・狙撃(MP14): 単体物理2.0倍
-・罠設置(MP12): 敵全体ATK-20%(3T)
-・自然の恵み(MP18): 味方全体HP回復0.6倍
-【マスタリー】
-・自然の化身: 毎ターンHP+15, MP+10`,
+    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。持久戦に強い万能職。',
     statModifiers: { maxHp: 10, maxMp: 15, atk: 4, def: 2, agi: 6, mag: 2 },
     passives: [
       { name: '野生の勘', description: '先制率と回避率が上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }, { type: 'evasionBonus', value: 15 }] },
@@ -337,16 +216,7 @@ export const jobs: Record<string, JobData> = {
   samurai: {
     id: 'samurai',
     name: 'サムライ',
-    description: `【ステ補正】HP+15 MP+10 ATK+7 DEF+3 AGI+4
-【パッシブ】
-・居合の構え: クリ率+25%, クリダメ+40%
-・武士道: 物理ダメ+15%
-【スキル】
-・居合斬り(MP12): 単体物理2.0倍
-・心眼(MP10): 自身AGI+40%(3T)
-・必殺剣(MP30): 単体物理3.0倍
-【マスタリー】
-・一閃(MP40): 全体防御無視2.5倍`,
+    description: 'ATK+7。クリ率+25%、クリダメ+40%の一撃必殺型。ハーフリングで超クリティカル特化。',
     statModifiers: { maxHp: 15, maxMp: 10, atk: 7, def: 3, agi: 4 },
     passives: [
       { name: '居合の構え', description: 'クリティカル率とダメージが上昇', effects: [{ type: 'critBonus', value: 25 }, { type: 'critDamage', value: 40 }] },
@@ -367,16 +237,7 @@ export const jobs: Record<string, JobData> = {
   witch: {
     id: 'witch',
     name: 'ウィッチ',
-    description: `【ステ補正】HP-5 MP+28 MAG+7 AGI+3 DEF-1
-【パッシブ】
-・呪術: 魔法ダメ+20%, デバフ成功+20%
-・魔女の知恵: MP消費-15%
-【スキル】
-・呪詛(MP10): 敵ステ-30%(3T)
-・毒霧(MP16): 全体魔法1.0倍+毒
-・邪眼(MP18): 単体魔法1.8倍
-【マスタリー】
-・大呪術(MP35): 敵全体ステ-30%(3T)`,
+    description: 'MP+28、MAG+7。魔法+20%、デバフ成功+20%。デーモンで呪い特化に。',
     statModifiers: { maxHp: -5, maxMp: 28, mag: 7, agi: 3, def: -1 },
     passives: [
       { name: '呪術', description: '魔法威力と状態異常成功率が上昇', effects: [{ type: 'magicBonus', value: 20 }, { type: 'debuffBonus', value: 20 }] },
@@ -397,16 +258,7 @@ export const jobs: Record<string, JobData> = {
   bard: {
     id: 'bard',
     name: 'バード',
-    description: `【ステ補正】HP+5 MP+25 ATK+2 DEF+1 AGI+5 MAG+4
-【パッシブ】
-・歌声: 味方ATK+10%
-・魔力の旋律: 毎ターンMP+4
-【スキル】
-・勇気の歌(MP15): 味方全体ATK+25%(3T)
-・子守唄(MP18): 敵全体AGI-30%(2T)
-・癒しの旋律(MP20): 味方全体HP回復0.7倍
-【マスタリー】
-・英雄譚(MP30): 味方全体ATK/DEF+25%(5T)`,
+    description: 'MP+25、AGI+5。味方ATK+10%の支援特化。パーティ全体を強化！',
     statModifiers: { maxHp: 5, maxMp: 25, atk: 2, def: 1, agi: 5, mag: 4 },
     passives: [
       { name: '歌声', description: '味方の攻撃力が上昇', effects: [{ type: 'allyAtkBonus', value: 10 }] },
