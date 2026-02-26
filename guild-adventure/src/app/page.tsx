@@ -186,8 +186,20 @@ function GameScreen() {
             }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold">🗺️ 冒険に出る</h2>
-                  <p className="text-slate-200 text-sm">ダンジョンを探索</p>
+                  <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
+                  <p className="text-slate-200 text-sm">ダンジョンを探索（4人まで）</p>
+                </div>
+                <span className="text-white">→</span>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/multi" className="block">
+            <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
+                  <p className="text-purple-200 text-sm">仲間と一緒にダンジョンへ</p>
                 </div>
                 <span className="text-white">→</span>
               </div>
@@ -266,7 +278,7 @@ function GameScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.5.0 Beta - マスタリースキル</p>
+          <p>v0.7.0 Beta - マルチプレイ</p>
         </div>
       </div>
     </main>

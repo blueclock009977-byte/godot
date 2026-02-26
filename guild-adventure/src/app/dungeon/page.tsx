@@ -26,7 +26,7 @@ export default function DungeonPage() {
   const { party, currentAdventure, startAdventure } = useGameStore();
   
   const partyCount = [...party.front, ...party.back].filter(Boolean).length;
-  const canStart = partyCount > 0 && !currentAdventure;
+  const canStart = partyCount > 0 && partyCount <= 4 && !currentAdventure;
   
   const handleStart = (dungeonId: DungeonType) => {
     if (!canStart) return;
@@ -50,6 +50,8 @@ export default function DungeonPage() {
           <div className="mb-6 p-4 bg-red-900/50 rounded-lg border border-red-700">
             {partyCount === 0 ? (
               <p>パーティを編成してください</p>
+            ) : partyCount > 4 ? (
+              <p>ソロは4人まで！（現在{partyCount}人）</p>
             ) : (
               <p>現在冒険中です</p>
             )}

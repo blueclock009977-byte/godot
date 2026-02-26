@@ -95,3 +95,195 @@ export function clearStoredUsername(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('guild-adventure-username');
 }
+
+// ============================================
+// マルチプレイ機能
+// ============================================
+
+export interface RoomPlayer {
+  username: string;
+  characters: any[];  // 選択したキャラ
+  ready: boolean;
+  joinedAt: number;
+}
+
+export interface MultiRoom {
+  code: string;
+  hostId: string;
+  dungeonId: string;
+  maxPlayers: 2 | 3;
+  status: 'waiting' | 'ready' | 'battle' | 'done';
+  players: Record<string, RoomPlayer>;
+  battleResult?: any;
+  createdAt: number;
+  updatedAt: number;
+}
+
+// 6桁のルームコードを生成
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+// ルームを作成
+export async function createRoom(hostUsername: string, dungeonId: string, maxPlayers: 2 | 3): Promise<string | null> {
+  const code = generateRoomCode();
+  
+  const room: MultiRoom = {
+    code,
+    hostId: hostUsername,
+    dungeonId,
+    maxPlayers,
+    status: 'waiting',
+    players: {
+      [hostUsername]: {
+        username: hostUsername,
+        characters: [],
+        ready: false,
+        joinedAt: Date.now(),
+      },
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+  
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(room),
+    });
+    return res.ok ? code : null;
+  } catch (e) {
+    console.error('Failed to create room:', e);
+    return null;
+  }
+}
+
+// ルームを取得
+export async function getRoom(code: string): Promise<MultiRoom | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.error('Failed to get room:', e);
+    return null;
+  }
+}
+
+// ルームに参加
+export async function joinRoom(code: string, username: string): Promise<boolean> {
+  const room = await getRoom(code);
+  if (!room) return false;
+  if (room.status !== 'waiting') return false;
+  if (Object.keys(room.players).length >= room.maxPlayers) return false;
+  if (room.players[username]) return true; // 既に参加済み
+  
+  const player: RoomPlayer = {
+    username,
+    characters: [],
+    ready: false,
+    joinedAt: Date.now(),
+  };
+  
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(player),
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to join room:', e);
+    return false;
+  }
+}
+
+// キャラ選択を更新
+export async function updateRoomCharacters(code: string, username: string, characters: any[]): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}/characters.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(characters),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 準備完了を更新
+export async function updateRoomReady(code: string, username: string, ready: boolean): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}/ready.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ready),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ルームステータスを更新
+export async function updateRoomStatus(code: string, status: MultiRoom['status']): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, updatedAt: Date.now() }),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// バトル結果を保存
+export async function saveRoomBattleResult(code: string, result: any): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        battleResult: result, 
+        status: 'done',
+        updatedAt: Date.now(),
+      }),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ルームから退出
+export async function leaveRoom(code: string, username: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// ルームを削除
+export async function deleteRoom(code: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}

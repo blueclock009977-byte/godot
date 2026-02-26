@@ -125,7 +125,7 @@ export const useGameStore = create<GameStore>()(
       username: null,
       isLoading: false,
       characters: [],
-      party: { front: [null, null, null, null], back: [null, null, null, null] },
+      party: { front: [null, null, null], back: [null, null, null] },
       currentAdventure: null,
       inventory: {},
       lastDroppedItem: null,
@@ -157,7 +157,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: userData.characters || [],
-                party: userData.party || { front: [null, null, null, null], back: [null, null, null, null] },
+                party: userData.party || { front: [null, null, null], back: [null, null, null] },
                 inventory: userData.inventory || {},
                 isLoading: false,
               });
@@ -172,7 +172,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: [],
-                party: { front: [null, null, null, null], back: [null, null, null, null] },
+                party: { front: [null, null, null], back: [null, null, null] },
                 inventory: { ...initialInventory },
                 isLoading: false,
               });
@@ -196,7 +196,7 @@ export const useGameStore = create<GameStore>()(
           isLoggedIn: false,
           username: null,
           characters: [],
-          party: { front: [null, null, null, null], back: [null, null, null, null] },
+          party: { front: [null, null, null], back: [null, null, null] },
           inventory: {},
           currentAdventure: null,
         });
@@ -216,7 +216,7 @@ export const useGameStore = create<GameStore>()(
               isLoggedIn: true,
               username: storedUsername,
               characters: userData.characters || [],
-              party: userData.party || { front: [null, null, null, null], back: [null, null, null, null] },
+              party: userData.party || { front: [null, null, null], back: [null, null, null] },
               inventory: userData.inventory || {},
               isLoading: false,
             });
@@ -408,7 +408,7 @@ export const useGameStore = create<GameStore>()(
       // パーティクリア
       clearParty: async () => {
         set({
-          party: { front: [null, null, null, null], back: [null, null, null, null] },
+          party: { front: [null, null, null], back: [null, null, null] },
         });
         
         await get().syncToServer();
