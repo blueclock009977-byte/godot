@@ -125,7 +125,7 @@ export const useGameStore = create<GameStore>()(
       username: null,
       isLoading: false,
       characters: [],
-      party: { front: [null, null, null], back: [null, null, null] },
+      party: { front: [], back: [] },
       currentAdventure: null,
       inventory: {},
       lastDroppedItem: null,
@@ -157,7 +157,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: userData.characters || [],
-                party: userData.party || { front: [null, null, null], back: [null, null, null] },
+                party: userData.party || { front: [], back: [] },
                 inventory: userData.inventory || {},
                 isLoading: false,
               });
@@ -172,7 +172,7 @@ export const useGameStore = create<GameStore>()(
                 isLoggedIn: true,
                 username,
                 characters: [],
-                party: { front: [null, null, null], back: [null, null, null] },
+                party: { front: [], back: [] },
                 inventory: { ...initialInventory },
                 isLoading: false,
               });
@@ -196,7 +196,7 @@ export const useGameStore = create<GameStore>()(
           isLoggedIn: false,
           username: null,
           characters: [],
-          party: { front: [null, null, null], back: [null, null, null] },
+          party: { front: [], back: [] },
           inventory: {},
           currentAdventure: null,
         });
@@ -216,7 +216,7 @@ export const useGameStore = create<GameStore>()(
               isLoggedIn: true,
               username: storedUsername,
               characters: userData.characters || [],
-              party: userData.party || { front: [null, null, null], back: [null, null, null] },
+              party: userData.party || { front: [], back: [] },
               inventory: userData.inventory || {},
               isLoading: false,
             });
@@ -362,22 +362,22 @@ export const useGameStore = create<GameStore>()(
         await get().syncToServer();
       },
       
-      // パーティに追加
+      // パーティに追加（可変長、枠数制限なし）
       addToParty: async (characterId, position, slot) => {
         const character = get().characters.find((c) => c.id === characterId);
         if (!character) return;
         
         set((state) => {
           // 既にパーティにいる場合は削除
-          const newFront = state.party.front.map((c) => c?.id === characterId ? null : c);
-          const newBack = state.party.back.map((c) => c?.id === characterId ? null : c);
+          let newFront = state.party.front.filter((c) => c?.id !== characterId);
+          let newBack = state.party.back.filter((c) => c?.id !== characterId);
           
           // 新しい位置に追加
           const charWithPosition = { ...character, position };
           if (position === 'front') {
-            newFront[slot] = charWithPosition;
+            newFront = [...newFront, charWithPosition];
           } else {
-            newBack[slot] = charWithPosition;
+            newBack = [...newBack, charWithPosition];
           }
           
           return {
@@ -393,11 +393,9 @@ export const useGameStore = create<GameStore>()(
         set((state) => {
           const newParty = { ...state.party };
           if (position === 'front') {
-            newParty.front = [...newParty.front];
-            newParty.front[slot] = null;
+            newParty.front = state.party.front.filter((_, i) => i !== slot);
           } else {
-            newParty.back = [...newParty.back];
-            newParty.back[slot] = null;
+            newParty.back = state.party.back.filter((_, i) => i !== slot);
           }
           return { party: newParty };
         });
@@ -408,7 +406,7 @@ export const useGameStore = create<GameStore>()(
       // パーティクリア
       clearParty: async () => {
         set({
-          party: { front: [null, null, null], back: [null, null, null] },
+          party: { front: [], back: [] },
         });
         
         await get().syncToServer();

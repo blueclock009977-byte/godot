@@ -52,8 +52,8 @@ export async function createUser(username: string): Promise<boolean> {
       username,
       characters: [],
       party: {
-        front: [null, null, null],
-        back: [null, null, null],
+        front: [],
+        back: [],
       },
       inventory: { ...initialInventory },
       createdAt: Date.now(),

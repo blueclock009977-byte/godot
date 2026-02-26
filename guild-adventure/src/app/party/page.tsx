@@ -11,10 +11,14 @@ function CharacterCard({
   character, 
   onClick,
   selected,
+  inParty,
+  position,
 }: { 
   character: Character; 
   onClick?: () => void;
   selected?: boolean;
+  inParty?: boolean;
+  position?: Position;
 }) {
   const raceData = races[character.race];
   const jobData = jobs[character.job];
@@ -25,10 +29,19 @@ function CharacterCard({
       className={`p-3 rounded-lg border transition-colors cursor-pointer ${
         selected 
           ? 'bg-amber-600 border-amber-500' 
-          : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+          : inParty
+            ? 'bg-slate-600 border-slate-500'
+            : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
       }`}
     >
-      <div className="font-semibold">{character.name}</div>
+      <div className="flex justify-between items-start">
+        <div className="font-semibold">{character.name}</div>
+        {position && (
+          <span className={`text-xs px-1 rounded ${position === 'front' ? 'bg-red-600' : 'bg-blue-600'}`}>
+            {position === 'front' ? '前' : '後'}
+          </span>
+        )}
+      </div>
       <div className="text-xs text-slate-300">
         {raceData.name} / {jobData.name}
       </div>
@@ -40,60 +53,47 @@ function CharacterCard({
   );
 }
 
-function PartySlot({ 
-  character, 
-  position,
-  slot,
-  onRemove,
-}: { 
-  character: Character | null;
-  position: Position;
-  slot: number;
-  onRemove: () => void;
-}) {
-  if (!character) {
-    return (
-      <div className="h-20 rounded-lg border-2 border-dashed border-slate-600 flex items-center justify-center text-slate-500">
-        空き
-      </div>
-    );
-  }
-  
-  const raceData = races[character.race];
-  const jobData = jobs[character.job];
-  
-  return (
-    <div 
-      className="h-20 rounded-lg border border-slate-600 bg-slate-700 p-2 relative"
-    >
-      <div className="font-semibold text-sm truncate">{character.name}</div>
-      <div className="text-xs text-slate-400 truncate">
-        {raceData.name} / {jobData.name}
-      </div>
-      <button 
-        className="absolute top-1 right-1 text-slate-400 hover:text-red-400 text-xs"
-        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-      >
-        ✕
-      </button>
-    </div>
-  );
-}
-
 export default function PartyPage() {
   const { characters, party, addToParty, removeFromParty } = useGameStore();
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   
-  // パーティにいないキャラ
-  const partyCharIds = [...party.front, ...party.back]
-    .filter(Boolean)
-    .map((c) => c!.id);
-  const availableChars = characters.filter((c) => !partyCharIds.includes(c.id));
+  // パーティメンバー
+  const frontMembers = party.front.filter(Boolean) as Character[];
+  const backMembers = party.back.filter(Boolean) as Character[];
+  const partyCharIds = [...frontMembers, ...backMembers].map(c => c.id);
+  const partyCount = partyCharIds.length;
   
-  const handleSlotClick = (position: Position, slot: number) => {
+  // 待機中キャラ
+  const availableChars = characters.filter(c => !partyCharIds.includes(c.id));
+  
+  // キャラをパーティに追加
+  const handleAddToParty = (position: Position) => {
     if (!selectedChar) return;
-    addToParty(selectedChar, position, slot);
+    
+    // 空きスロットを探す
+    const arr = position === 'front' ? party.front : party.back;
+    const emptySlot = arr.findIndex(c => c === null);
+    
+    if (emptySlot !== -1) {
+      addToParty(selectedChar, position, emptySlot);
+    } else {
+      // 空きがなければ末尾に追加（配列を拡張）
+      addToParty(selectedChar, position, arr.length);
+    }
     setSelectedChar(null);
+  };
+  
+  // キャラをパーティから外す
+  const handleRemove = (char: Character) => {
+    const frontIdx = party.front.findIndex(c => c?.id === char.id);
+    if (frontIdx !== -1) {
+      removeFromParty('front', frontIdx);
+      return;
+    }
+    const backIdx = party.back.findIndex(c => c?.id === char.id);
+    if (backIdx !== -1) {
+      removeFromParty('back', backIdx);
+    }
   };
   
   return (
@@ -107,50 +107,76 @@ export default function PartyPage() {
           <h1 className="text-2xl font-bold">パーティ編成</h1>
         </div>
         
-        {/* パーティスロット */}
-        <div className="mb-8">
-          <div className="mb-4">
-            <h2 className="text-sm text-slate-400 mb-2">
-              前衛（火力+20%, 被ダメ+20%）
-            </h2>
-            <div className="grid grid-cols-4 gap-2">
-              {party.front.map((char, i) => (
-                <div 
-                  key={`front-${i}`}
-                  onClick={() => !char && selectedChar && handleSlotClick('front', i)}
-                  className={selectedChar && !char ? 'cursor-pointer ring-2 ring-amber-500 rounded-lg' : ''}
+        {/* 説明 */}
+        <div className="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs text-slate-400">
+          <p>ソロ: 4人まで ／ マルチ: 6人まで</p>
+          <p>前衛: 火力+20%, 被ダメ+20% ／ 後衛: 火力-20%, 被ダメ-20%</p>
+        </div>
+        
+        {/* パーティ */}
+        <div className="mb-6 space-y-4">
+          {/* 前衛 */}
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-sm text-red-400 font-semibold">⚔️ 前衛 ({frontMembers.length}人)</h2>
+              {selectedChar && (
+                <button
+                  onClick={() => handleAddToParty('front')}
+                  className="text-xs bg-red-600 hover:bg-red-500 px-3 py-1 rounded"
                 >
-                  <PartySlot
-                    character={char}
-                    position="front"
-                    slot={i}
-                    onRemove={() => removeFromParty('front', i)}
-                  />
-                </div>
-              ))}
+                  + 前衛に追加
+                </button>
+              )}
             </div>
+            {frontMembers.length === 0 ? (
+              <div className="text-slate-500 text-sm p-4 border-2 border-dashed border-slate-600 rounded-lg text-center">
+                前衛がいません
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {frontMembers.map(char => (
+                  <CharacterCard
+                    key={char.id}
+                    character={char}
+                    inParty
+                    position="front"
+                    onClick={() => handleRemove(char)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
           
+          {/* 後衛 */}
           <div>
-            <h2 className="text-sm text-slate-400 mb-2">
-              後衛（火力-20%, 被ダメ-20%）
-            </h2>
-            <div className="grid grid-cols-4 gap-2">
-              {party.back.map((char, i) => (
-                <div 
-                  key={`back-${i}`}
-                  onClick={() => !char && selectedChar && handleSlotClick('back', i)}
-                  className={selectedChar && !char ? 'cursor-pointer ring-2 ring-amber-500 rounded-lg' : ''}
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-sm text-blue-400 font-semibold">🛡️ 後衛 ({backMembers.length}人)</h2>
+              {selectedChar && (
+                <button
+                  onClick={() => handleAddToParty('back')}
+                  className="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded"
                 >
-                  <PartySlot
-                    character={char}
-                    position="back"
-                    slot={i}
-                    onRemove={() => removeFromParty('back', i)}
-                  />
-                </div>
-              ))}
+                  + 後衛に追加
+                </button>
+              )}
             </div>
+            {backMembers.length === 0 ? (
+              <div className="text-slate-500 text-sm p-4 border-2 border-dashed border-slate-600 rounded-lg text-center">
+                後衛がいません
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {backMembers.map(char => (
+                  <CharacterCard
+                    key={char.id}
+                    character={char}
+                    inParty
+                    position="back"
+                    onClick={() => handleRemove(char)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
         
@@ -158,7 +184,7 @@ export default function PartyPage() {
         {selectedChar && (
           <div className="mb-4 p-3 bg-amber-900/50 rounded-lg border border-amber-700 text-center">
             <span className="text-amber-400">
-              空きスロットをクリックして配置
+              「前衛に追加」か「後衛に追加」をタップ
             </span>
           </div>
         )}
@@ -166,14 +192,20 @@ export default function PartyPage() {
         {/* 待機キャラ */}
         <div>
           <h2 className="text-sm text-slate-400 mb-2">
-            待機中のキャラクター（{availableChars.length}人）
+            待機中 ({availableChars.length}人)
           </h2>
           {availableChars.length === 0 ? (
             <div className="text-center py-8 text-slate-500">
-              <p>キャラクターがいません</p>
-              <Link href="/create" className="text-amber-400 hover:underline">
-                キャラを作成する →
-              </Link>
+              {characters.length === 0 ? (
+                <>
+                  <p>キャラクターがいません</p>
+                  <Link href="/create" className="text-amber-400 hover:underline">
+                    キャラを作成する →
+                  </Link>
+                </>
+              ) : (
+                <p>全員パーティにいます</p>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
