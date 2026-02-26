@@ -109,6 +109,10 @@ interface GameStore {
   useItem: (itemId: string, count?: number) => boolean;
   getItemCount: (itemId: string) => number;
   
+  // マスタリー解放
+  unlockRaceMastery: (characterId: string) => Promise<boolean>;
+  unlockJobMastery: (characterId: string) => Promise<boolean>;
+  
   // サーバー同期
   syncToServer: () => Promise<void>;
 }
@@ -271,6 +275,54 @@ export const useGameStore = create<GameStore>()(
       // アイテム所持数を取得
       getItemCount: (itemId: string): number => {
         return get().inventory[itemId] || 0;
+      },
+      
+      // 種族マスタリー解放（チケット5枚消費）
+      unlockRaceMastery: async (characterId: string): Promise<boolean> => {
+        const { characters, inventory } = get();
+        const char = characters.find(c => c.id === characterId);
+        if (!char || char.raceMastery) return false;
+        
+        const ticketId = `ticket_${char.race}`;
+        if ((inventory[ticketId] || 0) < 5) return false;
+        
+        // チケット5枚消費
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            [ticketId]: (state.inventory[ticketId] || 0) - 5,
+          },
+          characters: state.characters.map(c =>
+            c.id === characterId ? { ...c, raceMastery: true } : c
+          ),
+        }));
+        
+        await get().syncToServer();
+        return true;
+      },
+      
+      // 職業マスタリー解放（指南書5枚消費）
+      unlockJobMastery: async (characterId: string): Promise<boolean> => {
+        const { characters, inventory } = get();
+        const char = characters.find(c => c.id === characterId);
+        if (!char || char.jobMastery) return false;
+        
+        const bookId = `book_${char.job}`;
+        if ((inventory[bookId] || 0) < 5) return false;
+        
+        // 指南書5枚消費
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            [bookId]: (state.inventory[bookId] || 0) - 5,
+          },
+          characters: state.characters.map(c =>
+            c.id === characterId ? { ...c, jobMastery: true } : c
+          ),
+        }));
+        
+        await get().syncToServer();
+        return true;
       },
       
       // キャラクター作成

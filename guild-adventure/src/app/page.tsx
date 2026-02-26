@@ -208,13 +208,34 @@ function GameScreen() {
           </div>
         )}
         
-        {/* ステータス */}
+        {/* キャラクター一覧 */}
         <div className="mt-8 bg-slate-800 rounded-lg p-4 border border-slate-700">
-          <h3 className="text-sm text-slate-400 mb-2">ギルド情報</h3>
-          <div className="flex justify-between text-sm">
-            <span>所属冒険者</span>
-            <span className="text-amber-400">{characters.length} 人</span>
-          </div>
+          <h3 className="text-sm text-slate-400 mb-2">👤 所属冒険者 ({characters.length}人)</h3>
+          {characters.length === 0 ? (
+            <p className="text-xs text-slate-500">まだ冒険者がいません</p>
+          ) : (
+            <div className="space-y-2">
+              {characters.map(char => (
+                <Link key={char.id} href={`/character/${char.id}`} className="block">
+                  <div className="flex justify-between items-center p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
+                    <div>
+                      <span className="font-semibold">{char.name}</span>
+                      <span className="text-xs text-slate-400 ml-2">
+                        {char.race === 'human' ? '人' : char.race === 'elf' ? 'エ' : char.race === 'dwarf' ? 'ド' : char.race === 'halfling' ? 'ハ' : char.race === 'orc' ? 'オ' : char.race === 'lizardman' ? 'リ' : char.race === 'fairy' ? 'フ' : char.race === 'undead' ? 'ア' : char.race === 'goblin' ? 'ゴ' : char.race === 'dragonewt' ? '竜' : char.race === 'angel' ? '天' : '悪'}
+                        ・
+                        {char.job === 'warrior' ? '戦' : char.job === 'mage' ? '魔' : char.job === 'priest' ? '司' : char.job === 'thief' ? '盗' : char.job === 'knight' ? '騎' : char.job === 'hunter' ? '狩' : char.job === 'ninja' ? '忍' : char.job === 'sage' ? '賢' : char.job === 'berserker' ? '狂' : char.job === 'paladin' ? '聖' : char.job === 'necromancer' ? '死' : char.job === 'monk' ? '拳' : char.job === 'ranger' ? '野' : char.job === 'samurai' ? '侍' : char.job === 'witch' ? '魔女' : '詩'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {char.raceMastery && <span className="text-amber-400 text-xs">★種</span>}
+                      {char.jobMastery && <span className="text-amber-400 text-xs">★職</span>}
+                      <span className="text-slate-400">→</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         
         {/* インベントリ */}
@@ -245,7 +266,7 @@ function GameScreen() {
         
         {/* フッター */}
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.3.0 Beta - アイテムシステム</p>
+          <p>v0.5.0 Beta - マスタリースキル</p>
         </div>
       </div>
     </main>

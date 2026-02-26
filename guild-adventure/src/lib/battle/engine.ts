@@ -40,6 +40,15 @@ function characterToUnit(char: Character, position: 'front' | 'back'): BattleUni
   const raceSkills = raceData?.skills ?? [];
   const allSkills = [...jobSkills, ...raceSkills];
   
+  // マスタリースキル（アクティブ）を追加
+  const jobData = char.job ? jobs[char.job] : null;
+  if (char.raceMastery && raceData?.masterySkill?.type === 'active' && raceData.masterySkill.skill) {
+    allSkills.push(raceData.masterySkill.skill);
+  }
+  if (char.jobMastery && jobData?.masterySkill?.type === 'active' && jobData.masterySkill.skill) {
+    allSkills.push(jobData.masterySkill.skill);
+  }
+  
   return {
     id: char.id,
     name: char.name,

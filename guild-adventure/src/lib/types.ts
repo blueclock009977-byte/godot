@@ -59,6 +59,20 @@ export type EffectType =
   | 'allyAtkBonus'      // 味方攻撃+%
   | 'intimidate'        // 威圧（敵攻撃-%）
   | 'debuffBonus'       // デバフ成功率+%
+  // マスタリー用
+  | 'allStats'          // 全ステータス+%
+  | 'followUp'          // 追撃率+%
+  | 'cover'             // 庇う率+%
+  | 'revive'            // 蘇生（戦闘中1回）
+  | 'lowHpBonus'        // 低HP時ダメージ+%
+  | 'allyCountBonus'    // 味方数でダメージ+%
+  | 'ignoreDefense'     // 防御無視+%
+  | 'doublecast'        // 魔法2回発動率+%
+  | 'perfectEvasion'    // 完全回避率+%
+  | 'attackStack'       // 攻撃ごとにATK上昇
+  | 'autoRevive'        // 味方死亡時自動蘇生
+  | 'summonUndead'      // 死霊召喚
+  | 'fullRegen'         // 毎ターン全回復
   ;
 
 export interface Effect {
@@ -70,6 +84,14 @@ export interface Effect {
 // 種族・職業・個性・環境
 // ============================================
 
+export interface MasterySkill {
+  name: string;
+  description: string;
+  type: 'passive' | 'active';  // パッシブ効果 or アクティブスキル
+  effects?: Effect[];          // パッシブ効果
+  skill?: SkillData;           // アクティブスキル
+}
+
 export interface RaceData {
   id: RaceType;
   name: string;
@@ -77,6 +99,7 @@ export interface RaceData {
   baseStats: Omit<Stats, 'hp' | 'mp'> & { maxHp: number; maxMp: number };
   passives: PassiveSkill[];
   skills?: SkillData[];  // 種族固有スキル
+  masterySkill?: MasterySkill;  // マスタリースキル
 }
 
 export interface JobData {
@@ -86,6 +109,7 @@ export interface JobData {
   statModifiers: Partial<Stats>;
   passives: PassiveSkill[];
   skills: SkillData[];
+  masterySkill?: MasterySkill;  // マスタリースキル
 }
 
 export interface PassiveSkill {
@@ -155,6 +179,8 @@ export interface Character {
   environment: EnvironmentType;
   stats: Stats;
   position?: Position;
+  raceMastery?: boolean;  // 種族マスタリー解放済み
+  jobMastery?: boolean;   // 職業マスタリー解放済み
 }
 
 // ============================================

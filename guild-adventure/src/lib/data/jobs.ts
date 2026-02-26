@@ -15,6 +15,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'war_cry', name: '雄叫び', description: '自身の攻撃力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 10, effect: { type: 'atkUp', value: 30, duration: 3 } },
       { id: 'cleave', name: '薙ぎ払い', description: '全体に物理攻撃', type: 'attack', target: 'all', multiplier: 1.0, mpCost: 15 },
     ],
+    masterySkill: { name: '武神の構え', description: '物理ダメージ+30%', type: 'passive', effects: [{ type: 'physicalBonus', value: 30 }] },
   },
   mage: {
     id: 'mage',
@@ -31,6 +32,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'ice_lance', name: 'アイスランス', description: '単体に氷の魔法攻撃（高威力）', type: 'magic', target: 'single', multiplier: 2.0, mpCost: 15 },
       { id: 'thunder', name: 'サンダー', description: '単体に雷撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 12 },
     ],
+    masterySkill: { name: '魔力解放', description: '全体魔法が2回発動', type: 'passive', effects: [{ type: 'doublecast', value: 100 }] },
   },
   priest: {
     id: 'priest',
@@ -46,6 +48,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'group_heal', name: 'ヒールオール', description: '味方全体のHPを回復', type: 'heal', target: 'allAllies', multiplier: 0.8, mpCost: 25 },
       { id: 'holy_light', name: 'ホーリーライト', description: '聖なる光で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 14 },
     ],
+    masterySkill: { name: '聖域', description: '味方全体の被ダメージ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
   },
   thief: {
     id: 'thief',
@@ -62,6 +65,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'poison_blade', name: '毒刃', description: '毒を付与する攻撃', type: 'attack', target: 'single', multiplier: 1.2, mpCost: 12 },
       { id: 'assassinate', name: '暗殺', description: '超高威力の一撃', type: 'attack', target: 'single', multiplier: 2.5, mpCost: 25 },
     ],
+    masterySkill: { name: '暗殺術', description: 'HP低い敵に確定クリティカル', type: 'passive', effects: [{ type: 'critBonus', value: 100 }] },
   },
   knight: {
     id: 'knight',
@@ -77,6 +81,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'fortress', name: '鉄壁の構え', description: '自身の防御力を大幅上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 15, effect: { type: 'defUp', value: 50, duration: 3 } },
       { id: 'holy_strike', name: '聖なる一撃', description: '聖なる力を込めた攻撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 18 },
     ],
+    masterySkill: { name: '鉄壁の守護', description: '50%で味方を庇う', type: 'passive', effects: [{ type: 'cover', value: 50 }] },
   },
   hunter: {
     id: 'hunter',
@@ -92,6 +97,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'arrow_rain', name: '矢の雨', description: '全体に矢を降らせる', type: 'attack', target: 'all', multiplier: 0.9, mpCost: 18 },
       { id: 'rapid_fire', name: '速射', description: '素早く攻撃', type: 'attack', target: 'single', multiplier: 1.4, mpCost: 12 },
     ],
+    masterySkill: { name: '必中の矢', description: '回避無視+クリティカル率+30%', type: 'passive', effects: [{ type: 'accuracyBonus', value: 100 }, { type: 'critBonus', value: 30 }] },
   },
   ninja: {
     id: 'ninja',
@@ -108,6 +114,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'shuriken', name: '手裏剣', description: '全体に手裏剣を投げる', type: 'attack', target: 'all', multiplier: 0.8, mpCost: 12 },
       { id: 'fatal_blow', name: '必殺', description: '高威力の一撃', type: 'attack', target: 'single', multiplier: 2.2, mpCost: 25 },
     ],
+    masterySkill: { name: '分身の術', description: '25%で攻撃を完全回避', type: 'passive', effects: [{ type: 'perfectEvasion', value: 25 }] },
   },
   sage: {
     id: 'sage',
@@ -123,8 +130,8 @@ export const jobs: Record<string, JobData> = {
       { id: 'sage_heal', name: '癒しの光', description: '味方一人を回復', type: 'heal', target: 'ally', multiplier: 1.3, mpCost: 14 },
       { id: 'meteor', name: 'メテオ', description: '全体に超高威力魔法', type: 'magic', target: 'all', multiplier: 2.0, mpCost: 40 },
     ],
+    masterySkill: { name: '叡智の結晶', description: 'MP消費-50%', type: 'passive', effects: [{ type: 'mpReduction', value: 50 }] },
   },
-  // === 新職業 ===
   berserker: {
     id: 'berserker',
     name: 'バーサーカー',
@@ -140,6 +147,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'rampage', name: '暴走', description: '全体に暴れまわる', type: 'attack', target: 'all', multiplier: 1.5, mpCost: 20 },
       { id: 'blood_rage', name: '血の咆哮', description: '攻撃力を大幅上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'atkUp', value: 50, duration: 3 } },
     ],
+    masterySkill: { name: '血の狂宴', description: '攻撃ごとにATK+5%（累積）', type: 'passive', effects: [{ type: 'attackStack', value: 5 }] },
   },
   paladin: {
     id: 'paladin',
@@ -155,6 +163,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'lay_on_hands', name: '癒しの手', description: '味方一人を大回復', type: 'heal', target: 'ally', multiplier: 1.8, mpCost: 18 },
       { id: 'divine_shield', name: '聖なる盾', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 20, effect: { type: 'defUp', value: 30, duration: 3 } },
     ],
+    masterySkill: { name: '聖騎士の誓約', description: '味方死亡時、自動で1回蘇生', type: 'passive', effects: [{ type: 'autoRevive', value: 1 }] },
   },
   necromancer: {
     id: 'necromancer',
@@ -170,6 +179,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'soul_drain', name: '吸魂', description: 'HPを吸収する魔法', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 15 },
       { id: 'death_wave', name: '死の波動', description: '全体に闇魔法', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 28 },
     ],
+    masterySkill: { name: '死霊召喚', description: '倒した敵を味方として召喚', type: 'passive', effects: [{ type: 'summonUndead', value: 50 }] },
   },
   monk: {
     id: 'monk',
@@ -185,6 +195,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'chi_blast', name: '気功波', description: '全体に気を放つ', type: 'magic', target: 'all', multiplier: 1.0, mpCost: 18 },
       { id: 'inner_peace', name: '精神統一', description: '自身のHP回復', type: 'heal', target: 'self', multiplier: 1.5, mpCost: 15 },
     ],
+    masterySkill: { name: '無我の境地', description: '全攻撃を50%で反撃', type: 'passive', effects: [{ type: 'counterRate', value: 50 }] },
   },
   ranger: {
     id: 'ranger',
@@ -200,6 +211,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'trap', name: '罠設置', description: '敵の攻撃力を下げる', type: 'debuff', target: 'all', multiplier: 0, mpCost: 12, effect: { type: 'atkDown', value: 20, duration: 3 } },
       { id: 'natures_blessing', name: '自然の恵み', description: '味方全体を少し回復', type: 'heal', target: 'allAllies', multiplier: 0.6, mpCost: 18 },
     ],
+    masterySkill: { name: '自然の化身', description: '毎ターンHP/MP大幅回復', type: 'passive', effects: [{ type: 'hpRegen', value: 15 }, { type: 'mpRegen', value: 10 }] },
   },
   samurai: {
     id: 'samurai',
@@ -215,6 +227,12 @@ export const jobs: Record<string, JobData> = {
       { id: 'mind_eye', name: '心眼', description: '回避率を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 10, effect: { type: 'agiUp', value: 40, duration: 3 } },
       { id: 'fatal_draw', name: '必殺剣', description: '超高威力の一撃', type: 'attack', target: 'single', multiplier: 3.0, mpCost: 30 },
     ],
+    masterySkill: {
+      name: '一閃',
+      description: '敵全体に防御無視大ダメージ',
+      type: 'active',
+      skill: { id: 'issen', name: '一閃', description: '防御無視の全体攻撃', type: 'attack', target: 'all', multiplier: 2.5, mpCost: 40 },
+    },
   },
   witch: {
     id: 'witch',
@@ -230,6 +248,12 @@ export const jobs: Record<string, JobData> = {
       { id: 'poison_mist', name: '毒霧', description: '全体に毒魔法', type: 'magic', target: 'all', multiplier: 1.0, mpCost: 16 },
       { id: 'hex', name: '邪眼', description: '単体に高威力呪い', type: 'magic', target: 'single', multiplier: 1.8, mpCost: 18 },
     ],
+    masterySkill: {
+      name: '大呪術',
+      description: '敵全体のステータス-30%',
+      type: 'active',
+      skill: { id: 'grand_curse', name: '大呪術', description: '敵全体を呪う', type: 'debuff', target: 'all', multiplier: 0, mpCost: 35, effect: { type: 'statDown', value: 30, duration: 3 } },
+    },
   },
   bard: {
     id: 'bard',
@@ -245,6 +269,12 @@ export const jobs: Record<string, JobData> = {
       { id: 'lullaby', name: '子守唄', description: '敵全体の行動速度を下げる', type: 'debuff', target: 'all', multiplier: 0, mpCost: 18, effect: { type: 'agiDown', value: 30, duration: 2 } },
       { id: 'healing_melody', name: '癒しの旋律', description: '味方全体を少し回復', type: 'heal', target: 'allAllies', multiplier: 0.7, mpCost: 20 },
     ],
+    masterySkill: {
+      name: '英雄譚',
+      description: '味方全員のATK/DEF+25%',
+      type: 'active',
+      skill: { id: 'heroic_tale', name: '英雄譚', description: '味方全体を大幅強化', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 30, effect: { type: 'atkUp', value: 25, duration: 5 } },
+    },
   },
 };
 
