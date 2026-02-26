@@ -35,93 +35,183 @@ function cloneStats(stats: Stats): Stats {
   return { ...stats };
 }
 
-// 属性相性によるダメージ倍率を計算
+// ============================================
+// パッシブ効果の集約
+// ============================================
+
+interface PassiveEffects {
+  physicalBonus: number;
+  magicBonus: number;
+  damageBonus: number;
+  critBonus: number;
+  critDamage: number;
+  evasionBonus: number;
+  accuracyBonus: number;
+  perfectEvasion: number;
+  damageReduction: number;
+  hpRegen: number;
+  mpRegen: number;
+  hpSteal: number;
+  healBonus: number;
+  healReceived: number;
+  firstStrikeBonus: number;
+  intimidate: number;
+  cover: number;
+  counterRate: number;
+  lowHpBonus: number;
+  allyCountBonus: number;
+  allyAtkBonus: number;
+  allyDefense: number;
+  dropBonus: number;
+  mpReduction: number;
+  statusResist: number;
+  debuffBonus: number;
+  doublecast: number;
+  attackStack: number;
+  autoRevive: number;
+  revive: number;
+  followUp: number;
+  allStats: number;
+  // 系統特攻/耐性
+  speciesKiller: Record<string, number>;
+  speciesResist: Record<string, number>;
+}
+
+function getEmptyPassiveEffects(): PassiveEffects {
+  return {
+    physicalBonus: 0, magicBonus: 0, damageBonus: 0, critBonus: 0, critDamage: 0,
+    evasionBonus: 0, accuracyBonus: 0, perfectEvasion: 0, damageReduction: 0,
+    hpRegen: 0, mpRegen: 0, hpSteal: 0, healBonus: 0, healReceived: 0,
+    firstStrikeBonus: 0, intimidate: 0, cover: 0, counterRate: 0,
+    lowHpBonus: 0, allyCountBonus: 0, allyAtkBonus: 0, allyDefense: 0,
+    dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
+    doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
+    speciesKiller: {}, speciesResist: {},
+  };
+}
+
+// ユニットの全パッシブ効果を集約
+function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
+  const effects = getEmptyPassiveEffects();
+  
+  if (!unit.isPlayer) {
+    // モンスターの系統特攻/耐性
+    if (unit.speciesKiller) {
+      for (const k of unit.speciesKiller) {
+        effects.speciesKiller[k.species] = (effects.speciesKiller[k.species] || 0) + k.multiplier;
+      }
+    }
+    if (unit.speciesResist) {
+      for (const r of unit.speciesResist) {
+        effects.speciesResist[r.species] = (effects.speciesResist[r.species] || 0) + r.multiplier;
+      }
+    }
+    return effects;
+  }
+  
+  // プレイヤーの種族パッシブ
+  if (unit.race) {
+    const raceData = races[unit.race];
+    if (raceData?.passives) {
+      for (const passive of raceData.passives) {
+        for (const effect of passive.effects) {
+          applyEffect(effects, effect.type, effect.value);
+        }
+      }
+    }
+    // 種族マスタリー（パッシブ）
+    if (unit.raceMastery && raceData?.masterySkill?.type === 'passive' && raceData.masterySkill.effects) {
+      for (const effect of raceData.masterySkill.effects) {
+        applyEffect(effects, effect.type, effect.value);
+      }
+    }
+  }
+  
+  // プレイヤーの職業パッシブ
+  if (unit.job) {
+    const jobData = jobs[unit.job];
+    if (jobData?.passives) {
+      for (const passive of jobData.passives) {
+        for (const effect of passive.effects) {
+          applyEffect(effects, effect.type, effect.value);
+        }
+      }
+    }
+    // 職業マスタリー（パッシブ）
+    if (unit.jobMastery && jobData?.masterySkill?.type === 'passive' && jobData.masterySkill.effects) {
+      for (const effect of jobData.masterySkill.effects) {
+        applyEffect(effects, effect.type, effect.value);
+      }
+    }
+  }
+  
+  return effects;
+}
+
+function applyEffect(effects: PassiveEffects, type: string, value: number) {
+  // 系統特攻/耐性
+  if (type.startsWith('speciesKiller_')) {
+    const species = type.replace('speciesKiller_', '');
+    effects.speciesKiller[species] = (effects.speciesKiller[species] || 0) + value;
+    return;
+  }
+  if (type.startsWith('speciesResist_')) {
+    const species = type.replace('speciesResist_', '');
+    effects.speciesResist[species] = (effects.speciesResist[species] || 0) + value;
+    return;
+  }
+  
+  // その他のパッシブ
+  if (type in effects) {
+    (effects as any)[type] += value;
+  }
+}
+
+// ============================================
+// 属性・系統計算
+// ============================================
+
 function getElementMultiplier(attackElement: ElementType | undefined, defenderElement: ElementType | undefined): number {
   if (!attackElement || attackElement === 'none' || !defenderElement || defenderElement === 'none') {
     return 1.0;
   }
-  // 有利属性なら1.3倍
   if (ELEMENT_ADVANTAGE[attackElement] === defenderElement) {
     return ELEMENT_MULTIPLIER;
   }
   return 1.0;
 }
 
-// 系統特攻によるダメージ倍率を計算（攻撃者のパッシブから）
-function getSpeciesKillerMultiplier(attacker: BattleUnit, defender: BattleUnit): number {
-  if (!defender.species) return 1.0;
-  
-  let multiplier = 1.0;
-  
-  // モンスターの場合、speciesKillerを直接参照
-  if (attacker.speciesKiller) {
-    const killer = attacker.speciesKiller.find(k => k.species === defender.species);
-    if (killer) {
-      multiplier *= (1 + killer.multiplier / 100);
-    }
-  }
-  
-  // プレイヤーキャラの場合、種族パッシブから系統特攻を取得
-  if (attacker.isPlayer && attacker.race) {
-    const raceData = races[attacker.race];
-    if (raceData?.passives) {
-      for (const passive of raceData.passives) {
-        for (const effect of passive.effects) {
-          if (effect.type === `speciesKiller_${defender.species}`) {
-            multiplier *= (1 + effect.value / 100);
-          }
-        }
-      }
-    }
-  }
-  
-  return multiplier;
+function getSpeciesKillerMultiplier(attackerEffects: PassiveEffects, defenderSpecies?: SpeciesType): number {
+  if (!defenderSpecies) return 1.0;
+  const bonus = attackerEffects.speciesKiller[defenderSpecies] || 0;
+  return 1 + bonus / 100;
 }
 
-// 系統耐性によるダメージ軽減を計算
-function getSpeciesResistMultiplier(attacker: BattleUnit, defender: BattleUnit): number {
-  // 攻撃者がプレイヤーの場合、攻撃者のspeciesは種族から推測（人型扱い）
-  const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
-  
-  let multiplier = 1.0;
-  
-  // モンスターの系統耐性
-  if (defender.speciesResist) {
-    const resist = defender.speciesResist.find(r => r.species === attackerSpecies);
-    if (resist) {
-      multiplier *= (1 - resist.multiplier / 100);
-    }
-  }
-  
-  // プレイヤーの種族パッシブから系統耐性を取得
-  if (defender.isPlayer && defender.race && attacker.species) {
-    const raceData = races[defender.race];
-    if (raceData?.passives) {
-      for (const passive of raceData.passives) {
-        for (const effect of passive.effects) {
-          if (effect.type === `speciesResist_${attacker.species}`) {
-            multiplier *= (1 - effect.value / 100);
-          }
-        }
-      }
-    }
-  }
-  
-  return multiplier;
+function getSpeciesResistMultiplier(defenderEffects: PassiveEffects, attackerSpecies?: SpeciesType): number {
+  if (!attackerSpecies) return 1.0;
+  const resist = defenderEffects.speciesResist[attackerSpecies] || 0;
+  return 1 - resist / 100;
 }
 
 // ============================================
 // ユニット変換
 // ============================================
 
-function characterToUnit(char: Character, position: 'front' | 'back'): BattleUnit {
-  // 職業スキル + 種族スキルを結合
+interface ExtendedBattleUnit extends BattleUnit {
+  passiveEffects: PassiveEffects;
+  attackStackCount: number;
+  autoReviveUsed: boolean;
+  reviveUsed: boolean;
+  raceMastery?: boolean;
+  jobMastery?: boolean;
+}
+
+function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedBattleUnit {
   const jobSkills = char.job ? jobs[char.job].skills : [];
   const raceData = char.race ? races[char.race] : null;
   const raceSkills = raceData?.skills ?? [];
   const allSkills = [...jobSkills, ...raceSkills];
   
-  // マスタリースキル（アクティブ）を追加
   const jobData = char.job ? jobs[char.job] : null;
   if (char.raceMastery && raceData?.masterySkill?.type === 'active' && raceData.masterySkill.skill) {
     allSkills.push(raceData.masterySkill.skill);
@@ -130,7 +220,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): BattleUni
     allSkills.push(jobData.masterySkill.skill);
   }
   
-  return {
+  const unit: ExtendedBattleUnit = {
     id: char.id,
     name: char.name,
     isPlayer: true,
@@ -140,11 +230,33 @@ function characterToUnit(char: Character, position: 'front' | 'back'): BattleUni
     job: char.job,
     trait: char.trait,
     skills: allSkills,
+    raceMastery: char.raceMastery,
+    jobMastery: char.jobMastery,
+    passiveEffects: getEmptyPassiveEffects(),
+    attackStackCount: 0,
+    autoReviveUsed: false,
+    reviveUsed: false,
   };
+  unit.passiveEffects = collectPassiveEffects(unit);
+  
+  // allStats適用
+  if (unit.passiveEffects.allStats > 0) {
+    const mult = 1 + unit.passiveEffects.allStats / 100;
+    unit.stats.maxHp = Math.floor(unit.stats.maxHp * mult);
+    unit.stats.hp = unit.stats.maxHp;
+    unit.stats.maxMp = Math.floor(unit.stats.maxMp * mult);
+    unit.stats.mp = unit.stats.maxMp;
+    unit.stats.atk = Math.floor(unit.stats.atk * mult);
+    unit.stats.def = Math.floor(unit.stats.def * mult);
+    unit.stats.agi = Math.floor(unit.stats.agi * mult);
+    unit.stats.mag = Math.floor(unit.stats.mag * mult);
+  }
+  
+  return unit;
 }
 
-function monsterToUnit(monster: Monster): BattleUnit {
-  return {
+function monsterToUnit(monster: Monster): ExtendedBattleUnit {
+  const unit: ExtendedBattleUnit = {
     id: monster.id + '_' + Math.random().toString(36).slice(2),
     name: monster.name,
     isPlayer: false,
@@ -155,62 +267,219 @@ function monsterToUnit(monster: Monster): BattleUnit {
     element: monster.element || 'none',
     speciesKiller: monster.speciesKiller,
     speciesResist: monster.speciesResist,
+    passiveEffects: getEmptyPassiveEffects(),
+    attackStackCount: 0,
+    autoReviveUsed: false,
+    reviveUsed: false,
   };
+  unit.passiveEffects = collectPassiveEffects(unit);
+  return unit;
+}
+
+// ============================================
+// 命中/回避判定
+// ============================================
+
+function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): { hit: boolean; perfectEvade: boolean } {
+  const atkEffects = attacker.passiveEffects;
+  const defEffects = defender.passiveEffects;
+  
+  // 完全回避判定
+  if (defEffects.perfectEvasion > 0 && Math.random() * 100 < defEffects.perfectEvasion) {
+    return { hit: false, perfectEvade: true };
+  }
+  
+  // 基本命中率 90% + (攻撃者AGI - 防御者AGI) * 1%
+  let hitRate = 90 + (attacker.stats.agi - defender.stats.agi);
+  
+  // パッシブ補正
+  hitRate += atkEffects.accuracyBonus;
+  hitRate -= defEffects.evasionBonus;
+  
+  // 隊列補正（後衛は回避+10%）
+  if (defender.position === 'back') hitRate -= 10;
+  
+  // 範囲制限
+  hitRate = Math.max(30, Math.min(99, hitRate));
+  
+  return { hit: Math.random() * 100 < hitRate, perfectEvade: false };
+}
+
+// ============================================
+// 連続攻撃回数（HIT数）
+// ============================================
+
+function getHitCount(attacker: ExtendedBattleUnit): number {
+  // AGI依存: 基本1回、AGI15以上で2回、AGI25以上で3回の可能性
+  let hits = 1;
+  const agi = attacker.stats.agi;
+  
+  if (agi >= 15 && Math.random() < 0.3 + (agi - 15) * 0.02) {
+    hits++;
+  }
+  if (agi >= 25 && Math.random() < 0.2 + (agi - 25) * 0.02) {
+    hits++;
+  }
+  
+  return Math.min(hits, 3);
 }
 
 // ============================================
 // ダメージ計算
 // ============================================
 
-function calculatePhysicalDamage(attacker: BattleUnit, defender: BattleUnit): { damage: number; isCritical: boolean } {
-  const randA = random(0.85, 1.15);
-  const randB = random(0.85, 1.15);
-  
-  let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
-  
-  // 隊列補正
-  const attackerMod = POSITION_MODIFIERS[attacker.position as Position]?.damage || 1.0;
-  const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
-  damage = damage * attackerMod / defenderMod;
-  
-  // 系統特攻補正
-  damage *= getSpeciesKillerMultiplier(attacker, defender);
-  
-  // 系統耐性補正
-  damage *= getSpeciesResistMultiplier(attacker, defender);
-  
-  // クリティカル判定（10%基本）
-  let critRate = 0.1;
-  if (attacker.trait === 'lucky') critRate += 0.2;
-  const isCritical = Math.random() < critRate;
-  if (isCritical) damage *= 1.5;
-  
-  // 個性補正
-  if (attacker.trait === 'brave') damage *= 1.05;
-  if (defender.trait === 'cautious') damage *= 0.85;
-  
-  return { damage: Math.max(1, Math.floor(damage)), isCritical };
+interface DamageResult {
+  damage: number;
+  isCritical: boolean;
+  hitCount: number;
 }
 
-function calculateMagicDamage(attacker: BattleUnit, defender: BattleUnit, multiplier: number, skillElement?: ElementType): number {
+function calculatePhysicalDamage(
+  attacker: ExtendedBattleUnit, 
+  defender: ExtendedBattleUnit,
+  allyCount: number
+): DamageResult {
+  const atkEffects = attacker.passiveEffects;
+  const defEffects = defender.passiveEffects;
+  
+  const hitCount = getHitCount(attacker);
+  let totalDamage = 0;
+  let isCritical = false;
+  
+  for (let i = 0; i < hitCount; i++) {
+    const randA = random(0.85, 1.15);
+    const randB = random(0.85, 1.15);
+    
+    let damage = (attacker.stats.atk * randA) - (defender.stats.def * randB * 0.5);
+    
+    // attackStack累積
+    const stackBonus = 1 + (atkEffects.attackStack * attacker.attackStackCount) / 100;
+    damage *= stackBonus;
+    
+    // physicalBonus
+    damage *= (1 + atkEffects.physicalBonus / 100);
+    
+    // damageBonus
+    damage *= (1 + atkEffects.damageBonus / 100);
+    
+    // lowHpBonus (HP30%以下で発動)
+    if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
+      damage *= (1 + atkEffects.lowHpBonus / 100);
+    }
+    
+    // allyCountBonus
+    if (atkEffects.allyCountBonus > 0) {
+      damage *= (1 + atkEffects.allyCountBonus * (allyCount - 1) / 100);
+    }
+    
+    // 隊列補正
+    const attackerMod = POSITION_MODIFIERS[attacker.position as Position]?.damage || 1.0;
+    const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
+    damage = damage * attackerMod / defenderMod;
+    
+    // 系統特攻
+    damage *= getSpeciesKillerMultiplier(atkEffects, defender.species);
+    
+    // 系統耐性
+    const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
+    damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
+    
+    // damageReduction
+    damage *= (1 - defEffects.damageReduction / 100);
+    
+    // クリティカル判定
+    let critRate = 10 + atkEffects.critBonus;
+    if (attacker.trait === 'lucky') critRate += 20;
+    
+    if (Math.random() * 100 < critRate) {
+      isCritical = true;
+      const critMult = 1.5 + atkEffects.critDamage / 100;
+      damage *= critMult;
+    }
+    
+    // 個性補正
+    if (attacker.trait === 'brave') damage *= 1.05;
+    if (defender.trait === 'cautious') damage *= 0.85;
+    
+    totalDamage += Math.max(1, Math.floor(damage));
+  }
+  
+  return { damage: totalDamage, isCritical, hitCount };
+}
+
+function calculateMagicDamage(
+  attacker: ExtendedBattleUnit, 
+  defender: ExtendedBattleUnit, 
+  multiplier: number, 
+  skillElement?: ElementType,
+  allyCount: number = 1
+): number {
+  const atkEffects = attacker.passiveEffects;
+  const defEffects = defender.passiveEffects;
+  
   const rand = random(0.9, 1.1);
   let damage = attacker.stats.mag * multiplier * rand;
   
-  // 属性相性補正
+  // magicBonus
+  damage *= (1 + atkEffects.magicBonus / 100);
+  
+  // damageBonus
+  damage *= (1 + atkEffects.damageBonus / 100);
+  
+  // lowHpBonus
+  if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
+    damage *= (1 + atkEffects.lowHpBonus / 100);
+  }
+  
+  // allyCountBonus
+  if (atkEffects.allyCountBonus > 0) {
+    damage *= (1 + atkEffects.allyCountBonus * (allyCount - 1) / 100);
+  }
+  
+  // 属性相性
   damage *= getElementMultiplier(skillElement, defender.element);
   
-  // 系統特攻補正
-  damage *= getSpeciesKillerMultiplier(attacker, defender);
+  // 系統特攻
+  damage *= getSpeciesKillerMultiplier(atkEffects, defender.species);
   
-  // 系統耐性補正
-  damage *= getSpeciesResistMultiplier(attacker, defender);
+  // 系統耐性
+  const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
+  damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
+  
+  // damageReduction
+  damage *= (1 - defEffects.damageReduction / 100);
   
   return Math.max(1, Math.floor(damage));
 }
 
-function calculateHeal(healer: BattleUnit, multiplier: number): number {
+function calculateHeal(healer: ExtendedBattleUnit, target: ExtendedBattleUnit, multiplier: number): number {
+  const healerEffects = healer.passiveEffects;
+  const targetEffects = target.passiveEffects;
+  
   const rand = random(0.9, 1.1);
-  return Math.max(1, Math.floor(healer.stats.mag * multiplier * rand));
+  let heal = healer.stats.mag * multiplier * rand;
+  
+  // healBonus (回復する側)
+  heal *= (1 + healerEffects.healBonus / 100);
+  
+  // healReceived (回復される側)
+  heal *= (1 + targetEffects.healReceived / 100);
+  
+  return Math.max(1, Math.floor(heal));
+}
+
+// ============================================
+// 庇う（cover）判定
+// ============================================
+
+function checkCover(allies: ExtendedBattleUnit[], target: ExtendedBattleUnit): ExtendedBattleUnit | null {
+  for (const ally of allies) {
+    if (ally.id === target.id || ally.stats.hp <= 0) continue;
+    if (ally.passiveEffects.cover > 0 && Math.random() * 100 < ally.passiveEffects.cover) {
+      return ally;
+    }
+  }
+  return null;
 }
 
 // ============================================
@@ -218,10 +487,10 @@ function calculateHeal(healer: BattleUnit, multiplier: number): number {
 // ============================================
 
 function decideAction(
-  unit: BattleUnit, 
-  allies: BattleUnit[], 
-  enemies: BattleUnit[]
-): { type: 'attack' | 'skill'; skillIndex?: number; target: BattleUnit | BattleUnit[] } {
+  unit: ExtendedBattleUnit, 
+  allies: ExtendedBattleUnit[], 
+  enemies: ExtendedBattleUnit[]
+): { type: 'attack' | 'skill'; skillIndex?: number; target: ExtendedBattleUnit | ExtendedBattleUnit[] } {
   const aliveEnemies = enemies.filter(e => e.stats.hp > 0);
   const aliveAllies = allies.filter(a => a.stats.hp > 0);
   
@@ -229,15 +498,17 @@ function decideAction(
     return { type: 'attack', target: enemies[0] };
   }
   
-  // スキル使用判定
   if (unit.skills && unit.skills.length > 0) {
-    // 使用可能なスキルをフィルタ（MP足りるもの）
+    const mpReduction = unit.passiveEffects.mpReduction;
     const usableSkills = unit.skills
       .map((skill, index) => ({ skill, index }))
-      .filter(({ skill }) => unit.stats.mp >= skill.mpCost);
+      .filter(({ skill }) => {
+        const actualCost = Math.max(1, Math.floor(skill.mpCost * (1 - mpReduction / 100)));
+        return unit.stats.mp >= actualCost;
+      });
     
     if (usableSkills.length > 0) {
-      // 回復スキルの優先判定（味方HPが50%以下なら）
+      // 回復スキル優先
       const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
       if (healSkills.length > 0) {
         const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.5);
@@ -248,9 +519,7 @@ function decideAction(
         }
       }
       
-      // 60%の確率でスキル使用
       if (Math.random() < 0.6) {
-        // 攻撃/魔法スキルをランダム選択
         const attackSkills = usableSkills.filter(({ skill }) => 
           skill.type === 'attack' || skill.type === 'magic'
         );
@@ -264,7 +533,6 @@ function decideAction(
     }
   }
   
-  // 通常攻撃
   return { type: 'attack', target: pickRandom(aliveEnemies) };
 }
 
@@ -272,28 +540,31 @@ function decideAction(
 // 1ターンの処理
 // ============================================
 
-// HP/MP状態を生成
-function formatUnitStatus(unit: BattleUnit): string {
+function formatUnitStatus(unit: ExtendedBattleUnit): string {
   const hpPercent = Math.floor((unit.stats.hp / unit.stats.maxHp) * 100);
   const hpIcon = hpPercent > 50 ? '🟢' : hpPercent > 25 ? '🟡' : '🔴';
   return `${unit.name}: HP${unit.stats.hp}/${unit.stats.maxHp}${hpIcon} MP${unit.stats.mp}/${unit.stats.maxMp}`;
 }
 
 function processTurn(
-  playerUnits: BattleUnit[],
-  enemyUnits: BattleUnit[],
+  playerUnits: ExtendedBattleUnit[],
+  enemyUnits: ExtendedBattleUnit[],
   turnNum: number
 ): { logs: string[]; playerWin: boolean | null } {
   const logs: string[] = [];
   
-  // 全ユニットをAGI順にソート
+  // 全ユニットをAGI+firstStrikeBonus順にソート
   const allUnits = [...playerUnits, ...enemyUnits]
     .filter(u => u.stats.hp > 0)
-    .sort((a, b) => (b.stats.agi + random(0, 10)) - (a.stats.agi + random(0, 10)));
+    .sort((a, b) => {
+      const aSpeed = a.stats.agi + a.passiveEffects.firstStrikeBonus + random(0, 10);
+      const bSpeed = b.stats.agi + b.passiveEffects.firstStrikeBonus + random(0, 10);
+      return bSpeed - aSpeed;
+    });
   
   logs.push(`--- ターン ${turnNum} ---`);
   
-  // ターン開始時のHP状態を表示
+  // ターン開始時HP/MP表示
   const alivePlayers = playerUnits.filter(u => u.stats.hp > 0);
   const aliveEnemies = enemyUnits.filter(u => u.stats.hp > 0);
   
@@ -302,60 +573,189 @@ function processTurn(
   logs.push(`【敵】`);
   aliveEnemies.forEach(u => logs.push(`  ${formatUnitStatus(u)}`));
   
+  // ターン開始時: hpRegen / mpRegen
+  for (const unit of allUnits) {
+    const effects = unit.passiveEffects;
+    if (effects.hpRegen > 0 && unit.stats.hp > 0) {
+      const regen = effects.hpRegen;
+      unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + regen);
+      logs.push(`${unit.name}はHP${regen}回復（リジェネ）`);
+    }
+    if (effects.mpRegen > 0 && unit.stats.hp > 0) {
+      const regen = effects.mpRegen;
+      unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + regen);
+    }
+  }
+  
+  // intimidate適用（敵ATK低下）
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.intimidate > 0) {
+      for (const enemy of enemyUnits) {
+        if (enemy.stats.hp > 0) {
+          // 毎ターンではなく戦闘開始時に1回だけにすべきだが、簡易実装
+        }
+      }
+    }
+  }
+  
+  // allyAtkBonus適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.allyAtkBonus > 0) {
+      // これも戦闘開始時に1回だけ適用すべき
+    }
+  }
+  
   for (const unit of allUnits) {
     if (unit.stats.hp <= 0) continue;
     
     const allies = unit.isPlayer ? playerUnits : enemyUnits;
     const enemies = unit.isPlayer ? enemyUnits : playerUnits;
-    const aliveEnemies = enemies.filter(e => e.stats.hp > 0);
+    const aliveEnemiesNow = enemies.filter(e => e.stats.hp > 0);
+    const aliveAlliesNow = allies.filter(a => a.stats.hp > 0);
     
-    if (aliveEnemies.length === 0) break;
+    if (aliveEnemiesNow.length === 0) break;
     
     const action = decideAction(unit, allies, enemies);
     
     if (action.type === 'attack') {
-      const target = action.target as BattleUnit;
-      const { damage, isCritical } = calculatePhysicalDamage(unit, target);
+      let target = action.target as ExtendedBattleUnit;
+      
+      // 庇う判定
+      const cover = checkCover(enemies.filter(e => e.stats.hp > 0) as ExtendedBattleUnit[], target);
+      if (cover) {
+        logs.push(`${cover.name}が${target.name}を庇った！`);
+        target = cover;
+      }
+      
+      // 命中判定
+      const hitResult = checkHit(unit, target);
+      if (!hitResult.hit) {
+        if (hitResult.perfectEvade) {
+          logs.push(`${unit.name}の攻撃！ ${target.name}は完全に回避した！`);
+        } else {
+          logs.push(`${unit.name}の攻撃！ ${target.name}に外れた！MISS!`);
+        }
+        unit.attackStackCount++;
+        continue;
+      }
+      
+      const { damage, isCritical, hitCount } = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
       target.stats.hp = Math.max(0, target.stats.hp - damage);
+      unit.attackStackCount++;
       
       const critText = isCritical ? '【会心】' : '';
-      logs.push(`${unit.name}の攻撃！ ${target.name}に${damage}ダメージ！${critText}`);
+      const hitText = hitCount > 1 ? `${hitCount}HIT! ` : '';
+      logs.push(`${unit.name}の攻撃！ ${hitText}${target.name}に${damage}ダメージ！${critText}`);
       
+      // HP吸収
+      if (unit.passiveEffects.hpSteal > 0) {
+        const steal = Math.floor(damage * unit.passiveEffects.hpSteal / 100);
+        unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + steal);
+        if (steal > 0) logs.push(`${unit.name}はHP${steal}吸収！`);
+      }
+      
+      // 反撃判定
+      if (target.stats.hp > 0 && target.passiveEffects.counterRate > 0) {
+        if (Math.random() * 100 < target.passiveEffects.counterRate) {
+          const counterHit = checkHit(target, unit);
+          if (counterHit.hit) {
+            const counterResult = calculatePhysicalDamage(target, unit, enemies.filter(e => e.stats.hp > 0).length);
+            unit.stats.hp = Math.max(0, unit.stats.hp - counterResult.damage);
+            logs.push(`${target.name}の反撃！ ${unit.name}に${counterResult.damage}ダメージ！`);
+          }
+        }
+      }
+      
+      // 死亡判定と蘇生
       if (target.stats.hp <= 0) {
         logs.push(`${target.name}を倒した！`);
+        // revive（自己蘇生）
+        if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
+          target.stats.hp = Math.floor(target.stats.maxHp * target.passiveEffects.revive / 100);
+          target.reviveUsed = true;
+          logs.push(`${target.name}は不死の力で蘇った！`);
+        }
       }
+      
     } else if (action.type === 'skill' && unit.skills && action.skillIndex !== undefined) {
       const skill = unit.skills[action.skillIndex];
+      const mpReduction = unit.passiveEffects.mpReduction;
+      const actualCost = Math.max(1, Math.floor(skill.mpCost * (1 - mpReduction / 100)));
+      unit.stats.mp = Math.max(0, unit.stats.mp - actualCost);
       
-      // MP消費
-      unit.stats.mp = Math.max(0, unit.stats.mp - skill.mpCost);
+      // doublecast判定
+      const castCount = (skill.type === 'magic' && skill.target === 'all' && unit.passiveEffects.doublecast > 0) ? 2 : 1;
       
-      if (skill.type === 'attack' || skill.type === 'magic') {
-        const targets = Array.isArray(action.target) ? action.target : [action.target];
-        const isMagic = skill.type === 'magic';
-        
-        for (const target of targets) {
-          let damage: number;
-          if (isMagic) {
-            damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element);
-          } else {
-            const result = calculatePhysicalDamage(unit, target);
-            damage = Math.floor(result.damage * skill.multiplier);
-          }
-          target.stats.hp = Math.max(0, target.stats.hp - damage);
-          logs.push(`${unit.name}の${skill.name}！ ${target.name}に${damage}ダメージ！(MP-${skill.mpCost})`);
+      for (let cast = 0; cast < castCount; cast++) {
+        if (skill.type === 'attack' || skill.type === 'magic') {
+          const targets = Array.isArray(action.target) ? action.target : [action.target];
+          const isMagic = skill.type === 'magic';
           
-          if (target.stats.hp <= 0) {
-            logs.push(`${target.name}を倒した！`);
+          for (const t of targets) {
+            let target = t as ExtendedBattleUnit;
+            if (target.stats.hp <= 0) continue;
+            
+            // 命中判定（魔法は必中にするか、物理スキルのみ判定）
+            if (!isMagic) {
+              const hitResult = checkHit(unit, target);
+              if (!hitResult.hit) {
+                logs.push(`${unit.name}の${skill.name}！ ${target.name}に外れた！MISS!`);
+                continue;
+              }
+            }
+            
+            let damage: number;
+            if (isMagic) {
+              damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element, aliveAlliesNow.length);
+            } else {
+              const result = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
+              damage = Math.floor(result.damage * skill.multiplier);
+            }
+            target.stats.hp = Math.max(0, target.stats.hp - damage);
+            
+            const mpText = cast === 0 ? `(MP-${actualCost})` : '';
+            logs.push(`${unit.name}の${skill.name}！ ${target.name}に${damage}ダメージ！${mpText}`);
+            
+            // HP吸収
+            if (unit.passiveEffects.hpSteal > 0) {
+              const steal = Math.floor(damage * unit.passiveEffects.hpSteal / 100);
+              unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + steal);
+            }
+            
+            if (target.stats.hp <= 0) {
+              logs.push(`${target.name}を倒した！`);
+              if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
+                target.stats.hp = Math.floor(target.stats.maxHp * target.passiveEffects.revive / 100);
+                target.reviveUsed = true;
+                logs.push(`${target.name}は不死の力で蘇った！`);
+              }
+            }
+          }
+        } else if (skill.type === 'heal') {
+          const targets = Array.isArray(action.target) ? action.target : [action.target as ExtendedBattleUnit];
+          for (const target of targets) {
+            if (target.stats.hp <= 0) continue;
+            const heal = calculateHeal(unit, target, skill.multiplier);
+            target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
+            logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！(MP-${actualCost})`);
           }
         }
-      } else if (skill.type === 'heal') {
-        const targets = Array.isArray(action.target) ? action.target : [action.target as BattleUnit];
-        for (const target of targets) {
-          const heal = calculateHeal(unit, skill.multiplier);
-          target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
-          logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！(MP-${skill.mpCost})`);
-        }
+      }
+      
+      if (castCount > 1) {
+        logs.push(`（2回詠唱発動！）`);
+      }
+    }
+  }
+  
+  // autoRevive判定（味方が死んだ時）
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.autoRevive > 0 && !unit.autoReviveUsed) {
+      const deadAlly = playerUnits.find(u => u.stats.hp <= 0 && u.id !== unit.id);
+      if (deadAlly) {
+        deadAlly.stats.hp = Math.floor(deadAlly.stats.maxHp * 0.3);
+        unit.autoReviveUsed = true;
+        logs.push(`${unit.name}の奇跡の力で${deadAlly.name}が蘇生！`);
       }
     }
   }
@@ -375,26 +775,23 @@ function processTurn(
 // ============================================
 
 function processEncounter(
-  playerUnits: BattleUnit[],
+  playerUnits: ExtendedBattleUnit[],
   dungeon: DungeonType,
   encounterNum: number,
   isBossEncounter: boolean
 ): { logs: string[]; victory: boolean } {
   const dungeonData = dungeons[dungeon];
   const allLogs: string[] = [];
-  const enemyUnits: BattleUnit[] = [];
+  const enemyUnits: ExtendedBattleUnit[] = [];
   
   if (isBossEncounter && dungeonData.boss) {
-    // ボス戦（開始のみ赤表示用マーカー）
     enemyUnits.push(monsterToUnit(dungeonData.boss));
     allLogs.push(`\n【遭遇 ${encounterNum}】`);
     allLogs.push(`🔴BOSS: ${dungeonData.boss.name}が現れた！`);
   } else {
-    // 通常エンカウント（1-3体）
     const monsterCount = Math.floor(random(1, 4));
     
     for (let i = 0; i < monsterCount; i++) {
-      // 重み付きランダム選択
       const totalWeight = dungeonData.monsters.reduce((sum, m) => sum + m.weight, 0);
       let rand = Math.random() * totalWeight;
       for (const spawn of dungeonData.monsters) {
@@ -411,14 +808,47 @@ function processEncounter(
     allLogs.push(`${monsterNames}が現れた！`);
   }
   
-  // プレイヤーユニットのHP回復（遭遇ごとに少し回復）
+  // 戦闘開始時: intimidate適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.intimidate > 0) {
+      for (const enemy of enemyUnits) {
+        const reduction = Math.floor(enemy.stats.atk * unit.passiveEffects.intimidate / 100);
+        enemy.stats.atk = Math.max(1, enemy.stats.atk - reduction);
+      }
+    }
+  }
+  
+  // 戦闘開始時: allyAtkBonus適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.allyAtkBonus > 0) {
+      for (const ally of playerUnits) {
+        if (ally.id !== unit.id && ally.stats.hp > 0) {
+          const bonus = Math.floor(ally.stats.atk * unit.passiveEffects.allyAtkBonus / 100);
+          ally.stats.atk += bonus;
+        }
+      }
+    }
+  }
+  
+  // 戦闘開始時: allyDefense適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.allyDefense > 0) {
+      for (const ally of playerUnits) {
+        if (ally.stats.hp > 0) {
+          ally.passiveEffects.damageReduction += unit.passiveEffects.allyDefense;
+        }
+      }
+    }
+  }
+  
+  // プレイヤーHP回復（遭遇ごと10%）
   for (const unit of playerUnits) {
     if (unit.stats.hp > 0) {
       unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + Math.floor(unit.stats.maxHp * 0.1));
     }
   }
   
-  // 戦闘ループ（最大20ターン）
+  // 戦闘ループ
   for (let turn = 1; turn <= 20; turn++) {
     const result = processTurn(playerUnits, enemyUnits, turn);
     allLogs.push(...result.logs);
@@ -433,7 +863,6 @@ function processEncounter(
     }
   }
   
-  // 20ターン経過は敗北扱い
   allLogs.push(`時間切れ...撤退した`);
   return { logs: allLogs, victory: false };
 }
@@ -447,8 +876,7 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   const allLogs: BattleLog[] = [];
   let encountersCleared = 0;
   
-  // パーティをユニットに変換
-  const playerUnits: BattleUnit[] = [];
+  const playerUnits: ExtendedBattleUnit[] = [];
   (party.front || []).forEach((char) => {
     if (char) playerUnits.push(characterToUnit(char, 'front'));
   });
@@ -465,7 +893,6 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
     };
   }
   
-  // 各エンカウントを処理
   for (let i = 1; i <= dungeonData.encounterCount; i++) {
     const isBossEncounter = (i === dungeonData.encounterCount);
     const { logs, victory } = processEncounter(playerUnits, dungeon, i, isBossEncounter);
@@ -479,7 +906,6 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
     if (victory) {
       encountersCleared++;
     } else {
-      // 敗北したら終了
       return {
         victory: false,
         logs: allLogs,
@@ -489,7 +915,6 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
     }
   }
   
-  // 踏破ログ（ドロップは呼び出し側で処理）
   allLogs.push({
     turn: dungeonData.encounterCount + 1,
     actions: [],
@@ -504,7 +929,7 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   };
 }
 
-// キャラクターのドロップボーナスを計算
+// ドロップボーナス計算
 function calculateDropBonus(characters: Character[]): number {
   let bonus = 0;
   for (const char of characters) {
@@ -522,11 +947,10 @@ function calculateDropBonus(characters: Character[]): number {
   return bonus;
 }
 
-// ドロップ抽選（呼び出し側で個別に実行）
 export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
   const baseRate = getDropRate(dungeon);
   const dropBonus = calculateDropBonus(characters);
-  const dropRate = baseRate * (1 + dropBonus / 100); // ボーナスを%として適用
+  const dropRate = baseRate * (1 + dropBonus / 100);
   if (Math.random() * 100 < dropRate) {
     const item = getRandomItem();
     return item.id;

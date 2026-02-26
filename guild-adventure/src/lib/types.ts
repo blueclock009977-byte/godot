@@ -280,6 +280,8 @@ export interface BattleUnit {
   job?: JobType;
   trait?: TraitType;
   skills?: SkillData[];
+  raceMastery?: boolean;
+  jobMastery?: boolean;
   // モンスター用
   species?: SpeciesType;
   element?: ElementType;
