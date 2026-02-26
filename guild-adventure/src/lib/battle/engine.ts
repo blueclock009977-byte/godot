@@ -10,6 +10,7 @@ import {
 } from '../types';
 import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
+import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
 
 // ============================================
@@ -33,15 +34,22 @@ function cloneStats(stats: Stats): Stats {
 // ============================================
 
 function characterToUnit(char: Character, position: 'front' | 'back'): BattleUnit {
+  // 職業スキル + 種族スキルを結合
+  const jobSkills = char.job ? jobs[char.job].skills : [];
+  const raceData = char.race ? races[char.race] : null;
+  const raceSkills = raceData?.skills ?? [];
+  const allSkills = [...jobSkills, ...raceSkills];
+  
   return {
     id: char.id,
     name: char.name,
     isPlayer: true,
     stats: cloneStats(char.stats),
     position,
+    race: char.race,
     job: char.job,
     trait: char.trait,
-    skills: char.job ? jobs[char.job].skills : [],
+    skills: allSkills,
   };
 }
 

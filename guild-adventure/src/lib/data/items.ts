@@ -8,7 +8,7 @@ export interface ItemData {
   unlocks: string; // 解放する種族ID or 職業ID
 }
 
-// 種族チケット（全8種族）
+// 種族チケット（全12種族）
 export const raceTickets: ItemData[] = [
   { id: 'ticket_human', name: '人間の血統書', description: '人間を作成可能にする', type: 'raceTicket', unlocks: 'human' },
   { id: 'ticket_elf', name: 'エルフの血統書', description: 'エルフを作成可能にする', type: 'raceTicket', unlocks: 'elf' },
@@ -18,9 +18,13 @@ export const raceTickets: ItemData[] = [
   { id: 'ticket_lizardman', name: 'リザードマンの血統書', description: 'リザードマンを作成可能にする', type: 'raceTicket', unlocks: 'lizardman' },
   { id: 'ticket_fairy', name: 'フェアリーの血統書', description: 'フェアリーを作成可能にする', type: 'raceTicket', unlocks: 'fairy' },
   { id: 'ticket_undead', name: 'アンデッドの血統書', description: 'アンデッドを作成可能にする', type: 'raceTicket', unlocks: 'undead' },
+  { id: 'ticket_goblin', name: 'ゴブリンの血統書', description: 'ゴブリンを作成可能にする', type: 'raceTicket', unlocks: 'goblin' },
+  { id: 'ticket_dragonewt', name: 'ドラゴニュートの血統書', description: 'ドラゴニュートを作成可能にする', type: 'raceTicket', unlocks: 'dragonewt' },
+  { id: 'ticket_angel', name: 'エンジェルの血統書', description: 'エンジェルを作成可能にする', type: 'raceTicket', unlocks: 'angel' },
+  { id: 'ticket_demon', name: 'デーモンの血統書', description: 'デーモンを作成可能にする', type: 'raceTicket', unlocks: 'demon' },
 ];
 
-// 職業書（全8職業）
+// 職業書（全16職業）
 export const jobBooks: ItemData[] = [
   { id: 'book_warrior', name: '戦士の指南書', description: '戦士を作成可能にする', type: 'jobBook', unlocks: 'warrior' },
   { id: 'book_mage', name: '魔法使いの指南書', description: '魔法使いを作成可能にする', type: 'jobBook', unlocks: 'mage' },
@@ -30,6 +34,14 @@ export const jobBooks: ItemData[] = [
   { id: 'book_hunter', name: '狩人の指南書', description: '狩人を作成可能にする', type: 'jobBook', unlocks: 'hunter' },
   { id: 'book_ninja', name: '忍者の指南書', description: '忍者を作成可能にする', type: 'jobBook', unlocks: 'ninja' },
   { id: 'book_sage', name: '賢者の指南書', description: '賢者を作成可能にする', type: 'jobBook', unlocks: 'sage' },
+  { id: 'book_berserker', name: 'バーサーカーの指南書', description: 'バーサーカーを作成可能にする', type: 'jobBook', unlocks: 'berserker' },
+  { id: 'book_paladin', name: 'パラディンの指南書', description: 'パラディンを作成可能にする', type: 'jobBook', unlocks: 'paladin' },
+  { id: 'book_necromancer', name: 'ネクロマンサーの指南書', description: 'ネクロマンサーを作成可能にする', type: 'jobBook', unlocks: 'necromancer' },
+  { id: 'book_monk', name: 'モンクの指南書', description: 'モンクを作成可能にする', type: 'jobBook', unlocks: 'monk' },
+  { id: 'book_ranger', name: 'レンジャーの指南書', description: 'レンジャーを作成可能にする', type: 'jobBook', unlocks: 'ranger' },
+  { id: 'book_samurai', name: 'サムライの指南書', description: 'サムライを作成可能にする', type: 'jobBook', unlocks: 'samurai' },
+  { id: 'book_witch', name: 'ウィッチの指南書', description: 'ウィッチを作成可能にする', type: 'jobBook', unlocks: 'witch' },
+  { id: 'book_bard', name: 'バードの指南書', description: 'バードを作成可能にする', type: 'jobBook', unlocks: 'bard' },
 ];
 
 // 全アイテム

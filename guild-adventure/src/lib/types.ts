@@ -2,8 +2,14 @@
 // 基本型定義
 // ============================================
 
-export type RaceType = 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardman' | 'fairy' | 'undead';
-export type JobType = 'warrior' | 'mage' | 'priest' | 'thief' | 'knight' | 'hunter' | 'ninja' | 'sage';
+export type RaceType = 
+  | 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardman' | 'fairy' | 'undead'
+  | 'goblin' | 'dragonewt' | 'angel' | 'demon';
+
+export type JobType = 
+  | 'warrior' | 'mage' | 'priest' | 'thief' | 'knight' | 'hunter' | 'ninja' | 'sage'
+  | 'berserker' | 'paladin' | 'necromancer' | 'monk' | 'ranger' | 'samurai' | 'witch' | 'bard';
+
 export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
 export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
 export type DungeonType = 'grassland' | 'forest' | 'cave' | 'sea' | 'desert' | 'volcano' | 'snowfield' | 'temple';
@@ -43,11 +49,16 @@ export type EffectType =
   | 'mpReduction'       // MP消費-%
   | 'mpRegen'           // 毎ターンMP回復
   | 'hpRegen'           // 毎ターンHP回復
+  | 'hpSteal'           // HP吸収+%
   | 'statusResist'      // 状態異常耐性+%
   | 'poisonResist'      // 毒耐性+%
   | 'stunResist'        // スタン耐性+%
   | 'counterRate'       // 反撃率+%
   | 'doubleAttack'      // 2回攻撃率+%
+  | 'allyDefense'       // 味方防御+%
+  | 'allyAtkBonus'      // 味方攻撃+%
+  | 'intimidate'        // 威圧（敵攻撃-%）
+  | 'debuffBonus'       // デバフ成功率+%
   ;
 
 export interface Effect {
@@ -65,6 +76,7 @@ export interface RaceData {
   description: string;
   baseStats: Omit<Stats, 'hp' | 'mp'> & { maxHp: number; maxMp: number };
   passives: PassiveSkill[];
+  skills?: SkillData[];  // 種族固有スキル
 }
 
 export interface JobData {
@@ -118,7 +130,7 @@ export interface SkillData {
 }
 
 export interface SkillEffect {
-  type: 'poison' | 'stun' | 'atkUp' | 'defUp' | 'agiUp' | 'atkDown' | 'defDown';
+  type: 'poison' | 'stun' | 'atkUp' | 'defUp' | 'agiUp' | 'atkDown' | 'defDown' | 'statDown' | 'agiDown';
   chance?: number;  // 発動確率（%）
   duration?: number; // 持続ターン
   value?: number;    // 効果量（%）
@@ -196,6 +208,7 @@ export interface BattleUnit {
   isPlayer: boolean;
   stats: Stats;
   position: Position;
+  race?: RaceType;
   job?: JobType;
   trait?: TraitType;
   skills?: SkillData[];
