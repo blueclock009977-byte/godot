@@ -84,6 +84,9 @@ export default function DungeonPage() {
                   ⏱️ {formatDuration(dungeon.durationSeconds)}
                 </span>
                 <span className="text-slate-400">
+                  👥 {dungeon.recommendedPlayers}人推奨
+                </span>
+                <span className="text-slate-400">
                   👹 {dungeon.encounterCount}回遭遇
                 </span>
               </div>

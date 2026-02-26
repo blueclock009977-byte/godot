@@ -5,8 +5,9 @@ export const dungeons: Record<string, DungeonData> = {
   grassland: {
     id: 'grassland',
     name: '草原',
-    description: '緑豊かな草原。冒険の始まり。【3人推奨】',
+    description: '緑豊かな草原。冒険の始まり。',
     difficulty: 1,
+    recommendedPlayers: 2,
     durationSeconds: 30,
     encounterCount: 3,
     monsters: [
@@ -19,8 +20,9 @@ export const dungeons: Record<string, DungeonData> = {
   forest: {
     id: 'forest',
     name: '森林',
-    description: '深い森。回避の高い敵が多い。【6人推奨・先制重要】',
+    description: '深い森。回避の高い敵が多い。先制重要。',
     difficulty: 2,
+    recommendedPlayers: 4,
     durationSeconds: 600, // 10分
     encounterCount: 5,
     monsters: [
@@ -33,9 +35,10 @@ export const dungeons: Record<string, DungeonData> = {
   cave: {
     id: 'cave',
     name: '洞窟',
-    description: '暗い洞窟。高防御の敵が多い。【物理攻撃が有効】',
+    description: '暗い洞窟。高防御の敵が多い。物理攻撃が有効。',
     difficulty: 3,
-    durationSeconds: 3600, // 1時間
+    recommendedPlayers: 6,
+    durationSeconds: 1800, // 30分
     encounterCount: 5,
     monsters: [
       { monster: monstersByDungeon.cave.monsters[0], weight: 35 },
@@ -47,9 +50,10 @@ export const dungeons: Record<string, DungeonData> = {
   sea: {
     id: 'sea',
     name: '海',
-    description: '危険な海域。物理耐性の敵が多い。【魔法攻撃が有効】',
+    description: '危険な海域。物理耐性の敵が多い。魔法攻撃が有効。',
     difficulty: 4,
-    durationSeconds: 7200, // 2時間
+    recommendedPlayers: 6,
+    durationSeconds: 3600, // 60分
     encounterCount: 7,
     monsters: [
       { monster: monstersByDungeon.sea.monsters[0], weight: 40 },
@@ -61,8 +65,9 @@ export const dungeons: Record<string, DungeonData> = {
   desert: {
     id: 'desert',
     name: '砂漠',
-    description: '灼熱の砂漠。分裂する敵が多い。【連続攻撃が有効】',
+    description: '灼熱の砂漠。分裂する敵が多い。連続攻撃が有効。',
     difficulty: 5,
+    recommendedPlayers: 6,
     durationSeconds: 7200, // 2時間
     encounterCount: 7,
     monsters: [
@@ -75,8 +80,9 @@ export const dungeons: Record<string, DungeonData> = {
   volcano: {
     id: 'volcano',
     name: '火山',
-    description: '煮えたぎる火山。再生する敵が多い。【必殺攻撃が有効】',
+    description: '煮えたぎる火山。再生する敵が多い。必殺攻撃が有効。',
     difficulty: 6,
+    recommendedPlayers: 6,
     durationSeconds: 7200, // 2時間
     encounterCount: 10,
     monsters: [
@@ -89,8 +95,9 @@ export const dungeons: Record<string, DungeonData> = {
   snowfield: {
     id: 'snowfield',
     name: '雪原',
-    description: '極寒の雪原。凍結攻撃に注意。【状態異常耐性が重要】',
+    description: '極寒の雪原。凍結攻撃に注意。状態異常耐性が重要。',
     difficulty: 7,
+    recommendedPlayers: 6,
     durationSeconds: 7200, // 2時間
     encounterCount: 10,
     monsters: [
@@ -103,8 +110,9 @@ export const dungeons: Record<string, DungeonData> = {
   temple: {
     id: 'temple',
     name: '神殿',
-    description: '古代の神殿。全てのギミックが待ち受ける。【最高難度】',
+    description: '古代の神殿。全てのギミックが待ち受ける。最高難度。',
     difficulty: 8,
+    recommendedPlayers: 6,
     durationSeconds: 7200, // 2時間
     encounterCount: 15,
     monsters: [

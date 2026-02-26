@@ -224,6 +224,7 @@ export interface DungeonData {
   name: string;
   description: string;
   difficulty: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+  recommendedPlayers: number;
   durationSeconds: number;
   encounterCount: number;
   monsters: MonsterSpawn[];

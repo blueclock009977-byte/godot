@@ -100,9 +100,14 @@ export function clearStoredUsername(): void {
 // マルチプレイ機能
 // ============================================
 
+export interface RoomCharacter {
+  character: any;
+  position: 'front' | 'back';
+}
+
 export interface RoomPlayer {
   username: string;
-  characters: any[];  // 選択したキャラ
+  characters: RoomCharacter[];  // 選択したキャラ（position付き）
   ready: boolean;
   joinedAt: number;
 }
@@ -115,6 +120,7 @@ export interface MultiRoom {
   status: 'waiting' | 'ready' | 'battle' | 'done';
   players: Record<string, RoomPlayer>;
   battleResult?: any;
+  startTime?: number;  // 冒険開始時刻
   createdAt: number;
   updatedAt: number;
 }
@@ -232,13 +238,17 @@ export async function updateRoomReady(code: string, username: string, ready: boo
   }
 }
 
-// ルームステータスを更新
-export async function updateRoomStatus(code: string, status: MultiRoom['status']): Promise<boolean> {
+// ルームステータスを更新（battleの場合はstartTimeも設定）
+export async function updateRoomStatus(code: string, status: MultiRoom['status'], startTime?: number): Promise<boolean> {
   try {
+    const data: any = { status, updatedAt: Date.now() };
+    if (startTime) {
+      data.startTime = startTime;
+    }
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, updatedAt: Date.now() }),
+      body: JSON.stringify(data),
     });
     return res.ok;
   } catch (e) {
