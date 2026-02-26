@@ -553,13 +553,26 @@ export const useGameStore = create<GameStore>()(
           console.log('[restoreAdventure] adventure completed, claimed:', adventure.claimed);
           
           // まだドロップを受け取ってない場合は受け取る
-          if (!adventure.claimed && adventure.battleResult?.victory) {
-            const claimResult = await claimAdventureDrop(username);
-            console.log('[restoreAdventure] claimed drop:', claimResult);
-            if (claimResult.success && claimResult.itemId) {
-              get().addItem(claimResult.itemId);
-              await get().syncToServer();
+          if (!adventure.claimed) {
+            let droppedItemId: string | undefined;
+            if (adventure.battleResult?.victory) {
+              const claimResult = await claimAdventureDrop(username);
+              console.log('[restoreAdventure] claimed drop:', claimResult);
+              if (claimResult.success && claimResult.itemId) {
+                droppedItemId = claimResult.itemId;
+                get().addItem(claimResult.itemId);
+                await get().syncToServer();
+              }
             }
+            
+            // 履歴に追加
+            await get().addHistory({
+              type: 'solo',
+              dungeonId: adventure.dungeon,
+              victory: adventure.battleResult?.victory || false,
+              droppedItemId,
+              logs: adventure.battleResult?.logs || [],
+            });
           }
           
           // 期限切れ（完了後1分以上）ならクリア
