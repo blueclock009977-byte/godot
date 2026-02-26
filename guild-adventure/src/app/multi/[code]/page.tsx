@@ -23,12 +23,19 @@ import { Character, Party } from '@/lib/types';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, syncToServer } = useGameStore();
+  const { username, characters, addItem, syncToServer, isLoading, autoLogin } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [selectedChars, setSelectedChars] = useState<string[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
+  
+  // 自動ログイン（ストアの初期化）
+  useEffect(() => {
+    if (!username) {
+      autoLogin();
+    }
+  }, [username, autoLogin]);
   
   // ルーム情報をポーリング
   useEffect(() => {
@@ -132,7 +139,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     router.push('/multi');
   };
   
-  if (!room) {
+  if (!room || isLoading) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
         <div>読み込み中...</div>
