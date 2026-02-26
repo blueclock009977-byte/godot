@@ -28,6 +28,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const { username, characters, addItem, syncToServer, isLoading, autoLogin, addHistory } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
+  const [roomDeleted, setRoomDeleted] = useState(false);
   const [selectedChars, setSelectedChars] = useState<RoomCharacter[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
@@ -50,9 +51,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // ルーム情報をポーリング
   useEffect(() => {
+    let hadRoom = false;
+    
     const fetchRoom = async () => {
       const data = await getRoom(code);
       if (data) {
+        hadRoom = true;
         setRoom(data);
         
         // 自分の選択状態を復元
@@ -61,6 +65,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           setSelectedChars(myChars);
           setIsReady(data.players[username].ready);
         }
+        
+        // 自分がキックされた（playersに自分がいない）場合
+        if (username && !data.players[username] && data.status === 'waiting') {
+          setRoomDeleted(true);
+        }
+      } else if (hadRoom) {
+        // ルームが存在していたのに消えた場合（ホストが退出）
+        setRoomDeleted(true);
       }
     };
     
@@ -265,6 +277,18 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }
     router.push('/multi');
   };
+  
+  // ルームが削除された場合
+  if (roomDeleted) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-2xl mb-4">😢 ルームが解散されました</div>
+          <Link href="/multi" className="text-amber-400 hover:underline">マルチプレイに戻る</Link>
+        </div>
+      </main>
+    );
+  }
   
   if (!room || isLoading) {
     return (
