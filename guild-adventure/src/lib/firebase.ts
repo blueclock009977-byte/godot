@@ -238,12 +238,20 @@ export async function updateRoomReady(code: string, username: string, ready: boo
   }
 }
 
-// ルームステータスを更新（battleの場合はstartTimeも設定）
-export async function updateRoomStatus(code: string, status: MultiRoom['status'], startTime?: number): Promise<boolean> {
+// ルームステータスを更新（battleの場合はstartTimeとbattleResultも設定）
+export async function updateRoomStatus(
+  code: string, 
+  status: MultiRoom['status'], 
+  startTime?: number,
+  battleResult?: any
+): Promise<boolean> {
   try {
     const data: any = { status, updatedAt: Date.now() };
     if (startTime) {
       data.startTime = startTime;
+    }
+    if (battleResult) {
+      data.battleResult = battleResult;
     }
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',

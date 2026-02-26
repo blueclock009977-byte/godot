@@ -11,7 +11,6 @@ import {
   updateRoomStatus,
   leaveRoom,
   deleteRoom,
-  saveRoomBattleResult,
   MultiRoom,
   RoomCharacter,
 } from '@/lib/firebase';
@@ -108,18 +107,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const allReady = room && Object.values(room.players).length === room.maxPlayers &&
     Object.values(room.players).every(p => p.ready && p.characters.length > 0);
   
-  // バトル開始（ホストのみ）
+  // バトル開始（ホストのみ）- バトル結果を事前計算してFirebaseに保存
   const startBattle = async () => {
     if (!room || !username || room.hostId !== username) return;
-    
-    const startTime = Date.now();
-    await updateRoomStatus(code, 'battle', startTime);
-  };
-  
-  // 冒険中のログ表示（adventureページと同じロジック）
-  useEffect(() => {
-    if (!room || room.status !== 'battle' || !room.startTime) return;
-    if (battleResultRef.current) return; // 既にバトル計算済み
     
     // 全プレイヤーのキャラを集めてパーティを作成
     const frontChars: Character[] = [];
@@ -140,10 +130,22 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       back: backChars,
     };
     
-    // バトルを先に計算
+    // ホストがバトル結果を計算
     const result = runBattle(party, room.dungeonId as any);
-    battleResultRef.current = result;
-  }, [room?.status, room?.startTime, room?.players, room?.dungeonId]);
+    
+    const startTime = Date.now();
+    // バトル結果もFirebaseに保存（全員が同じ結果を見る）
+    await updateRoomStatus(code, 'battle', startTime, result);
+  };
+  
+  // バトル結果をFirebaseから読み取る
+  useEffect(() => {
+    if (!room || room.status !== 'battle' || !room.battleResult) return;
+    if (battleResultRef.current) return; // 既に設定済み
+    
+    // Firebaseからバトル結果を取得（ホストが計算したもの）
+    battleResultRef.current = room.battleResult;
+  }, [room?.status, room?.battleResult]);
   
   // 時間経過に応じてログを表示
   useEffect(() => {
@@ -191,9 +193,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
           
-          // ホストがバトル結果を保存
+          // ホストがステータスをdoneに更新
           if (username === room.hostId) {
-            saveRoomBattleResult(code, result);
+            updateRoomStatus(code, 'done');
           }
         }
       }
