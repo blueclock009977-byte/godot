@@ -323,14 +323,14 @@ export default function Home() {
     setMounted(true);
   }, []);
   
-  // ログイン済みならサーバーからデータ復元（キャラ/パーティ/探索状態）
-  // 一時的に無効化してエラー原因を特定
-  // useEffect(() => {
-  //   if (mounted && isLoggedIn && username) {
-  //     console.log('[Home] auto login for logged in user');
-  //     autoLogin();
-  //   }
-  // }, [mounted, isLoggedIn, username, autoLogin]);
+  // 初回ロード時のみautoLogin（データ復元用）
+  const [dataLoaded, setDataLoaded] = useState(false);
+  useEffect(() => {
+    if (mounted && isLoggedIn && username && !dataLoaded) {
+      console.log('[Home] auto login for logged in user (first load)');
+      autoLogin().then(() => setDataLoaded(true));
+    }
+  }, [mounted, isLoggedIn, username, autoLogin, dataLoaded]);
   
   if (!mounted) {
     return (
