@@ -25,6 +25,7 @@ import {
   setStoredUsername,
   clearStoredUsername,
 } from '@/lib/firebase';
+import { initialInventory } from '@/lib/data/items';
 
 // ============================================
 // ステータス計算
@@ -171,7 +172,7 @@ export const useGameStore = create<GameStore>()(
                 username,
                 characters: [],
                 party: { front: [null, null, null], back: [null, null, null] },
-                inventory: {},
+                inventory: { ...initialInventory },
                 isLoading: false,
               });
               setStoredUsername(username);

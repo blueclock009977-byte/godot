@@ -8,8 +8,9 @@ export interface ItemData {
   unlocks: string; // 解放する種族ID or 職業ID
 }
 
-// 種族チケット（人間以外）
+// 種族チケット（全8種族）
 export const raceTickets: ItemData[] = [
+  { id: 'ticket_human', name: '人間の血統書', description: '人間を作成可能にする', type: 'raceTicket', unlocks: 'human' },
   { id: 'ticket_elf', name: 'エルフの血統書', description: 'エルフを作成可能にする', type: 'raceTicket', unlocks: 'elf' },
   { id: 'ticket_dwarf', name: 'ドワーフの血統書', description: 'ドワーフを作成可能にする', type: 'raceTicket', unlocks: 'dwarf' },
   { id: 'ticket_halfling', name: 'ハーフリングの血統書', description: 'ハーフリングを作成可能にする', type: 'raceTicket', unlocks: 'halfling' },
@@ -19,8 +20,11 @@ export const raceTickets: ItemData[] = [
   { id: 'ticket_undead', name: 'アンデッドの血統書', description: 'アンデッドを作成可能にする', type: 'raceTicket', unlocks: 'undead' },
 ];
 
-// 職業書（戦士/魔法使い/司祭以外）
+// 職業書（全8職業）
 export const jobBooks: ItemData[] = [
+  { id: 'book_warrior', name: '戦士の指南書', description: '戦士を作成可能にする', type: 'jobBook', unlocks: 'warrior' },
+  { id: 'book_mage', name: '魔法使いの指南書', description: '魔法使いを作成可能にする', type: 'jobBook', unlocks: 'mage' },
+  { id: 'book_priest', name: '司祭の指南書', description: '司祭を作成可能にする', type: 'jobBook', unlocks: 'priest' },
   { id: 'book_thief', name: '盗賊の指南書', description: '盗賊を作成可能にする', type: 'jobBook', unlocks: 'thief' },
   { id: 'book_knight', name: '騎士の指南書', description: '騎士を作成可能にする', type: 'jobBook', unlocks: 'knight' },
   { id: 'book_hunter', name: '狩人の指南書', description: '狩人を作成可能にする', type: 'jobBook', unlocks: 'hunter' },
@@ -36,19 +40,25 @@ export function getItemById(id: string): ItemData | undefined {
   return allItems.find(item => item.id === id);
 }
 
-// 種族に必要なアイテムIDを取得（人間はnull）
+// 種族に必要なアイテムIDを取得
 export function getRequiredItemForRace(raceId: string): string | null {
-  if (raceId === 'human') return null;
   const ticket = raceTickets.find(t => t.unlocks === raceId);
   return ticket?.id || null;
 }
 
-// 職業に必要なアイテムIDを取得（戦士/魔法使い/司祭はnull）
+// 職業に必要なアイテムIDを取得
 export function getRequiredItemForJob(jobId: string): string | null {
-  if (['warrior', 'mage', 'priest'].includes(jobId)) return null;
   const book = jobBooks.find(b => b.unlocks === jobId);
   return book?.id || null;
 }
+
+// 初期インベントリ
+export const initialInventory: Record<string, number> = {
+  'ticket_human': 3,
+  'book_warrior': 1,
+  'book_mage': 1,
+  'book_priest': 1,
+};
 
 // ダンジョンのドロップ確率（%）
 export function getDropRate(dungeonId: string): number {

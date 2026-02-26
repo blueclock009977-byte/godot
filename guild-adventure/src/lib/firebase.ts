@@ -44,6 +44,9 @@ export async function saveUserData(username: string, data: Partial<UserData>): P
 
 // 新規ユーザー作成
 export async function createUser(username: string): Promise<boolean> {
+  // 初期インベントリをインポート
+  const { initialInventory } = await import('./data/items');
+  
   try {
     const initialData: UserData = {
       username,
@@ -52,7 +55,7 @@ export async function createUser(username: string): Promise<boolean> {
         front: [null, null, null],
         back: [null, null, null],
       },
-      inventory: {},
+      inventory: { ...initialInventory },
       createdAt: Date.now(),
       lastLogin: Date.now(),
     };
