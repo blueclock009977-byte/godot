@@ -18,15 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom } from '../utils';
-
-// ============================================
-// ユーティリティ
-// ============================================
-
-function cloneStats(stats: Stats): Stats {
-  return { ...stats };
-}
+import { random, pickRandom, cloneStats } from '../utils';
 
 // ============================================
 // パッシブ効果の集約

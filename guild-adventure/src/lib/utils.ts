@@ -1,5 +1,14 @@
 // 共通ユーティリティ関数
 
+import { Stats } from './types';
+
+/**
+ * ステータスオブジェクトのシャローコピー
+ */
+export function cloneStats(stats: Stats): Stats {
+  return { ...stats };
+}
+
 /**
  * 指定範囲のランダムな数値を返す
  * @param min 最小値（含む）
