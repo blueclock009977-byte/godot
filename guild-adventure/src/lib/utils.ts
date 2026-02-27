@@ -3,6 +3,16 @@
 import { Stats } from './types';
 
 /**
+ * IDで配列から要素を検索する汎用ヘルパー
+ * @param items id プロパティを持つオブジェクトの配列
+ * @param id 検索するID
+ * @returns 見つかった要素、または undefined
+ */
+export function findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+  return items.find(item => item.id === id);
+}
+
+/**
  * 秒数を日本語の時間表記に変換
  * @param seconds 秒数
  * @param detailed true: "1分30秒" / false: "1分" (概算表示)

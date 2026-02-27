@@ -1,5 +1,5 @@
 // アイテム定義
-import { pickRandom } from '../utils';
+import { pickRandom, findById } from '../utils';
 
 export interface ItemData {
   id: string;
@@ -50,7 +50,7 @@ export const allItems: ItemData[] = [...raceTickets, ...jobBooks];
 
 // アイテムIDからアイテムデータを取得
 export function getItemById(id: string): ItemData | undefined {
-  return allItems.find(item => item.id === id);
+  return findById(allItems, id);
 }
 
 // 種族に必要なアイテムIDを取得
