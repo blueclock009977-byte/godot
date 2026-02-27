@@ -105,40 +105,14 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
     return effects;
   }
   
-  // プレイヤーの種族パッシブ
+  // プレイヤーの種族パッシブ + マスタリー
   if (unit.race) {
-    const raceData = races[unit.race];
-    if (raceData?.passives) {
-      for (const passive of raceData.passives) {
-        for (const effect of passive.effects) {
-          applyEffect(effects, effect.type, effect.value);
-        }
-      }
-    }
-    // 種族マスタリー（パッシブ）
-    if (unit.raceMastery && raceData?.masterySkill?.type === 'passive' && raceData.masterySkill.effects) {
-      for (const effect of raceData.masterySkill.effects) {
-        applyEffect(effects, effect.type, effect.value);
-      }
-    }
+    collectEffectsFromSource(races[unit.race], !!unit.raceMastery, effects);
   }
   
-  // プレイヤーの職業パッシブ
+  // プレイヤーの職業パッシブ + マスタリー
   if (unit.job) {
-    const jobData = jobs[unit.job];
-    if (jobData?.passives) {
-      for (const passive of jobData.passives) {
-        for (const effect of passive.effects) {
-          applyEffect(effects, effect.type, effect.value);
-        }
-      }
-    }
-    // 職業マスタリー（パッシブ）
-    if (unit.jobMastery && jobData?.masterySkill?.type === 'passive' && jobData.masterySkill.effects) {
-      for (const effect of jobData.masterySkill.effects) {
-        applyEffect(effects, effect.type, effect.value);
-      }
-    }
+    collectEffectsFromSource(jobs[unit.job], !!unit.jobMastery, effects);
   }
   
   return effects;
@@ -160,6 +134,36 @@ function applyEffect(effects: PassiveEffects, type: string, value: number) {
   // その他のパッシブ
   if (type in effects) {
     (effects as any)[type] += value;
+  }
+}
+
+// パッシブとマスタリーからエフェクトを収集する共通ヘルパー
+interface EffectSource {
+  passives?: { effects: { type: string; value: number }[] }[];
+  masterySkill?: { type: string; effects?: { type: string; value: number }[] };
+}
+
+function collectEffectsFromSource(
+  source: EffectSource | null | undefined,
+  hasMastery: boolean,
+  effects: PassiveEffects
+): void {
+  if (!source) return;
+  
+  // パッシブからエフェクト収集
+  if (source.passives) {
+    for (const passive of source.passives) {
+      for (const effect of passive.effects) {
+        applyEffect(effects, effect.type, effect.value);
+      }
+    }
+  }
+  
+  // マスタリースキル（パッシブ型）からエフェクト収集
+  if (hasMastery && source.masterySkill?.type === 'passive' && source.masterySkill.effects) {
+    for (const effect of source.masterySkill.effects) {
+      applyEffect(effects, effect.type, effect.value);
+    }
   }
 }
 

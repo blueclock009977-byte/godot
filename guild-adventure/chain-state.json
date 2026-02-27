@@ -1,0 +1,32 @@
+{
+  "taskId": "ga-refactor-2026-02-27",
+  "goal": "Guild Adventureのソロ/マルチ処理を共通化・リファクタリング",
+  "completionCriteria": [
+    "重複コードが統合されている",
+    "TypeScriptエラーがない",
+    "chain-state.jsonのlogに変更履歴がある"
+  ],
+  "judgmentCriteria": [
+    "1. 既存機能が壊れない",
+    "2. コードの可読性向上",
+    "3. 変更量は最小限",
+    "4. ソロ/マルチで仕様が異なる場合は相談"
+  ],
+  "constraints": [
+    "1cronで1タスクのみ",
+    "ソロ/マルチで仕様が異なる場合はパパに相談"
+  ],
+  "currentPhase": 1,
+  "phaseAttempt": 1,
+  "maxAttempts": 30,
+  "startedAt": "2026-02-27T04:44:00Z",
+  "discordChannel": "channel:1471429991005950013",
+  "assumptions": [],
+  "log": [],
+  "findings": [
+    "multi/[code]/page.tsx が791行と巨大 → 分割候補",
+    "friends/page.tsx の getStatusDisplay が長い → ソロ/マルチ判定ロジック共通化候補",
+    "restoreAdventure のソロ/マルチ処理が類似構造"
+  ],
+  "completed": []
+}
