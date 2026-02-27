@@ -22,6 +22,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     unlockRaceMastery, 
     unlockJobMastery,
     deleteCharacter,
+    coins,
+    levelUpCharacter,
   } = useGameStore();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -66,6 +68,22 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     setIsLoading(false);
   };
   
+  const currentLevel = character?.level || 1;
+  const levelUpCost = currentLevel < 5 ? currentLevel * 100 : 0;
+  const canLevelUp = currentLevel < 5 && coins >= levelUpCost;
+  
+  const handleLevelUp = async () => {
+    if (!canLevelUp || isLoading) return;
+    setIsLoading(true);
+    const result = await levelUpCharacter(character.id);
+    setIsLoading(false);
+    if (result.success && result.skill) {
+      alert(`レベル${result.newLevel}に上がりました！\nスキル「${result.skill}」を習得！`);
+    } else if (result.success) {
+      alert(`レベル${result.newLevel}に上がりました！`);
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm(`${character.name}を削除しますか？`)) return;
     await deleteCharacter(character.id);

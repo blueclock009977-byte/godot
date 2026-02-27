@@ -287,6 +287,7 @@ interface GameStore {
   // マスタリー解放
   unlockRaceMastery: (characterId: string) => Promise<boolean>;
   unlockJobMastery: (characterId: string) => Promise<boolean>;
+  levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string }>;
   
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
@@ -534,6 +535,51 @@ export const useGameStore = create<GameStore>()(
         return unlockMastery(get, set, characterId, 'job');
       },
       
+      
+      // キャラクターレベルアップ
+      levelUpCharacter: async (characterId: string): Promise<{ success: boolean; newLevel?: number; skill?: string }> => {
+        const { characters, coins } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return { success: false };
+        
+        const currentLevel = character.level || 1;
+        if (currentLevel >= 5) return { success: false }; // 最大レベル
+        
+        // レベルアップコスト: Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
+        const cost = currentLevel * 100;
+        if (coins < cost) return { success: false };
+        
+        const newLevel = currentLevel + 1;
+        let skill: string | undefined;
+        
+        // Lv3, Lv5でスキル抽選
+        if (newLevel === 3 || newLevel === 5) {
+          // 種族か職業のスキルを50%ずつで抽選
+          const isRaceSkill = Math.random() < 0.5;
+          skill = isRaceSkill 
+            ? `${character.race}_lv${newLevel}` 
+            : `${character.job}_lv${newLevel}`;
+        }
+        
+        // コイン消費
+        set((state) => ({ coins: state.coins - cost }));
+        
+        // キャラクター更新
+        set((state) => ({
+          characters: state.characters.map(c => {
+            if (c.id !== characterId) return c;
+            return {
+              ...c,
+              level: newLevel,
+              ...(newLevel === 3 ? { lv3Skill: skill } : {}),
+              ...(newLevel === 5 ? { lv5Skill: skill } : {}),
+            };
+          }),
+        }));
+        
+        await get().syncToServer();
+        return { success: true, newLevel, skill };
+      },
       // キャラクター作成
       createCharacter: async (name, race, job, trait, environment) => {
         const stats = calculateStats(race, job, trait, environment);

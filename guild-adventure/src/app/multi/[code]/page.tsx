@@ -3,6 +3,7 @@
 import { use, useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
 import { 
   getRoom, 
@@ -67,67 +68,54 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }
   }, [username, autoLogin]);
   
-  // ルーム情報をポーリング
-  useEffect(() => {
-    const fetchRoom = async () => {
-      const data = await getRoom(code);
-      if (data) {
-        setHadRoomOnce(true);
-        setRoom(data);
-        setCurrentMultiRoom(code); // ホームからの自動リダイレクト用
-        
-        // 自分の選択状態を復元
-        if (username && data.players && data.players[username]) {
-          const myChars = data.players[username].characters || [];
-          setSelectedChars(myChars);
-          setIsReady(data.players[username].ready);
-        }
-        
-        // 自分がキックされた（playersに自分がいない）場合
-        if (username && data.players && !data.players[username] && data.status === 'waiting') {
-          setRoomDeleted(true);
-        }
-      } else if (hadRoomOnce) {
-        // ルームが存在していたのに消えた場合（ホストが退出）
+  // ルーム情報をポーリング（1秒ごと）
+  const fetchRoom = useCallback(async () => {
+    const data = await getRoom(code);
+    if (data) {
+      setHadRoomOnce(true);
+      setRoom(data);
+      setCurrentMultiRoom(code); // ホームからの自動リダイレクト用
+      
+      // 自分の選択状態を復元
+      if (username && data.players && data.players[username]) {
+        const myChars = data.players[username].characters || [];
+        setSelectedChars(myChars);
+        setIsReady(data.players[username].ready);
+      }
+      
+      // 自分がキックされた（playersに自分がいない）場合
+      if (username && data.players && !data.players[username] && data.status === 'waiting') {
         setRoomDeleted(true);
       }
-    };
-    
-    fetchRoom();
-    const interval = setInterval(fetchRoom, 1000);
-    return () => clearInterval(interval);
-  }, [code, username, hadRoomOnce]);
+    } else if (hadRoomOnce) {
+      // ルームが存在していたのに消えた場合（ホストが退出）
+      setRoomDeleted(true);
+    }
+  }, [code, username, hadRoomOnce, setCurrentMultiRoom]);
+  usePolling(fetchRoom, 1000);
   
-  // ステータス更新（マルチ中）
-  useEffect(() => {
+  // ステータス更新（マルチ中、30秒ごと）
+  const updateStatus = useCallback(async () => {
     if (!username || !room) return;
     updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId });
-    const interval = setInterval(() => {
-      updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId });
-    }, 30000); // 30秒ごと
-    return () => clearInterval(interval);
   }, [username, room, code]);
+  usePolling(updateStatus, 30000, !!username && !!room);
   
-  // フレンドリスト取得（招待モーダル表示中のみ）
-  useEffect(() => {
-    if (!username || !showInviteModal) return;
-    
-    const loadFriends = async () => {
-      try {
-        const f = await getFriends(username);
-        setFriends(f);
-        if (f.length > 0) {
-          const statuses = await getMultipleFriendFullStatus(f);
-          setFriendStatuses(statuses);
-        }
-      } catch (e) {
-        console.error('Failed to load friends:', e);
+  // フレンドリスト取得（招待モーダル表示中のみ、5秒ごと）
+  const loadFriends = useCallback(async () => {
+    if (!username) return;
+    try {
+      const f = await getFriends(username);
+      setFriends(f);
+      if (f.length > 0) {
+        const statuses = await getMultipleFriendFullStatus(f);
+        setFriendStatuses(statuses);
       }
-    };
-    loadFriends();
-    const interval = setInterval(loadFriends, 5000);
-    return () => clearInterval(interval);
-  }, [username, showInviteModal]);
+    } catch (e) {
+      console.error('Failed to load friends:', e);
+    }
+  }, [username]);
+  usePolling(loadFriends, 5000, !!username && showInviteModal);
   
   // フレンド招待
   const handleInviteFriend = async (friendName: string) => {
