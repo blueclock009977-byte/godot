@@ -32,6 +32,7 @@ import { formatDuration } from '@/lib/utils';
 import { getLogClassName } from '@/lib/utils';
 import { Character, Party, BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -455,15 +456,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             ref={logContainerRef}
             className="bg-slate-800 rounded-lg p-4 h-96 overflow-y-auto border border-slate-700"
           >
-            {displayedLogs.length === 0 ? (
-              <div className="text-slate-500 text-sm animate-pulse">探索中...</div>
-            ) : (
-              <div className="space-y-1 text-sm font-mono">
-                {displayedLogs.map((log, i) => (
-                  <div key={i} className={getLogClassName(log)}>{log}</div>
-                ))}
-              </div>
-            )}
+            <BattleLogDisplay logs={displayedLogs} />
           </div>
         </div>
       </main>

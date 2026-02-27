@@ -7,9 +7,10 @@ import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
-import { getLogClassName, formatDuration } from '@/lib/utils';
+import { formatDuration } from '@/lib/utils';
 import { BattleResult } from '@/lib/types';
 import { PageLayout } from '@/components/PageLayout';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
@@ -272,10 +273,8 @@ export default function AdventurePage() {
               <summary className="cursor-pointer text-slate-400 hover:text-slate-300">
                 📜 戦闘ログを表示
               </summary>
-              <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
-                {displayedLogs.map((log, i) => (
-                  <div key={i} className={getLogClassName(log)}>{log}</div>
-                ))}
+              <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto">
+                <BattleLogDisplay logs={displayedLogs} />
               </div>
             </details>
           </div>
@@ -287,17 +286,7 @@ export default function AdventurePage() {
               className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-96 overflow-y-auto"
             >
               <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
-              {displayedLogs.length === 0 ? (
-                <div className="text-slate-500 text-sm animate-pulse">
-                  探索中...
-                </div>
-              ) : (
-                <div className="space-y-1 text-sm font-mono">
-                  {displayedLogs.map((log, i) => (
-                    <div key={i} className={getLogClassName(log)}>{log}</div>
-                  ))}
-                </div>
-              )}
+              <BattleLogDisplay logs={displayedLogs} />
             </div>
             
             {/* 中断ボタン */}
