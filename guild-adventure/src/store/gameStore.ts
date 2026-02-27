@@ -76,6 +76,46 @@ function calculateStats(
 }
 
 // ============================================
+// マスタリー解放ヘルパー（共通ロジック）
+// ============================================
+
+type MasteryType = 'race' | 'job';
+
+async function unlockMastery(
+  get: () => GameStore,
+  set: (fn: (state: GameStore) => Partial<GameStore>) => void,
+  characterId: string,
+  masteryType: MasteryType
+): Promise<boolean> {
+  const { characters, inventory } = get();
+  const char = characters.find(c => c.id === characterId);
+  
+  const masteryKey = masteryType === 'race' ? 'raceMastery' : 'jobMastery';
+  if (!char || char[masteryKey]) return false;
+  
+  // アイテムID: race→ticket_X, job→book_X
+  const itemPrefix = masteryType === 'race' ? 'ticket' : 'book';
+  const itemKey = masteryType === 'race' ? char.race : char.job;
+  const itemId = `${itemPrefix}_${itemKey}`;
+  
+  if ((inventory[itemId] || 0) < 5) return false;
+  
+  // アイテム5枚消費 + マスタリー解放
+  set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [itemId]: (state.inventory[itemId] || 0) - 5,
+    },
+    characters: state.characters.map(c =>
+      c.id === characterId ? { ...c, [masteryKey]: true } : c
+    ),
+  }));
+  
+  await get().syncToServer();
+  return true;
+}
+
+// ============================================
 // ストア定義
 // ============================================
 
@@ -355,50 +395,12 @@ export const useGameStore = create<GameStore>()(
       
       // 種族マスタリー解放（チケット5枚消費）
       unlockRaceMastery: async (characterId: string): Promise<boolean> => {
-        const { characters, inventory } = get();
-        const char = characters.find(c => c.id === characterId);
-        if (!char || char.raceMastery) return false;
-        
-        const ticketId = `ticket_${char.race}`;
-        if ((inventory[ticketId] || 0) < 5) return false;
-        
-        // チケット5枚消費
-        set((state) => ({
-          inventory: {
-            ...state.inventory,
-            [ticketId]: (state.inventory[ticketId] || 0) - 5,
-          },
-          characters: state.characters.map(c =>
-            c.id === characterId ? { ...c, raceMastery: true } : c
-          ),
-        }));
-        
-        await get().syncToServer();
-        return true;
+        return unlockMastery(get, set, characterId, 'race');
       },
       
       // 職業マスタリー解放（指南書5枚消費）
       unlockJobMastery: async (characterId: string): Promise<boolean> => {
-        const { characters, inventory } = get();
-        const char = characters.find(c => c.id === characterId);
-        if (!char || char.jobMastery) return false;
-        
-        const bookId = `book_${char.job}`;
-        if ((inventory[bookId] || 0) < 5) return false;
-        
-        // 指南書5枚消費
-        set((state) => ({
-          inventory: {
-            ...state.inventory,
-            [bookId]: (state.inventory[bookId] || 0) - 5,
-          },
-          characters: state.characters.map(c =>
-            c.id === characterId ? { ...c, jobMastery: true } : c
-          ),
-        }));
-        
-        await get().syncToServer();
-        return true;
+        return unlockMastery(get, set, characterId, 'job');
       },
       
       // キャラクター作成
