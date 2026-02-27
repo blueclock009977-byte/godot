@@ -299,18 +299,22 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
   unit.passiveEffects = collectPassiveEffects(unit);
   
   // Lv2/Lv4ステータスボーナス適用
-  for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
-    if (!bonusId) continue;
-    const bonus = getLvBonus(bonusId);
-    if (bonus?.statModifiers) {
-      const mods = bonus.statModifiers;
-      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
-      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
-      if (mods.atk) unit.stats.atk += mods.atk;
-      if (mods.def) unit.stats.def += mods.def;
-      if (mods.agi) unit.stats.agi += mods.agi;
-      if (mods.mag) unit.stats.mag += mods.mag;
+  try {
+    for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
+      if (!bonusId) continue;
+      const bonus = getLvBonus(bonusId);
+      if (bonus?.statModifiers) {
+        const mods = bonus.statModifiers;
+        if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
+        if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
+        if (mods.atk) unit.stats.atk += mods.atk;
+        if (mods.def) unit.stats.def += mods.def;
+        if (mods.agi) unit.stats.agi += mods.agi;
+        if (mods.mag) unit.stats.mag += mods.mag;
+      }
     }
+  } catch (e) {
+    console.error('[characterToUnit] getLvBonus error:', e);
   }
   
   // LvスキルのstatModifiers適用
