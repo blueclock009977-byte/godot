@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
@@ -178,13 +179,21 @@ export default function AdventurePage() {
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
         {/* ヘッダー */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">
-            {isComplete ? '🎉 探索完了！' : `🔥 ${dungeon.name}を探索中...`}
-          </h1>
-          <div className="text-sm text-slate-400 mt-1">
-            遭遇: {currentEncounter}/{dungeon.encounterCount}
+        <div className="mb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold">
+              {isComplete ? '🎉 探索完了！' : `🔥 ${dungeon.name}を探索中...`}
+            </h1>
+            <div className="text-sm text-slate-400 mt-1">
+              遭遇: {currentEncounter}/{dungeon.encounterCount}
+            </div>
           </div>
+          <Link 
+            href="/friends" 
+            className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
+          >
+            👥 フレンド
+          </Link>
         </div>
         
         {/* プログレスバー */}
