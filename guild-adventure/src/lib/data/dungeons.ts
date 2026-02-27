@@ -72,7 +72,7 @@ export const dungeons: Record<string, DungeonData> = {
     description: '灼熱の砂漠。分裂する敵が多い。連続攻撃が有効。',
     difficulty: 5,
     recommendedPlayers: 6,
-    durationSeconds: 7200, // 2時間
+    durationSeconds: 3600, // 1時間
     encounterCount: 7,
     monsters: [
       { monster: monstersByDungeon.desert.monsters[0], weight: 35 },
@@ -88,7 +88,7 @@ export const dungeons: Record<string, DungeonData> = {
     description: '煮えたぎる火山。再生する敵が多い。必殺攻撃が有効。',
     difficulty: 6,
     recommendedPlayers: 6,
-    durationSeconds: 7200, // 2時間
+    durationSeconds: 3600, // 1時間
     encounterCount: 10,
     monsters: [
       { monster: monstersByDungeon.volcano.monsters[0], weight: 35 },
@@ -104,7 +104,7 @@ export const dungeons: Record<string, DungeonData> = {
     description: '極寒の雪原。凍結攻撃に注意。状態異常耐性が重要。',
     difficulty: 7,
     recommendedPlayers: 6,
-    durationSeconds: 7200, // 2時間
+    durationSeconds: 3600, // 1時間
     encounterCount: 10,
     monsters: [
       { monster: monstersByDungeon.snowfield.monsters[0], weight: 35 },
@@ -120,7 +120,7 @@ export const dungeons: Record<string, DungeonData> = {
     description: '古代の神殿。全てのギミックが待ち受ける。最高難度。',
     difficulty: 8,
     recommendedPlayers: 6,
-    durationSeconds: 7200, // 2時間
+    durationSeconds: 3600, // 1時間
     encounterCount: 15,
     monsters: [
       { monster: monstersByDungeon.temple.monsters[0], weight: 35 },
