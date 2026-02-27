@@ -79,6 +79,7 @@ export interface UserData {
   characters: any[];
   party: any;
   inventory: Record<string, number>;
+  equipments?: Record<string, number>;
   history?: AdventureHistory[];
   currentAdventure?: {
     dungeon: string;

@@ -251,6 +251,7 @@ export interface Character {
   lv4Bonus?: string;       // Lv4で獲得したステータスボーナスID
   lv3Skill?: string;       // Lv3で獲得したスキルID
   lv5Skill?: string;       // Lv5で獲得したスキルID
+  equipmentId?: string;    // 装備中のアイテムID
 }
 
 // ============================================
@@ -318,6 +319,7 @@ export interface BattleUnit {
   jobMastery?: boolean;
   lv3Skill?: string;
   lv5Skill?: string;
+  equipmentId?: string;  // 装備中のアイテムID
   // モンスター用
   species?: SpeciesType;
   element?: ElementType;

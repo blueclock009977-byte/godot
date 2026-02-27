@@ -247,9 +247,11 @@ interface GameStore {
   currentMultiRoom: string | null; // マルチ冒険中のルームコード
   setCurrentMultiRoom: (code: string | null) => void;
   inventory: Record<string, number>;
+  equipments: Record<string, number>;  // 装備アイテムのインベントリ
   coins: number;
   history: AdventureHistory[];
   lastDroppedItem: string | null;
+  lastDroppedEquipment: string | null;  // 最後にドロップした装備
   _dataLoaded: boolean; // 初回データロード完了フラグ（persistしない）
   
   // マルチ編成保存（2人/3人マルチ用）
@@ -257,6 +259,12 @@ interface GameStore {
   lastMulti3Party: { charId: string; position: 'front' | 'back' }[] | null;
   saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => void;
   getLastMultiParty: (playerCount: 2 | 3) => { charId: string; position: 'front' | 'back' }[] | null;
+  
+  // 装備関連
+  addEquipment: (equipmentId: string) => void;
+  equipItem: (characterId: string, equipmentId: string) => Promise<void>;
+  unequipItem: (characterId: string) => Promise<void>;
+  getEquipmentCount: (equipmentId: string) => number;
   
   // 認証
   login: (username: string) => Promise<{ success: boolean; isNew: boolean; error?: string }>;
@@ -314,9 +322,11 @@ export const useGameStore = create<GameStore>()(
       currentAdventure: null,
       currentMultiRoom: null,
       inventory: {},
+      equipments: {},
       coins: 0,
       history: [],
       lastDroppedItem: null,
+      lastDroppedEquipment: null,
       _dataLoaded: false,
       lastMulti2Party: null,
       lastMulti3Party: null,
@@ -350,6 +360,7 @@ export const useGameStore = create<GameStore>()(
                 characters: userData.characters || [],
                 party: userData.party || { front: [], back: [] },
                 inventory: userData.inventory || {},
+                equipments: userData.equipments || {},
                 coins: userData.coins || 0,
                 history: userData.history || [],
                 isLoading: false,
@@ -416,6 +427,54 @@ export const useGameStore = create<GameStore>()(
         const { lastMulti2Party, lastMulti3Party } = get();
         return playerCount === 2 ? lastMulti2Party : lastMulti3Party;
       },
+      
+      // 装備アイテムを追加
+      addEquipment: (equipmentId: string) => {
+        set((state) => ({
+          equipments: {
+            ...state.equipments,
+            [equipmentId]: (state.equipments[equipmentId] || 0) + 1,
+          },
+          lastDroppedEquipment: equipmentId,
+        }));
+      },
+      
+      // 装備アイテムの所持数を取得
+      getEquipmentCount: (equipmentId: string) => {
+        return get().equipments[equipmentId] || 0;
+      },
+      
+      // キャラに装備を付ける
+      equipItem: async (characterId: string, equipmentId: string) => {
+        const { characters, equipments, username, syncToServer } = get();
+        
+        // 所持数チェック
+        if ((equipments[equipmentId] || 0) <= 0) return;
+        
+        // 既に装備中のキャラがいるかチェック（同じアイテムを複数人に付けない）
+        const equippedCount = characters.filter(c => c.equipmentId === equipmentId).length;
+        if (equippedCount >= equipments[equipmentId]) return;
+        
+        // キャラを更新
+        const newCharacters = characters.map(c => 
+          c.id === characterId ? { ...c, equipmentId } : c
+        );
+        
+        set({ characters: newCharacters });
+        await syncToServer();
+      },
+      
+      // 装備を外す
+      unequipItem: async (characterId: string) => {
+        const { characters, syncToServer } = get();
+        
+        const newCharacters = characters.map(c => 
+          c.id === characterId ? { ...c, equipmentId: undefined } : c
+        );
+        
+        set({ characters: newCharacters });
+        await syncToServer();
+      },
 
       // ログアウト
       logout: () => {
@@ -427,9 +486,11 @@ export const useGameStore = create<GameStore>()(
           characters: [],
           party: { front: [], back: [] },
           inventory: {},
+          equipments: {},
           coins: 0,
           currentAdventure: null,
           currentMultiRoom: null,
+          lastDroppedEquipment: null,
         });
       },
       
@@ -452,7 +513,8 @@ export const useGameStore = create<GameStore>()(
               characters: userData.characters || [],
               party: userData.party || { front: [], back: [] },
               inventory: userData.inventory || {},
-                coins: userData.coins || 0,
+              equipments: userData.equipments || {},
+              coins: userData.coins || 0,
               history: userData.history || [],
               isLoading: false,
             });
@@ -503,13 +565,14 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, coins } = get();
+        const { username, characters, party, inventory, equipments, coins } = get();
         if (!username) return;
         
         await saveUserData(username, {
           characters,
           party,
           inventory,
+          equipments,
           coins,
         });
       },

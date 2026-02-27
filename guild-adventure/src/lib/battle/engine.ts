@@ -28,6 +28,16 @@ function getLvBonusSafe(id: string): { statModifiers?: Record<string, number> } 
     return undefined;
   }
 }
+
+function getEquipmentSafe(id: string): { statModifiers?: Record<string, number>; effects?: { type: string; value: number }[] } | undefined {
+  try {
+    const { getEquipmentById } = require('../data/equipments');
+    return getEquipmentById(id);
+  } catch (e) {
+    console.error('[engine] getEquipment error:', e);
+    return undefined;
+  }
+}
 import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
@@ -160,6 +170,17 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
       }
     }
   }
+  
+  // 装備のeffects収集
+  if (unit.equipmentId) {
+    const equipment = getEquipmentSafe(unit.equipmentId);
+    if (equipment?.effects) {
+      for (const effect of equipment.effects) {
+        applyEffect(effects, effect.type, effect.value);
+      }
+    }
+  }
+  
   return effects;
 }
 
@@ -343,6 +364,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     jobMastery: char.jobMastery,
     lv3Skill: char.lv3Skill,
     lv5Skill: char.lv5Skill,
+    equipmentId: char.equipmentId,
     passiveEffects: getEmptyPassiveEffects(),
     attackStackCount: 0,
     autoReviveUsed: false,
@@ -377,6 +399,20 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     if (skill?.statModifiers) {
       const mods = skill.statModifiers;
       if (mods.hp) { unit.stats.hp += mods.hp; unit.stats.maxHp += mods.hp; }
+      if (mods.atk) unit.stats.atk += mods.atk;
+      if (mods.def) unit.stats.def += mods.def;
+      if (mods.agi) unit.stats.agi += mods.agi;
+      if (mods.mag) unit.stats.mag += mods.mag;
+    }
+  }
+  
+  // 装備のstatModifiers適用
+  if (char.equipmentId) {
+    const equipment = getEquipmentSafe(char.equipmentId);
+    if (equipment?.statModifiers) {
+      const mods = equipment.statModifiers;
+      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
+      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
       if (mods.atk) unit.stats.atk += mods.atk;
       if (mods.def) unit.stats.def += mods.def;
       if (mods.agi) unit.stats.agi += mods.agi;
