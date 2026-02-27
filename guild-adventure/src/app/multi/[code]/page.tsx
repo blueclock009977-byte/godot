@@ -429,6 +429,39 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             <Link href="/" className="inline-block bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold">
               ホームに戻る
             </Link>
+            
+            {/* 戦闘ログ */}
+            {room.battleResult.logs && room.battleResult.logs.length > 0 && (
+              <details className="mt-6 text-left">
+                <summary className="cursor-pointer text-slate-400 hover:text-slate-300">
+                  📜 戦闘ログを表示
+                </summary>
+                <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
+                  {room.battleResult.logs.map((logEntry: any, idx: number) => (
+                    <div key={idx}>
+                      {logEntry.message.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
+                        <div 
+                          key={`${idx}-${i}`}
+                          className={`${
+                            line.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-2' :
+                            line.includes('【遭遇') ? 'text-yellow-400 font-bold mt-2' :
+                            line.includes('勝利') ? 'text-green-400 font-bold' :
+                            line.includes('全滅') || line.includes('敗北') ? 'text-red-400 font-bold' :
+                            line.includes('倒した') ? 'text-green-300' :
+                            line.includes('ダメージ') ? 'text-orange-300' :
+                            line.includes('回復') ? 'text-blue-300' :
+                            line.includes('踏破') ? 'text-green-400 font-bold' :
+                            'text-slate-300'
+                          }`}
+                        >
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </main>

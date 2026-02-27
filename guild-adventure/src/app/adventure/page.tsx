@@ -215,75 +215,106 @@ export default function AdventurePage() {
           )}
         </div>
         
-        {/* 結果表示 */}
-        {isComplete && currentAdventure.result && (
-          <div className={`mb-6 p-4 rounded-lg border ${
-            currentAdventure.result.victory 
-              ? 'bg-green-900/50 border-green-700'
-              : 'bg-red-900/50 border-red-700'
-          }`}>
-            <div className="text-xl font-bold mb-2">
-              {currentAdventure.result.victory ? '🏆 勝利！' : '💀 敗北...'}
+        {/* 完了時の結果画面（マルチ風） */}
+        {isComplete && currentAdventure.result ? (
+          <div className="p-6 rounded-lg bg-slate-800 border border-slate-700 text-center mb-6">
+            <h2 className="text-3xl font-bold mb-4">
+              {currentAdventure.result.victory ? '🎉 勝利！' : '💀 敗北...'}
+            </h2>
+            <div className="text-slate-300 mb-4">
+              {currentAdventure.result.victory 
+                ? `${dungeon.name}を踏破！` 
+                : `${dungeon.name}で全滅...`}
             </div>
-            <div className="text-sm text-slate-300">
-              クリア: {currentAdventure.result.encountersCleared}/{currentAdventure.result.totalEncounters} 遭遇
-            </div>
+            {currentAdventure.result.droppedItemId && (
+              <div className="text-amber-400 text-lg mb-4">
+                💎 【ドロップ】{getItemById(currentAdventure.result.droppedItemId)?.name || currentAdventure.result.droppedItemId}
+              </div>
+            )}
+            {currentAdventure.result.victory && !currentAdventure.result.droppedItemId && (
+              <div className="text-slate-400 mb-4">ドロップなし...</div>
+            )}
+            <button
+              onClick={handleReturn}
+              className="bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold"
+            >
+              ホームに戻る
+            </button>
+            
+            {/* 戦闘ログ（折りたたみ） */}
+            <details className="mt-6 text-left">
+              <summary className="cursor-pointer text-slate-400 hover:text-slate-300">
+                📜 戦闘ログを表示
+              </summary>
+              <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
+                {displayedLogs.map((log, i) => (
+                  <div 
+                    key={i} 
+                    className={`${
+                      log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-2' :
+                      log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-2' :
+                      log.includes('勝利') ? 'text-green-400 font-bold' :
+                      log.includes('全滅') ? 'text-red-400 font-bold' :
+                      log.includes('倒した') ? 'text-green-300' :
+                      log.includes('ダメージ') ? 'text-orange-300' :
+                      log.includes('回復') ? 'text-blue-300' :
+                      'text-slate-300'
+                    }`}
+                  >
+                    {log}
+                  </div>
+                ))}
+              </div>
+            </details>
           </div>
-        )}
-        
-        {/* 戦闘ログ */}
-        <div 
-          ref={logContainerRef}
-          className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-96 overflow-y-auto"
-        >
-          <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
-          {displayedLogs.length === 0 ? (
-            <div className="text-slate-500 text-sm animate-pulse">
-              探索中...
-            </div>
-          ) : (
-            <div className="space-y-1 text-sm font-mono">
-              {displayedLogs.map((log, i) => (
-                <div 
-                  key={i} 
-                  className={`${
-                    log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
-                    log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
-                    log.includes('【味方】') ? 'text-cyan-400 text-xs font-bold mt-1' :
-                    log.includes('【敵】') ? 'text-rose-400 text-xs font-bold mt-1' :
-                    log.startsWith('  ') && log.includes('HP') ? 'text-slate-300 text-xs ml-2 bg-slate-700/30 px-2 py-0.5 rounded' :
-                    log.includes('勝利') ? 'text-green-400 font-bold' :
-                    log.includes('全滅') ? 'text-red-400 font-bold' :
-                    log.includes('倒した') ? 'text-green-300' :
-                    log.includes('ダメージ') ? 'text-orange-300' :
-                    log.includes('回復') ? 'text-blue-300' :
-                    log.includes('会心') ? 'text-yellow-300' :
-                    log.includes('--- ターン') ? 'text-slate-400 text-xs mt-3 border-t border-slate-600 pt-2' :
-                    'text-slate-300'
-                  }`}
-                >
-                  {log}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* ボタン */}
-        {isComplete ? (
-          <button
-            onClick={handleReturn}
-            className="w-full bg-amber-600 hover:bg-amber-500 transition-colors rounded-lg py-3 font-semibold"
-          >
-            ホームに戻る
-          </button>
         ) : (
-          <button
-            onClick={handleCancel}
-            className="w-full bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg py-3 font-semibold"
-          >
-            中断する
-          </button>
+          <>
+            {/* 探索中の戦闘ログ */}
+            <div 
+              ref={logContainerRef}
+              className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-96 overflow-y-auto"
+            >
+              <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
+              {displayedLogs.length === 0 ? (
+                <div className="text-slate-500 text-sm animate-pulse">
+                  探索中...
+                </div>
+              ) : (
+                <div className="space-y-1 text-sm font-mono">
+                  {displayedLogs.map((log, i) => (
+                    <div 
+                      key={i} 
+                      className={`${
+                        log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
+                        log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
+                        log.includes('【味方】') ? 'text-cyan-400 text-xs font-bold mt-1' :
+                        log.includes('【敵】') ? 'text-rose-400 text-xs font-bold mt-1' :
+                        log.startsWith('  ') && log.includes('HP') ? 'text-slate-300 text-xs ml-2 bg-slate-700/30 px-2 py-0.5 rounded' :
+                        log.includes('勝利') ? 'text-green-400 font-bold' :
+                        log.includes('全滅') ? 'text-red-400 font-bold' :
+                        log.includes('倒した') ? 'text-green-300' :
+                        log.includes('ダメージ') ? 'text-orange-300' :
+                        log.includes('回復') ? 'text-blue-300' :
+                        log.includes('会心') ? 'text-yellow-300' :
+                        log.includes('--- ターン') ? 'text-slate-400 text-xs mt-3 border-t border-slate-600 pt-2' :
+                        'text-slate-300'
+                      }`}
+                    >
+                      {log}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* 中断ボタン */}
+            <button
+              onClick={handleCancel}
+              className="w-full bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg py-3 font-semibold"
+            >
+              中断する
+            </button>
+          </>
         )}
       </div>
     </main>

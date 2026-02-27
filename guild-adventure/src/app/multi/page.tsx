@@ -17,7 +17,81 @@ import {
   RoomInvitation 
 } from '@/lib/firebase';
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
-import { DungeonType } from '@/lib/types';
+import { DungeonType, DungeonData } from '@/lib/types';
+import { getDropRate } from '@/lib/data/items';
+
+// 系統の日本語名
+const speciesNames: Record<string, string> = {
+  humanoid: '🧑 人型',
+  beast: '🐺 獣',
+  undead: '💀 不死',
+  demon: '😈 悪魔',
+  dragon: '🐉 竜',
+};
+
+// 属性の日本語名
+const elementNames: Record<string, string> = {
+  none: '無',
+  fire: '🔥 火',
+  water: '💧 水',
+  wind: '🌪️ 風',
+  earth: '🪨 地',
+};
+
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}秒`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}分`;
+  return `${Math.floor(seconds / 3600)}時間`;
+}
+
+// ダンジョン詳細モーダル
+function DungeonDetailModal({ 
+  dungeon, 
+  onClose 
+}: { 
+  dungeon: DungeonData; 
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div 
+        className="bg-slate-800 rounded-lg border border-slate-600 max-w-md w-full max-h-[80vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold">{dungeon.name}</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">×</button>
+        </div>
+        
+        <div className="p-4 space-y-4">
+          <div className="bg-slate-700 rounded-lg p-3">
+            <h3 className="text-sm text-slate-400 mb-2">基本情報</h3>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>難易度: {'★'.repeat(dungeon.difficulty)}</div>
+              <div>探索時間: {formatDuration(dungeon.durationSeconds)}</div>
+              <div>推奨人数: {dungeon.recommendedPlayers}人</div>
+              <div>遭遇回数: {dungeon.encounterCount}回</div>
+              <div className="col-span-2 text-amber-400">ドロップ率: {getDropRate(dungeon.id)}%</div>
+            </div>
+          </div>
+          
+          {dungeon.boss && (
+            <div className="bg-red-900/50 rounded-lg p-3 border border-red-700">
+              <h3 className="text-sm text-red-400 mb-2">🔴 ボス: {dungeon.boss.name}</h3>
+              <div className="text-sm">
+                <span>{speciesNames[dungeon.boss.species]}</span>
+                {dungeon.boss.element && dungeon.boss.element !== 'none' && (
+                  <span className="ml-2">{elementNames[dungeon.boss.element]}</span>
+                )}
+                <span className="ml-2">HP{dungeon.boss.stats.hp} ATK{dungeon.boss.stats.atk}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function MultiPage() {
   const router = useRouter();
@@ -28,6 +102,7 @@ export default function MultiPage() {
   const [maxPlayers, setMaxPlayers] = useState<2 | 3>(2);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
   
   // 招待関連
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
@@ -248,20 +323,30 @@ export default function MultiPage() {
               <h2 className="text-sm text-slate-400 mb-2">ダンジョン選択</h2>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {dungeonList.map((d) => (
-                  <button
+                  <div
                     key={d.id}
-                    onClick={() => setSelectedDungeon(d.id)}
-                    className={`w-full text-left p-3 rounded-lg border ${
+                    className={`flex items-center gap-2 p-3 rounded-lg border ${
                       selectedDungeon === d.id
                         ? 'bg-amber-600/30 border-amber-500'
-                        : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                        : 'bg-slate-700 border-slate-600'
                     }`}
                   >
-                    <div className="font-semibold">{d.name}</div>
-                    <div className="text-xs text-slate-400">
-                      難易度{'★'.repeat(d.difficulty)} | {d.recommendedPlayers}人推奨
-                    </div>
-                  </button>
+                    <button
+                      onClick={() => setSelectedDungeon(d.id)}
+                      className="flex-1 text-left"
+                    >
+                      <div className="font-semibold">{d.name}</div>
+                      <div className="text-xs text-slate-400">
+                        {'★'.repeat(d.difficulty)} | {formatDuration(d.durationSeconds)} | {d.recommendedPlayers}人推奨
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setDetailDungeon(d)}
+                      className="px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded text-xs"
+                    >
+                      詳細
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -384,6 +469,11 @@ export default function MultiPage() {
           </div>
         )}
       </div>
+      
+      {/* ダンジョン詳細モーダル */}
+      {detailDungeon && (
+        <DungeonDetailModal dungeon={detailDungeon} onClose={() => setDetailDungeon(null)} />
+      )}
     </main>
   );
 }
