@@ -130,6 +130,7 @@ interface GameStore {
   party: Party;
   currentAdventure: Adventure | null;
   currentMultiRoom: string | null; // マルチ冒険中のルームコード
+  setCurrentMultiRoom: (code: string | null) => void;
   inventory: Record<string, number>;
   history: AdventureHistory[];
   lastDroppedItem: string | null;
@@ -269,6 +270,10 @@ export const useGameStore = create<GameStore>()(
         }
       },
       
+      
+      // マルチルームコード設定
+      setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
+
       // ログアウト
       logout: () => {
         clearStoredUsername();

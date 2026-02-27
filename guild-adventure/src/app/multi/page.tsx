@@ -18,6 +18,7 @@ import {
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { getDropRate } from '@/lib/data/items';
+import { formatDuration } from '@/lib/utils';
 
 // 系統の日本語名
 const speciesNames: Record<string, string> = {
@@ -36,12 +37,6 @@ const elementNames: Record<string, string> = {
   wind: '🌪️ 風',
   earth: '🪨 地',
 };
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}秒`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}分`;
-  return `${Math.floor(seconds / 3600)}時間`;
-}
 
 // ダンジョン詳細モーダル
 function DungeonDetailModal({ 

@@ -34,7 +34,7 @@ import { Character, Party, BattleResult } from '@/lib/types';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, syncToServer, isLoading, autoLogin, addHistory } = useGameStore();
+  const { username, characters, addItem, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -73,6 +73,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       if (data) {
         setHadRoomOnce(true);
         setRoom(data);
+        setCurrentMultiRoom(code); // ホームからの自動リダイレクト用
         
         // 自分の選択状態を復元
         if (username && data.players && data.players[username]) {
@@ -378,7 +379,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         
         // success=false は既に処理済み（別端末やリロードで再実行された場合）
         if (!result.success) {
-          setDropClaimed(true);
+          setCurrentMultiRoom(null);
+        setDropClaimed(true);
           return;
         }
         
@@ -402,6 +404,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           players: Object.keys(room.players),
         });
         
+        setCurrentMultiRoom(null);
         setDropClaimed(true);
       };
       
@@ -418,6 +421,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     } else {
       await leaveRoom(code, username);
     }
+    setCurrentMultiRoom(null);
     router.push('/multi');
   };
   

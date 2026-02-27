@@ -3,6 +3,31 @@
 import { Stats } from './types';
 
 /**
+ * 秒数を日本語の時間表記に変換
+ * @param seconds 秒数
+ * @param detailed true: "1分30秒" / false: "1分" (概算表示)
+ */
+export function formatDuration(seconds: number, detailed: boolean = false): string {
+  if (seconds < 60) return `${seconds}秒`;
+  
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (!detailed) {
+    // 概算表示: "1分" or "1時間"
+    if (hours > 0) return `${hours}時間`;
+    return `${mins}分`;
+  }
+  
+  // 詳細表示: "1分30秒" or "1時間1分"
+  if (hours > 0) {
+    return mins > 0 ? `${hours}時間${mins}分` : `${hours}時間`;
+  }
+  return secs > 0 ? `${mins}分${secs}秒` : `${mins}分`;
+}
+
+/**
  * ステータスオブジェクトのシャローコピー
  */
 export function cloneStats(stats: Stats): Stats {

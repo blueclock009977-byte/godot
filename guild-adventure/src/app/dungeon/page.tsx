@@ -8,12 +8,7 @@ import { PageLayout } from '@/components/PageLayout';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { dungeonList, dungeons } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}秒`;
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}分`;
-  return `${Math.floor(seconds / 3600)}時間`;
-}
+import { formatDuration } from '@/lib/utils';
 
 function DifficultyStars({ level }: { level: number }) {
   const maxStars = 8;
