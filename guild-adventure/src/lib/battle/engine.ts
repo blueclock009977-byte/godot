@@ -189,6 +189,48 @@ function getSpeciesResistMultiplier(defenderEffects: PassiveEffects, attackerSpe
   return 1 - resist / 100;
 }
 
+/**
+ * 物理・魔法共通のダメージ係数を適用
+ * damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化
+ */
+function applyDamageModifiers(
+  damage: number,
+  attacker: ExtendedBattleUnit,
+  defender: ExtendedBattleUnit,
+  allyCount: number
+): number {
+  const atkEffects = attacker.passiveEffects;
+  const defEffects = defender.passiveEffects;
+
+  // damageBonus
+  damage *= percentBonus(atkEffects.damageBonus);
+  
+  // lowHpBonus (HP30%以下で発動)
+  if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
+    damage *= percentBonus(atkEffects.lowHpBonus);
+  }
+  
+  // allyCountBonus
+  if (atkEffects.allyCountBonus > 0) {
+    damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
+  }
+  
+  // 系統特攻
+  damage *= getSpeciesKillerMultiplier(atkEffects, defender.species);
+  
+  // 系統耐性
+  const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
+  damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
+  
+  // damageReduction
+  damage *= percentReduce(defEffects.damageReduction);
+  
+  // 劣化による被ダメ増加
+  damage *= percentBonus(defender.degradation);
+
+  return damage;
+}
+
 // ============================================
 // ユニット変換
 // ============================================
@@ -411,36 +453,13 @@ function calculatePhysicalDamage(
     // physicalBonus
     damage *= percentBonus(atkEffects.physicalBonus);
     
-    // damageBonus
-    damage *= percentBonus(atkEffects.damageBonus);
-    
-    // lowHpBonus (HP30%以下で発動)
-    if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
-      damage *= percentBonus(atkEffects.lowHpBonus);
-    }
-    
-    // allyCountBonus
-    if (atkEffects.allyCountBonus > 0) {
-      damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
-    }
-    
     // 隊列補正
     const attackerMod = POSITION_MODIFIERS[attacker.position as Position]?.damage || 1.0;
     const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
     damage = damage * attackerMod / defenderMod;
     
-    // 系統特攻
-    damage *= getSpeciesKillerMultiplier(atkEffects, defender.species);
-    
-    // 系統耐性
-    const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
-    damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
-    
-    // damageReduction
-    damage *= percentReduce(defEffects.damageReduction);
-    
-    // 劣化による被ダメ増加
-    damage *= percentBonus(defender.degradation);
+    // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）
+    damage = applyDamageModifiers(damage, attacker, defender, allyCount);
     
     // クリティカル判定
     let critRate = 10 + atkEffects.critBonus;
@@ -492,34 +511,11 @@ function calculateMagicDamage(
   // magicBonus
   damage *= percentBonus(atkEffects.magicBonus);
   
-  // damageBonus
-  damage *= percentBonus(atkEffects.damageBonus);
-  
-  // lowHpBonus
-  if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
-    damage *= percentBonus(atkEffects.lowHpBonus);
-  }
-  
-  // allyCountBonus
-  if (atkEffects.allyCountBonus > 0) {
-    damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
-  }
-  
   // 属性相性
   damage *= getElementMultiplier(skillElement, defender.element);
   
-  // 系統特攻
-  damage *= getSpeciesKillerMultiplier(atkEffects, defender.species);
-  
-  // 系統耐性
-  const attackerSpecies: SpeciesType = attacker.species || 'humanoid';
-  damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
-  
-  // damageReduction
-  damage *= percentReduce(defEffects.damageReduction);
-  
-  // 劣化による被ダメ増加
-  damage *= percentBonus(defender.degradation);
+  // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）
+  damage = applyDamageModifiers(damage, attacker, defender, allyCount);
   
   // 魔法は単発なので劣化1回分蓄積
   let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
