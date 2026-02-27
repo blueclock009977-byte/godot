@@ -182,25 +182,57 @@ export const elementNames: Record<string, string> = {
 };
 
 /**
+ * IDから省略表示名を取得する汎用ヘルパー
+ * @param id 検索するID
+ * @param mapping IDと省略名のマッピング
+ * @returns 省略名、またはIDの先頭1文字
+ */
+function getShortName(id: string, mapping: Record<string, string>): string {
+  return mapping[id] || id.charAt(0);
+}
+
+/** 種族の省略名マッピング */
+const RACE_SHORT_NAMES: Record<string, string> = {
+  human: '人',
+  elf: 'エ',
+  dwarf: 'ド',
+  halfling: 'ハ',
+  orc: 'オ',
+  lizardman: 'リ',
+  fairy: 'フ',
+  undead: 'ア',
+  goblin: 'ゴ',
+  dragonewt: '竜',
+  angel: '天',
+  demon: '悪',
+};
+
+/** 職業の省略名マッピング */
+const JOB_SHORT_NAMES: Record<string, string> = {
+  warrior: '戦',
+  mage: '魔',
+  priest: '司',
+  thief: '盗',
+  knight: '騎',
+  hunter: '狩',
+  ninja: '忍',
+  sage: '賢',
+  berserker: '狂',
+  paladin: '聖',
+  necromancer: '死',
+  monk: '拳',
+  ranger: '野',
+  samurai: '侍',
+  witch: '魔女',
+  bard: '詩',
+};
+
+/**
  * 種族IDから省略表示名（1文字）を取得
  * page.tsxでのキャラクター一覧表示に使用
  */
 export function getRaceShortName(raceId: string): string {
-  const shortNames: Record<string, string> = {
-    human: '人',
-    elf: 'エ',
-    dwarf: 'ド',
-    halfling: 'ハ',
-    orc: 'オ',
-    lizardman: 'リ',
-    fairy: 'フ',
-    undead: 'ア',
-    goblin: 'ゴ',
-    dragonewt: '竜',
-    angel: '天',
-    demon: '悪',
-  };
-  return shortNames[raceId] || raceId.charAt(0);
+  return getShortName(raceId, RACE_SHORT_NAMES);
 }
 
 /**
@@ -208,25 +240,7 @@ export function getRaceShortName(raceId: string): string {
  * page.tsxでのキャラクター一覧表示に使用
  */
 export function getJobShortName(jobId: string): string {
-  const shortNames: Record<string, string> = {
-    warrior: '戦',
-    mage: '魔',
-    priest: '司',
-    thief: '盗',
-    knight: '騎',
-    hunter: '狩',
-    ninja: '忍',
-    sage: '賢',
-    berserker: '狂',
-    paladin: '聖',
-    necromancer: '死',
-    monk: '拳',
-    ranger: '野',
-    samurai: '侍',
-    witch: '魔女',
-    bard: '詩',
-  };
-  return shortNames[jobId] || jobId.charAt(0);
+  return getShortName(jobId, JOB_SHORT_NAMES);
 }
 
 /**
