@@ -156,6 +156,7 @@ export interface JobData {
   masterySkill?: MasterySkill;  // マスタリースキル
 }
 
+
 export interface PassiveSkill {
   name: string;
   description: string;
