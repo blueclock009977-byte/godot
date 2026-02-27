@@ -386,14 +386,14 @@ export const jobLvBonuses: Record<string, LvStatBonus> = {
   },
   
   // 呪術師 - 魔法特化
-  cursecaster_lv2: {
-    id: 'cursecaster_lv2',
+  witch_lv2: {
+    id: 'witch_lv2',
     name: '呪いの習得',
     description: 'MAG+12, MP+5',
     statModifiers: { mag: 12, maxMp: 5 },
   },
-  cursecaster_lv4: {
-    id: 'cursecaster_lv4',
+  witch_lv4: {
+    id: 'witch_lv4',
     name: '禁断の知識',
     description: 'MAG+18, MP+8',
     statModifiers: { mag: 18, maxMp: 8 },
