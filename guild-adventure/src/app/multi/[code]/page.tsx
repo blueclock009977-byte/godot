@@ -243,6 +243,18 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     // ホストがバトル結果を計算
     const result = runBattle(party, latestRoom.dungeonId as any);
     
+    // 参加者情報をログの先頭に追加
+    const dungeonData = dungeons[latestRoom.dungeonId as keyof typeof dungeons];
+    let participantLog = `【冒険開始】${dungeonData?.name || latestRoom.dungeonId}\n👥 参加者:\n`;
+    Object.entries(latestRoom.players).forEach(([playerName, player]) => {
+      const chars = (player.characters || []).map((rc: RoomCharacter) => {
+        const pos = rc.position === 'front' ? '前' : '後';
+        return `${rc.character.name}(${pos})`;
+      }).join(', ');
+      participantLog += `  ${playerName}: ${chars}\n`;
+    });
+    result.logs.unshift({ message: participantLog, turn: 0, actions: [] });
+    
     // 勝利時は各プレイヤーのドロップを計算
     let playerDrops: Record<string, string | undefined> | undefined;
     if (result.victory) {
