@@ -13,6 +13,7 @@ import { jobs } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { getLvSkill } from '@/lib/data/lvSkills';
+import { getLvBonus } from '@/lib/data/lvStatBonuses';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -79,8 +80,11 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     const result = await levelUpCharacter(character.id);
     setIsLoading(false);
     if (result.success && result.skill) {
-      const skillName = result.skill ? getLvSkill(result.skill)?.name || result.skill : "";
+      const skillName = getLvSkill(result.skill)?.name || result.skill;
       alert(`レベル${result.newLevel}に上がりました！\nスキル「${skillName}」を習得！`);
+    } else if (result.success && result.bonus) {
+      const bonusData = getLvBonus(result.bonus);
+      alert(`レベル${result.newLevel}に上がりました！\n「${bonusData?.name}」獲得！\n${bonusData?.description}`);
     } else if (result.success) {
       alert(`レベル${result.newLevel}に上がりました！`);
     }
@@ -128,22 +132,52 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               <span className="text-green-400 font-semibold">MAX</span>
             )}
           </div>
-          {/* Lvスキル一覧 */}
+          {/* Lvボーナス一覧 */}
           <div className="mt-3 pt-3 border-t border-slate-600">
-            <h4 className="text-xs text-slate-400 mb-2">🪙 Lvスキル</h4>
+            <h4 className="text-xs text-slate-400 mb-2">🪙 レベルアップボーナス</h4>
             <div className="space-y-2 text-sm">
+              {/* Lv2ボーナス */}
+              <div>
+                <span className="text-slate-400">Lv2: </span>
+                {character.lv2Bonus ? (
+                  <span className="text-green-400">✓ {getLvBonus(character.lv2Bonus)?.name}</span>
+                ) : currentLevel >= 2 ? (
+                  <span className="text-amber-400">未取得</span>
+                ) : (
+                  <>
+                    <span className="text-slate-500">{getLvBonus(`${character.race}_lv2`)?.name}</span>
+                    <span className="text-slate-600"> or </span>
+                    <span className="text-slate-500">{getLvBonus(`${character.job}_lv2`)?.name}</span>
+                  </>
+                )}
+              </div>
               {/* Lv3スキル */}
               <div>
                 <span className="text-slate-400">Lv3: </span>
                 {character.lv3Skill ? (
                   <span className="text-green-400">✓ {getLvSkill(character.lv3Skill)?.name}</span>
                 ) : currentLevel >= 3 ? (
-                  <span className="text-amber-400">未選択</span>
+                  <span className="text-amber-400">未取得</span>
                 ) : (
                   <>
                     <span className="text-slate-500">{getLvSkill(`${character.race}_lv3`)?.name}</span>
                     <span className="text-slate-600"> or </span>
                     <span className="text-slate-500">{getLvSkill(`${character.job}_lv3`)?.name}</span>
+                  </>
+                )}
+              </div>
+              {/* Lv4ボーナス */}
+              <div>
+                <span className="text-slate-400">Lv4: </span>
+                {character.lv4Bonus ? (
+                  <span className="text-green-400">✓ {getLvBonus(character.lv4Bonus)?.name}</span>
+                ) : currentLevel >= 4 ? (
+                  <span className="text-amber-400">未取得</span>
+                ) : (
+                  <>
+                    <span className="text-slate-500">{getLvBonus(`${character.race}_lv4`)?.name}</span>
+                    <span className="text-slate-600"> or </span>
+                    <span className="text-slate-500">{getLvBonus(`${character.job}_lv4`)?.name}</span>
                   </>
                 )}
               </div>
@@ -153,7 +187,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                 {character.lv5Skill ? (
                   <span className="text-green-400">✓ {getLvSkill(character.lv5Skill)?.name}</span>
                 ) : currentLevel >= 5 ? (
-                  <span className="text-amber-400">未選択</span>
+                  <span className="text-amber-400">未取得</span>
                 ) : (
                   <>
                     <span className="text-slate-500">{getLvSkill(`${character.race}_lv5`)?.name}</span>

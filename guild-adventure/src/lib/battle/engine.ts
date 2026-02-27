@@ -18,6 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
+import { getLvBonus } from '../data/lvStatBonuses';
 import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
@@ -296,6 +297,21 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
+  
+  // Lv2/Lv4ステータスボーナス適用
+  for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
+    if (!bonusId) continue;
+    const bonus = getLvBonus(bonusId);
+    if (bonus?.statModifiers) {
+      const mods = bonus.statModifiers;
+      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
+      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
+      if (mods.atk) unit.stats.atk += mods.atk;
+      if (mods.def) unit.stats.def += mods.def;
+      if (mods.agi) unit.stats.agi += mods.agi;
+      if (mods.mag) unit.stats.mag += mods.mag;
+    }
+  }
   
   // LvスキルのstatModifiers適用
   for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {

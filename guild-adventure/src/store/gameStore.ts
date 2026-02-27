@@ -287,7 +287,7 @@ interface GameStore {
   // マスタリー解放
   unlockRaceMastery: (characterId: string) => Promise<boolean>;
   unlockJobMastery: (characterId: string) => Promise<boolean>;
-  levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string }>;
+  levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }>;
   
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
@@ -538,7 +538,7 @@ export const useGameStore = create<GameStore>()(
       
       
       // キャラクターレベルアップ
-      levelUpCharacter: async (characterId: string): Promise<{ success: boolean; newLevel?: number; skill?: string }> => {
+      levelUpCharacter: async (characterId: string): Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }> => {
         const { characters, coins } = get();
         const character = characters.find(c => c.id === characterId);
         if (!character) return { success: false };
@@ -552,6 +552,15 @@ export const useGameStore = create<GameStore>()(
         
         const newLevel = currentLevel + 1;
         let skill: string | undefined;
+        let bonus: string | undefined;
+        
+        // Lv2, Lv4でステータスボーナス抽選
+        if (newLevel === 2 || newLevel === 4) {
+          const isRaceBonus = Math.random() < 0.5;
+          bonus = isRaceBonus 
+            ? `${character.race}_lv${newLevel}` 
+            : `${character.job}_lv${newLevel}`;
+        }
         
         // Lv3, Lv5でスキル抽選
         if (newLevel === 3 || newLevel === 5) {
@@ -565,13 +574,15 @@ export const useGameStore = create<GameStore>()(
         // コイン消費
         set((state) => ({ coins: state.coins - cost }));
         
-        // キャラクター更新
+        // キャラクター更新（ボーナスはIDを保存、実際のステータス計算はバトル時に行う）
         set((state) => ({
           characters: state.characters.map(c => {
             if (c.id !== characterId) return c;
             return {
               ...c,
               level: newLevel,
+              ...(newLevel === 2 ? { lv2Bonus: bonus } : {}),
+              ...(newLevel === 4 ? { lv4Bonus: bonus } : {}),
               ...(newLevel === 3 ? { lv3Skill: skill } : {}),
               ...(newLevel === 5 ? { lv5Skill: skill } : {}),
             };
@@ -579,7 +590,7 @@ export const useGameStore = create<GameStore>()(
         }));
         
         await get().syncToServer();
-        return { success: true, newLevel, skill };
+        return { success: true, newLevel, skill, bonus };
       },
       // キャラクター作成
       createCharacter: async (name, race, job, trait, environment) => {

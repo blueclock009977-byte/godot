@@ -228,6 +228,8 @@ export interface Character {
   raceMastery?: boolean;  // 種族マスタリー解放済み
   jobMastery?: boolean;   // 職業マスタリー解放済み
   level?: number;          // キャラレベル（1-5）
+  lv2Bonus?: string;       // Lv2で獲得したステータスボーナスID
+  lv4Bonus?: string;       // Lv4で獲得したステータスボーナスID
   lv3Skill?: string;       // Lv3で獲得したスキルID
   lv5Skill?: string;       // Lv5で獲得したスキルID
 }

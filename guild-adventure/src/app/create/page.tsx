@@ -14,6 +14,7 @@ import { traits, traitList } from '@/lib/data/traits';
 import { environments, environmentList } from '@/lib/data/environments';
 import { getRequiredItemForRace, getRequiredItemForJob, getItemById } from '@/lib/data/items';
 import { getLvSkill } from '@/lib/data/lvSkills';
+import { getLvBonus } from '@/lib/data/lvStatBonuses';
 
 export default function CreatePage() {
   const router = useRouter();
@@ -210,15 +211,19 @@ export default function CreatePage() {
               </>
             )}
             
-            {/* Lvスキル（コインで獲得） */}
-            <div className="text-amber-400 font-semibold">🪙 Lvスキル</div>
+            {/* Lvボーナス（コインで獲得） */}
+            <div className="text-amber-400 font-semibold">🪙 レベルアップボーナス</div>
             <div className="bg-slate-700 rounded p-2 space-y-1">
               {(() => {
+                const lv2 = getLvBonus(`${race}_lv2`);
                 const lv3 = getLvSkill(`${race}_lv3`);
+                const lv4 = getLvBonus(`${race}_lv4`);
                 const lv5 = getLvSkill(`${race}_lv5`);
                 return (
                   <>
+                    {lv2 && <div><span className="text-slate-400">Lv2:</span> <span className="text-cyan-300">{lv2.name}</span> - {lv2.description}</div>}
                     {lv3 && <div><span className="text-slate-400">Lv3:</span> <span className="text-amber-300">{lv3.name}</span> - {lv3.description}</div>}
+                    {lv4 && <div><span className="text-slate-400">Lv4:</span> <span className="text-cyan-300">{lv4.name}</span> - {lv4.description}</div>}
                     {lv5 && <div><span className="text-slate-400">Lv5:</span> <span className="text-amber-300">{lv5.name}</span> - {lv5.description}</div>}
                   </>
                 );
@@ -316,15 +321,19 @@ export default function CreatePage() {
               </>
             )}
             
-            {/* Lvスキル（コインで獲得） */}
-            <div className="text-amber-400 font-semibold">🪙 Lvスキル</div>
+            {/* Lvボーナス（コインで獲得） */}
+            <div className="text-amber-400 font-semibold">🪙 レベルアップボーナス</div>
             <div className="bg-slate-700 rounded p-2 space-y-1">
               {(() => {
+                const lv2 = getLvBonus(`${job}_lv2`);
                 const lv3 = getLvSkill(`${job}_lv3`);
+                const lv4 = getLvBonus(`${job}_lv4`);
                 const lv5 = getLvSkill(`${job}_lv5`);
                 return (
                   <>
+                    {lv2 && <div><span className="text-slate-400">Lv2:</span> <span className="text-cyan-300">{lv2.name}</span> - {lv2.description}</div>}
                     {lv3 && <div><span className="text-slate-400">Lv3:</span> <span className="text-amber-300">{lv3.name}</span> - {lv3.description}</div>}
+                    {lv4 && <div><span className="text-slate-400">Lv4:</span> <span className="text-cyan-300">{lv4.name}</span> - {lv4.description}</div>}
                     {lv5 && <div><span className="text-slate-400">Lv5:</span> <span className="text-amber-300">{lv5.name}</span> - {lv5.description}</div>}
                   </>
                 );
