@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
@@ -175,12 +176,12 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
   
   if (!character) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4">
+      <PageLayout maxWidth="lg">
         <div className="text-center">
           <p>キャラクターが見つかりません</p>
           <Link href="/" className="text-amber-400 hover:underline">ホームに戻る</Link>
         </div>
-      </main>
+      </PageLayout>
     );
   }
   
@@ -218,9 +219,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-lg">
-        <PageHeader title={character.name} />
+    <PageLayout maxWidth="lg">
+      <PageHeader title={character.name} />
         
         {/* 基本情報 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
@@ -387,7 +387,6 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
         >
           キャラクターを削除
         </button>
-      </div>
-    </main>
+    </PageLayout>
   );
 }

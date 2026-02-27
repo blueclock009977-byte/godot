@@ -378,38 +378,61 @@ export async function saveRoomBattleResult(
 }
 
 // マルチのドロップ受け取り
+// マルチのドロップ受け取り（ETag条件付き書き込みで競合防止）
 export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string }> {
   try {
+    // まずルーム情報を取得（ドロップアイテム用）
     const room = await getRoom(code);
     if (!room) {
       return { success: false };
     }
     
-    // playerClaimedがない場合は初期化（敗北時など）
-    const playerClaimed = room.playerClaimed || {};
+    // 1. ETag付きでGET（現在の値と一意識別子を取得）
+    const getRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/rooms/${code}/playerClaimed/${username}.json`,
+      { headers: { 'X-Firebase-ETag': 'true' } }
+    );
     
-    // 既に処理済み
-    if (playerClaimed[username]) {
+    if (!getRes.ok) return { success: false };
+    
+    const etag = getRes.headers.get('ETag');
+    const currentValue = await getRes.json();
+    
+    // 既に受け取り済み
+    if (currentValue === true) {
       return { success: false };
     }
     
-    // claimed を true に更新
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/playerClaimed/${username}.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(true),
-    });
+    // 2. ETag条件付きでPUT（他の端末が先に書き込んでたら412エラー）
+    const putRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/rooms/${code}/playerClaimed/${username}.json`,
+      {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'if-match': etag || ''
+        },
+        body: JSON.stringify(true),
+      }
+    );
     
-    if (res.ok) {
+    // 412 = 競合（他の端末が先に書き込んだ）
+    if (putRes.status === 412) {
+      return { success: false };
+    }
+    
+    if (putRes.ok) {
       // ドロップがあれば返す（勝利時のみ）
       const itemId = room.playerDrops?.[username];
       return { success: true, itemId };
     }
+    
     return { success: false };
   } catch (e) {
     console.error('Failed to claim multi drop:', e);
     return { success: false };
   }
+}
 }
 
 // ルームから退出
@@ -493,28 +516,49 @@ export async function startAdventureOnServer(
 }
 
 // ドロップ受け取り（claimed=falseの場合のみ成功）
+// ドロップ受け取り（ETag条件付き書き込みで競合防止）
 export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string }> {
   try {
-    const adventure = await getAdventureOnServer(username);
-    if (!adventure) {
-      return { success: false };
-    }
+    // 1. ETag付きでGET（現在の値と一意識別子を取得）
+    const getRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure/claimed.json`,
+      { headers: { 'X-Firebase-ETag': 'true' } }
+    );
+    
+    if (!getRes.ok) return { success: false };
+    
+    const etag = getRes.headers.get('ETag');
+    const currentValue = await getRes.json();
     
     // 既に受け取り済み
-    if (adventure.claimed) {
+    if (currentValue === true) {
       return { success: false };
     }
     
-    // claimed を true に更新
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure/claimed.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(true),
-    });
+    // 2. ETag条件付きでPUT（他の端末が先に書き込んでたら412エラー）
+    const putRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure/claimed.json`,
+      {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'if-match': etag || ''
+        },
+        body: JSON.stringify(true),
+      }
+    );
     
-    if (res.ok) {
-      return { success: true, itemId: adventure.droppedItemId };
+    // 412 = 競合（他の端末が先に書き込んだ）
+    if (putRes.status === 412) {
+      return { success: false };
     }
+    
+    if (putRes.ok) {
+      // ドロップアイテムを取得
+      const adventure = await getAdventureOnServer(username);
+      return { success: true, itemId: adventure?.droppedItemId };
+    }
+    
     return { success: false };
   } catch (e) {
     console.error('Failed to claim drop:', e);
