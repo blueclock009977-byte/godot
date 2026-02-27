@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { getItemById } from '@/lib/data/items';
 import { getLogClassName } from '@/lib/utils';
 import { BattleLog } from '@/lib/types';
@@ -11,6 +10,7 @@ interface BattleResultViewProps {
   myDrop: string | null;
   dropClaimed: boolean;
   logs: BattleLog[];
+  onGoHome: () => void;
 }
 
 export default function BattleResultView({
@@ -19,6 +19,7 @@ export default function BattleResultView({
   myDrop,
   dropClaimed,
   logs,
+  onGoHome,
 }: BattleResultViewProps) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -38,9 +39,12 @@ export default function BattleResultView({
           {victory && !myDrop && dropClaimed && (
             <div className="text-slate-400 mb-4">ドロップなし...</div>
           )}
-          <Link href="/" className="inline-block bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold">
+          <button
+            onClick={onGoHome}
+            className="inline-block bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold"
+          >
             ホームに戻る
-          </Link>
+          </button>
           
           {/* 戦闘ログ */}
           {logs && logs.length > 0 && (

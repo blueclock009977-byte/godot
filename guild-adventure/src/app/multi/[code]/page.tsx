@@ -422,6 +422,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   if (room.status === 'done' && room.battleResult) {
     return (
       <BattleResultView
+        onGoHome={() => { setCurrentMultiRoom(null); router.push("/"); }}
         victory={room.battleResult.victory}
         dungeonName={dungeonData?.name || '不明なダンジョン'}
         myDrop={myDrop}
