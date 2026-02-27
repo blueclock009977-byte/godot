@@ -118,7 +118,7 @@ function LoginScreen() {
 
 function GameScreen() {
   const router = useRouter();
-  const { characters, party, currentAdventure, username, logout, inventory } = useGameStore();
+  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory } = useGameStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
@@ -165,6 +165,13 @@ function GameScreen() {
       router.push('/adventure');
     }
   }, [currentAdventure, router]);
+  
+  // マルチ冒険中なら自動でルームに遷移
+  useEffect(() => {
+    if (currentMultiRoom) {
+      router.push(`/multi/${currentMultiRoom}`);
+    }
+  }, [currentMultiRoom, router]);
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const totalNotifications = invitations.length + friendRequests.length;

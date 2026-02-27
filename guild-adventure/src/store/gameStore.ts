@@ -34,6 +34,8 @@ import {
   getMultiAdventure,
   claimMultiAdventure,
   clearMultiAdventure,
+  getUserStatus,
+  getRoom,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
@@ -87,6 +89,7 @@ interface GameStore {
   characters: Character[];
   party: Party;
   currentAdventure: Adventure | null;
+  currentMultiRoom: string | null; // マルチ冒険中のルームコード
   inventory: Record<string, number>;
   history: AdventureHistory[];
   lastDroppedItem: string | null;
@@ -144,6 +147,7 @@ export const useGameStore = create<GameStore>()(
       characters: [],
       party: { front: [], back: [] },
       currentAdventure: null,
+      currentMultiRoom: null,
       inventory: {},
       history: [],
       lastDroppedItem: null,
@@ -183,6 +187,19 @@ export const useGameStore = create<GameStore>()(
                 _dataLoaded: true,
               });
               setStoredUsername(username);
+              
+              // 既存の探索を復元
+              await get().restoreAdventure();
+              
+              // マルチ冒険中かチェック
+              const status = await getUserStatus(username);
+              if (status?.activity === 'multi' && status?.roomCode) {
+                const room = await getRoom(status.roomCode);
+                if (room && (room.status === 'battle' || room.status === 'waiting')) {
+                  set({ currentMultiRoom: status.roomCode });
+                }
+              }
+              
               return { success: true, isNew: false };
             }
           } else {
@@ -223,6 +240,7 @@ export const useGameStore = create<GameStore>()(
           party: { front: [], back: [] },
           inventory: {},
           currentAdventure: null,
+          currentMultiRoom: null,
         });
       },
       
@@ -250,6 +268,16 @@ export const useGameStore = create<GameStore>()(
             });
             // 既存の探索を復元
             await get().restoreAdventure();
+            
+            // マルチ冒険中かチェック
+            const status = await getUserStatus(storedUsername);
+            if (status?.activity === 'multi' && status?.roomCode) {
+              const room = await getRoom(status.roomCode);
+              if (room && (room.status === 'battle' || room.status === 'waiting')) {
+                set({ currentMultiRoom: status.roomCode });
+              }
+            }
+            
             set({ _dataLoaded: true });
             return true;
           }
