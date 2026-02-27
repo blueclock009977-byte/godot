@@ -105,6 +105,20 @@ export function getStatusDisplay(fullStatus: FriendFullStatus | undefined): Stat
     case 'lobby':
       return { text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' };
     case 'multi':
+      // status.dungeonIdがあれば詳細表示
+      if (status.dungeonId) {
+        const dungeonName = getDungeonName(status.dungeonId);
+        if (status.startTime) {
+          const remaining = calculateRemainingMinutes(status.startTime, status.dungeonId);
+          return {
+            text: 'マルチ中',
+            color: 'text-purple-400',
+            emoji: '👥',
+            detail: `${dungeonName} (残り${remaining}分)`,
+          };
+        }
+        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥', detail: dungeonName };
+      }
       return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥', detail: '' };
     case 'solo':
       // status.dungeonIdとstartTimeがあれば詳細表示

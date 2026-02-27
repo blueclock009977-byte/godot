@@ -97,7 +97,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   // ステータス更新（マルチ中、30秒ごと）
   const updateStatus = useCallback(async () => {
     if (!username || !room) return;
-    updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId });
+    updateUserStatus(username, 'multi', { roomCode: code, dungeonId: room.dungeonId, startTime: room.startTime });
   }, [username, room, code]);
   usePolling(updateStatus, 30000, !!username && !!room);
   
