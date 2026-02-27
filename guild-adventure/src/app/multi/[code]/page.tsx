@@ -32,6 +32,7 @@ import { formatDuration } from '@/lib/utils';
 import { getLogClassName } from '@/lib/utils';
 import { Character, Party, BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
+import BattleResultView from '@/components/multi/BattleResultView';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
@@ -466,47 +467,13 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   // 結果画面
   if (room.status === 'done' && room.battleResult) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-        <div className="container mx-auto px-4 py-8 max-w-md">
-          <div className="p-6 rounded-lg bg-slate-800 border border-slate-700 text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              {room.battleResult.victory ? '🎉 勝利！' : '💀 敗北...'}
-            </h2>
-            <div className="text-slate-300 mb-4">
-              {room.battleResult.victory ? `${dungeonData?.name}を踏破！` : `${dungeonData?.name}で全滅...`}
-            </div>
-            {myDrop && (
-              <div className="text-amber-400 text-lg mb-4">
-                💎 【あなたのドロップ】{getItemById(myDrop)?.name || myDrop}
-              </div>
-            )}
-            {room.battleResult.victory && !myDrop && dropClaimed && (
-              <div className="text-slate-400 mb-4">ドロップなし...</div>
-            )}
-            <Link href="/" className="inline-block bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold">
-              ホームに戻る
-            </Link>
-            
-            {/* 戦闘ログ */}
-            {room.battleResult.logs && room.battleResult.logs.length > 0 && (
-              <details className="mt-6 text-left">
-                <summary className="cursor-pointer text-slate-400 hover:text-slate-300">
-                  📜 戦闘ログを表示
-                </summary>
-                <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
-                  {room.battleResult.logs.map((logEntry: any, idx: number) => (
-                    <div key={idx}>
-                      {logEntry.message.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
-                        <div key={`${idx}-${i}`} className={getLogClassName(line)}>{line}</div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
-          </div>
-        </div>
-      </main>
+      <BattleResultView
+        victory={room.battleResult.victory}
+        dungeonName={dungeonData?.name || '不明なダンジョン'}
+        myDrop={myDrop}
+        dropClaimed={dropClaimed}
+        logs={room.battleResult.logs || []}
+      />
     );
   }
   
