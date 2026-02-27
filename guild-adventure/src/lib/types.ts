@@ -349,7 +349,8 @@ export interface BattleResult {
   logs: BattleLog[];
   encountersCleared: number;
   totalEncounters: number;
-  droppedItemId?: string; // ボス撃破時にドロップしたアイテムID
+  droppedItemId?: string;      // ボス撃破時にドロップしたアイテムID
+  droppedEquipmentId?: string; // 装備アイテムドロップID
 }
 
 // ============================================

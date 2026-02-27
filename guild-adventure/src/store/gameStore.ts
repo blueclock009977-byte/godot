@@ -781,13 +781,22 @@ export const useGameStore = create<GameStore>()(
         
         // ドロップ抽選（勝利時のみ）
         let droppedItemId: string | undefined;
+        let droppedEquipmentId: string | undefined;
         if (battleResult.victory) {
           const allChars = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
           droppedItemId = rollDrop(dungeon, allChars);
+          
+          // 装備ドロップ抽選（書とは別枠）
+          const { rollEquipmentDrop } = require('@/lib/data/equipments');
+          const droppedEquipment = rollEquipmentDrop(dungeonData.durationSeconds);
+          if (droppedEquipment) {
+            droppedEquipmentId = droppedEquipment.id;
+          }
         }
         
         // バトル結果にドロップを含める
         battleResult.droppedItemId = droppedItemId;
+        battleResult.droppedEquipmentId = droppedEquipmentId;
         
         // サーバーに探索開始を記録（バトル結果+ドロップ含む）
         const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemId);

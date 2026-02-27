@@ -14,7 +14,7 @@ import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addCoins, syncToServer, addHistory } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, syncToServer, addHistory } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
@@ -126,6 +126,7 @@ export default function AdventurePage() {
           // ドロップ受け取り（サーバーでclaimed=falseの場合のみ）
           const handleDrop = async () => {
             let droppedItemId: string | undefined;
+            let droppedEquipmentId: string | undefined;
             let alreadyProcessed = false;
             
             try {
@@ -144,6 +145,17 @@ export default function AdventurePage() {
               }
             } catch (e) {
               console.error('Failed to claim drop:', e);
+            }
+            
+            // 装備ドロップの処理（バトル結果から取得）
+            if (!alreadyProcessed && battleResult.droppedEquipmentId) {
+              droppedEquipmentId = battleResult.droppedEquipmentId;
+              const { getEquipmentById } = require('@/lib/data/equipments');
+              const equipmentData = getEquipmentById(droppedEquipmentId);
+              const rarityText = equipmentData?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】';
+              setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || droppedEquipmentId} を入手！`]);
+              addEquipment(droppedEquipmentId);
+              syncToServer();
             }
             
             // 既に処理済みならスキップ
@@ -181,7 +193,7 @@ export default function AdventurePage() {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [currentAdventure, battleResult, currentEncounter, completeAdventure, isComplete, username, addItem, syncToServer, addHistory]);
+  }, [currentAdventure, battleResult, currentEncounter, completeAdventure, isComplete, username, addItem, addEquipment, syncToServer, addHistory]);
   
   // ログが追加されたら自動スクロール
   useEffect(() => {
@@ -273,7 +285,16 @@ export default function AdventurePage() {
                 💎 【ドロップ】{getItemById(currentAdventure.result.droppedItemId)?.name || currentAdventure.result.droppedItemId}
               </div>
             )}
-            {currentAdventure.result.victory && !currentAdventure.result.droppedItemId && (
+            {currentAdventure.result.droppedEquipmentId && (() => {
+              const { getEquipmentById } = require('@/lib/data/equipments');
+              const eq = getEquipmentById(currentAdventure.result.droppedEquipmentId);
+              return (
+                <div className={`text-lg mb-4 ${eq?.rarity === 'rare' ? 'text-yellow-300' : 'text-green-400'}`}>
+                  {eq?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】'}{eq?.name || currentAdventure.result.droppedEquipmentId}
+                </div>
+              );
+            })()}
+            {currentAdventure.result.victory && !currentAdventure.result.droppedItemId && !currentAdventure.result.droppedEquipmentId && (
               <div className="text-slate-400 mb-4">ドロップなし...</div>
             )}
             <button
