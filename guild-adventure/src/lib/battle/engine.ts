@@ -275,6 +275,8 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     skills: allSkills,
     raceMastery: char.raceMastery,
     jobMastery: char.jobMastery,
+    lv3Skill: char.lv3Skill,
+    lv5Skill: char.lv5Skill,
     passiveEffects: getEmptyPassiveEffects(),
     attackStackCount: 0,
     autoReviveUsed: false,

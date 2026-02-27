@@ -2,6 +2,7 @@
 
 import { FriendFullStatus } from '@/lib/firebase';
 import { getStatusDisplay } from '@/lib/utils/status';
+import { Modal } from '../Modal';
 
 interface Player {
   username: string;
@@ -29,25 +30,9 @@ export default function InviteModal({
   onClose,
 }: InviteModalProps) {
   return (
-    <div 
-      className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" 
-      onClick={onClose}
-    >
-      <div 
-        className="bg-slate-800 rounded-lg p-6 max-w-sm w-full border border-slate-600" 
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">👥 フレンドを招待</h2>
-          <button 
-            onClick={onClose} 
-            className="text-slate-400 hover:text-white text-2xl"
-          >
-            ×
-          </button>
-        </div>
-        
-        <div className="bg-slate-700 rounded-lg p-3 mb-4 text-center">
+    <Modal title="👥 フレンドを招待" onClose={onClose} maxWidth="max-w-sm">
+      <div className="p-4 space-y-4">
+        <div className="bg-slate-700 rounded-lg p-3 text-center">
           <p className="text-sm text-slate-400">ルームコード</p>
           <p className="text-2xl font-bold tracking-widest">{code}</p>
         </div>
@@ -91,6 +76,6 @@ export default function InviteModal({
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }
