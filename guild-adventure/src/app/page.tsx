@@ -114,7 +114,7 @@ function LoginScreen() {
 
 function GameScreen() {
   const router = useRouter();
-  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory } = useGameStore();
+  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, coins } = useGameStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
@@ -161,6 +161,7 @@ function GameScreen() {
   }, [currentMultiRoom, router]);
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
+  const itemCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
   const totalNotifications = invitations.length + friendRequests.length;
   
   return (
@@ -172,6 +173,7 @@ function GameScreen() {
               ギルドアドベンチャー
             </h1>
             <p className="text-sm text-slate-400">ようこそ、{username} さん</p>
+            <p className="text-sm text-amber-400">🪙 {coins} コイン</p>
           </div>
           <button
             onClick={logout}
@@ -237,6 +239,18 @@ function GameScreen() {
             </div>
           </Link>
           
+          
+          <Link href="/items" className="block">
+            <div className="bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg p-4 border border-slate-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">📦 アイテム</h2>
+                  <p className="text-slate-400 text-sm">売却してコインを獲得</p>
+                </div>
+                <span className="text-amber-400">{itemCount}個</span>
+              </div>
+            </div>
+          </Link>
           {currentAdventure ? (
             <div className="bg-slate-700 rounded-lg p-4 border border-slate-600 opacity-50 cursor-not-allowed">
               <div className="flex items-center justify-between">

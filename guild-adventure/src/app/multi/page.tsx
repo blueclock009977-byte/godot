@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
+import { usePolling } from '@/hooks/usePolling';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { DungeonDetailModal } from '@/components/DungeonDetailModal';
@@ -40,24 +41,19 @@ export default function MultiPage() {
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friends, setFriends] = useState<string[]>([]);
   
-  // 招待を取得
-  useEffect(() => {
+  // 招待を取得（5秒ごとにポーリング）
+  const loadInvitations = useCallback(async () => {
     if (!username) return;
-    const loadInvitations = async () => {
-      try {
-        const invites = await getInvitations(username);
-        setInvitations(invites);
-      } catch (e) {
-        console.error('Failed to load invitations:', e);
-      }
-    };
-    loadInvitations();
-    // 5秒ごとにポーリング
-    const interval = setInterval(loadInvitations, 5000);
-    return () => clearInterval(interval);
+    try {
+      const invites = await getInvitations(username);
+      setInvitations(invites);
+    } catch (e) {
+      console.error('Failed to load invitations:', e);
+    }
   }, [username]);
+  usePolling(loadInvitations, 5000, !!username);
   
-  // フレンドリスト取得
+  // フレンドリスト取得（初回のみ）
   useEffect(() => {
     if (!username) return;
     const loadFriends = async () => {
@@ -71,23 +67,16 @@ export default function MultiPage() {
     loadFriends();
   }, [username]);
   
-  // 公開ルーム一覧取得
-  useEffect(() => {
-    if (mode !== 'join') return;
-    
-    const loadPublicRooms = async () => {
-      try {
-        const rooms = await getPublicRooms();
-        setPublicRooms(rooms);
-      } catch (e) {
-        console.error('Failed to load public rooms:', e);
-      }
-    };
-    loadPublicRooms();
-    // 3秒ごとに更新
-    const interval = setInterval(loadPublicRooms, 3000);
-    return () => clearInterval(interval);
-  }, [mode]);
+  // 公開ルーム一覧取得（3秒ごとにポーリング）
+  const loadPublicRooms = useCallback(async () => {
+    try {
+      const rooms = await getPublicRooms();
+      setPublicRooms(rooms);
+    } catch (e) {
+      console.error('Failed to load public rooms:', e);
+    }
+  }, []);
+  usePolling(loadPublicRooms, 3000, mode === 'join');
   const handleCreate = async () => {
     if (!username) return;
     setIsLoading(true);
