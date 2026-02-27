@@ -33,8 +33,8 @@ export default function AdventurePage() {
     
     const dungeon = dungeons[currentAdventure.dungeon];
     const party = currentAdventure.party;
-    const frontNames = party.front.filter(c => c).map(c => `${c!.name}(前)`).join(', ');
-    const backNames = party.back.filter(c => c).map(c => `${c!.name}(後)`).join(', ');
+    const frontNames = (party.front || []).filter(c => c).map(c => `${c!.name}(前)`).join(', ');
+    const backNames = (party.back || []).filter(c => c).map(c => `${c!.name}(後)`).join(', ');
     const partyList = [frontNames, backNames].filter(s => s).join(', ');
     
     const startLog = [
