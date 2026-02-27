@@ -104,11 +104,15 @@ export default function AdventurePage() {
           // ドロップ受け取り（サーバーでclaimed=falseの場合のみ）
           const handleDrop = async () => {
             let droppedItemId: string | undefined;
+            let alreadyProcessed = false;
             
             try {
-              if (username && battleResult.victory) {
+              if (username) {
                 const claimResult = await claimAdventureDrop(username);
-                if (claimResult.success && claimResult.itemId) {
+                if (!claimResult.success) {
+                  // 既に処理済み（リロードや別端末）
+                  alreadyProcessed = true;
+                } else if (claimResult.itemId) {
                   droppedItemId = claimResult.itemId;
                   const itemData = getItemById(claimResult.itemId);
                   setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
@@ -120,7 +124,13 @@ export default function AdventurePage() {
               console.error('Failed to claim drop:', e);
             }
             
-            // 履歴を追加（エラーでも必ず実行）
+            // 既に処理済みならスキップ
+            if (alreadyProcessed) {
+              completeAdventure({ ...battleResult });
+              return;
+            }
+            
+            // 履歴を追加（初回のみ）
             addHistory({
               type: 'solo',
               dungeonId: currentAdventure.dungeon,
@@ -129,7 +139,7 @@ export default function AdventurePage() {
               logs: battleResult.logs,
             });
             
-            // 完了処理（エラーでも必ず実行）
+            // 完了処理
             completeAdventure({ ...battleResult, droppedItemId });
           };
           
