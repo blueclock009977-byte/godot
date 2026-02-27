@@ -21,6 +21,25 @@ export default function AdventurePage() {
   
   // バトル結果はサーバーから取得済み（currentAdventure.result）
   const battleResult = currentAdventure?.result || null;
+  const startLogShownRef = useRef(false);
+  
+  // 冒険開始ログを表示
+  useEffect(() => {
+    if (!currentAdventure || startLogShownRef.current) return;
+    startLogShownRef.current = true;
+    
+    const dungeon = dungeons[currentAdventure.dungeon];
+    const party = currentAdventure.party;
+    const frontNames = party.front.filter(c => c).map(c => `${c!.name}(前)`).join(', ');
+    const backNames = party.back.filter(c => c).map(c => `${c!.name}(後)`).join(', ');
+    const partyList = [frontNames, backNames].filter(s => s).join(', ');
+    
+    const startLog = [
+      `【冒険開始】${dungeon.name}`,
+      `⚔️ パーティ: ${partyList}`,
+    ];
+    setDisplayedLogs(startLog);
+  }, [currentAdventure]);
   
   // ステータス更新（ソロ冒険中）
   useEffect(() => {

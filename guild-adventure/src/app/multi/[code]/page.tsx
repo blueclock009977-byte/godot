@@ -293,6 +293,13 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     
     // Firebaseからバトル結果を取得（ホストが計算したもの）
     battleResultRef.current = room.battleResult;
+    
+    // 冒険開始ログを即座に表示（turn: 0のログ）
+    if (room.battleResult.logs[0] && room.battleResult.logs[0].turn === 0) {
+      const startLog = room.battleResult.logs[0].message.split('\n').filter((l: string) => l.trim());
+      setDisplayedLogs(startLog);
+      setCurrentEncounter(1); // 次は1から表示
+    }
   }, [room?.status, room?.battleResult]);
   
   // 時間経過に応じてログを表示
