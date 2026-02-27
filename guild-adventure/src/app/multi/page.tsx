@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import { 
   createRoom, 
   joinRoom, 
@@ -205,9 +206,8 @@ export default function MultiPage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <PageHeader title="👥 マルチプレイ" />
+    <PageLayout>
+      <PageHeader title="👥 マルチプレイ" />
         
         {/* 招待通知 */}
         {invitations.length > 0 && (
@@ -461,12 +461,11 @@ export default function MultiPage() {
             </div>
           </div>
         )}
-      </div>
       
       {/* ダンジョン詳細モーダル */}
       {detailDungeon && (
         <DungeonDetailModal dungeon={detailDungeon} onClose={() => setDetailDungeon(null)} />
       )}
-    </main>
+    </PageLayout>
   );
 }
