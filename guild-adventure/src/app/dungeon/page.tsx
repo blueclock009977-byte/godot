@@ -6,19 +6,11 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { DungeonDetailModal } from '@/components/DungeonDetailModal';
+import { DifficultyStars } from '@/components/DifficultyStars';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { dungeonList } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
 import { formatDuration } from '@/lib/utils';
-
-function DifficultyStars({ level }: { level: number }) {
-  const maxStars = 8;
-  return (
-    <span className="text-amber-400 text-sm">
-      {'★'.repeat(level)}{'☆'.repeat(maxStars - level)}
-    </span>
-  );
-}
 
 export default function DungeonPage() {
   const router = useRouter();

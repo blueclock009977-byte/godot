@@ -3,15 +3,7 @@
 import { DungeonData } from '@/lib/types';
 import { getDropRate } from '@/lib/data/items';
 import { formatDuration, speciesNames, elementNames } from '@/lib/utils';
-
-function DifficultyStars({ level }: { level: number }) {
-  const maxStars = 8;
-  return (
-    <span className="text-amber-400 text-sm">
-      {'★'.repeat(level)}{'☆'.repeat(maxStars - level)}
-    </span>
-  );
-}
+import { DifficultyStars } from './DifficultyStars';
 
 export function DungeonDetailModal({ 
   dungeon, 
