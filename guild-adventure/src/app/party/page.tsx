@@ -68,27 +68,20 @@ export default function PartyPage() {
   // 待機中キャラ
   const availableChars = characters.filter(c => !partyCharIds.includes(c.id));
   
-  // キャラをパーティに追加（ソロは4人まで）
+  // キャラをパーティに追加（ソロは合計4人まで）
   const MAX_PARTY_SIZE = 4;
   
   const handleAddToParty = (position: Position) => {
     if (!selectedChar) return;
     
-    // 4人制限チェック
+    // 合計4人制限チェック
     if (partyCount >= MAX_PARTY_SIZE) {
       alert('ソロは4人までです');
       return;
     }
     
-    // 前衛・後衛それぞれ2人まで
-    const arr = position === 'front' ? (party.front || []) : (party.back || []);
-    const currentCount = arr.filter(c => c !== null).length;
-    if (currentCount >= 2) {
-      alert(`${position === 'front' ? '前衛' : '後衛'}は2人までです`);
-      return;
-    }
-    
     // 空きスロットを探す
+    const arr = position === 'front' ? (party.front || []) : (party.back || []);
     const emptySlot = arr.findIndex(c => c === null);
     
     if (emptySlot !== -1) {
@@ -119,7 +112,7 @@ export default function PartyPage() {
         
         {/* 説明 */}
         <div className="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs text-slate-400">
-          <p>ソロ: <span className="text-amber-400">4人まで</span>（前衛2 + 後衛2）</p>
+          <p>ソロ: <span className="text-amber-400">合計4人まで</span>（前衛のみ・後衛のみもOK）</p>
           <p>前衛: 火力+20%, 被ダメ+20% ／ 後衛: 火力-20%, 被ダメ-20%</p>
         </div>
         
