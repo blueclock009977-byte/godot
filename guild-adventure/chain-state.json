@@ -16,8 +16,8 @@
     "1cronで1タスクのみ",
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
-  "currentPhase": 2,
-  "phaseAttempt": 10,
+  "currentPhase": 3,
+  "phaseAttempt": 11,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -82,10 +82,18 @@
       "action": "refactor",
       "file": "src/hooks/useBattleProgress.ts",
       "detail": "バトルログ表示関連のuseEffect2つをカスタムフックに抽出。multi/[code]/page.tsx: 401行→334行（-67行）"
+    },
+    {
+      "time": "2026-02-27T05:31:00Z",
+      "action": "review",
+      "file": "全体",
+      "detail": "リファクタリング完了レビュー。ソロ303行/マルチ334行/gameStore744行（ヘルパー抽出済み）。ソロとマルチはログ表示の仕組みが異なり（ソロはroomStatusなし、ドロップ処理あり）、useBattleProgressの共通化は見送り"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx が334行まで削減済み"
+    "multi/[code]/page.tsx: 791行 → 334行（-457行, 58%削減）",
+    "ソロ側: 303行、これ以上の共通化はソロ/マルチの仕様差が大きく難しい",
+    "gameStore: 744行（すでにヘルパー関数に分離済み）"
   ],
   "completed": [
     "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
@@ -97,6 +105,8 @@
     "store/gameStore.ts: restoreAdventureをヘルパー関数に分離",
     "components/multi/WaitingRoomView.tsx: 待機中UIを抽出",
     "lib/multi/battleStarter.ts: startMultiBattleヘルパーを新規作成",
-    "hooks/useBattleProgress.ts: バトルログ表示のuseEffectをカスタムフックに抽出"
-  ]
+    "hooks/useBattleProgress.ts: バトルログ表示のuseEffectをカスタムフックに抽出",
+    "全体レビュー: リファクタリング完了"
+  ],
+  "status": "completed"
 }
