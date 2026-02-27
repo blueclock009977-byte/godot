@@ -12,7 +12,6 @@ import {
   leaveRoom,
   deleteRoom,
   claimMultiDrop,
-  saveMultiAdventureForUser,
   clearMultiAdventure,
   updateUserStatus,
   getFriends,
@@ -23,13 +22,12 @@ import {
   FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
-import { runBattle, rollDrop } from '@/lib/battle/engine';
-import { getItemById } from '@/lib/data/items';
-import { Character, Party, BattleResult } from '@/lib/types';
+import { BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
 import BattleResultView from '@/components/multi/BattleResultView';
 import BattleProgressView from '@/components/multi/BattleProgressView';
 import WaitingRoomView from '@/components/multi/WaitingRoomView';
+import { startMultiBattle } from '@/lib/multi/battleStarter';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -179,75 +177,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     if (!room || !username || isStarting) return;
     setIsStarting(true);
     
-    // 最新のroomデータを再取得（ポーリングのタイミングで他プレイヤーのキャラ情報が古い可能性がある）
-    const latestRoom = await getRoom(code);
-    if (!latestRoom || latestRoom.status === 'battle' || latestRoom.status === 'done') {
-      console.error('Room already in battle or done');
-      return;
-    }
-    
-    // 全プレイヤーのキャラを集めてパーティを作成
-    const frontChars: Character[] = [];
-    const backChars: Character[] = [];
-    
-    Object.values(latestRoom.players).forEach(p => {
-      (p.characters || []).forEach((rc: RoomCharacter) => {
-        if (rc.position === 'front') {
-          frontChars.push(rc.character);
-        } else {
-          backChars.push(rc.character);
-        }
-      });
-    });
-    
-    const party: Party = {
-      front: frontChars,
-      back: backChars,
-    };
-    
-    // ホストがバトル結果を計算
-    const result = runBattle(party, latestRoom.dungeonId as any);
-    
-    // 参加者情報を結果に追加（ログとは別に保存）
-    const dungeonData = dungeons[latestRoom.dungeonId as keyof typeof dungeons];
-    let participantLog = `【冒険開始】${dungeonData?.name || latestRoom.dungeonId}\n👥 参加者:\n`;
-    Object.entries(latestRoom.players).forEach(([playerName, player]) => {
-      const chars = (player.characters || []).map((rc: RoomCharacter) => {
-        const pos = rc.position === 'front' ? '前' : '後';
-        return `${rc.character.name}(${pos})`;
-      }).join(', ');
-      participantLog += `  ${playerName}: ${chars}\n`;
-    });
-    (result as any).startLog = participantLog;
-    
-    // 勝利時は各プレイヤーのドロップを計算
-    let playerDrops: Record<string, string | undefined> | undefined;
-    if (result.victory) {
-      playerDrops = {};
-      Object.entries(latestRoom.players).forEach(([playerName, player]) => {
-        // 各プレイヤーのキャラクターでドロップボーナス計算
-        const chars = (player.characters || []).map(rc => rc.character);
-        const drop = rollDrop(latestRoom.dungeonId as any, chars);
-        playerDrops![playerName] = drop;
-      });
-    }
-    
-    const startTime = Date.now();
-    // バトル結果+ドロップもFirebaseに保存（全員が同じ結果を見る）
-    await updateRoomStatus(code, 'battle', startTime, result, playerDrops);
-    
-    // 各プレイヤーにマルチ冒険結果を保存（ログイン時に受け取れるように）
-    const playerNames = Object.keys(latestRoom.players);
-    for (const playerName of playerNames) {
-      await saveMultiAdventureForUser(
-        playerName,
-        code,
-        latestRoom.dungeonId,
-        result.victory,
-        playerDrops?.[playerName],
-        result.logs,
-        playerNames
-      );
+    const result = await startMultiBattle(code);
+    if (!result.success) {
+      console.error(result.error);
     }
   };
   
