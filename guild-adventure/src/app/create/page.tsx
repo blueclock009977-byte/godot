@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { SkillDetail, PassiveDetail, formatEffect } from '@/components/SkillDisplay';
+import { StatsDisplay } from '@/components/StatsDisplay';
 import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
 import { races, raceList } from '@/lib/data/races';
 import { jobs, jobList } from '@/lib/data/jobs';
@@ -349,33 +350,7 @@ export default function CreatePage() {
         
         {/* ステータスプレビュー */}
         <div className="mb-6 bg-slate-800 rounded-lg p-4 border border-slate-700">
-          <h3 className="text-sm text-slate-400 mb-2">最終ステータス</h3>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div>
-              <div className="text-xs text-slate-400">HP</div>
-              <div className="text-lg font-bold text-red-400">{previewStats.maxHp}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-400">MP</div>
-              <div className="text-lg font-bold text-blue-300">{previewStats.maxMp}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-400">ATK</div>
-              <div className="text-lg font-bold text-orange-400">{previewStats.atk}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-400">DEF</div>
-              <div className="text-lg font-bold text-blue-400">{previewStats.def}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-400">AGI</div>
-              <div className="text-lg font-bold text-green-400">{previewStats.agi}</div>
-            </div>
-            <div>
-              <div className="text-xs text-slate-400">MAG</div>
-              <div className="text-lg font-bold text-purple-400">{previewStats.mag}</div>
-            </div>
-          </div>
+          <StatsDisplay stats={previewStats} title="最終ステータス" />
         </div>
         
         {/* 作成ボタン */}
