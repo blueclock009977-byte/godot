@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
+import { formatDateTime } from '@/lib/utils';
 import { AdventureHistory } from '@/lib/firebase';
 
 function HistoryCard({ 
@@ -18,8 +19,7 @@ function HistoryCard({
   isSelected: boolean;
 }) {
   const dungeon = dungeons[history.dungeonId as keyof typeof dungeons];
-  const date = new Date(history.completedAt);
-  const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+  const dateStr = formatDateTime(history.completedAt);
   
   return (
     <div

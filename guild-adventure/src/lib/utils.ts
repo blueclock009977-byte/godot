@@ -13,6 +13,21 @@ export function findById<T extends { id: string }>(items: T[], id: string): T | 
 }
 
 /**
+ * 日時を「M/D H:MM」形式にフォーマット
+ * @param timestamp Unix timestamp (ミリ秒) または Date
+ * @returns "2/27 14:05" のような文字列
+ * @example formatDateTime(Date.now()) => "2/27 14:05"
+ */
+export function formatDateTime(timestamp: number | Date): string {
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${month}/${day} ${hours}:${minutes}`;
+}
+
+/**
  * 秒数を日本語の時間表記に変換
  * @param seconds 秒数
  * @param detailed true: "1分30秒" / false: "1分" (概算表示)
