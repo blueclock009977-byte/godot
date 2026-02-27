@@ -11,14 +11,7 @@ import { jobs, jobList } from '@/lib/data/jobs';
 import { traits, traitList } from '@/lib/data/traits';
 import { environments, environmentList } from '@/lib/data/environments';
 import { getRequiredItemForRace, getRequiredItemForJob, getItemById } from '@/lib/data/items';
-
-// 属性の日本語名
-const elementNames: Record<string, string> = {
-  fire: '🔥火',
-  water: '💧水',
-  wind: '🌪️風',
-  earth: '🪨地',
-};
+import { elementNames } from '@/lib/utils';
 
 // パッシブ効果のフォーマット
 function formatEffect(effect: { type: string; value: number }): string {

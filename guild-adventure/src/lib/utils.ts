@@ -122,6 +122,28 @@ const HP_STATUS_CLASS = 'text-slate-300 text-xs ml-2 bg-slate-700/30 px-2 py-0.5
 const DEFAULT_LOG_CLASS = 'text-slate-300';
 
 /**
+ * モンスター種族の日本語表示名
+ */
+export const speciesNames: Record<string, string> = {
+  humanoid: '🧑 人型',
+  beast: '🐺 獣',
+  undead: '💀 不死',
+  demon: '😈 悪魔',
+  dragon: '🐉 竜',
+};
+
+/**
+ * 属性の日本語表示名
+ */
+export const elementNames: Record<string, string> = {
+  none: '無',
+  fire: '🔥 火',
+  water: '💧 水',
+  wind: '🌪️ 風',
+  earth: '🪨 地',
+};
+
+/**
  * バトルログ行にTailwindクラスを返す
  */
 export function getLogClassName(log: string): string {

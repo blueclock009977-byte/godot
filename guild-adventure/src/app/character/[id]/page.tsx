@@ -12,14 +12,7 @@ import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { useState } from 'react';
 import { SkillData, PassiveSkill } from '@/lib/types';
-
-// 属性の日本語名
-const elementNames: Record<string, string> = {
-  fire: '🔥火',
-  water: '💧水',
-  wind: '🌪️風',
-  earth: '🪨地',
-};
+import { elementNames } from '@/lib/utils';
 
 // スキルの詳細表示
 function SkillDetail({ skill, label }: { skill: SkillData; label: string }) {

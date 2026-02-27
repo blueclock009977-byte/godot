@@ -18,25 +18,7 @@ import {
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { getDropRate } from '@/lib/data/items';
-import { formatDuration } from '@/lib/utils';
-
-// 系統の日本語名
-const speciesNames: Record<string, string> = {
-  humanoid: '🧑 人型',
-  beast: '🐺 獣',
-  undead: '💀 不死',
-  demon: '😈 悪魔',
-  dragon: '🐉 竜',
-};
-
-// 属性の日本語名
-const elementNames: Record<string, string> = {
-  none: '無',
-  fire: '🔥 火',
-  water: '💧 水',
-  wind: '🌪️ 風',
-  earth: '🪨 地',
-};
+import { formatDuration, speciesNames, elementNames } from '@/lib/utils';
 
 // ダンジョン詳細モーダル
 function DungeonDetailModal({ 
