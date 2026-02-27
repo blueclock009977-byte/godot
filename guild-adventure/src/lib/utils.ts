@@ -88,6 +88,13 @@ export function getAliveUnits<T extends { stats: { hp: number } }>(units: T[]): 
 }
 
 /**
+ * 実際のMP消費を計算（MP軽減適用後、最低1）
+ */
+export function calculateActualMpCost(baseCost: number, mpReduction: number): number {
+  return Math.max(1, Math.floor(baseCost * percentReduce(mpReduction)));
+}
+
+/**
  * ログのスタイルルール定義
  */
 interface LogClassRule {

@@ -18,7 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits } from '../utils';
+import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost } from '../utils';
 
 // ============================================
 // パッシブ効果の集約
@@ -576,7 +576,7 @@ function decideAction(
     const usableSkills = unit.skills
       .map((skill, index) => ({ skill, index }))
       .filter(({ skill }) => {
-        const actualCost = Math.max(1, Math.floor(skill.mpCost * percentReduce(mpReduction)));
+        const actualCost = calculateActualMpCost(skill.mpCost, mpReduction);
         return unit.stats.mp >= actualCost;
       });
     
@@ -748,7 +748,7 @@ function processTurn(
     } else if (action.type === 'skill' && unit.skills && action.skillIndex !== undefined) {
       const skill = unit.skills[action.skillIndex];
       const mpReduction = unit.passiveEffects.mpReduction;
-      const actualCost = Math.max(1, Math.floor(skill.mpCost * percentReduce(mpReduction)));
+      const actualCost = calculateActualMpCost(skill.mpCost, mpReduction);
       unit.stats.mp = Math.max(0, unit.stats.mp - actualCost);
       
       // doublecast判定
