@@ -58,6 +58,18 @@ export default function FriendsPage() {
     return () => clearInterval(interval);
   }, [username]);
   
+  // ダンジョン名を取得するヘルパー
+  const getDungeonName = (dungeonId: string): string => {
+    return dungeons[dungeonId as keyof typeof dungeons]?.name || dungeonId;
+  };
+  
+  // 残り時間（分）を計算するヘルパー
+  const calculateRemainingMinutes = (startTime: number, dungeonId: string): number => {
+    const duration = dungeons[dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
+    const endTime = startTime + duration * 1000;
+    return Math.max(0, Math.ceil((endTime - Date.now()) / 60000));
+  };
+  
   // ステータス表示用のヘルパー関数
   const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
     if (!fullStatus) {
@@ -68,13 +80,11 @@ export default function FriendsPage() {
     
     // ソロ冒険中をチェック（Web閉じても表示）
     if (currentAdventure) {
-      const dungeonName = dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.name || currentAdventure.dungeon;
-      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
-      const now = Date.now();
+      const dungeonName = getDungeonName(currentAdventure.dungeon);
+      const remaining = calculateRemainingMinutes(currentAdventure.startTime, currentAdventure.dungeon);
       
-      if (now < endTime) {
+      if (remaining > 0) {
         // まだ冒険中
-        const remaining = Math.ceil((endTime - now) / 60000);
         return { 
           text: `ソロ冒険中`, 
           color: 'text-amber-400', 
@@ -94,14 +104,12 @@ export default function FriendsPage() {
     
     // マルチルームの状態をチェック（冒険中かどうか）
     if (multiRoom && status?.activity === 'multi') {
-      const dungeonName = dungeons[multiRoom.dungeonId as keyof typeof dungeons]?.name || multiRoom.dungeonId;
+      const dungeonName = getDungeonName(multiRoom.dungeonId);
       
       if (multiRoom.status === 'battle') {
         // マルチ冒険中
         const startTime = multiRoom.startTime || Date.now();
-        const duration = dungeons[multiRoom.dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
-        const endTime = startTime + duration * 1000;
-        const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 60000));
+        const remaining = calculateRemainingMinutes(startTime, multiRoom.dungeonId);
         return { 
           text: 'マルチ冒険中', 
           color: 'text-purple-400', 
@@ -122,7 +130,7 @@ export default function FriendsPage() {
     
     // マルチ結果待ちをチェック
     if (multiAdventure && !multiAdventure.claimed) {
-      const dungeonName = dungeons[multiAdventure.dungeonId as keyof typeof dungeons]?.name || multiAdventure.dungeonId;
+      const dungeonName = getDungeonName(multiAdventure.dungeonId);
       return { 
         text: 'マルチ結果待ち', 
         color: 'text-purple-400', 
