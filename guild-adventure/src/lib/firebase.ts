@@ -383,12 +383,15 @@ export async function saveRoomBattleResult(
 export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string }> {
   try {
     const room = await getRoom(code);
-    if (!room || !room.playerDrops || !room.playerClaimed) {
+    if (!room) {
       return { success: false };
     }
     
-    // 既に受け取り済み
-    if (room.playerClaimed[username]) {
+    // playerClaimedがない場合は初期化（敗北時など）
+    const playerClaimed = room.playerClaimed || {};
+    
+    // 既に処理済み
+    if (playerClaimed[username]) {
       return { success: false };
     }
     
@@ -400,7 +403,9 @@ export async function claimMultiDrop(code: string, username: string): Promise<{ 
     });
     
     if (res.ok) {
-      return { success: true, itemId: room.playerDrops[username] };
+      // ドロップがあれば返す（勝利時のみ）
+      const itemId = room.playerDrops?.[username];
+      return { success: true, itemId };
     }
     return { success: false };
   } catch (e) {

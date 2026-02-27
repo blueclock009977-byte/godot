@@ -359,19 +359,27 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
   useEffect(() => {
-    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimedRef.current && username) {
+    if (room?.status === 'done' && room.battleResult && !dropClaimedRef.current && username) {
       dropClaimedRef.current = true; // 即座にフラグを立てて二重実行防止
       
       const handleClaim = async () => {
         // サーバーからドロップ受け取り
+        // claimMultiDropは既に受け取り済みならsuccess=falseを返す（敗北時もフラグ更新）
         const result = await claimMultiDrop(code, username);
-        if (result.success && result.itemId) {
+        
+        // success=false は既に処理済み（別端末やリロードで再実行された場合）
+        if (!result.success) {
+          setDropClaimed(true);
+          return;
+        }
+        
+        if (result.itemId) {
           setMyDrop(result.itemId);
           addItem(result.itemId);
           syncToServer();
         }
         
-        // 履歴を追加
+        // 履歴を追加（初回のみ）
         addHistory({
           type: 'multi',
           dungeonId: room.dungeonId,
@@ -387,7 +395,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       
       handleClaim();
     }
-  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, username, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, syncToServer, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {
