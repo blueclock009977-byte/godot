@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { DungeonDetailModal } from '@/components/DungeonDetailModal';
 import { 
   createRoom, 
   joinRoom, 
@@ -18,56 +19,7 @@ import {
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { getDropRate } from '@/lib/data/items';
-import { formatDuration, speciesNames, elementNames } from '@/lib/utils';
-
-// ダンジョン詳細モーダル
-function DungeonDetailModal({ 
-  dungeon, 
-  onClose 
-}: { 
-  dungeon: DungeonData; 
-  onClose: () => void;
-}) {
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div 
-        className="bg-slate-800 rounded-lg border border-slate-600 max-w-md w-full max-h-[80vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
-          <h2 className="text-xl font-bold">{dungeon.name}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-white text-2xl">×</button>
-        </div>
-        
-        <div className="p-4 space-y-4">
-          <div className="bg-slate-700 rounded-lg p-3">
-            <h3 className="text-sm text-slate-400 mb-2">基本情報</h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>難易度: {'★'.repeat(dungeon.difficulty)}</div>
-              <div>探索時間: {formatDuration(dungeon.durationSeconds)}</div>
-              <div>推奨人数: {dungeon.recommendedPlayers}人</div>
-              <div>遭遇回数: {dungeon.encounterCount}回</div>
-              <div className="col-span-2 text-amber-400">ドロップ率: {getDropRate(dungeon.id)}%</div>
-            </div>
-          </div>
-          
-          {dungeon.boss && (
-            <div className="bg-red-900/50 rounded-lg p-3 border border-red-700">
-              <h3 className="text-sm text-red-400 mb-2">🔴 ボス: {dungeon.boss.name}</h3>
-              <div className="text-sm">
-                <span>{speciesNames[dungeon.boss.species]}</span>
-                {dungeon.boss.element && dungeon.boss.element !== 'none' && (
-                  <span className="ml-2">{elementNames[dungeon.boss.element]}</span>
-                )}
-                <span className="ml-2">HP{dungeon.boss.stats.hp} ATK{dungeon.boss.stats.atk}</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { formatDuration } from '@/lib/utils';
 
 export default function MultiPage() {
   const router = useRouter();
