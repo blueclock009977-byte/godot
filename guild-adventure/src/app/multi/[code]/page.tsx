@@ -28,12 +28,10 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
-import { formatDuration } from '@/lib/utils';
-import { getLogClassName } from '@/lib/utils';
 import { Character, Party, BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
 import BattleResultView from '@/components/multi/BattleResultView';
-import BattleLogDisplay from '@/components/BattleLogDisplay';
+import BattleProgressView from '@/components/multi/BattleProgressView';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -61,7 +59,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [progress, setProgress] = useState(0);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const battleResultRef = useRef<BattleResult | null>(null);
-  const logContainerRef = useRef<HTMLDivElement>(null);
   
   // 自動ログイン（ストアの初期化）
   useEffect(() => {
@@ -327,13 +324,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     return () => clearInterval(interval);
   }, [room?.status, room?.startTime, room?.dungeonId, currentEncounter, username, room?.hostId, code]);
   
-  // ログが追加されたら自動スクロール
-  useEffect(() => {
-    if (logContainerRef.current) {
-      logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
-    }
-  }, [displayedLogs]);
-  
   // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
   useEffect(() => {
     if (room?.status === 'done' && room.battleResult && !dropClaimedRef.current && username) {
@@ -418,49 +408,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // 冒険中のUI
   if (room.status === 'battle' && room.startTime) {
-    const totalTime = dungeonData?.durationSeconds || 30;
-    const remainingMs = Math.max(0, room.startTime + (totalTime * 1000) - Date.now());
-    const remainingSec = Math.ceil(remainingMs / 1000);
-    
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-        <div className="container mx-auto px-4 py-8 max-w-md">
-          <div className="mb-4 flex justify-between items-start">
-            <div>
-              <h1 className="text-2xl font-bold">{dungeonData?.name}</h1>
-              <div className="text-sm text-slate-400">マルチプレイ冒険中</div>
-            </div>
-            <Link 
-              href="/friends" 
-              className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
-            >
-              👥 フレンド
-            </Link>
-          </div>
-          
-          {/* 進捗バー */}
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-slate-400 mb-2">
-              <span>進捗 {Math.floor(progress)}%</span>
-              <span>残り {formatDuration(remainingSec, true)}</span>
-            </div>
-            <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-amber-500 transition-all duration-100"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-          
-          {/* ログ */}
-          <div 
-            ref={logContainerRef}
-            className="bg-slate-800 rounded-lg p-4 h-96 overflow-y-auto border border-slate-700"
-          >
-            <BattleLogDisplay logs={displayedLogs} />
-          </div>
-        </div>
-      </main>
+      <BattleProgressView
+        dungeonName={dungeonData?.name || '不明なダンジョン'}
+        durationSeconds={dungeonData?.durationSeconds || 30}
+        startTime={room.startTime}
+        progress={progress}
+        displayedLogs={displayedLogs}
+      />
     );
   }
   

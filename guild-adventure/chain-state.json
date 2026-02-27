@@ -17,7 +17,7 @@
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
   "currentPhase": 2,
-  "phaseAttempt": 4,
+  "phaseAttempt": 5,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -46,16 +46,23 @@
       "action": "refactor",
       "file": "src/components/multi/BattleResultView.tsx",
       "detail": "結果画面UIを別コンポーネントに抽出。multi/[code]/page.tsx: 715行→675行（-40行）"
+    },
+    {
+      "time": "2026-02-27T05:04:00Z",
+      "action": "refactor",
+      "file": "src/components/multi/BattleProgressView.tsx",
+      "detail": "バトル進行UI（プログレスバー+ログ表示）を別コンポーネントに抽出。multi/[code]/page.tsx: 675行→630行（-45行）"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx がまだ675行 → 更に分割可能（バトル進行UI）",
+    "multi/[code]/page.tsx が630行。待機中UIの分割も可能",
     "restoreAdventure のソロ/マルチ処理が類似構造"
   ],
   "completed": [
     "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
     "lib/utils/status.ts: getStatusDisplay共通化（friends + multi両方で使用）",
     "components/multi/InviteModal.tsx: フレンド招待モーダルを抽出",
-    "components/multi/BattleResultView.tsx: 結果画面UIを抽出"
+    "components/multi/BattleResultView.tsx: 結果画面UIを抽出",
+    "components/multi/BattleProgressView.tsx: バトル進行UIを抽出"
   ]
 }
