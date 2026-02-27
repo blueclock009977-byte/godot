@@ -7,7 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
-import { getLogClassName } from '@/lib/utils';
+import { getLogClassName, formatDuration } from '@/lib/utils';
 import { BattleResult } from '@/lib/types';
 import { PageLayout } from '@/components/PageLayout';
 
@@ -190,13 +190,6 @@ export default function AdventurePage() {
   );
   const remainingSec = Math.ceil(remainingMs / 1000);
   
-  const formatTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}秒`;
-    const min = Math.floor(seconds / 60);
-    const sec = seconds % 60;
-    return `${min}分${sec}秒`;
-  };
-  
   const handleCancel = () => {
     if (confirm('冒険を中断しますか？')) {
       cancelAdventure();
@@ -243,7 +236,7 @@ export default function AdventurePage() {
           </div>
           {!isComplete && (
             <div className="text-center text-sm text-slate-400 mt-2">
-              残り時間: {formatTime(remainingSec)}
+              残り時間: {formatDuration(remainingSec, true)}
             </div>
           )}
         </div>

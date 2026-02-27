@@ -28,6 +28,7 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
+import { formatDuration } from '@/lib/utils';
 import { getLogClassName } from '@/lib/utils';
 import { Character, Party, BattleResult } from '@/lib/types';
 
@@ -455,16 +456,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const remainingMs = Math.max(0, room.startTime + (totalTime * 1000) - Date.now());
     const remainingSec = Math.ceil(remainingMs / 1000);
     
-    const formatTime = (seconds: number) => {
-      if (seconds < 60) return `${seconds}秒`;
-      const min = Math.floor(seconds / 60);
-      const sec = seconds % 60;
-      if (min < 60) return `${min}分${sec}秒`;
-      const hour = Math.floor(min / 60);
-      const remainMin = min % 60;
-      return `${hour}時間${remainMin}分`;
-    };
-    
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
         <div className="container mx-auto px-4 py-8 max-w-md">
@@ -485,7 +476,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           <div className="mb-4">
             <div className="flex justify-between text-sm text-slate-400 mb-2">
               <span>進捗 {Math.floor(progress)}%</span>
-              <span>残り {formatTime(remainingSec)}</span>
+              <span>残り {formatDuration(remainingSec, true)}</span>
             </div>
             <div className="h-3 bg-slate-700 rounded-full overflow-hidden">
               <div 
