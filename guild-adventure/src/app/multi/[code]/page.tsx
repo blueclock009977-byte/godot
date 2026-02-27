@@ -23,15 +23,13 @@ import {
   FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
-import { getStatusDisplay } from '@/lib/utils/status';
-import { races } from '@/lib/data/races';
-import { jobs } from '@/lib/data/jobs';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
 import { Character, Party, BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
 import BattleResultView from '@/components/multi/BattleResultView';
 import BattleProgressView from '@/components/multi/BattleProgressView';
+import CharacterSelectPanel from '@/components/multi/CharacterSelectPanel';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -515,70 +513,15 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         {/* キャラ選択（waiting中のみ） */}
         {room.status === 'waiting' && (
           <>
-            {/* 選択中のキャラ */}
-            {selectedChars.length > 0 && (
-              <div className="mb-4">
-                <h2 className="text-sm text-slate-400 mb-2">選択中 ({selectedChars.length}/{maxCharsPerPlayer})</h2>
-                <div className="grid grid-cols-3 gap-2">
-                  {selectedChars.map((rc, idx) => (
-                    <div key={idx} className={`p-2 rounded-lg border text-center ${rc.position === 'front' ? 'bg-red-900/50 border-red-700' : 'bg-blue-900/50 border-blue-700'}`}>
-                      <div className="text-xs">{rc.position === 'front' ? '⚔️ 前衛' : '🛡️ 後衛'}</div>
-                      <div className="font-semibold text-sm truncate">{rc.character.name}</div>
-                      {!isReady && (
-                        <button
-                          onClick={() => removeChar(rc.character.id)}
-                          className="text-xs text-red-400 hover:text-red-300 mt-1"
-                        >
-                          外す
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* キャラ選択 */}
-            <div className="mb-6">
-              <h2 className="text-sm text-slate-400 mb-2">キャラを選択</h2>
-              {characters.length === 0 ? (
-                <div className="text-center py-4 text-slate-500">キャラがいません</div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {characters.filter(c => !selectedChars.some(sc => sc.character.id === c.id)).map((char) => {
-                    const raceData = races[char.race];
-                    const jobData = jobs[char.job];
-                    const canAdd = selectedChars.length < maxCharsPerPlayer && !isReady;
-                    
-                    return (
-                      <div
-                        key={char.id}
-                        className={`p-3 rounded-lg border bg-slate-700 border-slate-600 ${!canAdd ? 'opacity-50' : ''}`}
-                      >
-                        <div className="font-semibold">{char.name}</div>
-                        <div className="text-xs text-slate-300">{raceData.name} / {jobData.name}</div>
-                        {canAdd && (
-                          <div className="flex gap-1 mt-2">
-                            <button
-                              onClick={() => addChar(char.id, 'front')}
-                              className="flex-1 text-xs bg-red-600 hover:bg-red-500 px-2 py-1 rounded"
-                            >
-                              前衛
-                            </button>
-                            <button
-                              onClick={() => addChar(char.id, 'back')}
-                              className="flex-1 text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
-                            >
-                              後衛
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            {/* キャラ選択パネル */}
+            <CharacterSelectPanel
+              selectedChars={selectedChars}
+              characters={characters}
+              maxChars={maxCharsPerPlayer}
+              isReady={isReady}
+              onAddChar={addChar}
+              onRemoveChar={removeChar}
+            />
             
             {/* 準備完了ボタン */}
             <button
