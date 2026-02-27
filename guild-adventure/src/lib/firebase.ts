@@ -298,31 +298,14 @@ export async function joinRoom(code: string, username: string): Promise<boolean>
 }
 
 // キャラ選択を更新
+// キャラ選択を更新
 export async function updateRoomCharacters(code: string, username: string, characters: any[]): Promise<boolean> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}/characters.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(characters),
-    });
-    return res.ok;
-  } catch (e) {
-    return false;
-  }
+  return firebaseSet(`guild-adventure/rooms/${code}/players/${username}/characters`, characters);
 }
 
 // 準備完了を更新
 export async function updateRoomReady(code: string, username: string, ready: boolean): Promise<boolean> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}/ready.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ready),
-    });
-    return res.ok;
-  } catch (e) {
-    return false;
-  }
+  return firebaseSet(`guild-adventure/rooms/${code}/players/${username}/ready`, ready);
 }
 
 // ルームステータスを更新（battleの場合はstartTime、battleResult、ドロップも設定）
