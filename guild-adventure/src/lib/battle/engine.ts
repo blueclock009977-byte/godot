@@ -564,8 +564,8 @@ function decideAction(
   allies: ExtendedBattleUnit[], 
   enemies: ExtendedBattleUnit[]
 ): { type: 'attack' | 'skill'; skillIndex?: number; target: ExtendedBattleUnit | ExtendedBattleUnit[] } {
-  const aliveEnemies = enemies.filter(e => e.stats.hp > 0);
-  const aliveAllies = allies.filter(a => a.stats.hp > 0);
+  const aliveEnemies = getAliveUnits(enemies);
+  const aliveAllies = getAliveUnits(allies);
   
   if (aliveEnemies.length === 0) {
     return { type: 'attack', target: enemies[0] };
@@ -627,8 +627,7 @@ function processTurn(
   const logs: string[] = [];
   
   // 全ユニットをAGI+firstStrikeBonus順にソート
-  const allUnits = [...playerUnits, ...enemyUnits]
-    .filter(u => u.stats.hp > 0)
+  const allUnits = getAliveUnits([...playerUnits, ...enemyUnits])
     .sort((a, b) => {
       const aSpeed = a.stats.agi + a.passiveEffects.firstStrikeBonus + random(0, 10);
       const bSpeed = b.stats.agi + b.passiveEffects.firstStrikeBonus + random(0, 10);
@@ -638,8 +637,8 @@ function processTurn(
   logs.push(`--- ターン ${turnNum} ---`);
   
   // ターン開始時HP/MP表示
-  const alivePlayers = playerUnits.filter(u => u.stats.hp > 0);
-  const aliveEnemies = enemyUnits.filter(u => u.stats.hp > 0);
+  const alivePlayers = getAliveUnits(playerUnits);
+  const aliveEnemies = getAliveUnits(enemyUnits);
   
   logs.push(`【味方】`);
   alivePlayers.forEach(u => logs.push(`  ${formatUnitStatus(u)}`));
@@ -683,8 +682,8 @@ function processTurn(
     
     const allies = unit.isPlayer ? playerUnits : enemyUnits;
     const enemies = unit.isPlayer ? enemyUnits : playerUnits;
-    const aliveEnemiesNow = enemies.filter(e => e.stats.hp > 0);
-    const aliveAlliesNow = allies.filter(a => a.stats.hp > 0);
+    const aliveEnemiesNow = getAliveUnits(enemies);
+    const aliveAlliesNow = getAliveUnits(allies);
     
     if (aliveEnemiesNow.length === 0) break;
     
@@ -694,7 +693,7 @@ function processTurn(
       let target = action.target as ExtendedBattleUnit;
       
       // 庇う判定
-      const cover = checkCover(enemies.filter(e => e.stats.hp > 0) as ExtendedBattleUnit[], target);
+      const cover = checkCover(getAliveUnits(enemies) as ExtendedBattleUnit[], target);
       if (cover) {
         logs.push(`${cover.name}が${target.name}を庇った！`);
         target = cover;
@@ -727,7 +726,7 @@ function processTurn(
       // 反撃判定
       if (target.stats.hp > 0 && target.passiveEffects.counterRate > 0) {
         if (Math.random() * 100 < target.passiveEffects.counterRate) {
-          const counterResult = calculatePhysicalDamage(target, unit, enemies.filter(e => e.stats.hp > 0).length);
+          const counterResult = calculatePhysicalDamage(target, unit, getAliveUnits(enemies).length);
           if (counterResult.actualHits > 0) {
             unit.stats.hp = Math.max(0, unit.stats.hp - counterResult.damage);
             logs.push(`${target.name}の反撃！ ${unit.name}に${counterResult.damage}ダメージ！`);

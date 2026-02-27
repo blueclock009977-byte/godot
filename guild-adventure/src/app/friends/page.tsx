@@ -79,7 +79,7 @@ export default function FriendsPage() {
           text: `ソロ冒険中`, 
           color: 'text-amber-400', 
           emoji: '⚔️',
-          detail: ` (残り分)`
+          detail: `${dungeonName} (残り${remaining}分)`
         };
       } else {
         // 帰還待ち
@@ -87,7 +87,7 @@ export default function FriendsPage() {
           text: '帰還待ち', 
           color: 'text-orange-400', 
           emoji: '🏠',
-          detail: ` の結果確認待ち`
+          detail: `${dungeonName} の結果確認待ち`
         };
       }
     }
@@ -106,7 +106,7 @@ export default function FriendsPage() {
           text: 'マルチ冒険中', 
           color: 'text-purple-400', 
           emoji: '⚔️👥',
-          detail: ` (残り分)`
+          detail: `${dungeonName} (残り${remaining}分)`
         };
       } else if (multiRoom.status === 'waiting' || multiRoom.status === 'ready') {
         // マルチ待機中
@@ -115,7 +115,7 @@ export default function FriendsPage() {
           text: 'マルチ待機中', 
           color: 'text-blue-400', 
           emoji: '👥',
-          detail: ` (/人)`
+          detail: `${dungeonName} (${playerCount}/${multiRoom.maxPlayers}人)`
         };
       }
     }
@@ -127,7 +127,7 @@ export default function FriendsPage() {
         text: 'マルチ結果待ち', 
         color: 'text-purple-400', 
         emoji: '👥',
-        detail: ` の結果確認待ち`
+        detail: `${dungeonName} の結果確認待ち`
       };
     }
     
@@ -144,7 +144,7 @@ export default function FriendsPage() {
         return { text: 'ソロ冒険中', color: 'text-amber-400', emoji: '⚔️', detail: '' };
       case 'multi':
         // multiRoomが取得できなかった場合のフォールバック
-        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ` : '' };
+        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ${status.roomCode}` : '' };
       default:
         return { text: 'オンライン', color: 'text-green-400', emoji: '🟢', detail: '' };
     }
