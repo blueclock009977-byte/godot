@@ -68,6 +68,10 @@ interface PassiveEffects {
   revive: number;
   followUp: number;
   allStats: number;
+  // v0.8.68追加: 強力なLvスキル用
+  surviveLethal: number;      // 致死ダメをHP1で耐える（1=有効）
+  lowHpDamageBonus: number;   // HP一定以下で全ダメ+%
+  lowHpThreshold: number;     // lowHpDamageBonusの発動閾値（%）
   // 系統特攻/耐性
   speciesKiller: Record<string, number>;
   speciesResist: Record<string, number>;
@@ -90,6 +94,7 @@ function getEmptyPassiveEffects(): PassiveEffects {
     lowHpBonus: 0, allyCountBonus: 0, allyAtkBonus: 0, allyDefense: 0,
     dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
     doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
+    surviveLethal: 0, lowHpDamageBonus: 0, lowHpThreshold: 0,
     speciesKiller: {}, speciesResist: {},
     // 連撃・劣化関連
     fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
@@ -236,6 +241,14 @@ function applyDamageModifiers(
     damage *= percentBonus(atkEffects.lowHpBonus);
   }
   
+  // lowHpDamageBonus (指定閾値以下で発動、デーモンLv5等)
+  if (atkEffects.lowHpDamageBonus > 0 && atkEffects.lowHpThreshold > 0) {
+    const hpPercent = attacker.stats.hp / attacker.stats.maxHp * 100;
+    if (hpPercent <= atkEffects.lowHpThreshold) {
+      damage *= percentBonus(atkEffects.lowHpDamageBonus);
+    }
+  }
+  
   // allyCountBonus
   if (atkEffects.allyCountBonus > 0) {
     damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
@@ -266,6 +279,7 @@ interface ExtendedBattleUnit extends BattleUnit {
   attackStackCount: number;
   autoReviveUsed: boolean;
   reviveUsed: boolean;
+  surviveLethalUsed: boolean;  // 致死HP1耐え使用済み
   raceMastery?: boolean;
   jobMastery?: boolean;
   degradation: number;  // 劣化%（被ダメ増加）
@@ -303,6 +317,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
+    surviveLethalUsed: false,
     degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
@@ -368,6 +383,7 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
+    surviveLethalUsed: false,
     degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
@@ -807,12 +823,19 @@ function processTurn(
       
       // 死亡判定と蘇生
       if (target.stats.hp <= 0) {
-        logs.push(`${target.name}を倒した！`);
-        // revive（自己蘇生）
-        if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
-          target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
-          target.reviveUsed = true;
-          logs.push(`${target.name}は不死の力で蘇った！`);
+        // surviveLethal（致死をHP1で耐える）
+        if (target.passiveEffects.surviveLethal > 0 && !(target as ExtendedBattleUnit).surviveLethalUsed) {
+          target.stats.hp = 1;
+          (target as ExtendedBattleUnit).surviveLethalUsed = true;
+          logs.push(`${target.name}は不屈の精神でHP1で耐えた！`);
+        } else {
+          logs.push(`${target.name}を倒した！`);
+          // revive（自己蘇生）
+          if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
+            target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
+            target.reviveUsed = true;
+            logs.push(`${target.name}は不死の力で蘇った！`);
+          }
         }
       }
       

@@ -108,6 +108,11 @@ export type EffectType =
   | 'autoRevive'        // 味方死亡時自動蘇生
   | 'summonUndead'      // 死霊召喚
   | 'fullRegen'         // 毎ターン全回復
+  // v0.8.68追加: 強力なLvスキル用
+  | 'surviveLethal'     // 致死ダメをHP1で1回耐える
+  | 'lowHpDamageBonus'  // HP一定以下で全ダメ+%
+  | 'lowHpThreshold'    // lowHpDamageBonusの発動閾値（%）
+  | 'bonusHits'         // 追加攻撃回数
   | 'dropBonus'         // ドロップ率+%
   // 連撃・劣化関連
   | 'fixedHits'         // ヒット数固定（AGI無視）

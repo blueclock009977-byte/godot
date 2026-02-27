@@ -162,9 +162,11 @@ export const raceLvSkills: Record<string, LvSkill> = {
   demon_lv5: {
     id: 'demon_lv5',
     name: '深淵の力',
-    description: '魔法+15、被ダメ-10%',
-    statModifiers: { mag: 15 },
-    effects: [{ type: 'damageReduction', value: 10 }],
+    description: 'HP50%以下で全ダメージ+80%',
+    effects: [
+      { type: 'lowHpDamageBonus', value: 80 },
+      { type: 'lowHpThreshold', value: 50 },
+    ],
   },
   
   // 天使
@@ -213,9 +215,9 @@ export const jobLvSkills: Record<string, LvSkill> = {
   },
   warrior_lv5: {
     id: 'warrior_lv5',
-    name: '戦場の雄叫び',
-    description: '攻撃+20、HP+15',
-    statModifiers: { atk: 20, hp: 15 },
+    name: '武の極み',
+    description: '攻撃回数+1',
+    effects: [{ type: 'bonusHits', value: 1 }],
   },
   
   // 騎士
@@ -435,12 +437,9 @@ export const jobLvSkills: Record<string, LvSkill> = {
   },
   ninja_lv5: {
     id: 'ninja_lv5',
-    name: '分身',
-    description: '回避+15%、反撃率+25%',
-    effects: [
-      { type: 'evasionBonus', value: 15 },
-      { type: 'counterRate', value: 25 },
-    ],
+    name: '影分身',
+    description: '完全回避率50%',
+    effects: [{ type: 'perfectEvasion', value: 50 }],
   },
 };
 
