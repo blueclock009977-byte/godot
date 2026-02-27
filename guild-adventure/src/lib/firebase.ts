@@ -164,6 +164,7 @@ export interface MultiRoom {
   startTime?: number;  // 冒険開始時刻
   playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ
   playerClaimed?: Record<string, boolean>;           // 受け取り済みフラグ
+  isPublic?: boolean;  // 公開ルームかどうか
   createdAt: number;
   updatedAt: number;
 }
@@ -179,7 +180,7 @@ function generateRoomCode(): string {
 }
 
 // ルームを作成
-export async function createRoom(hostUsername: string, dungeonId: string, maxPlayers: 2 | 3): Promise<string | null> {
+export async function createRoom(hostUsername: string, dungeonId: string, maxPlayers: 2 | 3, isPublic: boolean = false): Promise<string | null> {
   const code = generateRoomCode();
   
   const room: MultiRoom = {
@@ -196,6 +197,7 @@ export async function createRoom(hostUsername: string, dungeonId: string, maxPla
         joinedAt: Date.now(),
       },
     },
+    isPublic,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -222,6 +224,33 @@ export async function getRoom(code: string): Promise<MultiRoom | null> {
   } catch (e) {
     console.error('Failed to get room:', e);
     return null;
+  }
+}
+
+// 公開ルーム一覧を取得（待機中のみ）
+export async function getPublicRooms(): Promise<MultiRoom[]> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms.json`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data) return [];
+    
+    const rooms: MultiRoom[] = [];
+    
+    for (const [code, room] of Object.entries(data)) {
+      const r = room as MultiRoom;
+      // 公開ルーム、待機中、満員でないもの
+      if (r.isPublic && r.status === 'waiting' && Object.keys(r.players).length < r.maxPlayers) {
+        rooms.push(r);
+      }
+    }
+    
+    // 新しい順にソート
+    rooms.sort((a, b) => b.createdAt - a.createdAt);
+    return rooms;
+  } catch (e) {
+    console.error('Failed to get public rooms:', e);
+    return [];
   }
 }
 

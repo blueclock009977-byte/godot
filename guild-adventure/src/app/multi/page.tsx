@@ -12,9 +12,11 @@ import {
   getInvitations, 
   respondToInvitation, 
   getMultipleFriendFullStatus,
+  getPublicRooms,
   isOnline,
   FriendFullStatus,
-  RoomInvitation 
+  RoomInvitation,
+  MultiRoom,
 } from '@/lib/firebase';
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType, DungeonData } from '@/lib/types';
@@ -100,9 +102,13 @@ export default function MultiPage() {
   const [roomCode, setRoomCode] = useState('');
   const [selectedDungeon, setSelectedDungeon] = useState<DungeonType>('grassland');
   const [maxPlayers, setMaxPlayers] = useState<2 | 3>(2);
+  const [isPublic, setIsPublic] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
+  
+  // 公開ルーム一覧
+  const [publicRooms, setPublicRooms] = useState<MultiRoom[]>([]);
   
   // 招待関連
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
@@ -153,6 +159,24 @@ export default function MultiPage() {
     return () => clearInterval(interval);
   }, [username, showInviteModal]);
   
+  // 公開ルーム一覧取得
+  useEffect(() => {
+    if (mode !== 'join') return;
+    
+    const loadPublicRooms = async () => {
+      try {
+        const rooms = await getPublicRooms();
+        setPublicRooms(rooms);
+      } catch (e) {
+        console.error('Failed to load public rooms:', e);
+      }
+    };
+    loadPublicRooms();
+    // 3秒ごとに更新
+    const interval = setInterval(loadPublicRooms, 3000);
+    return () => clearInterval(interval);
+  }, [mode]);
+  
   // ステータス表示用のヘルパー関数
   const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
     if (!fullStatus) {
@@ -200,10 +224,11 @@ export default function MultiPage() {
     setIsLoading(true);
     setError('');
     
-    const code = await createRoom(username, selectedDungeon, maxPlayers);
+    const code = await createRoom(username, selectedDungeon, maxPlayers, isPublic);
     if (code) {
       setCreatedRoomCode(code);
-      if (friends.length > 0) {
+      if (friends.length > 0 && !isPublic) {
+        // 非公開の場合のみ招待モーダル表示
         setShowInviteModal(true);
       } else {
         router.push(`/multi/${code}`);
@@ -380,6 +405,35 @@ export default function MultiPage() {
               </div>
             </div>
             
+            {/* 公開設定 */}
+            <div>
+              <h2 className="text-sm text-slate-400 mb-2">ルーム公開設定</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setIsPublic(false)}
+                  className={`flex-1 p-3 rounded-lg border ${
+                    !isPublic
+                      ? 'bg-slate-600 border-slate-500'
+                      : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                  }`}
+                >
+                  <div className="font-semibold">🔒 非公開</div>
+                  <div className="text-xs text-slate-300">コード共有で参加</div>
+                </button>
+                <button
+                  onClick={() => setIsPublic(true)}
+                  className={`flex-1 p-3 rounded-lg border ${
+                    isPublic
+                      ? 'bg-green-600 border-green-500'
+                      : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                  }`}
+                >
+                  <div className="font-semibold">🌐 公開</div>
+                  <div className="text-xs text-slate-300">一覧に表示</div>
+                </button>
+              </div>
+            </div>
+            
             {error && <div className="text-red-400 text-sm">{error}</div>}
             
             <button
@@ -419,6 +473,73 @@ export default function MultiPage() {
             >
               {isLoading ? '参加中...' : '参加する'}
             </button>
+            
+            {/* 公開ルーム一覧 */}
+            <div>
+              <h2 className="text-sm text-slate-400 mb-2 flex items-center gap-2">
+                🌐 公開ルーム一覧
+                <span className="text-xs text-slate-500">({publicRooms.length}件)</span>
+              </h2>
+              {publicRooms.length === 0 ? (
+                <div className="text-center py-6 bg-slate-700/50 rounded-lg border border-slate-600 text-slate-400">
+                  公開ルームはありません
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {publicRooms.map((room) => {
+                    const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];
+                    const playerCount = Object.keys(room.players).length;
+                    const isFriendRoom = friends.some(f => room.players[f]);
+                    const friendInRoom = friends.filter(f => room.players[f]);
+                    
+                    return (
+                      <button
+                        key={room.code}
+                        onClick={async () => {
+                          setIsLoading(true);
+                          const success = await joinRoom(room.code, username!);
+                          if (success) {
+                            router.push(`/multi/${room.code}`);
+                          } else {
+                            setError('参加できませんでした');
+                            setIsLoading(false);
+                          }
+                        }}
+                        disabled={isLoading}
+                        className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                          isFriendRoom
+                            ? 'bg-purple-900/50 border-purple-600 hover:bg-purple-900/70'
+                            : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-semibold flex items-center gap-2">
+                              {dungeonData?.name || room.dungeonId}
+                              {isFriendRoom && <span className="text-purple-400 text-xs">👥 フレンド</span>}
+                            </div>
+                            <div className="text-xs text-slate-400">
+                              ホスト: {room.hostId}
+                              {friendInRoom.length > 0 && (
+                                <span className="ml-2 text-purple-300">
+                                  ({friendInRoom.join(', ')} がいます)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm">{playerCount}/{room.maxPlayers}人</div>
+                            <div className="text-xs text-slate-400">
+                              {'★'.repeat(dungeonData?.difficulty || 1)}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
         
