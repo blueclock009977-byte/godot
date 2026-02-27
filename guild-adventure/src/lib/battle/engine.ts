@@ -72,6 +72,20 @@ interface PassiveEffects {
   surviveLethal: number;      // 致死ダメをHP1で耐える（1=有効）
   lowHpDamageBonus: number;   // HP一定以下で全ダメ+%
   lowHpThreshold: number;     // lowHpDamageBonusの発動閾値（%）
+  // v0.8.70追加: 条件付き効果
+  fullHpAtkBonus: number;     // HP満タン時ATK+%
+  critAfterEvade: number;     // 回避成功→次クリ確定（1=有効）
+  critOnFirstStrike: number;  // 先制成功→クリ確定（1=有効）
+  lowHpBonusHits: number;     // HP低下時追加攻撃回数
+  lowHpHitsThreshold: number; // lowHpBonusHitsの発動閾値（%）
+  extraAttackOnCrit: number;  // クリ時追加攻撃（1=有効）
+  firstHitCrit: number;       // 最初の攻撃確定クリ（1=有効）
+  backlineEvasion: number;    // 後衛時回避+%
+  lowHpDefense: number;       // HP低下時被ダメ-%
+  lowHpDefenseThreshold: number; // lowHpDefenseの発動閾値（%）
+  counterDamageBonus: number; // 反撃ダメ+%
+  coinBonus: number;          // コイン獲得+%
+  doubleDropRoll: number;     // ドロップ2回抽選（1=有効）
   // 系統特攻/耐性
   speciesKiller: Record<string, number>;
   speciesResist: Record<string, number>;
@@ -95,6 +109,10 @@ function getEmptyPassiveEffects(): PassiveEffects {
     dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
     doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
     surviveLethal: 0, lowHpDamageBonus: 0, lowHpThreshold: 0,
+    fullHpAtkBonus: 0, critAfterEvade: 0, critOnFirstStrike: 0,
+    lowHpBonusHits: 0, lowHpHitsThreshold: 0, extraAttackOnCrit: 0,
+    firstHitCrit: 0, backlineEvasion: 0, lowHpDefense: 0, lowHpDefenseThreshold: 0,
+    counterDamageBonus: 0, coinBonus: 0, doubleDropRoll: 0,
     speciesKiller: {}, speciesResist: {},
     // 連撃・劣化関連
     fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
@@ -264,6 +282,14 @@ function applyDamageModifiers(
   // damageReduction
   damage *= percentReduce(defEffects.damageReduction);
   
+  // lowHpDefense: HP低下時被ダメ軽減
+  if (defEffects.lowHpDefense > 0 && defEffects.lowHpDefenseThreshold > 0) {
+    const hpPercent = defender.stats.hp / defender.stats.maxHp * 100;
+    if (hpPercent <= defEffects.lowHpDefenseThreshold) {
+      damage *= percentReduce(defEffects.lowHpDefense);
+    }
+  }
+  
   // 劣化による被ダメ増加
   damage *= percentBonus(defender.degradation);
 
@@ -283,6 +309,10 @@ interface ExtendedBattleUnit extends BattleUnit {
   raceMastery?: boolean;
   jobMastery?: boolean;
   degradation: number;  // 劣化%（被ダメ増加）
+  // v0.8.70追加: 条件付き効果用フラグ
+  nextCritGuaranteed: boolean;  // 次の攻撃クリ確定
+  firstAttackDone: boolean;     // 最初の攻撃済み
+  wasFirstStrike: boolean;      // 先制成功フラグ
 }
 
 function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedBattleUnit {
@@ -319,6 +349,9 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     reviveUsed: false,
     surviveLethalUsed: false,
     degradation: 0,
+    nextCritGuaranteed: false,
+    firstAttackDone: false,
+    wasFirstStrike: false,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
@@ -385,6 +418,9 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     reviveUsed: false,
     surviveLethalUsed: false,
     degradation: 0,
+    nextCritGuaranteed: false,
+    firstAttackDone: false,
+    wasFirstStrike: false,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
@@ -414,6 +450,10 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
   
   // 完全回避判定
   if (defEffects.perfectEvasion > 0 && Math.random() * 100 < defEffects.perfectEvasion) {
+    // critAfterEvade: 回避成功→次クリ確定
+    if (defEffects.critAfterEvade > 0) {
+      defender.nextCritGuaranteed = true;
+    }
     return { hit: false, perfectEvade: true };
   }
   
@@ -424,13 +464,23 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
   hitRate += atkEffects.accuracyBonus;
   hitRate -= defEffects.evasionBonus;
   
-  // 隊列補正（後衛は回避+10%）
-  if (defender.position === 'back') hitRate -= 10;
+  // 後衛時回避ボーナス
+  if (defender.position === 'back') {
+    hitRate -= 10; // 基本の後衛回避
+    hitRate -= defEffects.backlineEvasion; // 追加の後衛回避ボーナス
+  }
   
   // 範囲制限（30%〜99%）
   hitRate = clamp(hitRate, 30, 99);
   
-  return { hit: Math.random() * 100 < hitRate, perfectEvade: false };
+  const hit = Math.random() * 100 < hitRate;
+  
+  // 回避成功時のcritAfterEvade処理
+  if (!hit && defEffects.critAfterEvade > 0) {
+    defender.nextCritGuaranteed = true;
+  }
+  
+  return { hit, perfectEvade: false };
 }
 
 // ============================================
@@ -452,6 +502,14 @@ function getHitCount(attacker: ExtendedBattleUnit): number {
   
   // bonusHits: 追加ヒット
   hits += effects.bonusHits;
+  
+  // lowHpBonusHits: HP低下時追加攻撃
+  if (effects.lowHpBonusHits > 0 && effects.lowHpHitsThreshold > 0) {
+    const hpPercent = attacker.stats.hp / attacker.stats.maxHp * 100;
+    if (hpPercent <= effects.lowHpHitsThreshold) {
+      hits += effects.lowHpBonusHits;
+    }
+  }
   
   return Math.max(1, hits);
 }
@@ -540,6 +598,11 @@ function calculatePhysicalDamage(
     // physicalBonus
     damage *= percentBonus(atkEffects.physicalBonus);
     
+    // HP満タン時ATKボーナス
+    if (atkEffects.fullHpAtkBonus > 0 && attacker.stats.hp >= attacker.stats.maxHp) {
+      damage *= percentBonus(atkEffects.fullHpAtkBonus);
+    }
+    
     // 隊列補正
     const attackerMod = POSITION_MODIFIERS[attacker.position as Position]?.damage || 1.0;
     const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
@@ -552,7 +615,23 @@ function calculatePhysicalDamage(
     let critRate = 10 + atkEffects.critBonus;
     if (attacker.trait === 'lucky') critRate += 20;
     
-    if (Math.random() * 100 < critRate) {
+    // 条件付きクリ確定
+    let guaranteedCrit = false;
+    // firstHitCrit: 最初の攻撃確定クリ
+    if (atkEffects.firstHitCrit > 0 && !(attacker as ExtendedBattleUnit).firstAttackDone) {
+      guaranteedCrit = true;
+    }
+    // critOnFirstStrike: 先制成功→クリ確定
+    if (atkEffects.critOnFirstStrike > 0 && (attacker as ExtendedBattleUnit).wasFirstStrike) {
+      guaranteedCrit = true;
+    }
+    // critAfterEvade: 回避成功→次クリ確定（フラグがONの場合）
+    if ((attacker as ExtendedBattleUnit).nextCritGuaranteed) {
+      guaranteedCrit = true;
+      (attacker as ExtendedBattleUnit).nextCritGuaranteed = false; // 使用後リセット
+    }
+    
+    if (guaranteedCrit || Math.random() * 100 < critRate) {
       isCritical = true;
       const critMult = 1.5 + atkEffects.critDamage / 100;
       damage *= critMult;
@@ -721,6 +800,11 @@ function processTurn(
       return bSpeed - aSpeed;
     });
   
+  // ターン1で先制成功フラグをセット（最初に行動するユニット）
+  if (turnNum === 1 && allUnits.length > 0) {
+    allUnits[0].wasFirstStrike = true;
+  }
+  
   logs.push(`--- ターン ${turnNum} ---`);
   
   // ターン開始時HP/MP表示
@@ -815,8 +899,13 @@ function processTurn(
         if (Math.random() * 100 < target.passiveEffects.counterRate) {
           const counterResult = calculatePhysicalDamage(target, unit, getAliveUnits(enemies).length);
           if (counterResult.actualHits > 0) {
-            unit.stats.hp = Math.max(0, unit.stats.hp - counterResult.damage);
-            logs.push(`${target.name}の反撃！ ${unit.name}に${counterResult.damage}ダメージ！`);
+            // 反撃ダメージボーナス
+            let counterDamage = counterResult.damage;
+            if (target.passiveEffects.counterDamageBonus > 0) {
+              counterDamage = Math.floor(counterDamage * (1 + target.passiveEffects.counterDamageBonus / 100));
+            }
+            unit.stats.hp = Math.max(0, unit.stats.hp - counterDamage);
+            logs.push(`${target.name}の反撃！ ${unit.name}に${counterDamage}ダメージ！`);
           }
         }
       }

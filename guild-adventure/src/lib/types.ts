@@ -113,6 +113,20 @@ export type EffectType =
   | 'lowHpDamageBonus'  // HP一定以下で全ダメ+%
   | 'lowHpThreshold'    // lowHpDamageBonusの発動閾値（%）
   | 'bonusHits'         // 追加攻撃回数
+  // v0.8.70追加: 条件付き効果
+  | 'fullHpAtkBonus'    // HP満タン時ATK+%
+  | 'critAfterEvade'    // 回避成功→次クリ確定
+  | 'critOnFirstStrike' // 先制成功→クリ確定
+  | 'lowHpBonusHits'    // HP低下時追加攻撃回数
+  | 'lowHpHitsThreshold'// lowHpBonusHitsの発動閾値（%）
+  | 'extraAttackOnCrit' // クリ時追加攻撃
+  | 'firstHitCrit'      // 最初の攻撃確定クリ
+  | 'backlineEvasion'   // 後衛時回避+%
+  | 'lowHpDefense'      // HP低下時被ダメ-%
+  | 'lowHpDefenseThreshold' // lowHpDefenseの発動閾値（%）
+  | 'counterDamageBonus'// 反撃ダメ+%
+  | 'coinBonus'         // コイン獲得+%
+  | 'doubleDropRoll'    // ドロップ2回抽選
   | 'dropBonus'         // ドロップ率+%
   // 連撃・劣化関連
   | 'fixedHits'         // ヒット数固定（AGI無視）
