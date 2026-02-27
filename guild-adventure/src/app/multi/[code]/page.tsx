@@ -34,7 +34,7 @@ import { useBattleProgress } from '@/hooks/useBattleProgress';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom } = useGameStore();
+  const { username, characters, addItem, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -149,6 +149,37 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     setSelectedChars(newSelected);
     await updateRoomCharacters(code, username, newSelected);
   }, [username, room, isReady, selectedChars, code]);
+  
+  // マルチ編成保存
+  const handleSaveParty = useCallback(() => {
+    if (!room || selectedChars.length === 0) return;
+    const playerCount = room.maxPlayers as 2 | 3;
+    const chars = selectedChars.map(c => ({ charId: c.character.id, position: c.position }));
+    saveMultiParty(playerCount, chars);
+  }, [room, selectedChars, saveMultiParty]);
+  
+  // マルチ編成復元
+  const handleLoadParty = useCallback(async () => {
+    if (!username || !room || isReady) return;
+    const playerCount = room.maxPlayers as 2 | 3;
+    const savedChars = getLastMultiParty(playerCount);
+    if (!savedChars) return;
+    
+    // 保存されたキャラIDから現在のキャラを取得
+    const newSelected: { character: any; position: 'front' | 'back' }[] = [];
+    for (const saved of savedChars) {
+      const char = characters.find(c => c.id === saved.charId);
+      if (char && newSelected.length < maxCharsPerPlayer) {
+        newSelected.push({ character: char, position: saved.position });
+      }
+    }
+    
+    setSelectedChars(newSelected);
+    await updateRoomCharacters(code, username, newSelected);
+  }, [username, room, isReady, characters, maxCharsPerPlayer, code, getLastMultiParty]);
+  
+  // 保存された編成があるか
+  const hasLastParty = room ? !!getLastMultiParty(room.maxPlayers as 2 | 3) : false;
   
   // 準備完了トグル
   const toggleReady = async () => {
@@ -313,6 +344,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         onStartBattle={startBattle}
         onLeave={handleLeave}
         onShowInviteModal={() => setShowInviteModal(true)}
+        onSaveParty={handleSaveParty}
+        onLoadParty={handleLoadParty}
+        hasLastParty={hasLastParty}
       />
       
       {/* フレンド招待モーダル */}

@@ -252,6 +252,12 @@ interface GameStore {
   lastDroppedItem: string | null;
   _dataLoaded: boolean; // 初回データロード完了フラグ（persistしない）
   
+  // マルチ編成保存（2人/3人マルチ用）
+  lastMulti2Party: { charId: string; position: 'front' | 'back' }[] | null;
+  lastMulti3Party: { charId: string; position: 'front' | 'back' }[] | null;
+  saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => void;
+  getLastMultiParty: (playerCount: 2 | 3) => { charId: string; position: 'front' | 'back' }[] | null;
+  
   // 認証
   login: (username: string) => Promise<{ success: boolean; isNew: boolean; error?: string }>;
   logout: () => void;
@@ -312,6 +318,8 @@ export const useGameStore = create<GameStore>()(
       history: [],
       lastDroppedItem: null,
       _dataLoaded: false,
+      lastMulti2Party: null,
+      lastMulti3Party: null,
       
       // ログイン
       login: async (username: string) => {
@@ -393,6 +401,21 @@ export const useGameStore = create<GameStore>()(
       
       // マルチルームコード設定
       setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
+      
+      // マルチ編成保存
+      saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => {
+        if (playerCount === 2) {
+          set({ lastMulti2Party: chars });
+        } else {
+          set({ lastMulti3Party: chars });
+        }
+      },
+      
+      // マルチ編成取得
+      getLastMultiParty: (playerCount: 2 | 3) => {
+        const { lastMulti2Party, lastMulti3Party } = get();
+        return playerCount === 2 ? lastMulti2Party : lastMulti3Party;
+      },
 
       // ログアウト
       logout: () => {
