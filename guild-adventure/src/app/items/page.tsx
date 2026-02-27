@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import { getItemById } from '@/lib/data/items';
 
 const SELL_PRICE = 30; // チケット・書の売却価格
@@ -51,9 +52,8 @@ export default function ItemsPage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <PageHeader title="📦 アイテム" />
+    <PageLayout>
+      <PageHeader title="📦 アイテム" />
         
         {/* コイン表示 */}
         <div className="bg-amber-900/30 rounded-lg p-4 border border-amber-700 mb-6 text-center">
@@ -124,7 +124,6 @@ export default function ItemsPage() {
             アイテムがありません
           </div>
         )}
-      </div>
-    </main>
+    </PageLayout>
   );
 }
