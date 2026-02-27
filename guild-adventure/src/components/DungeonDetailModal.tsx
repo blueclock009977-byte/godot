@@ -24,7 +24,8 @@ export function DungeonDetailModal({
             <div>探索時間: {formatDuration(dungeon.durationSeconds)}</div>
             <div>推奨人数: {dungeon.recommendedPlayers}人</div>
             <div>遭遇回数: {dungeon.encounterCount}回</div>
-            <div className="col-span-2 text-amber-400">ドロップ率: {getDropRate(dungeon.id)}%</div>
+            <div className="text-amber-400">ドロップ率: {getDropRate(dungeon.id)}%</div>
+            <div className="text-amber-400">🪙 勝利報酬: {dungeon.coinReward}コイン</div>
           </div>
         </div>
         

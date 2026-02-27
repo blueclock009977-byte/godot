@@ -258,11 +258,16 @@ export default function AdventurePage() {
             <h2 className="text-3xl font-bold mb-4">
               {currentAdventure.result.victory ? '🎉 勝利！' : '💀 敗北...'}
             </h2>
-            <div className="text-slate-300 mb-4">
+            <div className="text-slate-300 mb-2">
               {currentAdventure.result.victory 
                 ? `${dungeon.name}を踏破！` 
                 : `${dungeon.name}で全滅...`}
             </div>
+            {currentAdventure.result.victory && (
+              <div className="text-amber-400 text-lg mb-4">
+                🪙 {dungeon.coinReward}コイン獲得！
+              </div>
+            )}
             {currentAdventure.result.droppedItemId && (
               <div className="text-amber-400 text-lg mb-4">
                 💎 【ドロップ】{getItemById(currentAdventure.result.droppedItemId)?.name || currentAdventure.result.droppedItemId}

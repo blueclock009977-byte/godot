@@ -10,6 +10,7 @@ interface BattleResultViewProps {
   myDrop: string | null;
   dropClaimed: boolean;
   logs: BattleLog[];
+  coinReward?: number;
   onGoHome: () => void;
 }
 
@@ -19,6 +20,7 @@ export default function BattleResultView({
   myDrop,
   dropClaimed,
   logs,
+  coinReward,
   onGoHome,
 }: BattleResultViewProps) {
   return (
@@ -28,9 +30,14 @@ export default function BattleResultView({
           <h2 className="text-3xl font-bold mb-4">
             {victory ? '🎉 勝利！' : '💀 敗北...'}
           </h2>
-          <div className="text-slate-300 mb-4">
+          <div className="text-slate-300 mb-2">
             {victory ? `${dungeonName}を踏破！` : `${dungeonName}で全滅...`}
           </div>
+          {victory && coinReward && (
+            <div className="text-amber-400 text-lg mb-4">
+              🪙 {coinReward}コイン獲得！
+            </div>
+          )}
           {myDrop && (
             <div className="text-amber-400 text-lg mb-4">
               💎 【あなたのドロップ】{getItemById(myDrop)?.name || myDrop}

@@ -287,6 +287,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         myDrop={myDrop}
         dropClaimed={dropClaimed}
         logs={room.battleResult.logs || []}
+        coinReward={room.battleResult.victory ? dungeonData?.coinReward : undefined}
       />
     );
   }
