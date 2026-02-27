@@ -18,7 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom, cloneStats } from '../utils';
+import { random, pickRandom, cloneStats, percentBonus, percentReduce } from '../utils';
 
 // ============================================
 // パッシブ効果の集約
@@ -409,19 +409,19 @@ function calculatePhysicalDamage(
     damage *= stackBonus;
     
     // physicalBonus
-    damage *= (1 + atkEffects.physicalBonus / 100);
+    damage *= percentBonus(atkEffects.physicalBonus);
     
     // damageBonus
-    damage *= (1 + atkEffects.damageBonus / 100);
+    damage *= percentBonus(atkEffects.damageBonus);
     
     // lowHpBonus (HP30%以下で発動)
     if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
-      damage *= (1 + atkEffects.lowHpBonus / 100);
+      damage *= percentBonus(atkEffects.lowHpBonus);
     }
     
     // allyCountBonus
     if (atkEffects.allyCountBonus > 0) {
-      damage *= (1 + atkEffects.allyCountBonus * (allyCount - 1) / 100);
+      damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
     }
     
     // 隊列補正
@@ -437,10 +437,10 @@ function calculatePhysicalDamage(
     damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
     
     // damageReduction
-    damage *= (1 - defEffects.damageReduction / 100);
+    damage *= percentReduce(defEffects.damageReduction);
     
     // 劣化による被ダメ増加
-    damage *= (1 + defender.degradation / 100);
+    damage *= percentBonus(defender.degradation);
     
     // クリティカル判定
     let critRate = 10 + atkEffects.critBonus;
@@ -458,7 +458,7 @@ function calculatePhysicalDamage(
     
     // 単発ボーナス（ヒット数1の時のみ）
     if (singleHitBonus > 0) {
-      damage *= (1 + singleHitBonus / 100);
+      damage *= percentBonus(singleHitBonus);
     }
     
     totalDamage += Math.max(1, Math.floor(damage));
@@ -467,7 +467,7 @@ function calculatePhysicalDamage(
     // degradationBonus: 与える劣化を増加
     // degradationResist: 受ける劣化を軽減
     let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
-    addedDeg *= (1 - defEffects.degradationResist / 100);
+    addedDeg *= percentReduce(defEffects.degradationResist);
     addedDeg = Math.max(0, addedDeg);
     defender.degradation += addedDeg;
     degradationAdded += addedDeg;
@@ -490,19 +490,19 @@ function calculateMagicDamage(
   let damage = attacker.stats.mag * multiplier * rand;
   
   // magicBonus
-  damage *= (1 + atkEffects.magicBonus / 100);
+  damage *= percentBonus(atkEffects.magicBonus);
   
   // damageBonus
-  damage *= (1 + atkEffects.damageBonus / 100);
+  damage *= percentBonus(atkEffects.damageBonus);
   
   // lowHpBonus
   if (atkEffects.lowHpBonus > 0 && attacker.stats.hp / attacker.stats.maxHp <= 0.3) {
-    damage *= (1 + atkEffects.lowHpBonus / 100);
+    damage *= percentBonus(atkEffects.lowHpBonus);
   }
   
   // allyCountBonus
   if (atkEffects.allyCountBonus > 0) {
-    damage *= (1 + atkEffects.allyCountBonus * (allyCount - 1) / 100);
+    damage *= percentBonus(atkEffects.allyCountBonus * (allyCount - 1));
   }
   
   // 属性相性
@@ -516,14 +516,14 @@ function calculateMagicDamage(
   damage *= getSpeciesResistMultiplier(defEffects, attackerSpecies);
   
   // damageReduction
-  damage *= (1 - defEffects.damageReduction / 100);
+  damage *= percentReduce(defEffects.damageReduction);
   
   // 劣化による被ダメ増加
-  damage *= (1 + defender.degradation / 100);
+  damage *= percentBonus(defender.degradation);
   
   // 魔法は単発なので劣化1回分蓄積
   let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
-  addedDeg *= (1 - defEffects.degradationResist / 100);
+  addedDeg *= percentReduce(defEffects.degradationResist);
   defender.degradation += Math.max(0, addedDeg);
   
   return Math.max(1, Math.floor(damage));
@@ -537,10 +537,10 @@ function calculateHeal(healer: ExtendedBattleUnit, target: ExtendedBattleUnit, m
   let heal = healer.stats.mag * multiplier * rand;
   
   // healBonus (回復する側)
-  heal *= (1 + healerEffects.healBonus / 100);
+  heal *= percentBonus(healerEffects.healBonus);
   
   // healReceived (回復される側)
-  heal *= (1 + targetEffects.healReceived / 100);
+  heal *= percentBonus(targetEffects.healReceived);
   
   return Math.max(1, Math.floor(heal));
 }
@@ -580,7 +580,7 @@ function decideAction(
     const usableSkills = unit.skills
       .map((skill, index) => ({ skill, index }))
       .filter(({ skill }) => {
-        const actualCost = Math.max(1, Math.floor(skill.mpCost * (1 - mpReduction / 100)));
+        const actualCost = Math.max(1, Math.floor(skill.mpCost * percentReduce(mpReduction)));
         return unit.stats.mp >= actualCost;
       });
     
@@ -753,7 +753,7 @@ function processTurn(
     } else if (action.type === 'skill' && unit.skills && action.skillIndex !== undefined) {
       const skill = unit.skills[action.skillIndex];
       const mpReduction = unit.passiveEffects.mpReduction;
-      const actualCost = Math.max(1, Math.floor(skill.mpCost * (1 - mpReduction / 100)));
+      const actualCost = Math.max(1, Math.floor(skill.mpCost * percentReduce(mpReduction)));
       unit.stats.mp = Math.max(0, unit.stats.mp - actualCost);
       
       // doublecast判定
@@ -1021,7 +1021,7 @@ function calculateDropBonus(characters: Character[]): number {
 export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
   const baseRate = getDropRate(dungeon);
   const dropBonus = calculateDropBonus(characters);
-  const dropRate = baseRate * (1 + dropBonus / 100);
+  const dropRate = baseRate * percentBonus(dropBonus);
   if (Math.random() * 100 < dropRate) {
     const item = getRandomItem();
     return item.id;

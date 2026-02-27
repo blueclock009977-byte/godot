@@ -10,6 +10,26 @@ export function cloneStats(stats: Stats): Stats {
 }
 
 /**
+ * パーセントボーナスを乗算係数に変換
+ * @param percent ボーナス値（%）
+ * @returns 1 + percent/100
+ * @example percentBonus(50) => 1.5
+ */
+export function percentBonus(percent: number): number {
+  return 1 + percent / 100;
+}
+
+/**
+ * パーセント軽減を乗算係数に変換
+ * @param percent 軽減値（%）
+ * @returns 1 - percent/100
+ * @example percentReduce(30) => 0.7
+ */
+export function percentReduce(percent: number): number {
+  return 1 - percent / 100;
+}
+
+/**
  * 指定範囲のランダムな数値を返す
  * @param min 最小値（含む）
  * @param max 最大値（含む）
