@@ -29,7 +29,7 @@ export function Modal({
       onClick={onClose}
     >
       <div 
-        className={`bg-slate-800 rounded-lg border border-slate-600 ${maxWidth} w-full max-h-[80vh] overflow-y-auto`}
+        className={`bg-slate-800 text-white rounded-lg border border-slate-600 ${maxWidth} w-full max-h-[80vh] overflow-y-auto`}
         onClick={e => e.stopPropagation()}
       >
         {title && (
