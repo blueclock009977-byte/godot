@@ -16,6 +16,7 @@ export default function AdventurePage() {
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const isCompleteRef = useRef(false); // 二重実行防止用
   const logContainerRef = useRef<HTMLDivElement>(null);
   
   // バトル結果はサーバーから取得済み（currentAdventure.result）
@@ -41,7 +42,8 @@ export default function AdventurePage() {
       const totalTime = dungeon.durationSeconds * 1000;
       const elapsed = Date.now() - currentAdventure.startTime;
       
-      if (elapsed >= totalTime && !isComplete) {
+      if (elapsed >= totalTime && !isCompleteRef.current) {
+        isCompleteRef.current = true;
         setIsComplete(true);
         setProgress(100);
         // battleResultなしでも履歴と完了処理
@@ -86,7 +88,8 @@ export default function AdventurePage() {
       }
       
       // 完了判定
-      if (newProgress >= 100 && !isComplete) {
+      if (newProgress >= 100 && !isCompleteRef.current) {
+        isCompleteRef.current = true;
         setIsComplete(true);
         clearInterval(interval);
         
