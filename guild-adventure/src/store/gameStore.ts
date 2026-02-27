@@ -76,6 +76,121 @@ function calculateStats(
 }
 
 // ============================================
+// 冒険復元ヘルパー（マルチ/ソロ分離）
+// ============================================
+
+interface RestoreContext {
+  username: string;
+  addItem: (itemId: string) => void;
+  addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
+  syncToServer: () => Promise<void>;
+  setCurrentMultiRoom: (code: string | null) => void;
+}
+
+async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean> {
+  const { username, addItem, addHistory, syncToServer, setCurrentMultiRoom } = ctx;
+  
+  const multiAdventure = await getMultiAdventure(username);
+  if (!multiAdventure || multiAdventure.claimed) return false;
+  
+  // ルーム情報を取得して時間経過をチェック
+  const room = await getRoom(multiAdventure.roomCode);
+  if (room && room.startTime) {
+    const { dungeons } = require('@/lib/data/dungeons');
+    const dungeonData = dungeons[multiAdventure.dungeonId];
+    if (dungeonData) {
+      const elapsed = Date.now() - room.startTime;
+      const duration = dungeonData.durationSeconds * 1000;
+      
+      // まだ冒険時間が経過していない場合
+      if (elapsed < duration) {
+        console.log('[restoreMultiAdventure] multi adventure still in progress');
+        setCurrentMultiRoom(multiAdventure.roomCode);
+        return true; // 処理したがまだ進行中
+      }
+    }
+  }
+
+  // claimを試みる（レースコンディション防止）
+  const claimResult = await claimMultiAdventure(username);
+  if (!claimResult.success) {
+    console.log('[restoreMultiAdventure] multiAdventure already claimed');
+    return false;
+  }
+  
+  // ドロップを受け取る
+  let droppedItemId: string | undefined;
+  if (claimResult.itemId) {
+    droppedItemId = claimResult.itemId;
+    addItem(claimResult.itemId);
+    await syncToServer();
+  }
+  
+  // 履歴に追加
+  await addHistory({
+    type: 'multi',
+    dungeonId: multiAdventure.dungeonId,
+    victory: multiAdventure.victory,
+    droppedItemId,
+    logs: multiAdventure.logs,
+    roomCode: multiAdventure.roomCode,
+    players: multiAdventure.players,
+  });
+  
+  await clearMultiAdventure(username);
+  return true;
+}
+
+interface SoloRestoreResult {
+  adventure: ServerAdventure | null;
+  droppedItemId?: string;
+}
+
+async function restoreSoloAdventureHelper(ctx: RestoreContext): Promise<SoloRestoreResult> {
+  const { username, addItem, addHistory, syncToServer } = ctx;
+  
+  const adventure = await getAdventureOnServer(username);
+  if (!adventure) return { adventure: null };
+  
+  const { dungeons } = require('@/lib/data/dungeons');
+  const dungeonData = dungeons[adventure.dungeon];
+  if (!dungeonData) {
+    // 無効なダンジョン → クリア
+    await clearAdventureOnServer(username);
+    return { adventure: null };
+  }
+  
+  const elapsed = Date.now() - adventure.startTime;
+  const duration = dungeonData.durationSeconds * 1000;
+  
+  // 探索時間が終了している場合
+  if (elapsed >= duration && !adventure.claimed) {
+    let droppedItemId: string | undefined;
+    if (adventure.battleResult?.victory) {
+      const claimResult = await claimAdventureDrop(username);
+      if (claimResult.success && claimResult.itemId) {
+        droppedItemId = claimResult.itemId;
+        addItem(claimResult.itemId);
+        await syncToServer();
+      }
+    }
+    
+    await addHistory({
+      type: 'solo',
+      dungeonId: adventure.dungeon,
+      victory: adventure.battleResult?.victory || false,
+      droppedItemId,
+      logs: adventure.battleResult?.logs || [],
+    });
+    
+    await clearAdventureOnServer(username);
+    return { adventure, droppedItemId };
+  }
+  
+  return { adventure };
+}
+
+// ============================================
 // マスタリー解放ヘルパー（共通ロジック）
 // ============================================
 
@@ -572,120 +687,41 @@ export const useGameStore = create<GameStore>()(
       // 既存の探索を復元（ログイン時に呼ぶ）
       restoreAdventure: async () => {
         try {
-        const { username } = get();
-        if (!username) return;
-        
-        // マルチ冒険の結果を確認
-        const multiAdventure = await getMultiAdventure(username);
-        if (multiAdventure && !multiAdventure.claimed) {
-          // ルーム情報を取得して時間経過をチェック
-          const room = await getRoom(multiAdventure.roomCode);
-          if (room && room.startTime) {
-            const { dungeons } = require('@/lib/data/dungeons');
-            const dungeonData = dungeons[multiAdventure.dungeonId];
-            if (dungeonData) {
-              const elapsed = Date.now() - room.startTime;
-              const duration = dungeonData.durationSeconds * 1000;
-              
-              // まだ冒険時間が経過していない場合はスキップ
-              if (elapsed < duration) {
-                console.log('[restoreAdventure] multi adventure still in progress');
-                // currentMultiRoom を設定してルームにリダイレクトさせる
-                set({ currentMultiRoom: multiAdventure.roomCode });
-                return;
-              }
-            }
-          }
-
-          // 先にclaimを試みる（レースコンディション防止）
-          // claimが成功した場合のみ処理を続ける
-          const claimResult = await claimMultiAdventure(username);
-          if (!claimResult.success) {
-            // 既にclaimされている（別のタブ/デバイスで処理済み）
-            console.log('[restoreAdventure] multiAdventure already claimed');
-            return;
-          }
+          const { username } = get();
+          if (!username) return;
           
-          // ドロップを受け取る
-          let droppedItemId: string | undefined;
-          if (claimResult.itemId) {
-            droppedItemId = claimResult.itemId;
-            get().addItem(claimResult.itemId);
-            await get().syncToServer();
-          }
+          const ctx: RestoreContext = {
+            username,
+            addItem: get().addItem,
+            addHistory: get().addHistory,
+            syncToServer: get().syncToServer,
+            setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
+          };
           
-          // 履歴に追加
-          await get().addHistory({
-            type: 'multi',
-            dungeonId: multiAdventure.dungeonId,
-            victory: multiAdventure.victory,
-            droppedItemId,
-            logs: multiAdventure.logs,
-            roomCode: multiAdventure.roomCode,
-            players: multiAdventure.players,
+          // マルチ冒険の復元（進行中ならここで終了）
+          const multiRestored = await restoreMultiAdventureHelper(ctx);
+          if (multiRestored) return;
+          
+          // ソロ冒険の復元
+          const { adventure } = await restoreSoloAdventureHelper(ctx);
+          if (!adventure) return;
+          
+          const { dungeons } = require('@/lib/data/dungeons');
+          const dungeonData = dungeons[adventure.dungeon];
+          const duration = dungeonData?.durationSeconds * 1000 || 0;
+          const elapsed = Date.now() - adventure.startTime;
+          
+          // 復元（バトル結果も含む）
+          set({
+            currentAdventure: {
+              dungeon: adventure.dungeon as DungeonType,
+              party: adventure.party,
+              startTime: adventure.startTime,
+              duration,
+              status: elapsed >= duration ? 'completed' : 'inProgress',
+              result: adventure.battleResult,
+            },
           });
-          
-          // クリア
-          await clearMultiAdventure(username);
-        }
-        
-        // ソロ冒険を確認
-        const adventure = await getAdventureOnServer(username);
-        if (!adventure) return;
-        
-        const { dungeons } = require('@/lib/data/dungeons');
-        const dungeonData = dungeons[adventure.dungeon];
-        if (!dungeonData) {
-          // 無効なダンジョン → クリア
-          await clearAdventureOnServer(username);
-          return;
-        }
-        
-        // 探索時間チェック
-        const elapsed = Date.now() - adventure.startTime;
-        const duration = dungeonData.durationSeconds * 1000;
-        
-        // 探索時間が終了している場合
-        if (elapsed >= duration) {
-          
-          // まだドロップを受け取ってない場合は受け取る
-          if (!adventure.claimed) {
-            let droppedItemId: string | undefined;
-            if (adventure.battleResult?.victory) {
-              const claimResult = await claimAdventureDrop(username);
-              if (claimResult.success && claimResult.itemId) {
-                droppedItemId = claimResult.itemId;
-                get().addItem(claimResult.itemId);
-                await get().syncToServer();
-              }
-            }
-            
-            // 履歴に追加
-            await get().addHistory({
-              type: 'solo',
-              dungeonId: adventure.dungeon,
-              victory: adventure.battleResult?.victory || false,
-              droppedItemId,
-              logs: adventure.battleResult?.logs || [],
-            });
-          }
-          
-          // 完了後はサーバーからクリア（ドロップと履歴は既に処理済み）
-          // でもcurrentAdventureは復元して結果を見れるようにする
-          await clearAdventureOnServer(username);
-        }
-        
-        // 復元（バトル結果も含む）
-        set({
-          currentAdventure: {
-            dungeon: adventure.dungeon as DungeonType,
-            party: adventure.party,
-            startTime: adventure.startTime,
-            duration,
-            status: elapsed >= duration ? 'completed' : 'inProgress',
-            result: adventure.battleResult,
-          },
-        });
         } catch (e) {
           console.error('[restoreAdventure] error:', e);
         }
