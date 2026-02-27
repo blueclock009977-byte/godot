@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { EmptyState } from '@/components/EmptyState';
 import { getItemById } from '@/lib/data/items';
 
 const SELL_PRICE = 30; // チケット・書の売却価格
@@ -120,9 +121,7 @@ export default function ItemsPage() {
         )}
         
         {sellableItems.length === 0 && otherItems.length === 0 && (
-          <div className="text-center text-slate-500 py-8">
-            アイテムがありません
-          </div>
+          <EmptyState message="アイテムがありません" />
         )}
     </PageLayout>
   );

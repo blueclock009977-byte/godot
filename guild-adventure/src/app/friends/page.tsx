@@ -5,6 +5,7 @@ import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { EmptyState } from '@/components/EmptyState';
 import {
   getFriends,
   getFriendRequests,
@@ -160,7 +161,7 @@ export default function FriendsPage() {
           {isLoading ? (
             <p className="text-slate-500 text-sm">読み込み中...</p>
           ) : friends.length === 0 ? (
-            <p className="text-slate-500 text-sm">まだフレンドがいません</p>
+            <EmptyState message="まだフレンドがいません" className="py-4" />
           ) : (
             <div className="space-y-2">
               {friends.map((friend) => {

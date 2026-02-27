@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { Character, Position } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { EmptyState } from '@/components/EmptyState';
 
 function CharacterCard({ 
   character, 
@@ -190,18 +190,15 @@ export default function PartyPage() {
             待機中 ({availableChars.length}人)
           </h2>
           {availableChars.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              {characters.length === 0 ? (
-                <>
-                  <p>キャラクターがいません</p>
-                  <Link href="/create" className="text-amber-400 hover:underline">
-                    キャラを作成する →
-                  </Link>
-                </>
-              ) : (
-                <p>全員パーティにいます</p>
-              )}
-            </div>
+            characters.length === 0 ? (
+              <EmptyState
+                message="キャラクターがいません"
+                linkText="キャラを作成する →"
+                linkHref="/create"
+              />
+            ) : (
+              <EmptyState message="全員パーティにいます" />
+            )
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {availableChars.map((char) => (

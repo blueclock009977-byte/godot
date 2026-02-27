@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { EmptyState } from '@/components/EmptyState';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { formatDateTime } from '@/lib/utils';
@@ -67,10 +68,11 @@ export default function HistoryPage() {
       <PageHeader title="📜 過去の挑戦ログ" />
         
         {history.length === 0 ? (
-          <div className="text-center py-12 text-slate-500">
-            <p className="text-lg">まだ挑戦履歴がありません</p>
-            <p className="text-sm mt-2">ダンジョンに挑戦しよう！</p>
-          </div>
+          <EmptyState
+            message="まだ挑戦履歴がありません"
+            subMessage="ダンジョンに挑戦しよう！"
+            className="py-12"
+          />
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
             {/* 履歴リスト */}
