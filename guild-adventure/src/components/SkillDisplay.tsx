@@ -95,6 +95,17 @@ const typeMap: Record<string, string> = {
   debuff: 'デバフ',
 };
 
+/**
+ * ラベルに応じたTailwindカラークラスを返す
+ * @param label ラベル文字列（種族/職業など）
+ * @returns Tailwindのtext-color クラス
+ */
+function getLabelColor(label?: string): string {
+  if (label === '種族' || label === '★種族') return 'text-purple-300';
+  if (label === '職業' || label === '★職業') return 'text-blue-300';
+  return 'text-amber-400';
+}
+
 interface SkillDetailProps {
   skill: SkillData;
   /** ラベル（種族/職業など）、指定すると色分け */
@@ -105,8 +116,7 @@ interface SkillDetailProps {
  * スキル詳細表示コンポーネント
  */
 export function SkillDetail({ skill, label }: SkillDetailProps) {
-  const labelColor = label === '種族' || label === '★種族' ? 'text-purple-300' : 
-    label === '職業' || label === '★職業' ? 'text-blue-300' : 'text-amber-400';
+  const labelColor = getLabelColor(label);
   
   return (
     <div className="bg-slate-700 rounded p-2 text-xs">
@@ -143,8 +153,7 @@ interface PassiveDetailProps {
  * パッシブスキル詳細表示コンポーネント
  */
 export function PassiveDetail({ passive, label }: PassiveDetailProps) {
-  const labelColor = label === '種族' || label === '★種族' ? 'text-purple-300' : 
-    label === '職業' || label === '★職業' ? 'text-blue-300' : 'text-amber-300';
+  const labelColor = getLabelColor(label);
   
   return (
     <div className="bg-slate-700 rounded p-2 text-xs">
