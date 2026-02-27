@@ -96,20 +96,11 @@ export async function getUserData(username: string): Promise<UserData | null> {
 
 // ユーザーデータを保存
 export async function saveUserData(username: string, data: Partial<UserData>): Promise<boolean> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}.json`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...data,
-        lastLogin: Date.now(),
-      }),
-    });
-    return res.ok;
-  } catch (e) {
-    console.error('Failed to save user data:', e);
-    return false;
-  }
+  return firebaseSet(
+    `guild-adventure/users/${username}`,
+    { ...data, lastLogin: Date.now() },
+    'PATCH'
+  );
 }
 
 // 履歴を追加（最大20件）
@@ -139,29 +130,19 @@ export async function createUser(username: string): Promise<boolean> {
   // 初期インベントリをインポート
   const { initialInventory } = await import('./data/items');
   
-  try {
-    const initialData: UserData = {
-      username,
-      characters: [],
-      party: {
-        front: [],
-        back: [],
-      },
-      inventory: { ...initialInventory },
-      createdAt: Date.now(),
-      lastLogin: Date.now(),
-    };
-    
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(initialData),
-    });
-    return res.ok;
-  } catch (e) {
-    console.error('Failed to create user:', e);
-    return false;
-  }
+  const initialData: UserData = {
+    username,
+    characters: [],
+    party: {
+      front: [],
+      back: [],
+    },
+    inventory: { ...initialInventory },
+    createdAt: Date.now(),
+    lastLogin: Date.now(),
+  };
+  
+  return firebaseSet(`guild-adventure/users/${username}`, initialData);
 }
 
 // ユーザー名が存在するか確認
