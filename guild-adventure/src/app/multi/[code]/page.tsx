@@ -42,6 +42,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [error, setError] = useState('');
   const [myDrop, setMyDrop] = useState<string | null>(null);
   const [dropClaimed, setDropClaimed] = useState(false);
+  const dropClaimedRef = useRef(false); // 二重実行防止用
   
   // フレンド招待関連
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -346,7 +347,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
   useEffect(() => {
-    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimed && username) {
+    if (room?.status === 'done' && room.battleResult?.victory && !dropClaimedRef.current && username) {
+      dropClaimedRef.current = true; // 即座にフラグを立てて二重実行防止
+      
       const handleClaim = async () => {
         // サーバーからドロップ受け取り
         const result = await claimMultiDrop(code, username);
@@ -372,7 +375,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       
       handleClaim();
     }
-  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, dropClaimed, username, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult?.victory, room?.dungeonId, code, username, addItem, syncToServer, room?.battleResult?.logs, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {
