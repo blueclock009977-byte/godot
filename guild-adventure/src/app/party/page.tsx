@@ -7,6 +7,7 @@ import { Character, Position } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 
 function CharacterCard({ 
   character, 
@@ -98,9 +99,8 @@ export default function PartyPage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <PageHeader title="パーティ編成" />
+    <PageLayout>
+      <PageHeader title="パーティ編成" />
         
         {/* 説明 */}
         <div className="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs text-slate-400">
@@ -217,7 +217,6 @@ export default function PartyPage() {
             </div>
           )}
         </div>
-      </div>
-    </main>
+    </PageLayout>
   );
 }

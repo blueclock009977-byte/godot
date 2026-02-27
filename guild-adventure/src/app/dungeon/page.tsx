@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { dungeonList, dungeons } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
@@ -220,9 +221,8 @@ export default function DungeonPage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <PageHeader title="🗺️ ダンジョン選択" />
+    <PageLayout>
+      <PageHeader title="🗺️ ダンジョン選択" />
         
         {/* パーティ状態 */}
         {!canStart && (
@@ -295,7 +295,6 @@ export default function DungeonPage() {
             </div>
           ))}
         </div>
-      </div>
       
       {/* 詳細モーダル */}
       {detailDungeon && (
@@ -304,6 +303,6 @@ export default function DungeonPage() {
           onClose={() => setDetailDungeon(null)} 
         />
       )}
-    </main>
+    </PageLayout>
   );
 }
