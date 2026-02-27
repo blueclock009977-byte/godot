@@ -8,7 +8,7 @@ import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
 import { getItemById } from '@/lib/data/items';
 
-const SELL_PRICE = 30; // チケット・書の売却価格
+const SELL_PRICE = 20; // チケット・書の売却価格
 
 export default function ItemsPage() {
   const router = useRouter();
