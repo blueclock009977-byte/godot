@@ -476,6 +476,7 @@ export interface ServerAdventure {
   party: any;
   battleResult: any;        // バトル結果
   droppedItemId?: string;   // ドロップアイテムID
+  droppedEquipmentId?: string; // ドロップ装備ID
   claimed: boolean;         // 受け取り済みフラグ
 }
 
@@ -485,7 +486,8 @@ export async function startAdventureOnServer(
   dungeon: string, 
   party: any,
   battleResult: any,
-  droppedItemId?: string
+  droppedItemId?: string,
+  droppedEquipmentId?: string
 ): Promise<{ success: boolean; existingAdventure?: ServerAdventure }> {
   try {
     // 現在の探索状態を確認
@@ -507,6 +509,7 @@ export async function startAdventureOnServer(
       party,
       battleResult,
       droppedItemId,
+      droppedEquipmentId,
       claimed: false,
     };
     
@@ -524,7 +527,7 @@ export async function startAdventureOnServer(
 
 // ドロップ受け取り（claimed=falseの場合のみ成功）
 // ドロップ受け取り（ETag条件付き書き込みで競合防止）
-export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string }> {
+export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string }> {
   try {
     // 1. ETag付きでGET（現在の値と一意識別子を取得）
     const getRes = await fetch(
@@ -561,9 +564,9 @@ export async function claimAdventureDrop(username: string): Promise<{ success: b
     }
     
     if (putRes.ok) {
-      // ドロップアイテムを取得
+      // ドロップアイテム＋装備を取得
       const adventure = await getAdventureOnServer(username);
-      return { success: true, itemId: adventure?.droppedItemId };
+      return { success: true, itemId: adventure?.droppedItemId, equipmentId: adventure?.droppedEquipmentId };
     }
     
     return { success: false };

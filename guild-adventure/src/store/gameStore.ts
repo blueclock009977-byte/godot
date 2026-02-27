@@ -146,7 +146,7 @@ interface SoloRestoreResult {
   droppedItemId?: string;
 }
 
-async function restoreSoloAdventureHelper(ctx: RestoreContext): Promise<SoloRestoreResult> {
+async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id: string) => void): Promise<SoloRestoreResult> {
   const { username, addItem, addHistory, syncToServer } = ctx;
   
   const adventure = await getAdventureOnServer(username);
@@ -166,11 +166,18 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext): Promise<SoloRest
   // 探索時間が終了している場合
   if (elapsed >= duration && !adventure.claimed) {
     let droppedItemId: string | undefined;
+    let droppedEquipmentId: string | undefined;
     if (adventure.battleResult?.victory) {
       const claimResult = await claimAdventureDrop(username);
-      if (claimResult.success && claimResult.itemId) {
-        droppedItemId = claimResult.itemId;
-        addItem(claimResult.itemId);
+      if (claimResult.success) {
+        if (claimResult.itemId) {
+          droppedItemId = claimResult.itemId;
+          addItem(claimResult.itemId);
+        }
+        if (claimResult.equipmentId) {
+          droppedEquipmentId = claimResult.equipmentId;
+          addEquipment(claimResult.equipmentId);
+        }
         await syncToServer();
       }
     }
@@ -799,7 +806,7 @@ export const useGameStore = create<GameStore>()(
         battleResult.droppedEquipmentId = droppedEquipmentId;
         
         // サーバーに探索開始を記録（バトル結果+ドロップ含む）
-        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemId);
+        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemId, droppedEquipmentId);
         if (!result.success) {
           if (result.existingAdventure) {
             return { success: false, error: '別の端末で探索中です。そちらを完了してください。' };
@@ -867,7 +874,7 @@ export const useGameStore = create<GameStore>()(
           if (multiRestored) return;
           
           // ソロ冒険の復元
-          const { adventure } = await restoreSoloAdventureHelper(ctx);
+          const { adventure } = await restoreSoloAdventureHelper(ctx, get().addEquipment);
           if (!adventure) return;
           
           const { dungeons } = require('@/lib/data/dungeons');

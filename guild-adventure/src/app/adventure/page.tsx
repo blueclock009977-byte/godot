@@ -135,27 +135,30 @@ export default function AdventurePage() {
                 if (!claimResult.success) {
                   // 既に処理済み（リロードや別端末）
                   alreadyProcessed = true;
-                } else if (claimResult.itemId) {
-                  droppedItemId = claimResult.itemId;
-                  const itemData = getItemById(claimResult.itemId);
-                  setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
-                  addItem(claimResult.itemId);
-                  syncToServer();
+                } else {
+                  // アイテムドロップ
+                  if (claimResult.itemId) {
+                    droppedItemId = claimResult.itemId;
+                    const itemData = getItemById(claimResult.itemId);
+                    setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
+                    addItem(claimResult.itemId);
+                  }
+                  // 装備ドロップ
+                  if (claimResult.equipmentId) {
+                    droppedEquipmentId = claimResult.equipmentId;
+                    const { getEquipmentById } = require('@/lib/data/equipments');
+                    const equipmentData = getEquipmentById(droppedEquipmentId);
+                    const rarityText = equipmentData?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】';
+                    setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || droppedEquipmentId} を入手！`]);
+                    addEquipment(droppedEquipmentId);
+                  }
+                  if (claimResult.itemId || claimResult.equipmentId) {
+                    syncToServer();
+                  }
                 }
               }
             } catch (e) {
               console.error('Failed to claim drop:', e);
-            }
-            
-            // 装備ドロップの処理（バトル結果から取得）
-            if (!alreadyProcessed && battleResult.droppedEquipmentId) {
-              droppedEquipmentId = battleResult.droppedEquipmentId;
-              const { getEquipmentById } = require('@/lib/data/equipments');
-              const equipmentData = getEquipmentById(droppedEquipmentId);
-              const rarityText = equipmentData?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】';
-              setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || droppedEquipmentId} を入手！`]);
-              addEquipment(droppedEquipmentId);
-              syncToServer();
             }
             
             // 既に処理済みならスキップ
