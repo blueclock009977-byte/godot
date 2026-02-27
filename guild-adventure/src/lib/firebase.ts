@@ -433,8 +433,6 @@ export async function claimMultiDrop(code: string, username: string): Promise<{ 
     return { success: false };
   }
 }
-}
-
 // ルームから退出
 export async function leaveRoom(code: string, username: string): Promise<boolean> {
   try {
