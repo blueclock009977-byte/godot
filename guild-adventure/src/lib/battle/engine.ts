@@ -18,6 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
+import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
 // ============================================
@@ -285,6 +286,20 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
+  // LvスキルのstatModifiers適用
+  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
+    if (!skillId) continue;
+    const skill = getLvSkill(skillId);
+    if (skill?.statModifiers) {
+      const mods = skill.statModifiers;
+      if (mods.hp) { unit.stats.hp += mods.hp; unit.stats.maxHp += mods.hp; }
+      if (mods.atk) unit.stats.atk += mods.atk;
+      if (mods.def) unit.stats.def += mods.def;
+      if (mods.agi) unit.stats.agi += mods.agi;
+      if (mods.mag) unit.stats.mag += mods.mag;
+    }
+  }
+  
   // allStats適用
   if (unit.passiveEffects.allStats > 0) {
     const mult = 1 + unit.passiveEffects.allStats / 100;
@@ -320,6 +335,20 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     degradation: 0,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
+  
+  // LvスキルのstatModifiers適用
+  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
+    if (!skillId) continue;
+    const skill = getLvSkill(skillId);
+    if (skill?.statModifiers) {
+      const mods = skill.statModifiers;
+      if (mods.hp) { unit.stats.hp += mods.hp; unit.stats.maxHp += mods.hp; }
+      if (mods.atk) unit.stats.atk += mods.atk;
+      if (mods.def) unit.stats.def += mods.def;
+      if (mods.agi) unit.stats.agi += mods.agi;
+      if (mods.mag) unit.stats.mag += mods.mag;
+    }
+  }
   return unit;
 }
 

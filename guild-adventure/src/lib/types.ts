@@ -295,6 +295,8 @@ export interface BattleUnit {
   skills?: SkillData[];
   raceMastery?: boolean;
   jobMastery?: boolean;
+  lv3Skill?: string;
+  lv5Skill?: string;
   // モンスター用
   species?: SpeciesType;
   element?: ElementType;
