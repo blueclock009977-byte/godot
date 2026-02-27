@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
-import { getInvitations, getFriendRequests, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
+import { getInvitations, getFriendRequests, getPublicRooms, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
 
 function LoginScreen() {
   const { login, autoLogin, isLoading } = useGameStore();
@@ -121,6 +121,7 @@ function GameScreen() {
   const { characters, party, currentAdventure, username, logout, inventory } = useGameStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [publicRoomCount, setPublicRoomCount] = useState(0);
   
   // 通知をポーリング + ステータス更新
   useEffect(() => {
@@ -143,6 +144,21 @@ function GameScreen() {
     const interval = setInterval(loadNotifications, 10000);
     return () => clearInterval(interval);
   }, [username]);
+  
+  // 公開ルーム数を取得
+  useEffect(() => {
+    const loadPublicRooms = async () => {
+      try {
+        const rooms = await getPublicRooms();
+        setPublicRoomCount(rooms.length);
+      } catch (e) {
+        console.error('Failed to load public rooms:', e);
+      }
+    };
+    loadPublicRooms();
+    const interval = setInterval(loadPublicRooms, 10000);
+    return () => clearInterval(interval);
+  }, []);
   
   useEffect(() => {
     if (currentAdventure) {
@@ -243,7 +259,13 @@ function GameScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
-                    <p className="text-purple-200 text-sm">（6キャラまで編成可能）</p>
+                    <p className="text-purple-200 text-sm">
+                      {publicRoomCount > 0 ? (
+                        <span className="text-green-300">🌐 公開ルーム {publicRoomCount}件あり！</span>
+                      ) : (
+                        '（6キャラまで編成可能）'
+                      )}
+                    </p>
                   </div>
                   <span className="text-white">→</span>
                 </div>
