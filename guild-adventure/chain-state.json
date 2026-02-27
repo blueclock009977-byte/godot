@@ -17,7 +17,7 @@
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
   "currentPhase": 2,
-  "phaseAttempt": 7,
+  "phaseAttempt": 8,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -64,11 +64,16 @@
       "action": "refactor",
       "file": "src/store/gameStore.ts",
       "detail": "restoreAdventureをヘルパー関数に分離: restoreMultiAdventureHelper + restoreSoloAdventureHelper。restoreAdventure本体が90行→30行に削減"
+    },
+    {
+      "time": "2026-02-27T05:18:00Z",
+      "action": "refactor",
+      "file": "src/components/multi/WaitingRoomView.tsx",
+      "detail": "待機中UI（ヘッダー+プレイヤー一覧+キャラ選択+準備完了ボタン）を別コンポーネントに抽出。multi/[code]/page.tsx: 532行→469行（-63行）"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx が531行（PlayerListPanel抽出済み）",
-    "login/autoLoginでマルチ状態チェックが重複（getUserStatus+getRoom）"
+    "multi/[code]/page.tsx が469行（WaitingRoomView抽出済み）"
   ],
   "completed": [
     "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
@@ -77,6 +82,7 @@
     "components/multi/BattleResultView.tsx: 結果画面UIを抽出",
     "components/multi/BattleProgressView.tsx: バトル進行UIを抽出",
     "components/multi/CharacterSelectPanel.tsx: キャラ選択UIを抽出",
-    "store/gameStore.ts: restoreAdventureをヘルパー関数に分離"
+    "store/gameStore.ts: restoreAdventureをヘルパー関数に分離",
+    "components/multi/WaitingRoomView.tsx: 待機中UIを抽出"
   ]
 }

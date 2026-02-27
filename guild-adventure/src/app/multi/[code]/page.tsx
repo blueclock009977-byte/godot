@@ -29,8 +29,7 @@ import { Character, Party, BattleResult } from '@/lib/types';
 import InviteModal from '@/components/multi/InviteModal';
 import BattleResultView from '@/components/multi/BattleResultView';
 import BattleProgressView from '@/components/multi/BattleProgressView';
-import CharacterSelectPanel from '@/components/multi/CharacterSelectPanel';
-import PlayerListPanel from '@/components/multi/PlayerListPanel';
+import WaitingRoomView from '@/components/multi/WaitingRoomView';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -402,8 +401,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   }
   
   const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];
-  const isHost = username === room.hostId;
-  const playerCount = Object.keys(room.players).length;
   
   // 冒険中のUI
   if (room.status === 'battle' && room.startTime) {
@@ -434,99 +431,39 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   // 待機中のUI
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">{dungeonData?.name}</h1>
-            <div className="text-sm text-slate-400">
-              ルームコード: <span className="text-amber-400 font-mono">{code}</span>
-              {room.isPublic && <span className="ml-2 text-green-400">🌐 公開</span>}
-            </div>
-            <div className="text-xs text-slate-500">
-              推奨人数: {dungeonData?.recommendedPlayers}人 / 探索時間: {dungeonData?.durationSeconds < 60 ? `${dungeonData?.durationSeconds}秒` : `${Math.floor(dungeonData?.durationSeconds / 60)}分`}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setShowInviteModal(true)} 
-              className="text-purple-400 hover:text-purple-300 text-sm"
-            >
-              👥 招待
-            </button>
-            <button onClick={handleLeave} className="text-red-400 hover:text-red-300 text-sm">
-              退出
-            </button>
-          </div>
-        </div>
-        
-        {/* プレイヤー一覧 */}
-        <PlayerListPanel
+    <>
+      <WaitingRoomView
+        room={room}
+        code={code}
+        dungeonName={dungeonData?.name || '不明なダンジョン'}
+        dungeonRecommendedPlayers={dungeonData?.recommendedPlayers || 2}
+        dungeonDurationSeconds={dungeonData?.durationSeconds || 30}
+        selectedChars={selectedChars}
+        characters={characters}
+        maxCharsPerPlayer={maxCharsPerPlayer}
+        isReady={isReady}
+        isStarting={isStarting}
+        allReady={allReady || false}
+        onAddChar={addChar}
+        onRemoveChar={removeChar}
+        onToggleReady={toggleReady}
+        onStartBattle={startBattle}
+        onLeave={handleLeave}
+        onShowInviteModal={() => setShowInviteModal(true)}
+      />
+      
+      {/* フレンド招待モーダル */}
+      {showInviteModal && (
+        <InviteModal
+          code={code}
           players={room.players}
-          hostId={room.hostId}
-          maxPlayers={room.maxPlayers}
-          maxCharsPerPlayer={maxCharsPerPlayer}
+          friends={friends}
+          friendStatuses={friendStatuses}
+          inviteSent={inviteSent}
+          onInvite={handleInviteFriend}
+          onClose={() => setShowInviteModal(false)}
         />
-        
-        {/* キャラ選択（waiting中のみ） */}
-        {room.status === 'waiting' && (
-          <>
-            {/* キャラ選択パネル */}
-            <CharacterSelectPanel
-              selectedChars={selectedChars}
-              characters={characters}
-              maxChars={maxCharsPerPlayer}
-              isReady={isReady}
-              onAddChar={addChar}
-              onRemoveChar={removeChar}
-            />
-            
-            {/* 準備完了ボタン */}
-            <button
-              onClick={toggleReady}
-              disabled={selectedChars.length === 0}
-              className={`w-full py-3 rounded-lg font-semibold mb-4 ${
-                isReady
-                  ? 'bg-green-600 hover:bg-green-500'
-                  : 'bg-slate-600 hover:bg-slate-500'
-              } disabled:opacity-50`}
-            >
-              {isReady ? '✓ 準備完了' : '準備する'}
-            </button>
-            
-            {/* バトル開始ボタン（全員準備完了なら誰でも押せる） */}
-            {allReady && (
-              <button
-                onClick={startBattle}
-                disabled={isStarting}
-                className="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isStarting ? '開始中...' : '⚔️ 冒険開始！'}
-              </button>
-            )}
-            
-            {!allReady && playerCount === room.maxPlayers && (
-              <div className="text-center text-slate-400 text-sm">
-                全員の準備完了を待っています...
-              </div>
-            )}
-          </>
-        )}
-        
-        {/* フレンド招待モーダル */}
-        {showInviteModal && (
-          <InviteModal
-            code={code}
-            players={room.players}
-            friends={friends}
-            friendStatuses={friendStatuses}
-            inviteSent={inviteSent}
-            onInvite={handleInviteFriend}
-            onClose={() => setShowInviteModal(false)}
-          />
-        )}
-      </div>
-    </main>
+      )}
+    </>
   );
 }
