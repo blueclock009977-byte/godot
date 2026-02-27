@@ -14,8 +14,13 @@ import {
   claimMultiDrop,
   saveMultiAdventureForUser,
   updateUserStatus,
+  getFriends,
+  sendInvitation,
+  getMultipleFriendFullStatus,
+  isOnline,
   MultiRoom,
   RoomCharacter,
+  FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
 import { races } from '@/lib/data/races';
@@ -37,6 +42,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [error, setError] = useState('');
   const [myDrop, setMyDrop] = useState<string | null>(null);
   const [dropClaimed, setDropClaimed] = useState(false);
+  
+  // フレンド招待関連
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [friends, setFriends] = useState<string[]>([]);
+  const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
+  const [inviteSent, setInviteSent] = useState<string[]>([]);
   
   // 冒険中のログ表示用
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
@@ -91,6 +102,71 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }, 30000); // 30秒ごと
     return () => clearInterval(interval);
   }, [username, room, code]);
+  
+  // フレンドリスト取得（招待モーダル表示中のみ）
+  useEffect(() => {
+    if (!username || !showInviteModal) return;
+    
+    const loadFriends = async () => {
+      try {
+        const f = await getFriends(username);
+        setFriends(f);
+        if (f.length > 0) {
+          const statuses = await getMultipleFriendFullStatus(f);
+          setFriendStatuses(statuses);
+        }
+      } catch (e) {
+        console.error('Failed to load friends:', e);
+      }
+    };
+    loadFriends();
+    const interval = setInterval(loadFriends, 5000);
+    return () => clearInterval(interval);
+  }, [username, showInviteModal]);
+  
+  // ステータス表示用のヘルパー関数
+  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
+    if (!fullStatus) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+    }
+    
+    const { status, currentAdventure, multiAdventure } = fullStatus;
+    
+    if (currentAdventure) {
+      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
+      const now = Date.now();
+      if (now < endTime) {
+        const remaining = Math.ceil((endTime - now) / 60000);
+        return { text: `冒険中 (残り${remaining}分)`, color: 'text-amber-400', emoji: '⚔️' };
+      } else {
+        return { text: '帰還待ち', color: 'text-orange-400', emoji: '🏠' };
+      }
+    }
+    
+    if (multiAdventure && !multiAdventure.claimed) {
+      return { text: '結果待ち', color: 'text-purple-400', emoji: '👥' };
+    }
+    
+    if (!status || !isOnline(status)) {
+      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
+    }
+    
+    switch (status.activity) {
+      case 'lobby':
+        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
+      case 'multi':
+        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥' };
+      default:
+        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
+    }
+  };
+  
+  // フレンド招待
+  const handleInviteFriend = async (friendName: string) => {
+    if (!username || !room) return;
+    await sendInvitation(username, friendName, code, room.dungeonId);
+    setInviteSent([...inviteSent, friendName]);
+  };
   
   // キャラ選択数の上限
   const maxCharsPerPlayer = room?.maxPlayers === 2 ? 3 : 2;
@@ -478,14 +554,23 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             <h1 className="text-2xl font-bold">{dungeonData?.name}</h1>
             <div className="text-sm text-slate-400">
               ルームコード: <span className="text-amber-400 font-mono">{code}</span>
+              {room.isPublic && <span className="ml-2 text-green-400">🌐 公開</span>}
             </div>
             <div className="text-xs text-slate-500">
               推奨人数: {dungeonData?.recommendedPlayers}人 / 探索時間: {dungeonData?.durationSeconds < 60 ? `${dungeonData?.durationSeconds}秒` : `${Math.floor(dungeonData?.durationSeconds / 60)}分`}
             </div>
           </div>
-          <button onClick={handleLeave} className="text-red-400 hover:text-red-300 text-sm">
-            退出
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowInviteModal(true)} 
+              className="text-purple-400 hover:text-purple-300 text-sm"
+            >
+              👥 招待
+            </button>
+            <button onClick={handleLeave} className="text-red-400 hover:text-red-300 text-sm">
+              退出
+            </button>
+          </div>
         </div>
         
         {/* プレイヤー一覧 */}
@@ -637,6 +722,59 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
               </div>
             )}
           </>
+        )}
+        
+        {/* フレンド招待モーダル */}
+        {showInviteModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowInviteModal(false)}>
+            <div className="bg-slate-800 rounded-lg p-6 max-w-sm w-full border border-slate-600" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">👥 フレンドを招待</h2>
+                <button onClick={() => setShowInviteModal(false)} className="text-slate-400 hover:text-white text-2xl">×</button>
+              </div>
+              
+              <div className="bg-slate-700 rounded-lg p-3 mb-4 text-center">
+                <p className="text-sm text-slate-400">ルームコード</p>
+                <p className="text-2xl font-bold tracking-widest">{code}</p>
+              </div>
+              
+              {friends.length === 0 ? (
+                <div className="text-center py-6 text-slate-400">
+                  フレンドがいません
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {friends.map((friend) => {
+                    const status = getStatusDisplay(friendStatuses[friend]);
+                    const isInRoom = room.players[friend];
+                    
+                    return (
+                      <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
+                        <div>
+                          <span className="font-semibold">{friend}</span>
+                          <div className={`text-xs ${status.color}`}>
+                            {status.emoji} {status.text}
+                          </div>
+                        </div>
+                        {isInRoom ? (
+                          <span className="text-green-400 text-sm">参加中</span>
+                        ) : inviteSent.includes(friend) ? (
+                          <span className="text-green-400 text-sm">✓ 送信済み</span>
+                        ) : (
+                          <button
+                            onClick={() => handleInviteFriend(friend)}
+                            className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
+                          >
+                            招待
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </main>

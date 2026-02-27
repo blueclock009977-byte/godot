@@ -8,13 +8,9 @@ import {
   createRoom, 
   joinRoom, 
   getFriends, 
-  sendInvitation, 
   getInvitations, 
   respondToInvitation, 
-  getMultipleFriendFullStatus,
   getPublicRooms,
-  isOnline,
-  FriendFullStatus,
   RoomInvitation,
   MultiRoom,
 } from '@/lib/firebase';
@@ -113,10 +109,6 @@ export default function MultiPage() {
   // 招待関連
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friends, setFriends] = useState<string[]>([]);
-  const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [createdRoomCode, setCreatedRoomCode] = useState('');
-  const [inviteSent, setInviteSent] = useState<string[]>([]);
   
   // 招待を取得
   useEffect(() => {
@@ -142,22 +134,12 @@ export default function MultiPage() {
       try {
         const f = await getFriends(username);
         setFriends(f);
-        // フレンドの詳細ステータスを取得
-        if (f.length > 0) {
-          const statuses = await getMultipleFriendFullStatus(f);
-          setFriendStatuses(statuses);
-        }
       } catch (e) {
         console.error('Failed to load friends:', e);
       }
     };
     loadFriends();
-    // 招待モーダル表示中は5秒ごとに更新
-    const interval = setInterval(() => {
-      if (showInviteModal) loadFriends();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [username, showInviteModal]);
+  }, [username]);
   
   // 公開ルーム一覧取得
   useEffect(() => {
@@ -176,49 +158,6 @@ export default function MultiPage() {
     const interval = setInterval(loadPublicRooms, 3000);
     return () => clearInterval(interval);
   }, [mode]);
-  
-  // ステータス表示用のヘルパー関数
-  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
-    if (!fullStatus) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
-    }
-    
-    const { status, currentAdventure, multiAdventure } = fullStatus;
-    
-    // ソロ冒険中をチェック
-    if (currentAdventure) {
-      const dungeonName = dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.name || '';
-      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
-      const now = Date.now();
-      
-      if (now < endTime) {
-        const remaining = Math.ceil((endTime - now) / 60000);
-        return { text: `冒険中 (残り${remaining}分)`, color: 'text-amber-400', emoji: '⚔️' };
-      } else {
-        return { text: '帰還待ち', color: 'text-orange-400', emoji: '🏠' };
-      }
-    }
-    
-    // マルチ結果待ち
-    if (multiAdventure && !multiAdventure.claimed) {
-      return { text: '結果待ち', color: 'text-purple-400', emoji: '👥' };
-    }
-    
-    // 通常のステータス
-    if (!status || !isOnline(status)) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
-    }
-    
-    switch (status.activity) {
-      case 'lobby':
-        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
-      case 'multi':
-        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥' };
-      default:
-        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
-    }
-  };
-  
   const handleCreate = async () => {
     if (!username) return;
     setIsLoading(true);
@@ -226,27 +165,11 @@ export default function MultiPage() {
     
     const code = await createRoom(username, selectedDungeon, maxPlayers, isPublic);
     if (code) {
-      setCreatedRoomCode(code);
-      if (friends.length > 0 && !isPublic) {
-        // 非公開の場合のみ招待モーダル表示
-        setShowInviteModal(true);
-      } else {
-        router.push(`/multi/${code}`);
-      }
+      router.push(`/multi/${code}`);
     } else {
       setError('ルーム作成に失敗しました');
     }
     setIsLoading(false);
-  };
-  
-  const handleInviteFriend = async (friendName: string) => {
-    if (!username || !createdRoomCode) return;
-    await sendInvitation(username, friendName, createdRoomCode, selectedDungeon);
-    setInviteSent([...inviteSent, friendName]);
-  };
-  
-  const handleSkipInvite = () => {
-    router.push(`/multi/${createdRoomCode}`);
   };
   
   const handleJoin = async () => {
@@ -539,53 +462,6 @@ export default function MultiPage() {
                   })}
                 </div>
               )}
-            </div>
-          </div>
-        )}
-        
-        {/* 招待モーダル */}
-        {showInviteModal && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-800 rounded-lg p-6 max-w-sm w-full border border-slate-600">
-              <h2 className="text-xl font-bold mb-4">🎉 ルーム作成完了！</h2>
-              <div className="bg-slate-700 rounded-lg p-3 mb-4 text-center">
-                <p className="text-sm text-slate-400">ルームコード</p>
-                <p className="text-3xl font-bold tracking-widest">{createdRoomCode}</p>
-              </div>
-              
-              <h3 className="text-sm text-slate-400 mb-2">フレンドを招待</h3>
-              <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                {friends.map((friend) => {
-                  const status = getStatusDisplay(friendStatuses[friend]);
-                  return (
-                    <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
-                      <div>
-                        <span className="font-semibold">{friend}</span>
-                        <div className={`text-xs ${status.color}`}>
-                          {status.emoji} {status.text}
-                        </div>
-                      </div>
-                      {inviteSent.includes(friend) ? (
-                        <span className="text-green-400 text-sm">✓ 送信済み</span>
-                      ) : (
-                        <button
-                          onClick={() => handleInviteFriend(friend)}
-                          className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
-                        >
-                          招待
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <button
-                onClick={handleSkipInvite}
-                className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-3 font-semibold"
-              >
-                ルームへ進む →
-              </button>
             </div>
           </div>
         )}
