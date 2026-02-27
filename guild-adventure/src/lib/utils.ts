@@ -95,6 +95,17 @@ export function calculateActualMpCost(baseCost: number, mpReduction: number): nu
 }
 
 /**
+ * 基準値にパーセント割合を適用して切り捨て
+ * @param base 基準値
+ * @param percent パーセント値（0-100）
+ * @returns Math.floor(base * percent / 100)
+ * @example applyPercent(100, 30) => 30
+ */
+export function applyPercent(base: number, percent: number): number {
+  return Math.floor(base * percent / 100);
+}
+
+/**
  * ログのスタイルルール定義
  */
 interface LogClassRule {

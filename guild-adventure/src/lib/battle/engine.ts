@@ -18,7 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost } from '../utils';
+import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent } from '../utils';
 
 // ============================================
 // パッシブ効果の集約
@@ -718,7 +718,7 @@ function processTurn(
       
       // HP吸収
       if (unit.passiveEffects.hpSteal > 0) {
-        const steal = Math.floor(damage * unit.passiveEffects.hpSteal / 100);
+        const steal = applyPercent(damage, unit.passiveEffects.hpSteal);
         unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + steal);
         if (steal > 0) logs.push(`${unit.name}はHP${steal}吸収！`);
       }
@@ -739,7 +739,7 @@ function processTurn(
         logs.push(`${target.name}を倒した！`);
         // revive（自己蘇生）
         if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
-          target.stats.hp = Math.floor(target.stats.maxHp * target.passiveEffects.revive / 100);
+          target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
           target.reviveUsed = true;
           logs.push(`${target.name}は不死の力で蘇った！`);
         }
@@ -784,14 +784,14 @@ function processTurn(
             
             // HP吸収
             if (unit.passiveEffects.hpSteal > 0) {
-              const steal = Math.floor(damage * unit.passiveEffects.hpSteal / 100);
+              const steal = applyPercent(damage, unit.passiveEffects.hpSteal);
               unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + steal);
             }
             
             if (target.stats.hp <= 0) {
               logs.push(`${target.name}を倒した！`);
               if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
-                target.stats.hp = Math.floor(target.stats.maxHp * target.passiveEffects.revive / 100);
+                target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
                 target.reviveUsed = true;
                 logs.push(`${target.name}は不死の力で蘇った！`);
               }
@@ -878,7 +878,7 @@ function processEncounter(
   for (const unit of playerUnits) {
     if (unit.stats.hp > 0 && unit.passiveEffects.intimidate > 0) {
       for (const enemy of enemyUnits) {
-        const reduction = Math.floor(enemy.stats.atk * unit.passiveEffects.intimidate / 100);
+        const reduction = applyPercent(enemy.stats.atk, unit.passiveEffects.intimidate);
         enemy.stats.atk = Math.max(1, enemy.stats.atk - reduction);
       }
     }
@@ -889,7 +889,7 @@ function processEncounter(
     if (unit.stats.hp > 0 && unit.passiveEffects.allyAtkBonus > 0) {
       for (const ally of playerUnits) {
         if (ally.id !== unit.id && ally.stats.hp > 0) {
-          const bonus = Math.floor(ally.stats.atk * unit.passiveEffects.allyAtkBonus / 100);
+          const bonus = applyPercent(ally.stats.atk, unit.passiveEffects.allyAtkBonus);
           ally.stats.atk += bonus;
         }
       }
