@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import { RaceType, JobType, TraitType, EnvironmentType, SkillData, PassiveSkill } from '@/lib/types';
 import { races, raceList } from '@/lib/data/races';
 import { jobs, jobList } from '@/lib/data/jobs';
@@ -224,9 +225,8 @@ export default function CreatePage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-lg">
-        <PageHeader title="キャラクター作成" />
+    <PageLayout maxWidth="lg">
+      <PageHeader title="キャラクター作成" />
         
         {/* 名前入力 */}
         <div className="mb-6">
@@ -516,7 +516,6 @@ export default function CreatePage() {
         >
           {canCreate ? 'キャラクターを作成' : '必要なアイテムがありません'}
         </button>
-      </div>
-    </main>
+    </PageLayout>
   );
 }

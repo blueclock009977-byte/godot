@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
+import { PageLayout } from '@/components/PageLayout';
 import {
   getFriends,
   getFriendRequests,
@@ -195,9 +196,8 @@ export default function FriendsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
-        <PageHeader title="👥 フレンド" />
+    <PageLayout>
+      <PageHeader title="👥 フレンド" />
 
         {/* フレンド検索 */}
         <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-6">
@@ -284,7 +284,6 @@ export default function FriendsPage() {
             </div>
           )}
         </div>
-      </div>
-    </main>
+    </PageLayout>
   );
 }
