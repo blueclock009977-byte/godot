@@ -13,6 +13,7 @@ import {
   deleteRoom,
   claimMultiDrop,
   saveMultiAdventureForUser,
+  clearMultiAdventure,
   updateUserStatus,
   getFriends,
   sendInvitation,
@@ -385,6 +386,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           addItem(result.itemId);
           syncToServer();
         }
+        
+        // multiAdventureもクリア（ログイン時の二重受け取り防止）
+        await clearMultiAdventure(username);
         
         // 履歴を追加（初回のみ）
         addHistory({
