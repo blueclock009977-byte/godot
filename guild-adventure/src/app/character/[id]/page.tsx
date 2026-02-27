@@ -104,6 +104,37 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         
+        {/* レベル */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-sm text-slate-400">レベル</h3>
+              <div className="text-2xl font-bold text-amber-400">Lv.{currentLevel}</div>
+              {currentLevel < 5 && (
+                <div className="text-xs text-slate-400">次: {levelUpCost}コイン</div>
+              )}
+            </div>
+            {currentLevel < 5 ? (
+              <button
+                onClick={handleLevelUp}
+                disabled={!canLevelUp || isLoading}
+                className={`px-4 py-2 rounded-lg font-semibold ${canLevelUp ? "bg-amber-600 hover:bg-amber-500" : "bg-slate-600 opacity-50 cursor-not-allowed"}`}
+              >
+                {isLoading ? "..." : `レベルアップ (${levelUpCost}🪙)`}
+              </button>
+            ) : (
+              <span className="text-green-400 font-semibold">MAX</span>
+            )}
+          </div>
+          {(character.lv3Skill || character.lv5Skill) && (
+            <div className="mt-3 pt-3 border-t border-slate-600">
+              <h4 className="text-xs text-slate-400 mb-1">習得スキル</h4>
+              {character.lv3Skill && <div className="text-sm">Lv3: {character.lv3Skill}</div>}
+              {character.lv5Skill && <div className="text-sm">Lv5: {character.lv5Skill}</div>}
+            </div>
+          )}
+        </div>
+
         {/* ステータス */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <StatsDisplay stats={character.stats} title="ステータス" />
