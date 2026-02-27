@@ -18,18 +18,11 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
+import { random, pickRandom } from '../utils';
 
 // ============================================
 // ユーティリティ
 // ============================================
-
-function random(min: number, max: number): number {
-  return min + Math.random() * (max - min);
-}
-
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
 
 function cloneStats(stats: Stats): Stats {
   return { ...stats };

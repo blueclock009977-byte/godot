@@ -1,4 +1,5 @@
 // アイテム定義
+import { pickRandom } from '../utils';
 
 export interface ItemData {
   id: string;
@@ -89,5 +90,5 @@ export function getDropRate(dungeonId: string): number {
 
 // ランダムでアイテムを1つ取得
 export function getRandomItem(): ItemData {
-  return allItems[Math.floor(Math.random() * allItems.length)];
+  return pickRandom(allItems);
 }
