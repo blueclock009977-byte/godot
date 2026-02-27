@@ -578,6 +578,25 @@ export const useGameStore = create<GameStore>()(
         // マルチ冒険の結果を確認
         const multiAdventure = await getMultiAdventure(username);
         if (multiAdventure && !multiAdventure.claimed) {
+          // ルーム情報を取得して時間経過をチェック
+          const room = await getRoom(multiAdventure.roomCode);
+          if (room && room.startTime) {
+            const { dungeons } = require('@/lib/data/dungeons');
+            const dungeonData = dungeons[multiAdventure.dungeonId];
+            if (dungeonData) {
+              const elapsed = Date.now() - room.startTime;
+              const duration = dungeonData.durationSeconds * 1000;
+              
+              // まだ冒険時間が経過していない場合はスキップ
+              if (elapsed < duration) {
+                console.log('[restoreAdventure] multi adventure still in progress');
+                // currentMultiRoom を設定してルームにリダイレクトさせる
+                set({ currentMultiRoom: multiAdventure.roomCode });
+                return;
+              }
+            }
+          }
+
           // 先にclaimを試みる（レースコンディション防止）
           // claimが成功した場合のみ処理を続ける
           const claimResult = await claimMultiAdventure(username);

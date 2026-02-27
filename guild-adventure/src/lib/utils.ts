@@ -81,6 +81,13 @@ export function pickRandom<T>(arr: T[]): T {
 }
 
 /**
+ * HP > 0 のユニットのみをフィルタリング（生存ユニット取得）
+ */
+export function getAliveUnits<T extends { stats: { hp: number } }>(units: T[]): T[] {
+  return units.filter(u => u.stats.hp > 0);
+}
+
+/**
  * ログのスタイルルール定義
  */
 interface LogClassRule {

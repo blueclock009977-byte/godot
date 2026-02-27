@@ -18,7 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom, cloneStats, percentBonus, percentReduce } from '../utils';
+import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits } from '../utils';
 
 // ============================================
 // パッシブ効果の集約
