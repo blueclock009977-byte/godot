@@ -34,7 +34,7 @@ import { useBattleProgress } from '@/hooks/useBattleProgress';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
+  const { username, characters, addItem, addEquipment, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -229,6 +229,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           syncToServer();
         }
         
+        // 装備ドロップを受け取り
+        if (result.equipmentId) {
+          addEquipment(result.equipmentId);
+          syncToServer();
+        }
+        
         // multiAdventureもクリア（ログイン時の二重受け取り防止）
         await clearMultiAdventure(username);
         
@@ -258,7 +264,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       
       handleClaim();
     }
-  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, syncToServer, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, addEquipment, syncToServer, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {

@@ -197,6 +197,7 @@ export interface MultiRoom {
   battleResult?: any;
   startTime?: number;  // 冒険開始時刻
   playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ
   playerClaimed?: Record<string, boolean>;           // 受け取り済みフラグ
   isPublic?: boolean;  // 公開ルームかどうか
   createdAt: number;
@@ -316,7 +317,8 @@ export async function updateRoomStatus(
   status: MultiRoom['status'], 
   startTime?: number,
   battleResult?: any,
-  playerDrops?: Record<string, string | undefined>
+  playerDrops?: Record<string, string | undefined>,
+  playerEquipmentDrops?: Record<string, string | undefined>
 ): Promise<boolean> {
   try {
     const data: any = { status, updatedAt: Date.now() };
@@ -333,6 +335,10 @@ export async function updateRoomStatus(
         acc[key] = false;
         return acc;
       }, {} as Record<string, boolean>);
+    }
+    // 装備ドロップ情報
+    if (playerEquipmentDrops) {
+      data.playerEquipmentDrops = playerEquipmentDrops;
     }
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',
@@ -381,7 +387,7 @@ export async function saveRoomBattleResult(
 
 // マルチのドロップ受け取り
 // マルチのドロップ受け取り（ETag条件付き書き込みで競合防止）
-export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string }> {
+export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string }> {
   try {
     // まずルーム情報を取得（ドロップアイテム用）
     const room = await getRoom(code);
@@ -426,7 +432,8 @@ export async function claimMultiDrop(code: string, username: string): Promise<{ 
     if (putRes.ok) {
       // ドロップがあれば返す（勝利時のみ）
       const itemId = room.playerDrops?.[username];
-      return { success: true, itemId };
+      const equipmentId = room.playerEquipmentDrops?.[username];
+      return { success: true, itemId, equipmentId };
     }
     
     return { success: false };
@@ -925,6 +932,7 @@ export interface MultiAdventureResult {
   dungeonId: string;
   victory: boolean;
   droppedItemId?: string;
+  droppedEquipmentId?: string;
   completedAt: number;
   logs: any[];
   players: string[];
@@ -939,7 +947,8 @@ export async function saveMultiAdventureForUser(
   victory: boolean,
   droppedItemId: string | undefined,
   logs: any[],
-  players: string[]
+  players: string[],
+  droppedEquipmentId?: string
 ): Promise<boolean> {
   try {
     const result: MultiAdventureResult = {
@@ -947,6 +956,7 @@ export async function saveMultiAdventureForUser(
       dungeonId,
       victory,
       droppedItemId,
+      droppedEquipmentId,
       completedAt: Date.now(),
       logs,
       players,

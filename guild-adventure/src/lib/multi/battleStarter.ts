@@ -69,6 +69,27 @@ function calculatePlayerDrops(
   return playerDrops;
 }
 
+// 装備ドロップを各プレイヤーごとに計算
+function calculatePlayerEquipmentDrops(
+  dungeonId: string,
+  players: Record<string, { characters: RoomCharacter[] }>
+): Record<string, string | undefined> {
+  const { dungeons } = require('@/lib/data/dungeons');
+  const { rollEquipmentDrop } = require('@/lib/data/equipments');
+  
+  const dungeonData = dungeons[dungeonId];
+  const durationSeconds = dungeonData?.durationSeconds || 3600;
+  
+  const playerEquipmentDrops: Record<string, string | undefined> = {};
+  
+  Object.keys(players).forEach((playerName) => {
+    const equipment = rollEquipmentDrop(durationSeconds);
+    playerEquipmentDrops[playerName] = equipment?.id;
+  });
+  
+  return playerEquipmentDrops;
+}
+
 interface StartBattleResult {
   success: boolean;
   error?: string;
@@ -105,14 +126,16 @@ export async function startMultiBattle(
   
   // 勝利時は各プレイヤーのドロップを計算
   let playerDrops: Record<string, string | undefined> | undefined;
+  let playerEquipmentDrops: Record<string, string | undefined> | undefined;
   if (result.victory) {
     playerDrops = calculatePlayerDrops(latestRoom.dungeonId, latestRoom.players);
+    playerEquipmentDrops = calculatePlayerEquipmentDrops(latestRoom.dungeonId, latestRoom.players);
   }
   
   const startTime = Date.now();
   
   // Firebaseにバトル結果を保存
-  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops);
+  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops);
   
   // 各プレイヤーにマルチ冒険結果を保存
   const playerNames = Object.keys(latestRoom.players);
@@ -124,7 +147,8 @@ export async function startMultiBattle(
       result.victory,
       playerDrops?.[playerName],
       result.logs,
-      playerNames
+      playerNames,
+      playerEquipmentDrops?.[playerName]
     );
   }
   
