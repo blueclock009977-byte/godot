@@ -18,13 +18,15 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-// getLvBonusはインポートエラーが起きる可能性があるため、動的インポートに変更
-let getLvBonus: (id: string) => { statModifiers?: Record<string, number> } | undefined;
-try {
-  getLvBonus = require('../data/lvStatBonuses').getLvBonus;
-} catch (e) {
-  console.error('[engine] Failed to import lvStatBonuses:', e);
-  getLvBonus = () => undefined;
+// getLvBonusは遅延ロード（モジュール読み込みエラー対策）
+function getLvBonusSafe(id: string): { statModifiers?: Record<string, number> } | undefined {
+  try {
+    const { getLvBonus } = require('../data/lvStatBonuses');
+    return getLvBonus(id);
+  } catch (e) {
+    console.error('[engine] getLvBonus error:', e);
+    return undefined;
+  }
 }
 import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
@@ -306,22 +308,18 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
   unit.passiveEffects = collectPassiveEffects(unit);
   
   // Lv2/Lv4ステータスボーナス適用
-  try {
-    for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
-      if (!bonusId) continue;
-      const bonus = getLvBonus(bonusId);
-      if (bonus?.statModifiers) {
-        const mods = bonus.statModifiers;
-        if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
-        if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
-        if (mods.atk) unit.stats.atk += mods.atk;
-        if (mods.def) unit.stats.def += mods.def;
-        if (mods.agi) unit.stats.agi += mods.agi;
-        if (mods.mag) unit.stats.mag += mods.mag;
-      }
+  for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
+    if (!bonusId) continue;
+    const bonus = getLvBonusSafe(bonusId);
+    if (bonus?.statModifiers) {
+      const mods = bonus.statModifiers;
+      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
+      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
+      if (mods.atk) unit.stats.atk += mods.atk;
+      if (mods.def) unit.stats.def += mods.def;
+      if (mods.agi) unit.stats.agi += mods.agi;
+      if (mods.mag) unit.stats.mag += mods.mag;
     }
-  } catch (e) {
-    console.error('[characterToUnit] getLvBonus error:', e);
   }
   
   // LvスキルのstatModifiers適用
