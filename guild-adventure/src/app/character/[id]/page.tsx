@@ -128,13 +128,42 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               <span className="text-green-400 font-semibold">MAX</span>
             )}
           </div>
-          {(character.lv3Skill || character.lv5Skill) && (
-            <div className="mt-3 pt-3 border-t border-slate-600">
-              <h4 className="text-xs text-slate-400 mb-1">習得スキル</h4>
-              {character.lv3Skill && <div className="text-sm">Lv3: {getLvSkill(character.lv3Skill)?.name || character.lv3Skill}</div>}
-              {character.lv5Skill && <div className="text-sm">Lv5: {getLvSkill(character.lv5Skill)?.name || character.lv5Skill}</div>}
+          {/* Lvスキル一覧 */}
+          <div className="mt-3 pt-3 border-t border-slate-600">
+            <h4 className="text-xs text-slate-400 mb-2">🪙 Lvスキル</h4>
+            <div className="space-y-2 text-sm">
+              {/* Lv3スキル */}
+              <div>
+                <span className="text-slate-400">Lv3: </span>
+                {character.lv3Skill ? (
+                  <span className="text-green-400">✓ {getLvSkill(character.lv3Skill)?.name}</span>
+                ) : currentLevel >= 3 ? (
+                  <span className="text-amber-400">未選択</span>
+                ) : (
+                  <>
+                    <span className="text-slate-500">{getLvSkill(`${character.race}_lv3`)?.name}</span>
+                    <span className="text-slate-600"> or </span>
+                    <span className="text-slate-500">{getLvSkill(`${character.job}_lv3`)?.name}</span>
+                  </>
+                )}
+              </div>
+              {/* Lv5スキル */}
+              <div>
+                <span className="text-slate-400">Lv5: </span>
+                {character.lv5Skill ? (
+                  <span className="text-green-400">✓ {getLvSkill(character.lv5Skill)?.name}</span>
+                ) : currentLevel >= 5 ? (
+                  <span className="text-amber-400">未選択</span>
+                ) : (
+                  <>
+                    <span className="text-slate-500">{getLvSkill(`${character.race}_lv5`)?.name}</span>
+                    <span className="text-slate-600"> or </span>
+                    <span className="text-slate-500">{getLvSkill(`${character.job}_lv5`)?.name}</span>
+                  </>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* ステータス */}
