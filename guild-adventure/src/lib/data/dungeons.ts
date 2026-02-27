@@ -37,7 +37,7 @@ export const dungeons: Record<string, DungeonData> = {
     name: '洞窟',
     description: '暗い洞窟。高防御の敵が多い。物理攻撃が有効。',
     difficulty: 3,
-    recommendedPlayers: 6,
+    recommendedPlayers: 5,
     durationSeconds: 1800, // 30分
     encounterCount: 5,
     monsters: [

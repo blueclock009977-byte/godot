@@ -89,7 +89,7 @@ export const forestBoss: Monster = {
 };
 
 // ============================================
-// 洞窟のモンスター（★★★）- 6人推奨・高防御
+// 洞窟のモンスター（★★★）- 5人推奨・高防御
 // ============================================
 
 export const caveMonsters: Monster[] = [
@@ -97,20 +97,20 @@ export const caveMonsters: Monster[] = [
     id: 'bat_swarm',
     name: 'コウモリの群れ',
     species: 'beast',
-    stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 14, def: 5, agi: 25, mag: 0 },
+    stats: { hp: 70, maxHp: 70, mp: 0, maxMp: 0, atk: 12, def: 4, agi: 22, mag: 0 },
   },
   {
     id: 'stone_golem',
     name: 'ストーンゴーレム',
     species: 'humanoid',
     element: 'earth',
-    stats: { hp: 200, maxHp: 200, mp: 0, maxMp: 0, atk: 22, def: 35, agi: 2, mag: 0 },
+    stats: { hp: 170, maxHp: 170, mp: 0, maxMp: 0, atk: 19, def: 30, agi: 2, mag: 0 },
   },
   {
     id: 'cave_troll',
     name: 'トロール',
     species: 'humanoid',
-    stats: { hp: 250, maxHp: 250, mp: 0, maxMp: 0, atk: 28, def: 20, agi: 5, mag: 0 },
+    stats: { hp: 210, maxHp: 210, mp: 0, maxMp: 0, atk: 24, def: 17, agi: 5, mag: 0 },
   },
 ];
 
@@ -119,7 +119,7 @@ export const caveBoss: Monster = {
   name: 'ダークドラゴン',
   species: 'dragon',
   element: 'fire',
-  stats: { hp: 600, maxHp: 600, mp: 60, maxMp: 60, atk: 35, def: 30, agi: 12, mag: 25 },
+  stats: { hp: 500, maxHp: 500, mp: 50, maxMp: 50, atk: 30, def: 25, agi: 10, mag: 22 },
   skills: [{
     id: 'flame_breath',
     name: '炎のブレス',
@@ -143,21 +143,21 @@ export const seaMonsters: Monster[] = [
     name: 'マーマン',
     species: 'humanoid',
     element: 'water',
-    stats: { hp: 150, maxHp: 150, mp: 30, maxMp: 30, atk: 25, def: 15, agi: 22, mag: 20 },
+    stats: { hp: 135, maxHp: 135, mp: 27, maxMp: 27, atk: 22, def: 13, agi: 20, mag: 18 },
   },
   {
     id: 'sea_serpent',
     name: 'シーサーペント',
     species: 'beast',
     element: 'water',
-    stats: { hp: 180, maxHp: 180, mp: 0, maxMp: 0, atk: 30, def: 18, agi: 25, mag: 0 },
+    stats: { hp: 160, maxHp: 160, mp: 0, maxMp: 0, atk: 27, def: 16, agi: 22, mag: 0 },
   },
   {
     id: 'ghost_ship',
     name: 'ゴーストシップ',
     species: 'undead',
     element: 'water',
-    stats: { hp: 200, maxHp: 200, mp: 40, maxMp: 40, atk: 20, def: 25, agi: 10, mag: 30 },
+    stats: { hp: 180, maxHp: 180, mp: 36, maxMp: 36, atk: 18, def: 22, agi: 9, mag: 27 },
   },
 ];
 
@@ -166,7 +166,7 @@ export const seaBoss: Monster = {
   name: 'クラーケン',
   species: 'beast',
   element: 'water',
-  stats: { hp: 800, maxHp: 800, mp: 50, maxMp: 50, atk: 40, def: 25, agi: 18, mag: 30 },
+  stats: { hp: 700, maxHp: 700, mp: 45, maxMp: 45, atk: 35, def: 22, agi: 16, mag: 27 },
   skills: [{
     id: 'tidal_wave',
     name: '大津波',
@@ -189,19 +189,19 @@ export const desertMonsters: Monster[] = [
     name: 'サンドワーム',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 250, maxHp: 250, mp: 0, maxMp: 0, atk: 38, def: 20, agi: 8, mag: 0 },
+    stats: { hp: 210, maxHp: 210, mp: 0, maxMp: 0, atk: 32, def: 17, agi: 7, mag: 0 },
   },
   {
     id: 'mummy',
     name: 'マミー',
     species: 'undead',
-    stats: { hp: 200, maxHp: 200, mp: 30, maxMp: 30, atk: 30, def: 30, agi: 5, mag: 25 },
+    stats: { hp: 170, maxHp: 170, mp: 25, maxMp: 25, atk: 25, def: 25, agi: 4, mag: 21 },
   },
   {
     id: 'scorpion_king',
     name: 'スコーピオン',
     species: 'beast',
-    stats: { hp: 220, maxHp: 220, mp: 0, maxMp: 0, atk: 35, def: 35, agi: 15, mag: 0 },
+    stats: { hp: 185, maxHp: 185, mp: 0, maxMp: 0, atk: 30, def: 30, agi: 13, mag: 0 },
   },
 ];
 
@@ -210,7 +210,7 @@ export const desertBoss: Monster = {
   name: 'スフィンクス',
   species: 'beast',
   element: 'earth',
-  stats: { hp: 1000, maxHp: 1000, mp: 80, maxMp: 80, atk: 45, def: 40, agi: 20, mag: 40 },
+  stats: { hp: 850, maxHp: 850, mp: 68, maxMp: 68, atk: 38, def: 34, agi: 17, mag: 34 },
   skills: [{
     id: 'riddle',
     name: '謎かけ',
@@ -234,21 +234,21 @@ export const volcanoMonsters: Monster[] = [
     name: 'ファイアエレメンタル',
     species: 'demon',
     element: 'fire',
-    stats: { hp: 200, maxHp: 200, mp: 50, maxMp: 50, atk: 25, def: 15, agi: 20, mag: 45 },
+    stats: { hp: 170, maxHp: 170, mp: 42, maxMp: 42, atk: 21, def: 13, agi: 17, mag: 38 },
   },
   {
     id: 'lava_golem',
     name: 'ラーヴァゴーレム',
     species: 'humanoid',
     element: 'fire',
-    stats: { hp: 350, maxHp: 350, mp: 0, maxMp: 0, atk: 45, def: 45, agi: 3, mag: 0 },
+    stats: { hp: 300, maxHp: 300, mp: 0, maxMp: 0, atk: 38, def: 38, agi: 3, mag: 0 },
   },
   {
     id: 'salamander',
     name: 'サラマンダー',
     species: 'beast',
     element: 'fire',
-    stats: { hp: 280, maxHp: 280, mp: 40, maxMp: 40, atk: 40, def: 25, agi: 22, mag: 35 },
+    stats: { hp: 240, maxHp: 240, mp: 34, maxMp: 34, atk: 34, def: 21, agi: 19, mag: 30 },
   },
 ];
 
@@ -257,7 +257,7 @@ export const volcanoBoss: Monster = {
   name: 'イフリート',
   species: 'demon',
   element: 'fire',
-  stats: { hp: 1200, maxHp: 1200, mp: 100, maxMp: 100, atk: 55, def: 35, agi: 25, mag: 55 },
+  stats: { hp: 1000, maxHp: 1000, mp: 85, maxMp: 85, atk: 47, def: 30, agi: 21, mag: 47 },
   skills: [{
     id: 'hellfire',
     name: '地獄の業火',
@@ -281,21 +281,21 @@ export const snowfieldMonsters: Monster[] = [
     name: 'アイスウルフ',
     species: 'beast',
     element: 'water',
-    stats: { hp: 300, maxHp: 300, mp: 0, maxMp: 0, atk: 45, def: 25, agi: 35, mag: 0 },
+    stats: { hp: 255, maxHp: 255, mp: 0, maxMp: 0, atk: 38, def: 21, agi: 30, mag: 0 },
   },
   {
     id: 'frost_giant',
     name: 'フロストジャイアント',
     species: 'humanoid',
     element: 'water',
-    stats: { hp: 450, maxHp: 450, mp: 30, maxMp: 30, atk: 55, def: 40, agi: 8, mag: 25 },
+    stats: { hp: 380, maxHp: 380, mp: 25, maxMp: 25, atk: 47, def: 34, agi: 7, mag: 21 },
   },
   {
     id: 'ice_wraith',
     name: 'アイスレイス',
     species: 'undead',
     element: 'water',
-    stats: { hp: 250, maxHp: 250, mp: 60, maxMp: 60, atk: 30, def: 20, agi: 30, mag: 50 },
+    stats: { hp: 210, maxHp: 210, mp: 51, maxMp: 51, atk: 25, def: 17, agi: 25, mag: 43 },
   },
 ];
 
@@ -304,7 +304,7 @@ export const snowfieldBoss: Monster = {
   name: 'アイスクイーン',
   species: 'demon',
   element: 'water',
-  stats: { hp: 1400, maxHp: 1400, mp: 120, maxMp: 120, atk: 50, def: 45, agi: 30, mag: 65 },
+  stats: { hp: 1190, maxHp: 1190, mp: 100, maxMp: 100, atk: 42, def: 38, agi: 25, mag: 55 },
   skills: [{
     id: 'absolute_zero',
     name: '絶対零度',
