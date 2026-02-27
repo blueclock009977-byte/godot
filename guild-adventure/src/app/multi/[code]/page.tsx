@@ -243,7 +243,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     // ホストがバトル結果を計算
     const result = runBattle(party, latestRoom.dungeonId as any);
     
-    // 参加者情報をログの先頭に追加
+    // 参加者情報を結果に追加（ログとは別に保存）
     const dungeonData = dungeons[latestRoom.dungeonId as keyof typeof dungeons];
     let participantLog = `【冒険開始】${dungeonData?.name || latestRoom.dungeonId}\n👥 参加者:\n`;
     Object.entries(latestRoom.players).forEach(([playerName, player]) => {
@@ -253,7 +253,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       }).join(', ');
       participantLog += `  ${playerName}: ${chars}\n`;
     });
-    result.logs.unshift({ message: participantLog, turn: 0, actions: [] });
+    (result as any).startLog = participantLog;
     
     // 勝利時は各プレイヤーのドロップを計算
     let playerDrops: Record<string, string | undefined> | undefined;
@@ -294,11 +294,11 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     // Firebaseからバトル結果を取得（ホストが計算したもの）
     battleResultRef.current = room.battleResult;
     
-    // 冒険開始ログを即座に表示（turn: 0のログ）
-    if (room.battleResult.logs[0] && room.battleResult.logs[0].turn === 0) {
-      const startLog = room.battleResult.logs[0].message.split('\n').filter((l: string) => l.trim());
-      setDisplayedLogs(startLog);
-      setCurrentEncounter(1); // 次は1から表示
+    // 冒険開始ログを即座に表示
+    const startLog = (room.battleResult as any).startLog;
+    if (startLog) {
+      const startLogLines = startLog.split('\n').filter((l: string) => l.trim());
+      setDisplayedLogs(startLogLines);
     }
   }, [room?.status, room?.battleResult]);
   
