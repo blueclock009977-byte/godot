@@ -14,7 +14,7 @@ import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, syncToServer, addHistory } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addCoins, syncToServer, addHistory } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
@@ -152,6 +152,15 @@ export default function AdventurePage() {
               return;
             }
             
+            // 勝利時はコインを付与
+            if (battleResult.victory) {
+              const coinReward = dungeons[currentAdventure.dungeon]?.coinReward || 0;
+              if (coinReward > 0) {
+                addCoins(coinReward);
+                setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！`]);
+              }
+            }
+
             // 履歴を追加（初回のみ）
             addHistory({
               type: 'solo',

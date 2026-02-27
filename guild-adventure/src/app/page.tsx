@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getRaceShortName, getJobShortName } from '@/lib/utils';
@@ -119,41 +120,32 @@ function GameScreen() {
   const [publicRoomCount, setPublicRoomCount] = useState(0);
   
   // 通知をポーリング + ステータス更新
-  useEffect(() => {
-    if (!username) return;
-    const loadNotifications = async () => {
-      try {
-        const [invites, requests] = await Promise.all([
-          getInvitations(username),
-          getFriendRequests(username),
-        ]);
-        setInvitations(invites);
-        setFriendRequests(requests);
-        // ロビーにいることを更新
-        updateUserStatus(username, 'lobby');
-      } catch (e) {
-        console.error('Failed to load notifications:', e);
-      }
-    };
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 10000);
-    return () => clearInterval(interval);
+  const loadNotifications = useCallback(async () => {
+    try {
+      const [invites, requests] = await Promise.all([
+        getInvitations(username!),
+        getFriendRequests(username!),
+      ]);
+      setInvitations(invites);
+      setFriendRequests(requests);
+      // ロビーにいることを更新
+      updateUserStatus(username!, 'lobby');
+    } catch (e) {
+      console.error('Failed to load notifications:', e);
+    }
   }, [username]);
+  usePolling(loadNotifications, 10000, !!username);
   
   // 公開ルーム数を取得
-  useEffect(() => {
-    const loadPublicRooms = async () => {
-      try {
-        const rooms = await getPublicRooms();
-        setPublicRoomCount(rooms.length);
-      } catch (e) {
-        console.error('Failed to load public rooms:', e);
-      }
-    };
-    loadPublicRooms();
-    const interval = setInterval(loadPublicRooms, 10000);
-    return () => clearInterval(interval);
+  const loadPublicRooms = useCallback(async () => {
+    try {
+      const rooms = await getPublicRooms();
+      setPublicRoomCount(rooms.length);
+    } catch (e) {
+      console.error('Failed to load public rooms:', e);
+    }
   }, []);
+  usePolling(loadPublicRooms, 10000);
   
   useEffect(() => {
     if (currentAdventure) {
