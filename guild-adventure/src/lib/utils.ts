@@ -106,6 +106,18 @@ export function applyPercent(base: number, percent: number): number {
 }
 
 /**
+ * 値を指定範囲に制限する（クランプ）
+ * @param value 対象の値
+ * @param min 最小値
+ * @param max 最大値
+ * @returns min <= value <= max に制限された値
+ * @example clamp(150, 30, 99) => 99
+ */
+export function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
  * ログのスタイルルール定義
  */
 interface LogClassRule {

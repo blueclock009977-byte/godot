@@ -18,7 +18,7 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent } from '../utils';
+import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
 // ============================================
 // パッシブ効果の集約
@@ -344,8 +344,8 @@ function checkHit(attacker: ExtendedBattleUnit, defender: ExtendedBattleUnit): {
   // 隊列補正（後衛は回避+10%）
   if (defender.position === 'back') hitRate -= 10;
   
-  // 範囲制限
-  hitRate = Math.max(30, Math.min(99, hitRate));
+  // 範囲制限（30%〜99%）
+  hitRate = clamp(hitRate, 30, 99);
   
   return { hit: Math.random() * 100 < hitRate, perfectEvade: false };
 }
