@@ -309,8 +309,8 @@ export function rollEquipmentDrop(durationSeconds: number): Equipment | null {
     return null; // ドロップなし
   }
   
-  // レアリティ判定（レア1%、通常99%）
-  const isRare = Math.random() * 100 < 1;
+  // レアリティ判定（レア3%、通常97%）
+  const isRare = Math.random() * 100 < 3;
   
   const pool = isRare ? rareEquipments : normalEquipments;
   return pool[Math.floor(Math.random() * pool.length)];
