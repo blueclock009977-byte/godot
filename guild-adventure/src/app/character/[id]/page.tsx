@@ -132,68 +132,107 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               <span className="text-green-400 font-semibold">MAX</span>
             )}
           </div>
-          {/* Lvボーナス一覧 */}
+          {/* Lvボーナス一覧（詳細表示） */}
           <div className="mt-3 pt-3 border-t border-slate-600">
-            <h4 className="text-xs text-slate-400 mb-2">🪙 レベルアップボーナス</h4>
-            <div className="space-y-2 text-sm">
+            <h4 className="text-xs text-slate-400 mb-3">🪙 レベルアップボーナス</h4>
+            <div className="space-y-4 text-sm">
               {/* Lv2ボーナス */}
-              <div>
-                <span className="text-slate-400">Lv2: </span>
+              <div className="bg-slate-700/50 rounded p-2">
+                <div className="font-semibold text-slate-300 mb-1">Lv2 - ステータスボーナス</div>
                 {character.lv2Bonus ? (
-                  <span className="text-green-400">✓ {getLvBonus(character.lv2Bonus)?.name}</span>
+                  <div className="text-green-400">
+                    ✓ {getLvBonus(character.lv2Bonus)?.name}
+                    <div className="text-xs text-green-300 ml-4">{getLvBonus(character.lv2Bonus)?.description}</div>
+                  </div>
                 ) : currentLevel >= 2 ? (
-                  <span className="text-amber-400">未取得</span>
+                  <div className="text-amber-400">未取得</div>
                 ) : (
-                  <>
-                    <span className="text-slate-500">{getLvBonus(`${character.race}_lv2`)?.name}</span>
-                    <span className="text-slate-600"> or </span>
-                    <span className="text-slate-500">{getLvBonus(`${character.job}_lv2`)?.name}</span>
-                  </>
+                  <div className="space-y-1">
+                    <div className="text-slate-400">
+                      <span className="text-blue-400">[{raceData.name}]</span> {getLvBonus(`${character.race}_lv2`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvBonus(`${character.race}_lv2`)?.description}</div>
+                    </div>
+                    <div className="text-slate-400">
+                      <span className="text-purple-400">[{jobData.name}]</span> {getLvBonus(`${character.job}_lv2`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvBonus(`${character.job}_lv2`)?.description}</div>
+                    </div>
+                    <div className="text-xs text-slate-500 italic">※どちらかがランダムで習得</div>
+                  </div>
                 )}
               </div>
+              
               {/* Lv3スキル */}
-              <div>
-                <span className="text-slate-400">Lv3: </span>
+              <div className="bg-slate-700/50 rounded p-2">
+                <div className="font-semibold text-slate-300 mb-1">Lv3 - スキル</div>
                 {character.lv3Skill ? (
-                  <span className="text-green-400">✓ {getLvSkill(character.lv3Skill)?.name}</span>
+                  <div className="text-green-400">
+                    ✓ {getLvSkill(character.lv3Skill)?.name}
+                    <div className="text-xs text-green-300 ml-4">{getLvSkill(character.lv3Skill)?.description}</div>
+                  </div>
                 ) : currentLevel >= 3 ? (
-                  <span className="text-amber-400">未取得</span>
+                  <div className="text-amber-400">未取得</div>
                 ) : (
-                  <>
-                    <span className="text-slate-500">{getLvSkill(`${character.race}_lv3`)?.name}</span>
-                    <span className="text-slate-600"> or </span>
-                    <span className="text-slate-500">{getLvSkill(`${character.job}_lv3`)?.name}</span>
-                  </>
+                  <div className="space-y-1">
+                    <div className="text-slate-400">
+                      <span className="text-blue-400">[{raceData.name}]</span> {getLvSkill(`${character.race}_lv3`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvSkill(`${character.race}_lv3`)?.description}</div>
+                    </div>
+                    <div className="text-slate-400">
+                      <span className="text-purple-400">[{jobData.name}]</span> {getLvSkill(`${character.job}_lv3`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvSkill(`${character.job}_lv3`)?.description}</div>
+                    </div>
+                    <div className="text-xs text-slate-500 italic">※どちらかがランダムで習得</div>
+                  </div>
                 )}
               </div>
+              
               {/* Lv4ボーナス */}
-              <div>
-                <span className="text-slate-400">Lv4: </span>
+              <div className="bg-slate-700/50 rounded p-2">
+                <div className="font-semibold text-slate-300 mb-1">Lv4 - ステータスボーナス</div>
                 {character.lv4Bonus ? (
-                  <span className="text-green-400">✓ {getLvBonus(character.lv4Bonus)?.name}</span>
+                  <div className="text-green-400">
+                    ✓ {getLvBonus(character.lv4Bonus)?.name}
+                    <div className="text-xs text-green-300 ml-4">{getLvBonus(character.lv4Bonus)?.description}</div>
+                  </div>
                 ) : currentLevel >= 4 ? (
-                  <span className="text-amber-400">未取得</span>
+                  <div className="text-amber-400">未取得</div>
                 ) : (
-                  <>
-                    <span className="text-slate-500">{getLvBonus(`${character.race}_lv4`)?.name}</span>
-                    <span className="text-slate-600"> or </span>
-                    <span className="text-slate-500">{getLvBonus(`${character.job}_lv4`)?.name}</span>
-                  </>
+                  <div className="space-y-1">
+                    <div className="text-slate-400">
+                      <span className="text-blue-400">[{raceData.name}]</span> {getLvBonus(`${character.race}_lv4`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvBonus(`${character.race}_lv4`)?.description}</div>
+                    </div>
+                    <div className="text-slate-400">
+                      <span className="text-purple-400">[{jobData.name}]</span> {getLvBonus(`${character.job}_lv4`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvBonus(`${character.job}_lv4`)?.description}</div>
+                    </div>
+                    <div className="text-xs text-slate-500 italic">※どちらかがランダムで習得</div>
+                  </div>
                 )}
               </div>
+              
               {/* Lv5スキル */}
-              <div>
-                <span className="text-slate-400">Lv5: </span>
+              <div className="bg-slate-700/50 rounded p-2">
+                <div className="font-semibold text-slate-300 mb-1">Lv5 - スキル（強力）</div>
                 {character.lv5Skill ? (
-                  <span className="text-green-400">✓ {getLvSkill(character.lv5Skill)?.name}</span>
+                  <div className="text-green-400">
+                    ✓ {getLvSkill(character.lv5Skill)?.name}
+                    <div className="text-xs text-green-300 ml-4">{getLvSkill(character.lv5Skill)?.description}</div>
+                  </div>
                 ) : currentLevel >= 5 ? (
-                  <span className="text-amber-400">未取得</span>
+                  <div className="text-amber-400">未取得</div>
                 ) : (
-                  <>
-                    <span className="text-slate-500">{getLvSkill(`${character.race}_lv5`)?.name}</span>
-                    <span className="text-slate-600"> or </span>
-                    <span className="text-slate-500">{getLvSkill(`${character.job}_lv5`)?.name}</span>
-                  </>
+                  <div className="space-y-1">
+                    <div className="text-slate-400">
+                      <span className="text-blue-400">[{raceData.name}]</span> {getLvSkill(`${character.race}_lv5`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvSkill(`${character.race}_lv5`)?.description}</div>
+                    </div>
+                    <div className="text-slate-400">
+                      <span className="text-purple-400">[{jobData.name}]</span> {getLvSkill(`${character.job}_lv5`)?.name}
+                      <div className="text-xs text-slate-500 ml-4">{getLvSkill(`${character.job}_lv5`)?.description}</div>
+                    </div>
+                    <div className="text-xs text-slate-500 italic">※どちらかがランダムで習得</div>
+                  </div>
                 )}
               </div>
             </div>
