@@ -480,13 +480,14 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory } = get();
+        const { username, characters, party, inventory, coins } = get();
         if (!username) return;
         
         await saveUserData(username, {
           characters,
           party,
           inventory,
+          coins,
         });
       },
       
