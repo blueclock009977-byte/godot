@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
+import { getRaceShortName, getJobShortName } from '@/lib/utils';
 import { getInvitations, getFriendRequests, getPublicRooms, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
 
 function LoginScreen() {
@@ -340,9 +341,7 @@ function GameScreen() {
                     <div>
                       <span className="font-semibold">{char.name}</span>
                       <span className="text-xs text-slate-400 ml-2">
-                        {char.race === 'human' ? '人' : char.race === 'elf' ? 'エ' : char.race === 'dwarf' ? 'ド' : char.race === 'halfling' ? 'ハ' : char.race === 'orc' ? 'オ' : char.race === 'lizardman' ? 'リ' : char.race === 'fairy' ? 'フ' : char.race === 'undead' ? 'ア' : char.race === 'goblin' ? 'ゴ' : char.race === 'dragonewt' ? '竜' : char.race === 'angel' ? '天' : '悪'}
-                        ・
-                        {char.job === 'warrior' ? '戦' : char.job === 'mage' ? '魔' : char.job === 'priest' ? '司' : char.job === 'thief' ? '盗' : char.job === 'knight' ? '騎' : char.job === 'hunter' ? '狩' : char.job === 'ninja' ? '忍' : char.job === 'sage' ? '賢' : char.job === 'berserker' ? '狂' : char.job === 'paladin' ? '聖' : char.job === 'necromancer' ? '死' : char.job === 'monk' ? '拳' : char.job === 'ranger' ? '野' : char.job === 'samurai' ? '侍' : char.job === 'witch' ? '魔女' : '詩'}
+                        {getRaceShortName(char.race)}・{getJobShortName(char.job)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
