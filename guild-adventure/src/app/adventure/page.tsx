@@ -9,6 +9,7 @@ import { getItemById } from '@/lib/data/items';
 import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
 import { getLogClassName } from '@/lib/utils';
 import { BattleResult } from '@/lib/types';
+import { PageLayout } from '@/components/PageLayout';
 
 export default function AdventurePage() {
   const router = useRouter();
@@ -209,8 +210,7 @@ export default function AdventurePage() {
   };
   
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-8 max-w-md">
+    <PageLayout>
         {/* ヘッダー */}
         <div className="mb-6 flex justify-between items-start">
           <div>
@@ -316,7 +316,6 @@ export default function AdventurePage() {
             </button>
           </>
         )}
-      </div>
-    </main>
+    </PageLayout>
   );
 }
