@@ -137,8 +137,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     
     // 最新のroomデータを再取得（ポーリングのタイミングで他プレイヤーのキャラ情報が古い可能性がある）
     const latestRoom = await getRoom(code);
-    if (!latestRoom || latestRoom.status !== 'ready') {
-      console.error('Room not ready or not found');
+    if (!latestRoom || latestRoom.status === 'battle' || latestRoom.status === 'done') {
+      console.error('Room already in battle or done');
       return;
     }
     
