@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getRaceShortName, getJobShortName } from '@/lib/utils';
 import { getInvitations, getFriendRequests, getPublicRooms, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 function LoginScreen() {
   const { login, autoLogin, isLoading } = useGameStore();
@@ -42,14 +43,7 @@ function LoginScreen() {
   };
   
   if (isAutoLogging) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⚔️</div>
-          <p className="text-slate-400">読み込み中...</p>
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
   
   return (
@@ -404,14 +398,7 @@ export default function Home() {
   }, [mounted, isLoggedIn, username, autoLogin]);
   
   if (!mounted || (isLoggedIn && !_dataLoaded)) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⚔️</div>
-          <p className="text-slate-400">読み込み中...</p>
-        </div>
-      </main>
-    );
+    return <LoadingScreen />;
   }
   
   return isLoggedIn ? <GameScreen /> : <LoginScreen />;
