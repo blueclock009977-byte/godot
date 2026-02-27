@@ -47,9 +47,9 @@ export default function AdventurePage() {
   // ステータス更新（ソロ冒険中）
   useEffect(() => {
     if (!username || !currentAdventure) return;
-    updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon });
+    updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon, startTime: currentAdventure.startTime });
     const interval = setInterval(() => {
-      updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon });
+      updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon, startTime: currentAdventure.startTime });
     }, 30000); // 30秒ごと
     return () => clearInterval(interval);
   }, [username, currentAdventure]);

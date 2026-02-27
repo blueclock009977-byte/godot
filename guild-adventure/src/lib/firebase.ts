@@ -829,13 +829,14 @@ export interface UserStatus {
   activity: UserActivity;
   dungeonId?: string;  // ダンジョン中の場合
   roomCode?: string;   // マルチ中の場合
+  startTime?: number;  // 冒険開始時刻
 }
 
 // ステータスを更新
 export async function updateUserStatus(
   username: string,
   activity: UserActivity,
-  extra?: { dungeonId?: string; roomCode?: string }
+  extra?: { dungeonId?: string; roomCode?: string; startTime?: number }
 ): Promise<boolean> {
   try {
     const status: UserStatus = {
