@@ -131,9 +131,11 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const allReady = room && Object.values(room.players).length === room.maxPlayers &&
     Object.values(room.players).every(p => p.ready && p.characters.length > 0);
   
-  // バトル開始（ホストのみ）- バトル結果+ドロップを事前計算してFirebaseに保存
+  // バトル開始（誰でも可）- バトル結果+ドロップを事前計算してFirebaseに保存
+  const [isStarting, setIsStarting] = useState(false);
   const startBattle = async () => {
-    if (!room || !username || room.hostId !== username) return;
+    if (!room || !username || isStarting) return;
+    setIsStarting(true);
     
     // 最新のroomデータを再取得（ポーリングのタイミングで他プレイヤーのキャラ情報が古い可能性がある）
     const latestRoom = await getRoom(code);
@@ -250,10 +252,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
           
-          // ホストがステータスをdoneに更新
-          if (username === room.hostId) {
-            updateRoomStatus(code, 'done');
-          }
+          // ステータスをdoneに更新（最初に完了した人が更新）
+          updateRoomStatus(code, 'done');
         }
       }
     }, 100);
@@ -620,17 +620,18 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
               {isReady ? '✓ 準備完了' : '準備する'}
             </button>
             
-            {/* バトル開始ボタン（ホストのみ） */}
-            {isHost && allReady && (
+            {/* バトル開始ボタン（全員準備完了なら誰でも押せる） */}
+            {allReady && (
               <button
                 onClick={startBattle}
-                className="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-lg font-semibold"
+                disabled={isStarting}
+                className="w-full bg-amber-600 hover:bg-amber-500 py-3 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ⚔️ 冒険開始！
+                {isStarting ? '開始中...' : '⚔️ 冒険開始！'}
               </button>
             )}
             
-            {isHost && !allReady && playerCount === room.maxPlayers && (
+            {!allReady && playerCount === room.maxPlayers && (
               <div className="text-center text-slate-400 text-sm">
                 全員の準備完了を待っています...
               </div>
