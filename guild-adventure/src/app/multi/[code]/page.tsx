@@ -206,6 +206,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           const coinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
           if (coinReward > 0) {
             addCoins(coinReward);
+            syncToServer();
           }
         }
 

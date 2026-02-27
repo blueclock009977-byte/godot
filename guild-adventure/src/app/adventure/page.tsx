@@ -158,6 +158,7 @@ export default function AdventurePage() {
               if (coinReward > 0) {
                 addCoins(coinReward);
                 setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！`]);
+                syncToServer();
               }
             }
 

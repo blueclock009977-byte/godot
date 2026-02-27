@@ -116,6 +116,17 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
     collectEffectsFromSource(jobs[unit.job], !!unit.jobMastery, effects);
   }
   
+  
+  // Lvスキルのeffects収集
+  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
+    if (!skillId) continue;
+    const skill = getLvSkill(skillId);
+    if (skill?.effects) {
+      for (const effect of skill.effects) {
+        applyEffect(effects, effect.type, effect.value);
+      }
+    }
+  }
   return effects;
 }
 
