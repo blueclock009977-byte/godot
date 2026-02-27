@@ -28,6 +28,7 @@ import BattleResultView from '@/components/multi/BattleResultView';
 import BattleProgressView from '@/components/multi/BattleProgressView';
 import WaitingRoomView from '@/components/multi/WaitingRoomView';
 import { startMultiBattle } from '@/lib/multi/battleStarter';
+import { useBattleProgress } from '@/hooks/useBattleProgress';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -50,11 +51,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [inviteSent, setInviteSent] = useState<string[]>([]);
   
-  // 冒険中のログ表示用
-  const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
-  const [progress, setProgress] = useState(0);
-  const [currentEncounter, setCurrentEncounter] = useState(0);
-  const battleResultRef = useRef<BattleResult | null>(null);
+  // 冒険中のログ表示用（カスタムフック）
+  const { displayedLogs, progress } = useBattleProgress({
+    roomStatus: room?.status,
+    battleResult: room?.battleResult,
+    startTime: room?.startTime,
+    dungeonId: room?.dungeonId,
+    roomCode: code,
+  });
   
   // 自動ログイン（ストアの初期化）
   useEffect(() => {
@@ -182,77 +186,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       console.error(result.error);
     }
   };
-  
-  // バトル結果をFirebaseから読み取る
-  useEffect(() => {
-    if (!room || room.status !== 'battle' || !room.battleResult) return;
-    if (battleResultRef.current) return; // 既に設定済み
-    
-    // Firebaseからバトル結果を取得（ホストが計算したもの）
-    battleResultRef.current = room.battleResult;
-    
-    // 冒険開始ログを即座に表示
-    const startLog = (room.battleResult as any).startLog;
-    if (startLog) {
-      const startLogLines = startLog.split('\n').filter((l: string) => l.trim());
-      setDisplayedLogs(startLogLines);
-    }
-  }, [room?.status, room?.battleResult]);
-  
-  // 時間経過に応じてログを表示
-  useEffect(() => {
-    if (!room || room.status !== 'battle' || !room.startTime || !battleResultRef.current) return;
-    
-    const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];
-    if (!dungeonData) return;
-    
-    const totalTime = dungeonData.durationSeconds * 1000;
-    const startTime = room.startTime;
-    const encounterCount = dungeonData.encounterCount;
-    const timePerEncounter = totalTime / encounterCount;
-    
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const newProgress = Math.min(100, (elapsed / totalTime) * 100);
-      setProgress(newProgress);
-      
-      const shouldShowEncounter = Math.min(
-        encounterCount,
-        Math.floor(elapsed / timePerEncounter)
-      );
-      
-      if (shouldShowEncounter > currentEncounter && battleResultRef.current) {
-        const result = battleResultRef.current;
-        
-        for (let i = currentEncounter; i < shouldShowEncounter; i++) {
-          if (result.logs[i]) {
-            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
-            setDisplayedLogs(prev => [...prev, ...newLogs]);
-          }
-        }
-        setCurrentEncounter(shouldShowEncounter);
-      }
-      
-      // 完了判定
-      if (newProgress >= 100) {
-        clearInterval(interval);
-        
-        if (battleResultRef.current) {
-          const result = battleResultRef.current;
-          // 残りのログを全部表示
-          for (let i = currentEncounter; i < result.logs.length; i++) {
-            const newLogs = result.logs[i].message.split('\n').filter(l => l.trim());
-            setDisplayedLogs(prev => [...prev, ...newLogs]);
-          }
-          
-          // ステータスをdoneに更新（最初に完了した人が更新）
-          updateRoomStatus(code, 'done');
-        }
-      }
-    }, 100);
-    
-    return () => clearInterval(interval);
-  }, [room?.status, room?.startTime, room?.dungeonId, currentEncounter, username, room?.hostId, code]);
   
   // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
   useEffect(() => {

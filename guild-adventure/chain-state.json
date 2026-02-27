@@ -17,7 +17,7 @@
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
   "currentPhase": 2,
-  "phaseAttempt": 9,
+  "phaseAttempt": 10,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -76,10 +76,16 @@
       "action": "refactor",
       "file": "src/lib/multi/battleStarter.ts",
       "detail": "startMultiBattleヘルパーを新規作成。パーティ構築、バトル実行、ドロップ計算、Firebase保存を抽出。multi/[code]/page.tsx: 469行→401行（-68行）"
+    },
+    {
+      "time": "2026-02-27T05:27:00Z",
+      "action": "refactor",
+      "file": "src/hooks/useBattleProgress.ts",
+      "detail": "バトルログ表示関連のuseEffect2つをカスタムフックに抽出。multi/[code]/page.tsx: 401行→334行（-67行）"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx が401行まで削減済み"
+    "multi/[code]/page.tsx が334行まで削減済み"
   ],
   "completed": [
     "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
@@ -90,6 +96,7 @@
     "components/multi/CharacterSelectPanel.tsx: キャラ選択UIを抽出",
     "store/gameStore.ts: restoreAdventureをヘルパー関数に分離",
     "components/multi/WaitingRoomView.tsx: 待機中UIを抽出",
-    "lib/multi/battleStarter.ts: startMultiBattleヘルパーを新規作成"
+    "lib/multi/battleStarter.ts: startMultiBattleヘルパーを新規作成",
+    "hooks/useBattleProgress.ts: バトルログ表示のuseEffectをカスタムフックに抽出"
   ]
 }
