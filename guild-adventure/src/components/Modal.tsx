@@ -29,11 +29,11 @@ export function Modal({
       onClick={onClose}
     >
       <div 
-        className={`bg-slate-900 rounded-lg border border-slate-600 ${maxWidth} w-full max-h-[80vh] overflow-y-auto`}
+        className={`bg-slate-800 rounded-lg border border-slate-600 ${maxWidth} w-full max-h-[80vh] overflow-y-auto`}
         onClick={e => e.stopPropagation()}
       >
         {title && (
-          <div className="sticky top-0 bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center">
+          <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex justify-between items-center">
             <h2 className="text-xl font-bold">{title}</h2>
             <button 
               onClick={onClose} 
