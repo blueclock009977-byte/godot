@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
@@ -29,7 +30,7 @@ export default function FriendsPage() {
   const [error, setError] = useState('');
 
   // データ読み込み
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!username) return;
     setIsLoading(true);
     const [friendList, requestList] = await Promise.all([
@@ -48,14 +49,10 @@ export default function FriendsPage() {
     // 自分のステータスを更新
     updateUserStatus(username, 'lobby');
     setIsLoading(false);
-  };
-
-  useEffect(() => {
-    loadData();
-    // 10秒ごとにポーリング
-    const interval = setInterval(loadData, 10000);
-    return () => clearInterval(interval);
   }, [username]);
+
+  // 10秒ごとにポーリング
+  usePolling(loadData, 10000, !!username);
 
   // フレンド申請送信
   const handleSendRequest = async () => {

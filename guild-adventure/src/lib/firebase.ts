@@ -87,6 +87,7 @@ export interface UserData {
   } | null;
   createdAt: number;
   lastLogin: number;
+  coins?: number;          // 冒険コイン
 }
 
 // ユーザーデータを取得

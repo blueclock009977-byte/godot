@@ -247,6 +247,7 @@ interface GameStore {
   currentMultiRoom: string | null; // マルチ冒険中のルームコード
   setCurrentMultiRoom: (code: string | null) => void;
   inventory: Record<string, number>;
+  coins: number;
   history: AdventureHistory[];
   lastDroppedItem: string | null;
   _dataLoaded: boolean; // 初回データロード完了フラグ（persistしない）
@@ -279,6 +280,7 @@ interface GameStore {
   
   // アイテム管理
   addItem: (itemId: string, count?: number) => void;
+  addCoins: (amount: number) => void;
   useItem: (itemId: string, count?: number) => boolean;
   getItemCount: (itemId: string) => number;
   
@@ -305,6 +307,7 @@ export const useGameStore = create<GameStore>()(
       currentAdventure: null,
       currentMultiRoom: null,
       inventory: {},
+      coins: 0,
       history: [],
       lastDroppedItem: null,
       _dataLoaded: false,
@@ -338,6 +341,7 @@ export const useGameStore = create<GameStore>()(
                 characters: userData.characters || [],
                 party: userData.party || { front: [], back: [] },
                 inventory: userData.inventory || {},
+                coins: userData.coins || 0,
                 history: userData.history || [],
                 isLoading: false,
                 _dataLoaded: true,
@@ -399,6 +403,7 @@ export const useGameStore = create<GameStore>()(
           characters: [],
           party: { front: [], back: [] },
           inventory: {},
+          coins: 0,
           currentAdventure: null,
           currentMultiRoom: null,
         });
@@ -423,6 +428,7 @@ export const useGameStore = create<GameStore>()(
               characters: userData.characters || [],
               party: userData.party || { front: [], back: [] },
               inventory: userData.inventory || {},
+                coins: userData.coins || 0,
               history: userData.history || [],
               isLoading: false,
             });
@@ -494,6 +500,11 @@ export const useGameStore = create<GameStore>()(
         }));
       },
       
+      
+      // コインを追加
+      addCoins: (amount: number) => {
+        set((state) => ({ coins: state.coins + amount }));
+      },
       // アイテムを消費
       useItem: (itemId: string, count: number = 1): boolean => {
         const { inventory } = get();

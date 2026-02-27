@@ -226,6 +226,9 @@ export interface Character {
   position?: Position;
   raceMastery?: boolean;  // 種族マスタリー解放済み
   jobMastery?: boolean;   // 職業マスタリー解放済み
+  level?: number;          // キャラレベル（1-5）
+  lv3Skill?: string;       // Lv3で獲得したスキルID
+  lv5Skill?: string;       // Lv5で獲得したスキルID
 }
 
 // ============================================
@@ -272,6 +275,7 @@ export interface DungeonData {
   encounterCount: number;
   monsters: MonsterSpawn[];
   boss?: Monster;
+  coinReward: number;      // 勝利時のコイン報酬
 }
 
 // ============================================

@@ -16,6 +16,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.grassland.monsters[2], weight: 15 },
     ],
     boss: monstersByDungeon.grassland.boss,
+    coinReward: 1,
   },
   forest: {
     id: 'forest',
@@ -31,6 +32,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.forest.monsters[2], weight: 25 },
     ],
     boss: monstersByDungeon.forest.boss,
+    coinReward: 3,
   },
   cave: {
     id: 'cave',
@@ -46,6 +48,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.cave.monsters[2], weight: 25 },
     ],
     boss: monstersByDungeon.cave.boss,
+    coinReward: 5,
   },
   sea: {
     id: 'sea',
@@ -61,6 +64,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.sea.monsters[2], weight: 30 },
     ],
     boss: monstersByDungeon.sea.boss,
+    coinReward: 8,
   },
   desert: {
     id: 'desert',
@@ -76,6 +80,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.desert.monsters[2], weight: 25 },
     ],
     boss: monstersByDungeon.desert.boss,
+    coinReward: 10,
   },
   volcano: {
     id: 'volcano',
@@ -91,6 +96,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.volcano.monsters[2], weight: 30 },
     ],
     boss: monstersByDungeon.volcano.boss,
+    coinReward: 13,
   },
   snowfield: {
     id: 'snowfield',
@@ -106,6 +112,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.snowfield.monsters[2], weight: 30 },
     ],
     boss: monstersByDungeon.snowfield.boss,
+    coinReward: 16,
   },
   temple: {
     id: 'temple',
@@ -121,6 +128,7 @@ export const dungeons: Record<string, DungeonData> = {
       { monster: monstersByDungeon.temple.monsters[2], weight: 35 },
     ],
     boss: monstersByDungeon.temple.boss,
+    coinReward: 20,
   },
 };
 
