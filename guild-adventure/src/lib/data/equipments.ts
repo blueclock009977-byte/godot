@@ -300,7 +300,7 @@ export function getEquipmentDropRate(durationSeconds: number): number {
   return Math.max(0.1, Math.min(20, rate)); // 0.1%〜20%
 }
 
-// ランダムで装備をドロップ（通常99%、レア1%）
+// ランダムで装備をドロップ（通常97%、レア3%）
 export function rollEquipmentDrop(durationSeconds: number): Equipment | null {
   const dropRate = getEquipmentDropRate(durationSeconds);
   
