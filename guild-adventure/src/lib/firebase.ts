@@ -2,6 +2,65 @@
 
 const FIREBASE_URL = 'https://dicedeckrandomtcg-default-rtdb.firebaseio.com';
 
+// ============================================
+// 共通ヘルパー関数
+// ============================================
+
+/**
+ * Firebase GETリクエストの共通ヘルパー
+ * @param path Firebase内のパス（先頭スラッシュなし）
+ * @returns データまたはnull
+ */
+async function firebaseGet<T>(path: string): Promise<T | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/${path}.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data ?? null;
+  } catch (e) {
+    console.error(`Firebase GET error [${path}]:`, e);
+    return null;
+  }
+}
+
+/**
+ * Firebase PUT/PATCHリクエストの共通ヘルパー
+ * @param path Firebase内のパス（先頭スラッシュなし）
+ * @param data 保存するデータ
+ * @param method HTTPメソッド（PUT or PATCH）
+ * @returns 成功したらtrue
+ */
+async function firebaseSet(path: string, data: unknown, method: 'PUT' | 'PATCH' = 'PUT'): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.ok;
+  } catch (e) {
+    console.error(`Firebase ${method} error [${path}]:`, e);
+    return false;
+  }
+}
+
+/**
+ * Firebase DELETEリクエストの共通ヘルパー
+ * @param path Firebase内のパス（先頭スラッシュなし）
+ * @returns 成功したらtrue
+ */
+async function firebaseDelete(path: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/${path}.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    console.error(`Firebase DELETE error [${path}]:`, e);
+    return false;
+  }
+}
+
 export interface AdventureHistory {
   id: string;
   type: 'solo' | 'multi';
@@ -32,15 +91,7 @@ export interface UserData {
 
 // ユーザーデータを取得
 export async function getUserData(username: string): Promise<UserData | null> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}.json`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data;
-  } catch (e) {
-    console.error('Failed to get user data:', e);
-    return null;
-  }
+  return firebaseGet<UserData>(`guild-adventure/users/${username}`);
 }
 
 // ユーザーデータを保存
@@ -217,14 +268,7 @@ export async function createRoom(hostUsername: string, dungeonId: string, maxPla
 
 // ルームを取得
 export async function getRoom(code: string): Promise<MultiRoom | null> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    console.error('Failed to get room:', e);
-    return null;
-  }
+  return firebaseGet<MultiRoom>(`guild-adventure/rooms/${code}`);
 }
 
 // 公開ルーム一覧を取得（待機中のみ）
@@ -539,14 +583,7 @@ export async function clearAdventureOnServer(username: string): Promise<boolean>
 
 // 探索状態を取得
 export async function getAdventureOnServer(username: string): Promise<ServerAdventure | null> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data || null;
-  } catch (e) {
-    return null;
-  }
+  return firebaseGet<ServerAdventure>(`guild-adventure/users/${username}/currentAdventure`);
 }
 
 // ============================================
@@ -824,13 +861,7 @@ export async function updateUserStatus(
 
 // ステータスを取得
 export async function getUserStatus(username: string): Promise<UserStatus | null> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/status.json`);
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) {
-    return null;
-  }
+  return firebaseGet<UserStatus>(`guild-adventure/users/${username}/status`);
 }
 
 // 複数ユーザーのステータスを取得
@@ -930,14 +961,7 @@ export async function saveMultiAdventureForUser(
 
 // マルチ冒険結果を取得
 export async function getMultiAdventure(username: string): Promise<MultiAdventureResult | null> {
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/multiAdventure.json`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data;
-  } catch (e) {
-    return null;
-  }
+  return firebaseGet<MultiAdventureResult>(`guild-adventure/users/${username}/multiAdventure`);
 }
 
 // マルチ冒険結果を受け取り済みにする
