@@ -17,7 +17,7 @@
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
   "currentPhase": 2,
-  "phaseAttempt": 2,
+  "phaseAttempt": 3,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -34,14 +34,21 @@
       "action": "refactor",
       "file": "src/lib/utils/status.ts",
       "detail": "getStatusDisplay()を共通ヘルパーに抽出。friends/page.tsxとmulti/[code]/page.tsxの重複を解消"
+    },
+    {
+      "time": "2026-02-27T04:54:00Z",
+      "action": "refactor",
+      "file": "src/components/multi/InviteModal.tsx",
+      "detail": "フレンド招待モーダルを別コンポーネントに抽出。multi/[code]/page.tsx: 791行→715行（-76行）"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx が791行と巨大 → 分割候補",
+    "multi/[code]/page.tsx がまだ715行 → 更に分割可能（バトル進行UI、結果UI）",
     "restoreAdventure のソロ/マルチ処理が類似構造"
   ],
   "completed": [
     "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
-    "lib/utils/status.ts: getStatusDisplay共通化（friends + multi両方で使用）"
+    "lib/utils/status.ts: getStatusDisplay共通化（friends + multi両方で使用）",
+    "components/multi/InviteModal.tsx: フレンド招待モーダルを抽出"
   ]
 }
