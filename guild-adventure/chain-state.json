@@ -17,7 +17,7 @@
     "ソロ/マルチで仕様が異なる場合はパパに相談"
   ],
   "currentPhase": 2,
-  "phaseAttempt": 1,
+  "phaseAttempt": 2,
   "maxAttempts": 30,
   "startedAt": "2026-02-27T04:44:00Z",
   "discordChannel": "channel:1471429991005950013",
@@ -28,14 +28,20 @@
       "action": "refactor",
       "file": "src/app/friends/page.tsx",
       "detail": "getDungeonName()とcalculateRemainingMinutes()ヘルパー関数を抽出、getStatusDisplay内の重複コードを削減"
+    },
+    {
+      "time": "2026-02-27T04:49:00Z",
+      "action": "refactor",
+      "file": "src/lib/utils/status.ts",
+      "detail": "getStatusDisplay()を共通ヘルパーに抽出。friends/page.tsxとmulti/[code]/page.tsxの重複を解消"
     }
   ],
   "findings": [
     "multi/[code]/page.tsx が791行と巨大 → 分割候補",
-    "friends/page.tsx の getStatusDisplay が長い → ソロ/マルチ判定ロジック共通化候補",
     "restoreAdventure のソロ/マルチ処理が類似構造"
   ],
   "completed": [
-    "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出"
+    "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
+    "lib/utils/status.ts: getStatusDisplay共通化（friends + multi両方で使用）"
   ]
 }

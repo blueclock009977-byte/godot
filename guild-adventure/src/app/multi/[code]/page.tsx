@@ -18,12 +18,12 @@ import {
   getFriends,
   sendInvitation,
   getMultipleFriendFullStatus,
-  isOnline,
   MultiRoom,
   RoomCharacter,
   FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
+import { getStatusDisplay } from '@/lib/utils/status';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
@@ -128,43 +128,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const interval = setInterval(loadFriends, 5000);
     return () => clearInterval(interval);
   }, [username, showInviteModal]);
-  
-  // ステータス表示用のヘルパー関数
-  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
-    if (!fullStatus) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
-    }
-    
-    const { status, currentAdventure, multiAdventure } = fullStatus;
-    
-    if (currentAdventure) {
-      const endTime = currentAdventure.startTime + (dungeons[currentAdventure.dungeon as keyof typeof dungeons]?.durationSeconds || 0) * 1000;
-      const now = Date.now();
-      if (now < endTime) {
-        const remaining = Math.ceil((endTime - now) / 60000);
-        return { text: `冒険中 (残り${remaining}分)`, color: 'text-amber-400', emoji: '⚔️' };
-      } else {
-        return { text: '帰還待ち', color: 'text-orange-400', emoji: '🏠' };
-      }
-    }
-    
-    if (multiAdventure && !multiAdventure.claimed) {
-      return { text: '結果待ち', color: 'text-purple-400', emoji: '👥' };
-    }
-    
-    if (!status || !isOnline(status)) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫' };
-    }
-    
-    switch (status.activity) {
-      case 'lobby':
-        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢' };
-      case 'multi':
-        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥' };
-      default:
-        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢' };
-    }
-  };
   
   // フレンド招待
   const handleInviteFriend = async (friendName: string) => {

@@ -12,12 +12,11 @@ import {
   rejectFriendRequest,
   removeFriend,
   getMultipleFriendFullStatus,
-  isOnline,
   updateUserStatus,
   FriendRequest,
   FriendFullStatus,
 } from '@/lib/firebase';
-import { dungeons } from '@/lib/data/dungeons';
+import { getStatusDisplay } from '@/lib/utils/status';
 
 export default function FriendsPage() {
   const { username } = useGameStore();
@@ -57,106 +56,6 @@ export default function FriendsPage() {
     const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
   }, [username]);
-  
-  // ダンジョン名を取得するヘルパー
-  const getDungeonName = (dungeonId: string): string => {
-    return dungeons[dungeonId as keyof typeof dungeons]?.name || dungeonId;
-  };
-  
-  // 残り時間（分）を計算するヘルパー
-  const calculateRemainingMinutes = (startTime: number, dungeonId: string): number => {
-    const duration = dungeons[dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
-    const endTime = startTime + duration * 1000;
-    return Math.max(0, Math.ceil((endTime - Date.now()) / 60000));
-  };
-  
-  // ステータス表示用のヘルパー関数
-  const getStatusDisplay = (fullStatus: FriendFullStatus | undefined) => {
-    if (!fullStatus) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
-    }
-    
-    const { status, currentAdventure, multiAdventure, multiRoom } = fullStatus;
-    
-    // ソロ冒険中をチェック（Web閉じても表示）
-    if (currentAdventure) {
-      const dungeonName = getDungeonName(currentAdventure.dungeon);
-      const remaining = calculateRemainingMinutes(currentAdventure.startTime, currentAdventure.dungeon);
-      
-      if (remaining > 0) {
-        // まだ冒険中
-        return { 
-          text: `ソロ冒険中`, 
-          color: 'text-amber-400', 
-          emoji: '⚔️',
-          detail: `${dungeonName} (残り${remaining}分)`
-        };
-      } else {
-        // 帰還待ち
-        return { 
-          text: '帰還待ち', 
-          color: 'text-orange-400', 
-          emoji: '🏠',
-          detail: `${dungeonName} の結果確認待ち`
-        };
-      }
-    }
-    
-    // マルチルームの状態をチェック（冒険中かどうか）
-    if (multiRoom && status?.activity === 'multi') {
-      const dungeonName = getDungeonName(multiRoom.dungeonId);
-      
-      if (multiRoom.status === 'battle') {
-        // マルチ冒険中
-        const startTime = multiRoom.startTime || Date.now();
-        const remaining = calculateRemainingMinutes(startTime, multiRoom.dungeonId);
-        return { 
-          text: 'マルチ冒険中', 
-          color: 'text-purple-400', 
-          emoji: '⚔️👥',
-          detail: `${dungeonName} (残り${remaining}分)`
-        };
-      } else if (multiRoom.status === 'waiting' || multiRoom.status === 'ready') {
-        // マルチ待機中
-        const playerCount = Object.keys(multiRoom.players || {}).length;
-        return { 
-          text: 'マルチ待機中', 
-          color: 'text-blue-400', 
-          emoji: '👥',
-          detail: `${dungeonName} (${playerCount}/${multiRoom.maxPlayers}人)`
-        };
-      }
-    }
-    
-    // マルチ結果待ちをチェック
-    if (multiAdventure && !multiAdventure.claimed) {
-      const dungeonName = getDungeonName(multiAdventure.dungeonId);
-      return { 
-        text: 'マルチ結果待ち', 
-        color: 'text-purple-400', 
-        emoji: '👥',
-        detail: `${dungeonName} の結果確認待ち`
-      };
-    }
-    
-    // 通常のステータス
-    if (!status || !isOnline(status)) {
-      return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
-    }
-    
-    switch (status.activity) {
-      case 'lobby':
-        return { text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' };
-      case 'solo':
-        // currentAdventureがない場合（通常はここに来ない）
-        return { text: 'ソロ冒険中', color: 'text-amber-400', emoji: '⚔️', detail: '' };
-      case 'multi':
-        // multiRoomが取得できなかった場合のフォールバック
-        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ${status.roomCode}` : '' };
-      default:
-        return { text: 'オンライン', color: 'text-green-400', emoji: '🟢', detail: '' };
-    }
-  };
 
   // フレンド申請送信
   const handleSendRequest = async () => {
