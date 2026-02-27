@@ -33,7 +33,7 @@ import { useBattleProgress } from '@/hooks/useBattleProgress';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom } = useGameStore();
+  const { username, characters, addItem, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -213,6 +213,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         // multiAdventureもクリア（ログイン時の二重受け取り防止）
         await clearMultiAdventure(username);
         
+        // 勝利時はコインを付与
+        if (room.battleResult.victory) {
+          const coinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+          if (coinReward > 0) {
+            addCoins(coinReward);
+          }
+        }
+
         // 履歴を追加（初回のみ）
         addHistory({
           type: 'multi',
