@@ -12,6 +12,7 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
+import { getLvSkill } from '@/lib/data/lvSkills';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -78,7 +79,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     const result = await levelUpCharacter(character.id);
     setIsLoading(false);
     if (result.success && result.skill) {
-      alert(`レベル${result.newLevel}に上がりました！\nスキル「${result.skill}」を習得！`);
+      const skillName = result.skill ? getLvSkill(result.skill)?.name || result.skill : "";
+      alert(`レベル${result.newLevel}に上がりました！\nスキル「${skillName}」を習得！`);
     } else if (result.success) {
       alert(`レベル${result.newLevel}に上がりました！`);
     }
@@ -129,8 +131,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           {(character.lv3Skill || character.lv5Skill) && (
             <div className="mt-3 pt-3 border-t border-slate-600">
               <h4 className="text-xs text-slate-400 mb-1">習得スキル</h4>
-              {character.lv3Skill && <div className="text-sm">Lv3: {character.lv3Skill}</div>}
-              {character.lv5Skill && <div className="text-sm">Lv5: {character.lv5Skill}</div>}
+              {character.lv3Skill && <div className="text-sm">Lv3: {getLvSkill(character.lv3Skill)?.name || character.lv3Skill}</div>}
+              {character.lv5Skill && <div className="text-sm">Lv5: {getLvSkill(character.lv5Skill)?.name || character.lv5Skill}</div>}
             </div>
           )}
         </div>
