@@ -18,7 +18,14 @@ import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
 import { getDropRate, getRandomItem } from '../data/items';
-import { getLvBonus } from '../data/lvStatBonuses';
+// getLvBonusはインポートエラーが起きる可能性があるため、動的インポートに変更
+let getLvBonus: (id: string) => { statModifiers?: Record<string, number> } | undefined;
+try {
+  getLvBonus = require('../data/lvStatBonuses').getLvBonus;
+} catch (e) {
+  console.error('[engine] Failed to import lvStatBonuses:', e);
+  getLvBonus = () => undefined;
+}
 import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
