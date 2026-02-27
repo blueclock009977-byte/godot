@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import { 
   createRoom, 
   joinRoom, 
@@ -207,11 +207,7 @@ export default function MultiPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">← 戻る</Link>
-          <h1 className="text-2xl font-bold">👥 マルチプレイ</h1>
-        </div>
+        <PageHeader title="👥 マルチプレイ" />
         
         {/* 招待通知 */}
         {invitations.length > 0 && (

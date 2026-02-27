@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { AdventureHistory } from '@/lib/firebase';
@@ -64,13 +64,7 @@ export default function HistoryPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">
-            ← 戻る
-          </Link>
-          <h1 className="text-2xl font-bold">📜 過去の挑戦ログ</h1>
-        </div>
+        <PageHeader title="📜 過去の挑戦ログ" />
         
         {history.length === 0 ? (
           <div className="text-center py-12 text-slate-500">

@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { Character, Position } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
+import { PageHeader } from '@/components/PageHeader';
 
 function CharacterCard({ 
   character, 
@@ -99,13 +100,7 @@ export default function PartyPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">
-            ← 戻る
-          </Link>
-          <h1 className="text-2xl font-bold">パーティ編成</h1>
-        </div>
+        <PageHeader title="パーティ編成" />
         
         {/* 説明 */}
         <div className="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs text-slate-400">

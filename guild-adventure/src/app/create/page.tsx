@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import { RaceType, JobType, TraitType, EnvironmentType, SkillData, PassiveSkill } from '@/lib/types';
 import { races, raceList } from '@/lib/data/races';
 import { jobs, jobList } from '@/lib/data/jobs';
@@ -226,11 +226,7 @@ export default function CreatePage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-lg">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">← 戻る</Link>
-          <h1 className="text-2xl font-bold">キャラクター作成</h1>
-        </div>
+        <PageHeader title="キャラクター作成" />
         
         {/* 名前入力 */}
         <div className="mb-6">

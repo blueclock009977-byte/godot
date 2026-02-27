@@ -28,6 +28,7 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 import { getItemById } from '@/lib/data/items';
+import { getLogClassName } from '@/lib/utils';
 import { Character, Party, BattleResult } from '@/lib/types';
 
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
@@ -500,21 +501,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             ) : (
               <div className="space-y-1 text-sm font-mono">
                 {displayedLogs.map((log, i) => (
-                  <div 
-                    key={i} 
-                    className={`${
-                      log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
-                      log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
-                      log.includes('勝利') ? 'text-green-400 font-bold' :
-                      log.includes('全滅') ? 'text-red-400 font-bold' :
-                      log.includes('倒した') ? 'text-green-300' :
-                      log.includes('ダメージ') ? 'text-orange-300' :
-                      log.includes('回復') ? 'text-blue-300' :
-                      'text-slate-300'
-                    }`}
-                  >
-                    {log}
-                  </div>
+                  <div key={i} className={getLogClassName(log)}>{log}</div>
                 ))}
               </div>
             )}
@@ -558,22 +545,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
                   {room.battleResult.logs.map((logEntry: any, idx: number) => (
                     <div key={idx}>
                       {logEntry.message.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
-                        <div 
-                          key={`${idx}-${i}`}
-                          className={`${
-                            line.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-2' :
-                            line.includes('【遭遇') ? 'text-yellow-400 font-bold mt-2' :
-                            line.includes('勝利') ? 'text-green-400 font-bold' :
-                            line.includes('全滅') || line.includes('敗北') ? 'text-red-400 font-bold' :
-                            line.includes('倒した') ? 'text-green-300' :
-                            line.includes('ダメージ') ? 'text-orange-300' :
-                            line.includes('回復') ? 'text-blue-300' :
-                            line.includes('踏破') ? 'text-green-400 font-bold' :
-                            'text-slate-300'
-                          }`}
-                        >
-                          {line}
-                        </div>
+                        <div key={`${idx}-${i}`} className={getLogClassName(line)}>{line}</div>
                       ))}
                     </div>
                   ))}

@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
+import { getLogClassName } from '@/lib/utils';
 import { BattleResult } from '@/lib/types';
 
 export default function AdventurePage() {
@@ -280,21 +281,7 @@ export default function AdventurePage() {
               </summary>
               <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
                 {displayedLogs.map((log, i) => (
-                  <div 
-                    key={i} 
-                    className={`${
-                      log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-2' :
-                      log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-2' :
-                      log.includes('勝利') ? 'text-green-400 font-bold' :
-                      log.includes('全滅') ? 'text-red-400 font-bold' :
-                      log.includes('倒した') ? 'text-green-300' :
-                      log.includes('ダメージ') ? 'text-orange-300' :
-                      log.includes('回復') ? 'text-blue-300' :
-                      'text-slate-300'
-                    }`}
-                  >
-                    {log}
-                  </div>
+                  <div key={i} className={getLogClassName(log)}>{log}</div>
                 ))}
               </div>
             </details>
@@ -314,26 +301,7 @@ export default function AdventurePage() {
               ) : (
                 <div className="space-y-1 text-sm font-mono">
                   {displayedLogs.map((log, i) => (
-                    <div 
-                      key={i} 
-                      className={`${
-                        log.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
-                        log.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
-                        log.includes('【味方】') ? 'text-cyan-400 text-xs font-bold mt-1' :
-                        log.includes('【敵】') ? 'text-rose-400 text-xs font-bold mt-1' :
-                        log.startsWith('  ') && log.includes('HP') ? 'text-slate-300 text-xs ml-2 bg-slate-700/30 px-2 py-0.5 rounded' :
-                        log.includes('勝利') ? 'text-green-400 font-bold' :
-                        log.includes('全滅') ? 'text-red-400 font-bold' :
-                        log.includes('倒した') ? 'text-green-300' :
-                        log.includes('ダメージ') ? 'text-orange-300' :
-                        log.includes('回復') ? 'text-blue-300' :
-                        log.includes('会心') ? 'text-yellow-300' :
-                        log.includes('--- ターン') ? 'text-slate-400 text-xs mt-3 border-t border-slate-600 pt-2' :
-                        'text-slate-300'
-                      }`}
-                    >
-                      {log}
-                    </div>
+                    <div key={i} className={getLogClassName(log)}>{log}</div>
                   ))}
                 </div>
               )}

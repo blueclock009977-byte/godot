@@ -294,17 +294,7 @@ export async function joinRoom(code: string, username: string): Promise<boolean>
     joinedAt: Date.now(),
   };
   
-  try {
-    const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}.json`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(player),
-    });
-    return res.ok;
-  } catch (e) {
-    console.error('Failed to join room:', e);
-    return false;
-  }
+  return firebaseSet(`guild-adventure/rooms/${code}/players/${username}`, player);
 }
 
 // キャラ選択を更新
@@ -868,6 +858,7 @@ export interface FriendFullStatus {
   status: UserStatus | null;
   currentAdventure: ServerAdventure | null;
   multiAdventure: MultiAdventureResult | null;
+  multiRoom: MultiRoom | null;  // マルチルーム情報
 }
 
 export async function getFriendFullStatus(username: string): Promise<FriendFullStatus> {
@@ -876,7 +867,14 @@ export async function getFriendFullStatus(username: string): Promise<FriendFullS
     getAdventureOnServer(username),
     getMultiAdventure(username),
   ]);
-  return { status, currentAdventure, multiAdventure };
+  
+  // マルチ中ならルーム情報も取得
+  let multiRoom: MultiRoom | null = null;
+  if (status?.activity === 'multi' && status?.roomCode) {
+    multiRoom = await getRoom(status.roomCode);
+  }
+  
+  return { status, currentAdventure, multiAdventure, multiRoom };
 }
 
 // 複数フレンドの詳細ステータスを取得

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import {
   getFriends,
   getFriendRequests,
@@ -63,7 +63,7 @@ export default function FriendsPage() {
       return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
     }
     
-    const { status, currentAdventure, multiAdventure } = fullStatus;
+    const { status, currentAdventure, multiAdventure, multiRoom } = fullStatus;
     
     // ソロ冒険中をチェック（Web閉じても表示）
     if (currentAdventure) {
@@ -78,7 +78,7 @@ export default function FriendsPage() {
           text: `ソロ冒険中`, 
           color: 'text-amber-400', 
           emoji: '⚔️',
-          detail: `${dungeonName} (残り${remaining}分)`
+          detail: ` (残り分)`
         };
       } else {
         // 帰還待ち
@@ -86,7 +86,35 @@ export default function FriendsPage() {
           text: '帰還待ち', 
           color: 'text-orange-400', 
           emoji: '🏠',
-          detail: `${dungeonName} の結果確認待ち`
+          detail: ` の結果確認待ち`
+        };
+      }
+    }
+    
+    // マルチルームの状態をチェック（冒険中かどうか）
+    if (multiRoom && status?.activity === 'multi') {
+      const dungeonName = dungeons[multiRoom.dungeonId as keyof typeof dungeons]?.name || multiRoom.dungeonId;
+      
+      if (multiRoom.status === 'battle') {
+        // マルチ冒険中
+        const startTime = multiRoom.startTime || Date.now();
+        const duration = dungeons[multiRoom.dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
+        const endTime = startTime + duration * 1000;
+        const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 60000));
+        return { 
+          text: 'マルチ冒険中', 
+          color: 'text-purple-400', 
+          emoji: '⚔️👥',
+          detail: ` (残り分)`
+        };
+      } else if (multiRoom.status === 'waiting' || multiRoom.status === 'ready') {
+        // マルチ待機中
+        const playerCount = Object.keys(multiRoom.players || {}).length;
+        return { 
+          text: 'マルチ待機中', 
+          color: 'text-blue-400', 
+          emoji: '👥',
+          detail: ` (/人)`
         };
       }
     }
@@ -98,7 +126,7 @@ export default function FriendsPage() {
         text: 'マルチ結果待ち', 
         color: 'text-purple-400', 
         emoji: '👥',
-        detail: `${dungeonName} の結果確認待ち`
+        detail: ` の結果確認待ち`
       };
     }
     
@@ -114,7 +142,8 @@ export default function FriendsPage() {
         // currentAdventureがない場合（通常はここに来ない）
         return { text: 'ソロ冒険中', color: 'text-amber-400', emoji: '⚔️', detail: '' };
       case 'multi':
-        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ${status.roomCode}` : '' };
+        // multiRoomが取得できなかった場合のフォールバック
+        return { text: 'マルチプレイ中', color: 'text-purple-400', emoji: '👥', detail: status.roomCode ? `Room: ` : '' };
       default:
         return { text: 'オンライン', color: 'text-green-400', emoji: '🟢', detail: '' };
     }
@@ -168,11 +197,7 @@ export default function FriendsPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">← 戻る</Link>
-          <h1 className="text-2xl font-bold">👥 フレンド</h1>
-        </div>
+        <PageHeader title="👥 フレンド" />
 
         {/* フレンド検索 */}
         <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-6">

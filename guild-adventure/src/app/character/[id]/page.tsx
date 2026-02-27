@@ -4,6 +4,7 @@ import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
@@ -219,11 +220,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-lg">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">← 戻る</Link>
-          <h1 className="text-2xl font-bold">{character.name}</h1>
-        </div>
+        <PageHeader title={character.name} />
         
         {/* 基本情報 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">

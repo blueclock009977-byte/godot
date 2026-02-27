@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
+import { PageHeader } from '@/components/PageHeader';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { dungeonList, dungeons } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
@@ -222,13 +222,7 @@ export default function DungeonPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
-        {/* ヘッダー */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/" className="text-slate-400 hover:text-white">
-            ← 戻る
-          </Link>
-          <h1 className="text-2xl font-bold">🗺️ ダンジョン選択</h1>
-        </div>
+        <PageHeader title="🗺️ ダンジョン選択" />
         
         {/* パーティ状態 */}
         {!canStart && (
