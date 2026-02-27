@@ -57,6 +57,9 @@ export default function InviteModal({
                     <div className={`text-xs ${status.color}`}>
                       {status.emoji} {status.text}
                     </div>
+                    {status.detail && (
+                      <div className="text-xs text-slate-400">{status.detail}</div>
+                    )}
                   </div>
                   {isInRoom ? (
                     <span className="text-green-400 text-sm">参加中</span>
