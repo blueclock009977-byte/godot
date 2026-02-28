@@ -67,7 +67,9 @@ export interface AdventureHistory {
   dungeonId: string;
   victory: boolean;
   droppedItemId?: string;
+  droppedItemIds?: string[];  // 複数ドロップ対応
   droppedEquipmentId?: string;  // 装備ドロップ
+  droppedEquipmentIds?: string[];  // 複数装備ドロップ対応
   coinReward?: number;  // 獲得コイン数（ボーナス適用後）
   completedAt: number;
   logs: any[];
