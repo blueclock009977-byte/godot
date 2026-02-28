@@ -94,6 +94,8 @@ export interface UserData {
   lastLogin: number;
   coins?: number;          // 冒険コイン
   status?: UserStatus;     // オンラインステータス
+  lastMulti2Party?: { charId: string; position: 'front' | 'back' }[] | null;
+  lastMulti3Party?: { charId: string; position: 'front' | 'back' }[] | null;
 }
 
 // ユーザーデータを取得

@@ -161,14 +161,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     await updateRoomCharacters(code, username, newSelected);
   }, [username, room, isReady, selectedChars, code]);
   
-  // マルチ編成保存
-  const handleSaveParty = useCallback(() => {
-    if (!room || selectedChars.length === 0) return;
-    const playerCount = room.maxPlayers as 2 | 3;
-    const chars = selectedChars.map(c => ({ charId: c.character.id, position: c.position }));
-    saveMultiParty(playerCount, chars);
-  }, [room, selectedChars, saveMultiParty]);
-  
   // マルチ編成復元
   const handleLoadParty = useCallback(async () => {
     if (!username || !room || isReady) return;
@@ -187,6 +179,10 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     
     setSelectedChars(newSelected);
     await updateRoomCharacters(code, username, newSelected);
+    
+    // 自動的に準備完了にする
+    setIsReady(true);
+    await updateRoomReady(code, username, true);
   }, [username, room, isReady, characters, maxCharsPerPlayer, code, getLastMultiParty]);
   
   // 保存された編成があるか
@@ -199,6 +195,24 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const newReady = !isReady;
     setIsReady(newReady);
     await updateRoomReady(code, username, newReady);
+    
+    // 準備完了で全員揃ったら自動出撃
+    if (newReady && room) {
+      // 自分を含めて全員readyになるかチェック
+      const updatedPlayers = { ...room.players };
+      if (updatedPlayers[username]) {
+        updatedPlayers[username] = { ...updatedPlayers[username], ready: true };
+      }
+      const willAllReady = Object.keys(updatedPlayers).length === room.maxPlayers &&
+        Object.values(updatedPlayers).every(p => p.ready && p.characters.length > 0);
+      
+      if (willAllReady) {
+        // 少し待ってから自動出撃（UIの更新を待つ）
+        setTimeout(() => {
+          startBattle();
+        }, 500);
+      }
+    }
   };
   
   // 全員準備完了かチェック
@@ -210,6 +224,11 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const startBattle = async () => {
     if (!room || !username || isStarting) return;
     setIsStarting(true);
+    
+    // 出撃時に編成を自動保存
+    const playerCount = room.maxPlayers as 2 | 3;
+    const chars = selectedChars.map(c => ({ charId: c.character.id, position: c.position }));
+    await saveMultiParty(playerCount, chars);
     
     const result = await startMultiBattle(code);
     if (!result.success) {
@@ -399,7 +418,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         onLeave={handleLeave}
         onGoHome={handleGoHome}
         onShowInviteModal={() => setShowInviteModal(true)}
-        onSaveParty={handleSaveParty}
         onLoadParty={handleLoadParty}
         hasLastParty={hasLastParty}
       />

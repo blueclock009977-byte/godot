@@ -266,7 +266,7 @@ interface GameStore {
   // マルチ編成保存（2人/3人マルチ用）
   lastMulti2Party: { charId: string; position: 'front' | 'back' }[] | null;
   lastMulti3Party: { charId: string; position: 'front' | 'back' }[] | null;
-  saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => void;
+  saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => Promise<void>;
   getLastMultiParty: (playerCount: 2 | 3) => { charId: string; position: 'front' | 'back' }[] | null;
   
   // 装備関連
@@ -435,12 +435,13 @@ export const useGameStore = create<GameStore>()(
       },
       
       // マルチ編成保存
-      saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => {
+      saveMultiParty: async (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => {
         if (playerCount === 2) {
           set({ lastMulti2Party: chars });
         } else {
           set({ lastMulti3Party: chars });
         }
+        await get().syncToServer();
       },
       
       // マルチ編成取得
@@ -558,6 +559,8 @@ export const useGameStore = create<GameStore>()(
               equipments: userData.equipments || {},
               coins: userData.coins || 0,
               history: userData.history || [],
+              lastMulti2Party: userData.lastMulti2Party || null,
+              lastMulti3Party: userData.lastMulti3Party || null,
               isLoading: false,
             });
             // 既存の探索を復元
@@ -719,7 +722,7 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, equipments, coins } = get();
+        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party } = get();
         if (!username) return;
         
         await saveUserData(username, {
@@ -728,6 +731,8 @@ export const useGameStore = create<GameStore>()(
           inventory,
           equipments,
           coins,
+          lastMulti2Party,
+          lastMulti3Party,
         });
       },
       
