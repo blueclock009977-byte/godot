@@ -59,6 +59,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     startTime: room?.startTime,
     dungeonId: room?.dungeonId,
     roomCode: code,
+    actualDurationSeconds: room?.actualDurationSeconds,
   });
   
   // 自動ログイン（ストアの初期化）

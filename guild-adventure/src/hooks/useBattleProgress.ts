@@ -9,6 +9,7 @@ interface UseBattleProgressOptions {
   startTime: number | undefined;
   dungeonId: string | undefined;
   roomCode: string;
+  actualDurationSeconds?: number;  // 短縮後の探索時間
 }
 
 /**
@@ -23,6 +24,7 @@ export function useBattleProgress({
   startTime,
   dungeonId,
   roomCode,
+  actualDurationSeconds,
 }: UseBattleProgressOptions) {
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
@@ -52,7 +54,7 @@ export function useBattleProgress({
     const dungeonData = dungeons[dungeonId as keyof typeof dungeons];
     if (!dungeonData) return;
 
-    const totalTime = dungeonData.durationSeconds * 1000;
+    const totalTime = (actualDurationSeconds || dungeonData.durationSeconds) * 1000;
     const encounterCount = dungeonData.encounterCount;
     const timePerEncounter = totalTime / encounterCount;
 
