@@ -25,8 +25,9 @@ export function DungeonDetailModal({
             <div>探索時間: {formatDuration(dungeon.durationSeconds)}</div>
             <div>推奨人数: {dungeon.recommendedPlayers}人</div>
             <div>遭遇回数: {dungeon.encounterCount}回</div>
-            <div className="text-amber-400">📜 書ドロップ: {getDropRate(dungeon.id)}%</div>
-            <div className="text-green-400">🎒 装備ドロップ: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}%</div>
+            <div className="text-amber-400">📜 書ドロップ: {getDropRate(dungeon.id)}% ×4回</div>
+            <div className="text-green-400">🎒 装備ドロップ: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}% ×4回</div>
+            <div className="text-slate-400 col-span-2 text-xs">※4回抽選して1つでも成功すればドロップ</div>
             <div className="text-amber-400 col-span-2">🪙 勝利報酬: {dungeon.coinReward}コイン</div>
           </div>
         </div>

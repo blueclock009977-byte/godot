@@ -89,10 +89,10 @@ export default function DungeonPage() {
                   👹 {dungeon.encounterCount}回遭遇
                 </span>
                 <span className="text-amber-400">
-                  📜 書: {getDropRate(dungeon.id)}%
+                  📜 書: {getDropRate(dungeon.id)}% ×4
                 </span>
                 <span className="text-green-400">
-                  🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}%
+                  🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}% ×4
                 </span>
               </div>
               
