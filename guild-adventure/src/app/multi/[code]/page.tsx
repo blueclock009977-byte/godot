@@ -85,7 +85,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         setIsReady(data.players[username].ready);
         
         // 新しいマルチに参加したら、古いmultiAdventureをクリア（ステータス表示のため）
-        if (data.status === 'waiting') {
+        // waiting/battleどちらでもクリアする（冒険中に参加した場合も対応）
+        if (data.status === 'waiting' || data.status === 'battle') {
           clearMultiAdventure(username);  // 非同期だが待たない
         }
       }
