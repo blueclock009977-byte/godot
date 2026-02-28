@@ -15,7 +15,7 @@ import { environments } from '@/lib/data/environments';
 import { getLvSkill } from '@/lib/data/lvSkills';
 import { getLvBonus } from '@/lib/data/lvStatBonuses';
 import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
-import { calculateCharacterBonuses } from '@/lib/character/bonuses';
+import { calculateCharacterBonuses, calculateTotalStats } from '@/lib/character/bonuses';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -244,9 +244,12 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        {/* ステータス */}
+        {/* ステータス（総合） */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
-          <StatsDisplay stats={character.stats} title="ステータス" />
+          <StatsDisplay stats={calculateTotalStats(character)} title="総合ステータス" />
+          <div className="text-xs text-slate-500 mt-2">
+            ※ 基本ステータス + Lvボーナス + 装備ボーナス
+          </div>
         </div>
         
         {/* 総合ボーナス */}

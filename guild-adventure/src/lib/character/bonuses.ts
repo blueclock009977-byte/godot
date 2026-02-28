@@ -7,7 +7,8 @@
 
 import { races } from '../data/races';
 import { jobs } from '../data/jobs';
-import { EffectType, Effect } from '../types';
+import { EffectType, Effect, Stats } from '../types';
+import { getLvBonus } from '../data/lvStatBonuses';
 
 // ============================================
 // 型定義
@@ -421,4 +422,82 @@ export function hasTreasureHuntBonuses(bonuses: PartyTreasureHuntBonuses): boole
          bonuses.rareDropBonus > 0 ||
          bonuses.explorationSpeedBonus > 0 ||
          bonuses.rollCount > 4;
+}
+
+// ============================================
+// 総合ステータス計算
+// ============================================
+
+/**
+ * キャラクターの総合ステータスを計算
+ * 基本ステータス + Lvボーナス + 装備ボーナス
+ */
+export interface TotalStats extends Stats {
+  // 基本statsのフィールドを継承
+}
+
+interface CharacterForStats {
+  stats: Stats;
+  lv2Bonus?: string;
+  lv4Bonus?: string;
+  equipmentId?: string;
+}
+
+export function calculateTotalStats(char: CharacterForStats): TotalStats {
+  // 基本ステータスをコピー
+  const total: TotalStats = {
+    hp: char.stats.hp,
+    maxHp: char.stats.maxHp,
+    mp: char.stats.mp,
+    maxMp: char.stats.maxMp,
+    atk: char.stats.atk,
+    def: char.stats.def,
+    agi: char.stats.agi,
+    mag: char.stats.mag,
+  };
+  
+  // Lv2ボーナスを加算
+  if (char.lv2Bonus) {
+    const bonus = getLvBonus(char.lv2Bonus);
+    if (bonus?.statModifiers) {
+      applyStatModifiers(total, bonus.statModifiers);
+    }
+  }
+  
+  // Lv4ボーナスを加算
+  if (char.lv4Bonus) {
+    const bonus = getLvBonus(char.lv4Bonus);
+    if (bonus?.statModifiers) {
+      applyStatModifiers(total, bonus.statModifiers);
+    }
+  }
+  
+  // 装備ボーナスを加算
+  if (char.equipmentId) {
+    try {
+      const { getEquipmentById } = require('../data/equipments');
+      const equipment = getEquipmentById(char.equipmentId);
+      if (equipment?.statModifiers) {
+        applyStatModifiers(total, equipment.statModifiers);
+      }
+    } catch (e) {}
+  }
+  
+  // hp/mpはmaxHpに連動させる（表示用）
+  total.hp = total.maxHp;
+  total.mp = total.maxMp;
+  
+  return total;
+}
+
+/**
+ * ステータス修正値を適用するヘルパー
+ */
+function applyStatModifiers(stats: TotalStats, modifiers: Partial<Stats>): void {
+  if (modifiers.maxHp) stats.maxHp += modifiers.maxHp;
+  if (modifiers.maxMp) stats.maxMp += modifiers.maxMp;
+  if (modifiers.atk) stats.atk += modifiers.atk;
+  if (modifiers.def) stats.def += modifiers.def;
+  if (modifiers.agi) stats.agi += modifiers.agi;
+  if (modifiers.mag) stats.mag += modifiers.mag;
 }
