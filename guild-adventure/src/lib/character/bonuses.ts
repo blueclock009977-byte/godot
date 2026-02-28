@@ -443,7 +443,12 @@ interface CharacterForStats {
   equipmentId?: string;
 }
 
-export function calculateTotalStats(char: CharacterForStats): TotalStats {
+interface CharacterForTotalStats extends CharacterForStats {
+  lv3Skill?: string;
+  lv5Skill?: string;
+}
+
+export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
   // 基本ステータスをコピー
   const total: TotalStats = {
     hp: char.stats.hp,
@@ -470,6 +475,18 @@ export function calculateTotalStats(char: CharacterForStats): TotalStats {
     if (bonus?.statModifiers) {
       applyStatModifiers(total, bonus.statModifiers);
     }
+  }
+  
+  // Lvスキルのstatモディファイア（HP+100など）
+  for (const skillId of [char.lv3Skill, char.lv5Skill]) {
+    if (!skillId) continue;
+    try {
+      const { getLvSkill } = require('../data/lvSkills');
+      const skill = getLvSkill(skillId);
+      if (skill?.statModifiers) {
+        applyStatModifiers(total, skill.statModifiers);
+      }
+    } catch (e) {}
   }
   
   // 装備ボーナスを加算
