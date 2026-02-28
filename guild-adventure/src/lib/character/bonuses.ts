@@ -15,85 +15,98 @@ import { getLvBonus } from '../data/lvStatBonuses';
 // ============================================
 
 /**
- * キャラクター1人分の全ボーナス
+ * バトルエンジン用のパッシブ効果（engine.tsと共有）
+ * これがSingle Source of Truth
  */
-export interface CharacterBonuses {
-  // トレハン系
-  dropBonus: number;
-  coinBonus: number;
-  rareDropBonus: number;
-  explorationSpeedBonus: number;
-  doubleDropRoll: number;
-  
-  // 戦闘系 - 攻撃
+export interface PassiveEffects {
   physicalBonus: number;
   magicBonus: number;
   damageBonus: number;
   critBonus: number;
   critDamage: number;
-  
-  // 戦闘系 - 防御
-  damageReduction: number;
   evasionBonus: number;
-  statusResist: number;
-  degradationResist: number;
-  
-  // 戦闘系 - その他
   accuracyBonus: number;
-  firstStrikeBonus: number;
-  healBonus: number;
+  perfectEvasion: number;
+  damageReduction: number;
   hpRegen: number;
   mpRegen: number;
   hpSteal: number;
-  mpReduction: number;
+  healBonus: number;
+  healReceived: number;
+  firstStrikeBonus: number;
+  intimidate: number;
+  cover: number;
   counterRate: number;
-  
-  // 連撃系
+  lowHpBonus: number;
+  allyCountBonus: number;
+  allyAtkBonus: number;
+  allyDefense: number;
+  dropBonus: number;
+  mpReduction: number;
+  statusResist: number;
+  debuffBonus: number;
+  doublecast: number;
+  attackStack: number;
+  autoRevive: number;
+  revive: number;
+  followUp: number;
+  allStats: number;
+  surviveLethal: number;
+  lowHpDamageBonus: number;
+  lowHpThreshold: number;
+  fullHpAtkBonus: number;
+  critAfterEvade: number;
+  critOnFirstStrike: number;
+  lowHpBonusHits: number;
+  lowHpHitsThreshold: number;
+  extraAttackOnCrit: number;
+  firstHitCrit: number;
+  backlineEvasion: number;
+  lowHpDefense: number;
+  lowHpDefenseThreshold: number;
+  counterDamageBonus: number;
+  coinBonus: number;
+  doubleDropRoll: number;
+  rareDropBonus: number;
+  explorationSpeedBonus: number;
+  speciesKiller: Record<string, number>;
+  speciesResist: Record<string, number>;
+  fixedHits: number;
   bonusHits: number;
   noDecayHits: number;
   decayReduction: number;
-  fixedHits: number;
   singleHitBonus: number;
-  
-  // 味方支援系
-  allyAtkBonus: number;
-  allyDefense: number;
-  intimidate: number;
-  
-  // 系統特攻
-  speciesKiller_humanoid: number;
-  speciesKiller_beast: number;
-  speciesKiller_undead: number;
-  speciesKiller_demon: number;
-  speciesKiller_dragon: number;
-  
-  // 系統耐性
-  speciesResist_humanoid: number;
-  speciesResist_beast: number;
-  speciesResist_undead: number;
-  speciesResist_demon: number;
-  speciesResist_dragon: number;
-  
-  // 劣化系
+  degradationResist: number;
   degradationBonus: number;
-  
-  // マスタリー系（特殊）
-  allStats: number;
-  cover: number;
-  followUp: number;
-  doublecast: number;
-  perfectEvasion: number;
-  autoRevive: number;
   mpOnKill: number;
-  
-  // 条件付き効果
-  lowHpBonus: number;
-  fullHpAtkBonus: number;
-  surviveLethal: number;
-  
-  // 生のエフェクトリスト（特殊処理用）
-  rawEffects: Effect[];
 }
+
+/**
+ * 空のパッシブ効果オブジェクトを作成
+ */
+export function getEmptyPassiveEffects(): PassiveEffects {
+  return {
+    physicalBonus: 0, magicBonus: 0, damageBonus: 0, critBonus: 0, critDamage: 0,
+    evasionBonus: 0, accuracyBonus: 0, perfectEvasion: 0, damageReduction: 0,
+    hpRegen: 0, mpRegen: 0, hpSteal: 0, healBonus: 0, healReceived: 0,
+    firstStrikeBonus: 0, intimidate: 0, cover: 0, counterRate: 0,
+    lowHpBonus: 0, allyCountBonus: 0, allyAtkBonus: 0, allyDefense: 0,
+    dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
+    doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
+    surviveLethal: 0, lowHpDamageBonus: 0, lowHpThreshold: 0,
+    fullHpAtkBonus: 0, critAfterEvade: 0, critOnFirstStrike: 0,
+    lowHpBonusHits: 0, lowHpHitsThreshold: 0, extraAttackOnCrit: 0,
+    firstHitCrit: 0, backlineEvasion: 0, lowHpDefense: 0, lowHpDefenseThreshold: 0,
+    counterDamageBonus: 0, coinBonus: 0, doubleDropRoll: 0,
+    rareDropBonus: 0, explorationSpeedBonus: 0,
+    speciesKiller: {}, speciesResist: {},
+    fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
+    singleHitBonus: 0, degradationResist: 0, degradationBonus: 0, mpOnKill: 0,
+  };
+}
+
+// UI表示用の簡易版（後方互換）
+export type CharacterBonuses = PassiveEffects & { rawEffects: Effect[] };
 
 /**
  * ボーナスのソース情報（重複管理用）
@@ -112,57 +125,7 @@ interface BonusSource {
  */
 function createEmptyBonuses(): CharacterBonuses {
   return {
-    dropBonus: 0,
-    coinBonus: 0,
-    rareDropBonus: 0,
-    explorationSpeedBonus: 0,
-    doubleDropRoll: 0,
-    physicalBonus: 0,
-    magicBonus: 0,
-    damageBonus: 0,
-    critBonus: 0,
-    critDamage: 0,
-    damageReduction: 0,
-    evasionBonus: 0,
-    statusResist: 0,
-    degradationResist: 0,
-    accuracyBonus: 0,
-    firstStrikeBonus: 0,
-    healBonus: 0,
-    hpRegen: 0,
-    mpRegen: 0,
-    hpSteal: 0,
-    mpReduction: 0,
-    counterRate: 0,
-    bonusHits: 0,
-    noDecayHits: 0,
-    decayReduction: 0,
-    fixedHits: 0,
-    singleHitBonus: 0,
-    allyAtkBonus: 0,
-    allyDefense: 0,
-    intimidate: 0,
-    speciesKiller_humanoid: 0,
-    speciesKiller_beast: 0,
-    speciesKiller_undead: 0,
-    speciesKiller_demon: 0,
-    speciesKiller_dragon: 0,
-    speciesResist_humanoid: 0,
-    speciesResist_beast: 0,
-    speciesResist_undead: 0,
-    speciesResist_demon: 0,
-    speciesResist_dragon: 0,
-    degradationBonus: 0,
-    allStats: 0,
-    cover: 0,
-    followUp: 0,
-    doublecast: 0,
-    perfectEvasion: 0,
-    autoRevive: 0,
-    mpOnKill: 0,
-    lowHpBonus: 0,
-    fullHpAtkBonus: 0,
-    surviveLethal: 0,
+    ...getEmptyPassiveEffects(),
     rawEffects: [],
   };
 }
@@ -171,7 +134,26 @@ function createEmptyBonuses(): CharacterBonuses {
  * エフェクトをボーナスに加算
  */
 function applyEffect(bonuses: CharacterBonuses, effect: Effect): void {
-  const key = effect.type as keyof CharacterBonuses;
+  const type = effect.type;
+  
+  // 系統特攻（speciesKiller_humanoid → speciesKiller['humanoid']）
+  if (type.startsWith('speciesKiller_')) {
+    const species = type.replace('speciesKiller_', '');
+    bonuses.speciesKiller[species] = (bonuses.speciesKiller[species] || 0) + effect.value;
+    bonuses.rawEffects.push(effect);
+    return;
+  }
+  
+  // 系統耐性（speciesResist_humanoid → speciesResist['humanoid']）
+  if (type.startsWith('speciesResist_')) {
+    const species = type.replace('speciesResist_', '');
+    bonuses.speciesResist[species] = (bonuses.speciesResist[species] || 0) + effect.value;
+    bonuses.rawEffects.push(effect);
+    return;
+  }
+  
+  // その他の効果
+  const key = type as keyof PassiveEffects;
   if (key in bonuses && typeof bonuses[key] === 'number') {
     (bonuses[key] as number) += effect.value;
   }

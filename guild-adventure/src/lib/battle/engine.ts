@@ -17,6 +17,12 @@ import {
 import { dungeons } from '../data/dungeons';
 import { jobs } from '../data/jobs';
 import { races } from '../data/races';
+import { 
+  PassiveEffects, 
+  getEmptyPassiveEffects, 
+  calculateCharacterBonuses,
+  calculateTotalStats,
+} from '../character/bonuses';
 import { getDropRate, getRandomItem } from '../data/items';
 // getLvBonusは遅延ロード（モジュール読み込みエラー対策）
 function getLvBonusSafe(id: string): { statModifiers?: Record<string, number> } | undefined {
@@ -52,74 +58,7 @@ interface BuffEffect {
   source: string;
 }
 
-// ============================================
-// パッシブ効果の集約
-// ============================================
-
-interface PassiveEffects {
-  physicalBonus: number;
-  magicBonus: number;
-  damageBonus: number;
-  critBonus: number;
-  critDamage: number;
-  evasionBonus: number;
-  accuracyBonus: number;
-  perfectEvasion: number;
-  damageReduction: number;
-  hpRegen: number;
-  mpRegen: number;
-  hpSteal: number;
-  healBonus: number;
-  healReceived: number;
-  firstStrikeBonus: number;
-  intimidate: number;
-  cover: number;
-  counterRate: number;
-  lowHpBonus: number;
-  allyCountBonus: number;
-  allyAtkBonus: number;
-  allyDefense: number;
-  dropBonus: number;
-  mpReduction: number;
-  statusResist: number;
-  debuffBonus: number;
-  doublecast: number;
-  attackStack: number;
-  autoRevive: number;
-  revive: number;
-  followUp: number;
-  allStats: number;
-  // v0.8.68追加: 強力なLvスキル用
-  surviveLethal: number;      // 致死ダメをHP1で耐える（1=有効）
-  lowHpDamageBonus: number;   // HP一定以下で全ダメ+%
-  lowHpThreshold: number;     // lowHpDamageBonusの発動閾値（%）
-  // v0.8.70追加: 条件付き効果
-  fullHpAtkBonus: number;     // HP満タン時ATK+%
-  critAfterEvade: number;     // 回避成功→次クリ確定（1=有効）
-  critOnFirstStrike: number;  // 先制成功→クリ確定（1=有効）
-  lowHpBonusHits: number;     // HP低下時追加攻撃回数
-  lowHpHitsThreshold: number; // lowHpBonusHitsの発動閾値（%）
-  extraAttackOnCrit: number;  // クリ時追加攻撃（1=有効）
-  firstHitCrit: number;       // 最初の攻撃確定クリ（1=有効）
-  backlineEvasion: number;    // 後衛時回避+%
-  lowHpDefense: number;       // HP低下時被ダメ-%
-  lowHpDefenseThreshold: number; // lowHpDefenseの発動閾値（%）
-  counterDamageBonus: number; // 反撃ダメ+%
-  coinBonus: number;          // コイン獲得+%
-  doubleDropRoll: number;     // ドロップ2回抽選（1=有効）
-  // 系統特攻/耐性
-  speciesKiller: Record<string, number>;
-  speciesResist: Record<string, number>;
-  // 連撃・劣化関連
-  fixedHits: number;          // ヒット数固定（0=無効）
-  bonusHits: number;          // 追加ヒット数
-  noDecayHits: number;        // 最初のN回は減衰なし
-  decayReduction: number;     // 減衰緩和（%）
-  singleHitBonus: number;     // 単発時ダメージ+%
-  degradationResist: number;  // 劣化耐性（%）
-  degradationBonus: number;   // 劣化ボーナス（追加%）
-  mpOnKill: number;          // 敵を倒した時MP回復
-}
+// PassiveEffects は bonuses.ts からインポート
 
 
 // バフ/デバフをユニットに適用
@@ -167,33 +106,13 @@ function tickBuffDurations(units: ExtendedBattleUnit[], logs: string[]): void {
   }
 }
 
-function getEmptyPassiveEffects(): PassiveEffects {
-  return {
-    physicalBonus: 0, magicBonus: 0, damageBonus: 0, critBonus: 0, critDamage: 0,
-    evasionBonus: 0, accuracyBonus: 0, perfectEvasion: 0, damageReduction: 0,
-    hpRegen: 0, mpRegen: 0, hpSteal: 0, healBonus: 0, healReceived: 0,
-    firstStrikeBonus: 0, intimidate: 0, cover: 0, counterRate: 0,
-    lowHpBonus: 0, allyCountBonus: 0, allyAtkBonus: 0, allyDefense: 0,
-    dropBonus: 0, mpReduction: 0, statusResist: 0, debuffBonus: 0,
-    doublecast: 0, attackStack: 0, autoRevive: 0, revive: 0, followUp: 0, allStats: 0,
-    surviveLethal: 0, lowHpDamageBonus: 0, lowHpThreshold: 0,
-    fullHpAtkBonus: 0, critAfterEvade: 0, critOnFirstStrike: 0,
-    lowHpBonusHits: 0, lowHpHitsThreshold: 0, extraAttackOnCrit: 0,
-    firstHitCrit: 0, backlineEvasion: 0, lowHpDefense: 0, lowHpDefenseThreshold: 0,
-    counterDamageBonus: 0, coinBonus: 0, doubleDropRoll: 0,
-    speciesKiller: {}, speciesResist: {},
-    // 連撃・劣化関連
-    fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
-    singleHitBonus: 0, degradationResist: 0, degradationBonus: 0, mpOnKill: 0,
-  };
-}
+// getEmptyPassiveEffects は bonuses.ts からインポート
 
-// ユニットの全パッシブ効果を集約
+// ユニットの全パッシブ効果を集約（bonuses.tsを使用）
 function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
-  const effects = getEmptyPassiveEffects();
-  
   if (!unit.isPlayer) {
-    // モンスターの系統特攻/耐性
+    // モンスターは独自の処理
+    const effects = getEmptyPassiveEffects();
     if (unit.speciesKiller) {
       for (const k of unit.speciesKiller) {
         effects.speciesKiller[k.species] = (effects.speciesKiller[k.species] || 0) + k.multiplier;
@@ -207,88 +126,20 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
     return effects;
   }
   
-  // プレイヤーの種族パッシブ + マスタリー
-  if (unit.race) {
-    collectEffectsFromSource(races[unit.race], !!unit.raceMastery, effects);
-  }
+  // プレイヤーはbonuses.tsの統一関数を使用
+  const bonuses = calculateCharacterBonuses({
+    race: unit.race,
+    job: unit.job,
+    raceMastery: unit.raceMastery,
+    jobMastery: unit.jobMastery,
+    lv3Skill: unit.lv3Skill,
+    lv5Skill: unit.lv5Skill,
+    equipmentId: unit.equipmentId,
+  });
   
-  // プレイヤーの職業パッシブ + マスタリー
-  if (unit.job) {
-    collectEffectsFromSource(jobs[unit.job], !!unit.jobMastery, effects);
-  }
-  
-  
-  // Lvスキルのeffects収集
-  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
-    if (!skillId) continue;
-    const skill = getLvSkill(skillId);
-    if (skill?.effects) {
-      for (const effect of skill.effects) {
-        applyEffect(effects, effect.type, effect.value);
-      }
-    }
-  }
-  
-  // 装備のeffects収集
-  if (unit.equipmentId) {
-    const equipment = getEquipmentSafe(unit.equipmentId);
-    if (equipment?.effects) {
-      for (const effect of equipment.effects) {
-        applyEffect(effects, effect.type, effect.value);
-      }
-    }
-  }
-  
-  return effects;
-}
-
-function applyEffect(effects: PassiveEffects, type: string, value: number) {
-  // 系統特攻/耐性
-  if (type.startsWith('speciesKiller_')) {
-    const species = type.replace('speciesKiller_', '');
-    effects.speciesKiller[species] = (effects.speciesKiller[species] || 0) + value;
-    return;
-  }
-  if (type.startsWith('speciesResist_')) {
-    const species = type.replace('speciesResist_', '');
-    effects.speciesResist[species] = (effects.speciesResist[species] || 0) + value;
-    return;
-  }
-  
-  // その他のパッシブ
-  if (type in effects) {
-    (effects as any)[type] += value;
-  }
-}
-
-// パッシブとマスタリーからエフェクトを収集する共通ヘルパー
-interface EffectSource {
-  passives?: { effects: { type: string; value: number }[] }[];
-  masterySkill?: { type: string; effects?: { type: string; value: number }[] };
-}
-
-function collectEffectsFromSource(
-  source: EffectSource | null | undefined,
-  hasMastery: boolean,
-  effects: PassiveEffects
-): void {
-  if (!source) return;
-  
-  // パッシブからエフェクト収集
-  if (source.passives) {
-    for (const passive of source.passives) {
-      for (const effect of passive.effects) {
-        applyEffect(effects, effect.type, effect.value);
-      }
-    }
-  }
-  
-  // マスタリースキル（パッシブ型）からエフェクト収集
-  if (hasMastery && source.masterySkill?.type === 'passive' && source.masterySkill.effects) {
-    for (const effect of source.masterySkill.effects) {
-      applyEffect(effects, effect.type, effect.value);
-    }
-  }
+  // rawEffectsは不要なので削除
+  const { rawEffects, ...passiveEffects } = bonuses;
+  return passiveEffects as PassiveEffects;
 }
 
 // ============================================
@@ -409,11 +260,23 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     allSkills.push(jobData.masterySkill.skill);
   }
   
+  // bonuses.tsで総合ステータスを計算（Single Source of Truth）
+  const totalStats = calculateTotalStats(char);
+  
   const unit: ExtendedBattleUnit = {
     id: char.id,
     name: char.name,
     isPlayer: true,
-    stats: cloneStats(char.stats),
+    stats: {
+      hp: totalStats.maxHp,  // バトル開始時はHP満タン
+      maxHp: totalStats.maxHp,
+      mp: totalStats.maxMp,  // バトル開始時はMP満タン
+      maxMp: totalStats.maxMp,
+      atk: totalStats.atk,
+      def: totalStats.def,
+      agi: totalStats.agi,
+      mag: totalStats.mag,
+    },
     position,
     race: char.race,
     job: char.job,
@@ -436,49 +299,6 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     wasFirstStrike: false,
   };
   unit.passiveEffects = collectPassiveEffects(unit);
-  
-  // Lv2/Lv4ステータスボーナス適用
-  for (const bonusId of [char.lv2Bonus, char.lv4Bonus]) {
-    if (!bonusId) continue;
-    const bonus = getLvBonusSafe(bonusId);
-    if (bonus?.statModifiers) {
-      const mods = bonus.statModifiers;
-      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
-      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
-      if (mods.atk) unit.stats.atk += mods.atk;
-      if (mods.def) unit.stats.def += mods.def;
-      if (mods.agi) unit.stats.agi += mods.agi;
-      if (mods.mag) unit.stats.mag += mods.mag;
-    }
-  }
-  
-  // LvスキルのstatModifiers適用
-  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
-    if (!skillId) continue;
-    const skill = getLvSkill(skillId);
-    if (skill?.statModifiers) {
-      const mods = skill.statModifiers;
-      if (mods.hp) { unit.stats.hp += mods.hp; unit.stats.maxHp += mods.hp; }
-      if (mods.atk) unit.stats.atk += mods.atk;
-      if (mods.def) unit.stats.def += mods.def;
-      if (mods.agi) unit.stats.agi += mods.agi;
-      if (mods.mag) unit.stats.mag += mods.mag;
-    }
-  }
-  
-  // 装備のstatModifiers適用
-  if (char.equipmentId) {
-    const equipment = getEquipmentSafe(char.equipmentId);
-    if (equipment?.statModifiers) {
-      const mods = equipment.statModifiers;
-      if (mods.maxHp) { unit.stats.hp += mods.maxHp; unit.stats.maxHp += mods.maxHp; }
-      if (mods.maxMp) { unit.stats.mp += mods.maxMp; unit.stats.maxMp += mods.maxMp; }
-      if (mods.atk) unit.stats.atk += mods.atk;
-      if (mods.def) unit.stats.def += mods.def;
-      if (mods.agi) unit.stats.agi += mods.agi;
-      if (mods.mag) unit.stats.mag += mods.mag;
-    }
-  }
   
   // allStats適用
   if (unit.passiveEffects.allStats > 0) {
