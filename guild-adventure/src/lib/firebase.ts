@@ -474,6 +474,53 @@ export async function deleteRoom(code: string): Promise<boolean> {
   }
 }
 
+// 全員がclaimedならルームを削除
+export async function deleteRoomIfAllClaimed(code: string): Promise<boolean> {
+  try {
+    const room = await getRoom(code);
+    if (!room || room.status !== 'done') return false;
+    
+    const players = Object.keys(room.players || {});
+    const claimed = room.playerClaimed || {};
+    
+    // 全員がclaimedかチェック
+    const allClaimed = players.every(player => claimed[player] === true);
+    if (allClaimed) {
+      await deleteRoom(code);
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 古いルーム（指定日数以上前）を削除
+export async function deleteOldRooms(daysOld: number = 7): Promise<number> {
+  try {
+    const roomsRes = await fetch(`${FIREBASE_URL}/guild-adventure/rooms.json`);
+    if (!roomsRes.ok) return 0;
+    const rooms = await roomsRes.json();
+    if (!rooms) return 0;
+    
+    const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
+    let deletedCount = 0;
+    
+    for (const [code, room] of Object.entries(rooms) as [string, any][]) {
+      // status=doneで、startTimeが古いルームを削除
+      if (room.status === 'done' && room.startTime && room.startTime < cutoffTime) {
+        await deleteRoom(code);
+        deletedCount++;
+      }
+    }
+    
+    return deletedCount;
+  } catch (e) {
+    console.error('Failed to delete old rooms:', e);
+    return 0;
+  }
+}
+
 // ============================================
 // 探索状態管理（排他制御 + バトル結果保存）
 // ============================================
@@ -1162,6 +1209,9 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
       
       // pendingResultsから削除
       await removePendingResult(username, code);
+      
+      // 全員がclaimedならルームを削除
+      await deleteRoomIfAllClaimed(code);
     }
     
     return results;

@@ -581,6 +581,15 @@ export const useGameStore = create<GameStore>()(
               console.log(`[autoLogin] ${pendingCount}件の未受取マルチ結果を自動受取しました`);
             }
             
+            // 5%の確率で古いルーム（7日以上前）を削除
+            if (Math.random() < 0.05) {
+              const { deleteOldRooms } = await import('@/lib/firebase');
+              const deletedCount = await deleteOldRooms(7);
+              if (deletedCount > 0) {
+                console.log(`[autoLogin] ${deletedCount}件の古いルームを削除しました`);
+              }
+            }
+            
             set({ _dataLoaded: true });
             return true;
           }
