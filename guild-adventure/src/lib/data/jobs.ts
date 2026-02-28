@@ -53,12 +53,13 @@ export const jobs: Record<string, JobData> = {
   thief: {
     id: 'thief',
     name: '盗賊',
-    description: 'AGI+8。クリ率+25%、クリダメ+30%の一撃必殺型。ハーフリングと相性◎',
+    description: 'AGI+8。クリ率+20%、コイン+15%。盗みの名手で一撃必殺も得意。',
     statModifiers: { maxMp: 15, atk: 3, agi: 8, def: -2 },
     passives: [
-      { name: '急所狙い', description: 'クリティカル率が大幅上昇', effects: [{ type: 'critBonus', value: 25 }] },
+      { name: '急所狙い', description: 'クリティカル率が上昇', effects: [{ type: 'critBonus', value: 20 }] },  // 25→20 coinBonus追加の代わり
       { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '影潜み', description: '先制率が上昇', effects: [{ type: 'firstStrikeBonus', value: 20 }] },
+      { name: '盗みの極意', description: 'コイン獲得が上昇', effects: [{ type: 'coinBonus', value: 15 }] },
     ],
     skills: [
       { id: 'backstab', name: 'バックスタブ', description: '急所を狙った一撃', type: 'attack', target: 'single', multiplier: 1.6, mpCost: 10 },
