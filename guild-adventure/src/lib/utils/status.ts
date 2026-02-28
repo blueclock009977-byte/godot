@@ -17,9 +17,10 @@ export function getDungeonName(dungeonId: string): string {
 
 /**
  * 残り時間（分）を計算するヘルパー
+ * actualDurationSecondsがあればそれを使う（探索時間短縮考慮）
  */
-export function calculateRemainingMinutes(startTime: number, dungeonId: string): number {
-  const duration = dungeons[dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
+export function calculateRemainingMinutes(startTime: number, dungeonId: string, actualDurationSeconds?: number): number {
+  const duration = actualDurationSeconds || dungeons[dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
   const endTime = startTime + duration * 1000;
   return Math.max(0, Math.ceil((endTime - Date.now()) / 60000));
 }
@@ -66,12 +67,30 @@ export function getStatusDisplay(fullStatus: FriendFullStatus | undefined): Stat
     if (multiRoom.status === 'battle') {
       // マルチ冒険中
       const startTime = multiRoom.startTime || Date.now();
-      const remaining = calculateRemainingMinutes(startTime, multiRoom.dungeonId);
+      const remaining = calculateRemainingMinutes(startTime, multiRoom.dungeonId, multiRoom.actualDurationSeconds);
+      if (remaining > 0) {
+        return {
+          text: 'マルチ冒険中',
+          color: 'text-purple-400',
+          emoji: '⚔️👥',
+          detail: `${dungeonName} (残り${remaining}分)`,
+        };
+      } else {
+        // 時間終了 → 結果待ち
+        return {
+          text: 'マルチ結果待ち',
+          color: 'text-purple-400',
+          emoji: '👥',
+          detail: `${dungeonName} の結果確認待ち`,
+        };
+      }
+    } else if (multiRoom.status === 'done') {
+      // マルチ完了 → 結果待ち
       return {
-        text: 'マルチ冒険中',
+        text: 'マルチ結果待ち',
         color: 'text-purple-400',
-        emoji: '⚔️👥',
-        detail: `${dungeonName} (残り${remaining}分)`,
+        emoji: '👥',
+        detail: `${dungeonName} の結果確認待ち`,
       };
     } else if (multiRoom.status === 'waiting' || multiRoom.status === 'ready') {
       // マルチ待機中
