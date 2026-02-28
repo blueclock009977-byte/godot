@@ -82,8 +82,9 @@ function calculatePlayerEquipmentDrops(
   
   const playerEquipmentDrops: Record<string, string | undefined> = {};
   
-  Object.keys(players).forEach((playerName) => {
-    const equipment = rollEquipmentDrop(durationSeconds);
+  Object.entries(players).forEach(([playerName, player]) => {
+    const chars = (player.characters || []).map(rc => rc.character);
+    const equipment = rollEquipmentDrop(durationSeconds, chars);
     playerEquipmentDrops[playerName] = equipment?.id;
   });
   

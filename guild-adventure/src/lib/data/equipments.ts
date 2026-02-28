@@ -300,9 +300,37 @@ export function getEquipmentDropRate(durationSeconds: number): number {
   return Math.max(0.1, Math.min(20, rate)); // 0.1%〜20%
 }
 
+// ドロップボーナス計算（キャラの種族パッシブから）
+function calculateDropBonus(characters: { race?: string }[]): number {
+  let bonus = 0;
+  const { races } = require('./races');
+  
+  for (const char of characters) {
+    if (char.race && races[char.race]) {
+      const raceData = races[char.race];
+      for (const passive of raceData.passives || []) {
+        for (const effect of passive.effects || []) {
+          if (effect.type === 'dropBonus') {
+            bonus += effect.value;
+          }
+        }
+      }
+    }
+  }
+  return bonus;
+}
+
+// %ボーナスを倍率に変換
+function percentBonus(percent: number): number {
+  return 1 + percent / 100;
+}
+
 // ランダムで装備をドロップ（通常97%、レア3%）
-export function rollEquipmentDrop(durationSeconds: number): Equipment | null {
-  const dropRate = getEquipmentDropRate(durationSeconds);
+// characters: ドロップボーナス計算用（人間など）
+export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string }[] = []): Equipment | null {
+  const baseRate = getEquipmentDropRate(durationSeconds);
+  const dropBonus = calculateDropBonus(characters);
+  const dropRate = baseRate * percentBonus(dropBonus);
   
   // ドロップ判定
   if (Math.random() * 100 >= dropRate) {

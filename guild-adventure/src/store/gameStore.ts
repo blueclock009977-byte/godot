@@ -817,7 +817,7 @@ export const useGameStore = create<GameStore>()(
           
           // 装備ドロップ抽選（書とは別枠）
           const { rollEquipmentDrop } = require('@/lib/data/equipments');
-          const droppedEquipment = rollEquipmentDrop(dungeonData.durationSeconds);
+          const droppedEquipment = rollEquipmentDrop(dungeonData.durationSeconds, allChars);
           if (droppedEquipment) {
             droppedEquipmentId = droppedEquipment.id;
           }
