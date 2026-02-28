@@ -1,6 +1,7 @@
 'use client';
 
 import { getItemById } from '@/lib/data/items';
+import { getEquipmentById } from '@/lib/data/equipments';
 import { getLogClassName } from '@/lib/utils';
 import { BattleLog } from '@/lib/types';
 
@@ -8,6 +9,7 @@ interface BattleResultViewProps {
   victory: boolean;
   dungeonName: string;
   myDrop: string | null;
+  myEquipment: string | null;
   dropClaimed: boolean;
   logs: BattleLog[];
   coinReward?: number;
@@ -18,6 +20,7 @@ export default function BattleResultView({
   victory,
   dungeonName,
   myDrop,
+  myEquipment,
   dropClaimed,
   logs,
   coinReward,
@@ -40,10 +43,15 @@ export default function BattleResultView({
           )}
           {myDrop && (
             <div className="text-amber-400 text-lg mb-4">
-              💎 【あなたのドロップ】{getItemById(myDrop)?.name || myDrop}
+              📜 【書ドロップ】{getItemById(myDrop)?.name || myDrop}
             </div>
           )}
-          {victory && !myDrop && dropClaimed && (
+          {myEquipment && (
+            <div className="text-yellow-300 text-lg mb-4">
+              ⚔️ 【装備ドロップ】{getEquipmentById(myEquipment)?.name || myEquipment}
+            </div>
+          )}
+          {victory && !myDrop && !myEquipment && dropClaimed && (
             <div className="text-slate-400 mb-4">ドロップなし...</div>
           )}
           <button

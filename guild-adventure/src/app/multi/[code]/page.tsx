@@ -43,6 +43,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
   const [myDrop, setMyDrop] = useState<string | null>(null);
+  const [myEquipment, setMyEquipment] = useState<string | null>(null);
   const [dropClaimed, setDropClaimed] = useState(false);
   const dropClaimedRef = useRef(false); // 二重実行防止用
   
@@ -239,6 +240,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         
         // 装備ドロップを受け取り
         if (result.equipmentId) {
+          setMyEquipment(result.equipmentId);
           addEquipment(result.equipmentId);
           syncToServer();
         }
@@ -339,6 +341,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         victory={room.battleResult.victory}
         dungeonName={dungeonData?.name || '不明なダンジョン'}
         myDrop={myDrop}
+        myEquipment={myEquipment}
         dropClaimed={dropClaimed}
         logs={room.battleResult.logs || []}
         coinReward={room.battleResult.victory ? dungeonData?.coinReward : undefined}
