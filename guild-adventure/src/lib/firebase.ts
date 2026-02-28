@@ -935,8 +935,13 @@ export async function getFriendFullStatus(username: string): Promise<FriendFullS
   
   // マルチ中ならルーム情報も取得
   let multiRoom: MultiRoom | null = null;
+  let validStatus = status;
   if (status?.activity === 'multi' && status?.roomCode) {
     multiRoom = await getRoom(status.roomCode);
+    // ルームが存在しない場合、古いstatusなので無視（オフライン扱い）
+    if (!multiRoom) {
+      validStatus = null;
+    }
   }
   
   // multiAdventureのルームがまだ存在するかチェック（古いデータを無視）
@@ -949,7 +954,7 @@ export async function getFriendFullStatus(username: string): Promise<FriendFullS
     }
   }
   
-  return { status, currentAdventure, multiAdventure: validMultiAdventure, multiRoom };
+  return { status: validStatus, currentAdventure, multiAdventure: validMultiAdventure, multiRoom };
 }
 
 // 複数フレンドの詳細ステータスを取得
