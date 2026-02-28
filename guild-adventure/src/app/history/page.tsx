@@ -7,6 +7,7 @@ import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
+import { getEquipmentById } from '@/lib/data/equipments';
 import { formatDateTime } from '@/lib/utils';
 import { AdventureHistory } from '@/lib/firebase';
 
@@ -45,7 +46,12 @@ function HistoryCard({
       <div className="font-semibold mt-1">{dungeon?.name || history.dungeonId}</div>
       {history.droppedItemId && (
         <div className="text-xs text-amber-400 mt-1">
-          💎 {getItemById(history.droppedItemId)?.name}
+          📜 {getItemById(history.droppedItemId)?.name}
+        </div>
+      )}
+      {history.droppedEquipmentId && (
+        <div className="text-xs text-yellow-300 mt-1">
+          ⚔️ {getEquipmentById(history.droppedEquipmentId)?.name}
         </div>
       )}
       {history.type === 'multi' && history.players && (

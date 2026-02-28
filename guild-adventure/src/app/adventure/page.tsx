@@ -192,6 +192,7 @@ export default function AdventurePage() {
               dungeonId: currentAdventure.dungeon,
               victory: battleResult.victory,
               droppedItemId: droppedItemIds[0],
+              droppedEquipmentId: droppedEquipmentIds[0],
               logs: battleResult.logs,
             });
             

@@ -67,6 +67,7 @@ export interface AdventureHistory {
   dungeonId: string;
   victory: boolean;
   droppedItemId?: string;
+  droppedEquipmentId?: string;  // 装備ドロップ
   completedAt: number;
   logs: any[];
   // マルチの場合

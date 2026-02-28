@@ -266,6 +266,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           dungeonId: room.dungeonId,
           victory: room.battleResult.victory,
           droppedItemId: result.itemId,
+          droppedEquipmentId: result.equipmentId,
           logs: room.battleResult.logs || [],
           roomCode: code,
           players: Object.keys(room.players),
