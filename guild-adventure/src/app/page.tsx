@@ -153,12 +153,41 @@ function GameScreen() {
     }
   }, [currentAdventure, router]);
   
-  // マルチ冒険中なら自動でルームに遷移
+  // マルチ冒険中の情報を取得
+  const [multiRoomInfo, setMultiRoomInfo] = useState<{ dungeonName: string; remainingTime: number; status: string } | null>(null);
+  
   useEffect(() => {
-    if (currentMultiRoom) {
-      router.push(`/multi/${currentMultiRoom}`);
+    if (!currentMultiRoom) {
+      setMultiRoomInfo(null);
+      return;
     }
-  }, [currentMultiRoom, router]);
+    
+    // ルーム情報を取得
+    const fetchRoomInfo = async () => {
+      try {
+        const { getRoom } = await import('@/lib/firebase');
+        const { dungeons } = await import('@/lib/data/dungeons');
+        const room = await getRoom(currentMultiRoom);
+        if (room) {
+          const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];
+          const duration = room.actualDurationSeconds || dungeonData?.durationSeconds || 1800;
+          const elapsed = room.startTime ? (Date.now() - room.startTime) / 1000 : 0;
+          const remaining = Math.max(0, duration - elapsed);
+          setMultiRoomInfo({
+            dungeonName: dungeonData?.name || room.dungeonId,
+            remainingTime: Math.ceil(remaining),
+            status: room.status,
+          });
+        }
+      } catch (e) {
+        console.error('Failed to fetch room info:', e);
+      }
+    };
+    
+    fetchRoomInfo();
+    const interval = setInterval(fetchRoomInfo, 5000); // 5秒ごとに更新
+    return () => clearInterval(interval);
+  }, [currentMultiRoom]);
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const itemCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
@@ -182,6 +211,30 @@ function GameScreen() {
             ログアウト
           </button>
         </div>
+        
+        {/* マルチ冒険中バナー */}
+        {currentMultiRoom && multiRoomInfo && (
+          <Link href={`/multi/${currentMultiRoom}`} className="block mb-4">
+            <div className="bg-amber-900/50 rounded-lg p-4 border border-amber-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">⚔️</span>
+                  <div>
+                    <p className="font-semibold">{multiRoomInfo.dungeonName} 探索中</p>
+                    <p className="text-sm text-amber-300">
+                      {multiRoomInfo.status === 'done' 
+                        ? '✅ 探索完了！タップして結果を確認'
+                        : multiRoomInfo.status === 'battle'
+                        ? `残り ${Math.floor(multiRoomInfo.remainingTime / 60)}分${multiRoomInfo.remainingTime % 60}秒`
+                        : '待機中...'}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-amber-400">→</span>
+              </div>
+            </div>
+          </Link>
+        )}
         
         {/* 招待通知 */}
         {invitations.length > 0 && (
