@@ -42,6 +42,17 @@ import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
 // ============================================
+// バフ/デバフ効果
+// ============================================
+
+interface BuffEffect {
+  type: 'atkUp' | 'defUp' | 'agiUp' | 'atkDown' | 'agiDown' | 'statDown';
+  value: number;
+  duration: number;
+  source: string;
+}
+
+// ============================================
 // パッシブ効果の集約
 // ============================================
 

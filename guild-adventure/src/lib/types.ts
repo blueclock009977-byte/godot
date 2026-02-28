@@ -138,6 +138,7 @@ export type EffectType =
   | 'singleHitBonus'    // 単発時ダメージ+%
   | 'degradationResist' // 劣化耐性（受ける劣化-%）
   | 'degradationBonus'  // 劣化ボーナス（与える劣化+%）
+  | 'mpOnKill'          // 敵を倒した時MP回復
   ;
 
 export interface Effect {
