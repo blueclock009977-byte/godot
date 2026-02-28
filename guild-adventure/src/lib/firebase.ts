@@ -196,6 +196,7 @@ export interface MultiRoom {
   players: Record<string, RoomPlayer>;
   battleResult?: any;
   startTime?: number;  // 冒険開始時刻
+  actualDurationSeconds?: number;  // 短縮後の探索時間
   playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ
   playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ
   playerClaimed?: Record<string, boolean>;           // 受け取り済みフラグ
@@ -318,12 +319,16 @@ export async function updateRoomStatus(
   startTime?: number,
   battleResult?: any,
   playerDrops?: Record<string, string | undefined>,
-  playerEquipmentDrops?: Record<string, string | undefined>
+  playerEquipmentDrops?: Record<string, string | undefined>,
+  actualDurationSeconds?: number
 ): Promise<boolean> {
   try {
     const data: any = { status, updatedAt: Date.now() };
     if (startTime) {
       data.startTime = startTime;
+    }
+    if (actualDurationSeconds) {
+      data.actualDurationSeconds = actualDurationSeconds;
     }
     if (battleResult) {
       data.battleResult = battleResult;

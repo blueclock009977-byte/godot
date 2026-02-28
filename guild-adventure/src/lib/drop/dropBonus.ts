@@ -11,6 +11,7 @@ import { races } from '../data/races';
 
 interface CharacterWithRace {
   race?: string;
+  job?: string;
   equipmentId?: string;
   lv3Skill?: string;
   lv5Skill?: string;
@@ -211,6 +212,109 @@ export function hasDoubleDropRoll(characters: CharacterWithRace[]): boolean {
 export function applyCoinBonus(baseCoins: number, characters: CharacterWithRace[]): number {
   const bonus = calculateCoinBonus(characters);
   return Math.floor(baseCoins * percentBonus(bonus));
+}
+
+/**
+ * 探索時間短縮ボーナス(%)を計算
+ * ※同じ効果ソースは重複しない
+ */
+export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]): number {
+  const appliedBonuses: Map<string, number> = new Map();
+  
+  for (const char of characters) {
+    // 種族パッシブからのボーナス
+    if (char.race) {
+      try {
+        const { races } = require('../data/races');
+        if (races[char.race]) {
+          const raceData = races[char.race];
+          for (const passive of raceData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'explorationSpeedBonus') {
+                const sourceId = `race_${char.race}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // 職業パッシブからのボーナス
+    if (char.job) {
+      try {
+        const { jobs } = require('../data/jobs');
+        if (jobs[char.job]) {
+          const jobData = jobs[char.job];
+          for (const passive of jobData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'explorationSpeedBonus') {
+                const sourceId = `job_${char.job}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // Lvスキルからのボーナス
+    for (const skillId of [char.lv3Skill, char.lv5Skill]) {
+      if (!skillId) continue;
+      try {
+        const { getLvSkill } = require('../data/lvSkills');
+        const skill = getLvSkill(skillId);
+        if (skill?.effects) {
+          for (const effect of skill.effects) {
+            if (effect.type === 'explorationSpeedBonus') {
+              const sourceId = `lvskill_${skillId}`;
+              if (!appliedBonuses.has(sourceId)) {
+                appliedBonuses.set(sourceId, effect.value);
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // 装備からのボーナス
+    if (char.equipmentId) {
+      try {
+        const { getEquipmentById } = require('../data/equipments');
+        const equipment = getEquipmentById(char.equipmentId);
+        if (equipment?.effects) {
+          for (const effect of equipment.effects) {
+            if (effect.type === 'explorationSpeedBonus') {
+              const sourceId = `equipment_${char.equipmentId}`;
+              if (!appliedBonuses.has(sourceId)) {
+                appliedBonuses.set(sourceId, effect.value);
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }
+  
+  let bonus = 0;
+  for (const value of appliedBonuses.values()) {
+    bonus += value;
+  }
+  return bonus;
+}
+
+/**
+ * 探索時間に短縮ボーナスを適用
+ */
+export function applyExplorationSpeedBonus(baseDurationSeconds: number, characters: CharacterWithRace[]): number {
+  const bonus = calculateExplorationSpeedBonus(characters);
+  // ボーナス%分だけ時間短縮（最低10%の時間は残す）
+  const reduction = Math.min(bonus, 90); // 最大90%短縮
+  return Math.floor(baseDurationSeconds * (100 - reduction) / 100);
 }
 
 /**

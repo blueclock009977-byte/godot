@@ -805,6 +805,11 @@ export const useGameStore = create<GameStore>()(
         const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[dungeon];
         
+        // 探索時間短縮ボーナスを計算
+        const allCharsForSpeed = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
+        const { applyExplorationSpeedBonus } = require('@/lib/drop/dropBonus');
+        const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData.durationSeconds, allCharsForSpeed);
+        
         // バトル計算（開始時に結果を決定）
         const battleResult = runBattle(party, dungeon);
         
@@ -842,7 +847,7 @@ export const useGameStore = create<GameStore>()(
             dungeon,
             party,
             startTime: Date.now(),
-            duration: dungeonData.durationSeconds * 1000,
+            duration: actualDurationSeconds * 1000, // 短縮後の時間
             status: 'inProgress',
             result: battleResult, // バトル結果も保持
           },

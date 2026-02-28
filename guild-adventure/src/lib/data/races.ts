@@ -134,13 +134,14 @@ export const races: Record<string, RaceData> = {
   goblin: {
     id: 'goblin',
     name: 'ゴブリン',
-    description: '先制率+35%で確実に先手を取れる小鬼。忍者やレンジャーで開幕速攻型に。',
+    description: '先制率+35%で確実に先手を取れる小鬼。近道で探索時間-15%！',
     baseStats: { maxHp: 80, maxMp: 40, atk: 10, def: 7, agi: 18, mag: 7 },  // 大幅バフ
     passives: [
       { name: '狡猾', description: '先制率が大幅上昇', effects: [{ type: 'firstStrikeBonus', value: 35 }] },
       { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '急所狙い', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 20 }] },
+      { name: '近道発見', description: '探索時間が短縮', effects: [{ type: 'explorationSpeedBonus', value: 15 }] },
     ],
     skills: [
       { id: 'ambush', name: '奇襲', description: '先制で高ダメージの一撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 10 },

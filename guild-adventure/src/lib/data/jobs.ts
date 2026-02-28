@@ -200,12 +200,12 @@ export const jobs: Record<string, JobData> = {
   ranger: {
     id: 'ranger',
     name: 'レンジャー',
-    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。探索でドロップ率UP！',
+    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。探索でドロップ率UP＆時間短縮！',
     statModifiers: { maxHp: 10, maxMp: 15, atk: 4, def: 2, agi: 6, mag: 2 },
     passives: [
       { name: '野生の勘', description: '先制率と回避率が上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }, { type: 'evasionBonus', value: 15 }] },
       { name: '自然治癒', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 5 }] },
-      { name: '探索術', description: 'ドロップ率が上昇', effects: [{ type: 'dropBonus', value: 20 }] },
+      { name: '探索術', description: 'ドロップ率+20%、探索時間-10%', effects: [{ type: 'dropBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 10 }] },
     ],
     skills: [
       { id: 'snipe', name: '狙撃', description: '高威力の一撃', type: 'attack', target: 'single', multiplier: 2.0, mpCost: 14 },

@@ -135,8 +135,17 @@ export async function startMultiBattle(
   
   const startTime = Date.now();
   
+  // 探索時間短縮ボーナスを計算（全員のキャラで）
+  const { applyExplorationSpeedBonus } = require('../drop/dropBonus');
+  const allChars = Object.values(latestRoom.players).flatMap(p => 
+    (p.characters || []).map(rc => rc.character)
+  );
+  const { dungeons } = require('../data/dungeons');
+  const dungeonData = dungeons[latestRoom.dungeonId];
+  const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData?.durationSeconds || 3600, allChars);
+  
   // Firebaseにバトル結果を保存
-  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops);
+  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops, actualDurationSeconds);
   
   // 各プレイヤーにマルチ冒険結果を保存
   const playerNames = Object.keys(latestRoom.players);
