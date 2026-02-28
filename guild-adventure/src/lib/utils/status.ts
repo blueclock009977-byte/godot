@@ -35,16 +35,24 @@ export function getStatusDisplay(fullStatus: FriendFullStatus | undefined): Stat
 
 /**
  * 複数のステータスを取得（ソロ+マルチ同時表示用）
+ * 構造: [オンライン/オフライン, ソロ冒険?, マルチ冒険?]
  */
 export function getStatusDisplays(fullStatus: FriendFullStatus | undefined): StatusDisplay[] {
   if (!fullStatus) {
-    return [{ text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' }];
+    return [{ text: 'オフライン', color: 'text-slate-500', emoji: '⚫' }];
   }
 
   const { status, currentAdventure, multiAdventure, multiRoom } = fullStatus;
   const results: StatusDisplay[] = [];
 
-  // ソロ冒険中をチェック
+  // 1. 最初に必ずオンライン/オフラインを表示
+  if (!status || !isOnline(status)) {
+    results.push({ text: 'オフライン', color: 'text-slate-500', emoji: '⚫' });
+  } else {
+    results.push({ text: 'オンライン', color: 'text-green-400', emoji: '🟢' });
+  }
+
+  // 2. ソロ冒険中をチェック
   if (currentAdventure) {
     const dungeonName = getDungeonName(currentAdventure.dungeon);
     const remaining = calculateRemainingMinutes(currentAdventure.startTime, currentAdventure.dungeon);
@@ -58,7 +66,7 @@ export function getStatusDisplays(fullStatus: FriendFullStatus | undefined): Sta
       });
     } else {
       results.push({
-        text: '帰還待ち',
+        text: 'ソロ帰還待ち',
         color: 'text-orange-400',
         emoji: '🏠',
         detail: `${dungeonName} の結果確認待ち`,
@@ -66,7 +74,7 @@ export function getStatusDisplays(fullStatus: FriendFullStatus | undefined): Sta
     }
   }
 
-  // マルチルームの状態をチェック
+  // 3. マルチルームの状態をチェック
   if (multiRoom && status?.activity === 'multi') {
     const dungeonName = getDungeonName(multiRoom.dungeonId);
 
@@ -113,14 +121,6 @@ export function getStatusDisplays(fullStatus: FriendFullStatus | undefined): Sta
       emoji: '👥',
       detail: `${dungeonName} の結果確認待ち`,
     });
-  }
-
-  // 何もなければオンライン/オフライン
-  if (results.length === 0) {
-    if (!status || !isOnline(status)) {
-      return [{ text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' }];
-    }
-    return [{ text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' }];
   }
 
   return results;
