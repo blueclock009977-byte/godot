@@ -93,6 +93,7 @@ export interface UserData {
   createdAt: number;
   lastLogin: number;
   coins?: number;          // 冒険コイン
+  status?: UserStatus;     // オンラインステータス
 }
 
 // ユーザーデータを取得
@@ -146,6 +147,10 @@ export async function createUser(username: string): Promise<boolean> {
     inventory: { ...initialInventory },
     createdAt: Date.now(),
     lastLogin: Date.now(),
+    status: {
+      activity: 'lobby' as const,
+      lastSeen: Date.now(),
+    },
   };
   
   return firebaseSet(`guild-adventure/users/${username}`, initialData);
@@ -578,6 +583,12 @@ export async function startAdventureOnServer(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(adventureData),
     });
+    
+    if (res.ok) {
+      // ステータスをソロ冒険中に更新
+      await updateUserStatus(username, 'solo', { dungeonId: dungeon, startTime: adventureData.startTime });
+    }
+    
     return { success: res.ok };
   } catch (e) {
     console.error('Failed to start adventure on server:', e);
@@ -648,6 +659,12 @@ export async function clearAdventureOnServer(username: string): Promise<boolean>
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`, {
       method: 'DELETE',
     });
+    
+    if (res.ok) {
+      // ステータスをロビーに戻す
+      await updateUserStatus(username, 'lobby');
+    }
+    
     return res.ok;
   } catch (e) {
     console.error('Failed to clear adventure on server:', e);
@@ -918,7 +935,7 @@ export interface UserStatus {
   startTime?: number;  // 冒険開始時刻
 }
 
-// ステータスを更新
+// ステータスを更新（activityも変更）
 export async function updateUserStatus(
   username: string,
   activity: UserActivity,
@@ -937,6 +954,20 @@ export async function updateUserStatus(
       body: JSON.stringify(status),
     });
     
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// lastSeenだけ更新（activityは変更しない）
+export async function updateLastSeen(username: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/status/lastSeen.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Date.now()),
+    });
     return res.ok;
   } catch (e) {
     return false;

@@ -286,11 +286,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         });
         
         // pendingResultsから削除（自動受取リストから除外）
-        const { removePendingResult, deleteRoomIfAllClaimed } = await import('@/lib/firebase');
+        const { removePendingResult, deleteRoomIfAllClaimed, updateUserStatus } = await import('@/lib/firebase');
         await removePendingResult(username, code);
         
         // 全員がclaimedならルームを削除
         await deleteRoomIfAllClaimed(code);
+        
+        // ステータスをロビーに戻す
+        await updateUserStatus(username, 'lobby');
         
         setCurrentMultiRoom(null);
         setDropClaimed(true);

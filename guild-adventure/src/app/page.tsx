@@ -8,7 +8,7 @@ import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
 import { getRaceShortName, getJobShortName } from '@/lib/utils';
-import { getInvitations, getFriendRequests, getPublicRooms, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
+import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
 function LoginScreen() {
@@ -129,31 +129,13 @@ function GameScreen() {
       ]);
       setInvitations(invites);
       setFriendRequests(requests);
-      // ステータス更新（探索中を優先）
-      if (currentAdventure) {
-        // ソロ探索中
-        updateUserStatus(username!, 'solo', {
-          dungeonId: currentAdventure.dungeon,
-          startTime: currentAdventure.startTime,
-        });
-      } else if (currentMultiRoom) {
-        // マルチルーム参加中はルーム情報も含めて更新
-        const { getRoom } = await import('@/lib/firebase');
-        const room = await getRoom(currentMultiRoom);
-        if (room) {
-          updateUserStatus(username!, 'multi', { 
-            roomCode: currentMultiRoom, 
-            dungeonId: room.dungeonId, 
-            startTime: room.startTime 
-          });
-        }
-      } else {
-        updateUserStatus(username!, 'lobby');
-      }
+      // lastSeenだけ更新（activityは冒険開始/終了時のみ変更）
+      const { updateLastSeen } = await import('@/lib/firebase');
+      updateLastSeen(username!);
     } catch (e) {
       console.error('Failed to load notifications:', e);
     }
-  }, [username, currentMultiRoom, currentAdventure]);
+  }, [username]);
   usePolling(loadNotifications, 10000, !!username);
   
   // 公開ルーム数を取得

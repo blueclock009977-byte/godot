@@ -209,9 +209,9 @@ export async function startMultiBattle(
   // Firebaseにバトル結果を保存
   await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops, actualDurationSeconds);
   
-  // 各プレイヤーにマルチ冒険結果を保存 & pendingResultsに追加
+  // 各プレイヤーにマルチ冒険結果を保存 & pendingResultsに追加 & ステータス更新
   const playerNames = Object.keys(latestRoom.players);
-  const { addPendingResult } = require('../firebase');
+  const { addPendingResult, updateUserStatus } = require('../firebase');
   for (const playerName of playerNames) {
     await saveMultiAdventureForUser(
       playerName,
@@ -225,6 +225,8 @@ export async function startMultiBattle(
     );
     // pendingResultsに追加（ログイン時に自動受取できるように）
     await addPendingResult(playerName, roomCode);
+    // ステータスをマルチ冒険中に更新
+    await updateUserStatus(playerName, 'multi', { roomCode, dungeonId: latestRoom.dungeonId, startTime });
   }
   
   return { success: true };

@@ -14,7 +14,6 @@ import {
   rejectFriendRequest,
   removeFriend,
   getMultipleFriendFullStatus,
-  updateUserStatus,
   getRoom,
   FriendRequest,
   FriendFullStatus,
@@ -23,7 +22,7 @@ import {
 import { getStatusDisplay } from '@/lib/utils/status';
 
 export default function FriendsPage() {
-  const { username, currentMultiRoom, currentAdventure } = useGameStore();
+  const { username, currentMultiRoom } = useGameStore();
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);  // 自分が参加中のルーム
@@ -58,22 +57,11 @@ export default function FriendsPage() {
       setMyMultiRoom(null);
     }
     
-    // 自分のステータスを更新（探索中を優先）
-    if (currentAdventure) {
-      updateUserStatus(username, 'solo', {
-        dungeonId: currentAdventure.dungeon,
-        startTime: currentAdventure.startTime,
-      });
-    } else if (currentMultiRoom) {
-      const room = await getRoom(currentMultiRoom);
-      if (room) {
-        updateUserStatus(username, 'multi', { roomCode: currentMultiRoom, dungeonId: room.dungeonId, startTime: room.startTime });
-      }
-    } else {
-      updateUserStatus(username, 'lobby');
-    }
+    // lastSeenだけ更新（activityは冒険開始/終了時のみ変更）
+    const { updateLastSeen } = await import('@/lib/firebase');
+    updateLastSeen(username);
     setIsLoading(false);
-  }, [username, currentMultiRoom, currentAdventure]);
+  }, [username, currentMultiRoom]);
 
   // 10秒ごとにポーリング
   usePolling(loadData, 10000, !!username);
