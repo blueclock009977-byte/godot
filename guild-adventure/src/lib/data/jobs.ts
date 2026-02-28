@@ -180,7 +180,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'soul_drain', name: '吸魂', description: 'HPを吸収する魔法', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 15 },
       { id: 'death_wave', name: '死の波動', description: '全体に闇魔法', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 28 },
     ],
-    masterySkill: { name: '死霊召喚', description: '倒した敵を味方として召喚', type: 'passive', effects: [{ type: 'summonUndead', value: 50 }] },
+    masterySkill: { name: '魂吸収', description: '敵を倒すとMP15回復', type: 'passive', effects: [{ type: 'mpOnKill', value: 15 }] },
   },
   monk: {
     id: 'monk',

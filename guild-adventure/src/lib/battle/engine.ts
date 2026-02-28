@@ -107,6 +107,7 @@ interface PassiveEffects {
   singleHitBonus: number;     // 単発時ダメージ+%
   degradationResist: number;  // 劣化耐性（%）
   degradationBonus: number;   // 劣化ボーナス（追加%）
+  mpOnKill: number;          // 敵を倒した時MP回復
 }
 
 function getEmptyPassiveEffects(): PassiveEffects {
@@ -126,7 +127,7 @@ function getEmptyPassiveEffects(): PassiveEffects {
     speciesKiller: {}, speciesResist: {},
     // 連撃・劣化関連
     fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
-    singleHitBonus: 0, degradationResist: 0, degradationBonus: 0,
+    singleHitBonus: 0, degradationResist: 0, degradationBonus: 0, mpOnKill: 0,
   };
 }
 
@@ -924,6 +925,11 @@ function processTurn(
           logs.push(`${target.name}は不屈の精神でHP1で耐えた！`);
         } else {
           logs.push(`${target.name}を倒した！`);
+          // mpOnKill（敵を倒すとMP回復）
+          if (unit.passiveEffects.mpOnKill > 0) {
+            unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
+            logs.push(`${unit.name}は魂を吸収しMP${unit.passiveEffects.mpOnKill}回復！`);
+          }
           // revive（自己蘇生）
           if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
             target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
@@ -978,6 +984,11 @@ function processTurn(
             
             if (target.stats.hp <= 0) {
               logs.push(`${target.name}を倒した！`);
+              // mpOnKill（敵を倒すとMP回復）
+              if (unit.passiveEffects.mpOnKill > 0) {
+                unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
+                logs.push(`${unit.name}は魂を吸収しMP${unit.passiveEffects.mpOnKill}回復！`);
+              }
               if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
                 target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
                 target.reviveUsed = true;
