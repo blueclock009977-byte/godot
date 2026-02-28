@@ -110,6 +110,52 @@ interface PassiveEffects {
   mpOnKill: number;          // 敵を倒した時MP回復
 }
 
+
+// バフ/デバフをユニットに適用
+function applyBuff(unit: ExtendedBattleUnit, effect: { type: string; value?: number; duration?: number }, source: string): void {
+  // 同じソースからの効果は上書き
+  unit.buffs = unit.buffs.filter(b => b.source !== source);
+  unit.buffs.push({
+    type: effect.type as BuffEffect['type'],
+    value: effect.value || 20,       // デフォルト20%
+    duration: effect.duration || 3,  // デフォルト3ターン
+    source,
+  });
+}
+
+// バフ/デバフの効果を計算（ステータス倍率）
+function getBuffMultiplier(unit: ExtendedBattleUnit, statType: 'atk' | 'def' | 'agi'): number {
+  let mult = 1.0;
+  for (const buff of unit.buffs) {
+    if (buff.type === 'atkUp' && statType === 'atk') mult *= (1 + buff.value / 100);
+    if (buff.type === 'defUp' && statType === 'def') mult *= (1 + buff.value / 100);
+    if (buff.type === 'agiUp' && statType === 'agi') mult *= (1 + buff.value / 100);
+    if (buff.type === 'atkDown' && statType === 'atk') mult *= (1 - buff.value / 100);
+    if (buff.type === 'agiDown' && statType === 'agi') mult *= (1 - buff.value / 100);
+    if (buff.type === 'statDown') mult *= (1 - buff.value / 100);  // 全ステ低下
+  }
+  return Math.max(0.1, mult);  // 最低10%
+}
+
+// ターン終了時にバフのdurationを減らす
+function tickBuffDurations(units: ExtendedBattleUnit[], logs: string[]): void {
+  for (const unit of units) {
+    if (unit.stats.hp <= 0) continue;
+    const expiredBuffs: string[] = [];
+    unit.buffs = unit.buffs.filter(buff => {
+      buff.duration--;
+      if (buff.duration <= 0) {
+        expiredBuffs.push(buff.source);
+        return false;
+      }
+      return true;
+    });
+    if (expiredBuffs.length > 0) {
+      logs.push(`${unit.name}の${expiredBuffs.join('、')}の効果が切れた`);
+    }
+  }
+}
+
 function getEmptyPassiveEffects(): PassiveEffects {
   return {
     physicalBonus: 0, magicBonus: 0, damageBonus: 0, critBonus: 0, critDamage: 0,
@@ -324,6 +370,7 @@ function applyDamageModifiers(
 
 interface ExtendedBattleUnit extends BattleUnit {
   passiveEffects: PassiveEffects;
+  buffs: BuffEffect[];  // 現在かかっているバフ/デバフ
   attackStackCount: number;
   autoReviveUsed: boolean;
   reviveUsed: boolean;
@@ -367,6 +414,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     lv5Skill: char.lv5Skill,
     equipmentId: char.equipmentId,
     passiveEffects: getEmptyPassiveEffects(),
+    buffs: [],
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
@@ -450,6 +498,7 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     speciesKiller: monster.speciesKiller,
     speciesResist: monster.speciesResist,
     passiveEffects: getEmptyPassiveEffects(),
+    buffs: [],
     attackStackCount: 0,
     autoReviveUsed: false,
     reviveUsed: false,
@@ -562,6 +611,12 @@ function calculatePhysicalDamage(
   const atkEffects = attacker.passiveEffects;
   const defEffects = defender.passiveEffects;
   
+  // バフ/デバフ補正
+  const atkMult = getBuffMultiplier(attacker, 'atk');
+  const defMult = getBuffMultiplier(defender, 'def');
+  const atkAgiMult = getBuffMultiplier(attacker, 'agi');
+  const defAgiMult = getBuffMultiplier(defender, 'agi');
+  
   const hitCount = getHitCount(attacker);
   let totalDamage = 0;
   let isCritical = false;
@@ -569,7 +624,7 @@ function calculatePhysicalDamage(
   let degradationAdded = 0;
   
   // 基本命中率を計算
-  let baseHitRate = 90 + (attacker.stats.agi - defender.stats.agi);
+  let baseHitRate = 90 + (attacker.stats.agi * atkAgiMult - defender.stats.agi * defAgiMult);
   baseHitRate += atkEffects.accuracyBonus;
   baseHitRate -= defEffects.evasionBonus;
   if (defender.position === 'back') baseHitRate -= 10;
@@ -610,7 +665,7 @@ function calculatePhysicalDamage(
     const randB = random(0.85, 1.15);
     
     // バランス調整: ATK*0.8 - DEF*0.5 (物理火力を約20%ナーフ)
-    let damage = (attacker.stats.atk * 0.8 * randA) - (defender.stats.def * randB * 0.5);
+    let damage = (attacker.stats.atk * atkMult * 0.8 * randA) - (defender.stats.def * defMult * randB * 0.5);
     
     // 連撃減衰（威力）
     damage *= decayFactor;
@@ -695,8 +750,11 @@ function calculateMagicDamage(
   const atkEffects = attacker.passiveEffects;
   const defEffects = defender.passiveEffects;
   
+  // バフ/デバフ補正（魔法はATKバフで魔力も上がる扱い）
+  const atkMult = getBuffMultiplier(attacker, 'atk');
+  
   const rand = random(0.9, 1.1);
-  let damage = attacker.stats.mag * multiplier * rand;
+  let damage = attacker.stats.mag * atkMult * multiplier * rand;
   
   // magicBonus
   damage *= percentBonus(atkEffects.magicBonus);
@@ -780,6 +838,28 @@ function decideAction(
           const target = skill.target === 'allAllies' ? aliveAllies : lowHpAlly;
           return { type: 'skill', skillIndex: index, target };
         }
+      }
+      
+      // バフスキル（30%の確率で使用、まだバフがかかってなければ）
+      const buffSkills = usableSkills.filter(({ skill }) => skill.type === 'buff');
+      if (buffSkills.length > 0 && Math.random() < 0.3) {
+        const hasBuffAlready = unit.buffs.some(b => b.type === 'atkUp' || b.type === 'defUp' || b.type === 'agiUp');
+        if (!hasBuffAlready) {
+          const { skill, index } = pickRandom(buffSkills);
+          let target: ExtendedBattleUnit | ExtendedBattleUnit[];
+          if (skill.target === 'self') target = unit;
+          else if (skill.target === 'allAllies') target = aliveAllies;
+          else target = pickRandom(aliveAllies);
+          return { type: 'skill', skillIndex: index, target };
+        }
+      }
+      
+      // デバフスキル（25%の確率で使用）
+      const debuffSkills = usableSkills.filter(({ skill }) => skill.type === 'debuff');
+      if (debuffSkills.length > 0 && Math.random() < 0.25) {
+        const { skill, index } = pickRandom(debuffSkills);
+        const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+        return { type: 'skill', skillIndex: index, target };
       }
       
       if (Math.random() < 0.6) {
@@ -1004,6 +1084,30 @@ function processTurn(
             target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
             logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！(MP-${actualCost})`);
           }
+        } else if (skill.type === 'buff' && skill.effect) {
+          // バフスキル
+          const targets = Array.isArray(action.target) ? action.target : [action.target as ExtendedBattleUnit];
+          for (const target of targets) {
+            if (target.stats.hp <= 0) continue;
+            applyBuff(target, skill.effect, skill.name);
+          }
+          const effectText = skill.effect.type === 'atkUp' ? 'ATK' : skill.effect.type === 'defUp' ? 'DEF' : skill.effect.type === 'agiUp' ? 'AGI' : 'ステータス';
+          logs.push(`${unit.name}の${skill.name}！ ${effectText}+${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
+        } else if (skill.type === 'debuff' && skill.effect) {
+          // デバフスキル
+          const targets = Array.isArray(action.target) ? action.target : [action.target as ExtendedBattleUnit];
+          for (const target of targets) {
+            if (target.stats.hp <= 0) continue;
+            // statusResistで抵抗判定
+            const resistChance = target.passiveEffects?.statusResist || 0;
+            if (Math.random() * 100 < resistChance) {
+              logs.push(`${target.name}は${skill.name}を抵抗した！`);
+              continue;
+            }
+            applyBuff(target, skill.effect, skill.name);
+          }
+          const effectText = skill.effect.type === 'atkDown' ? 'ATK' : skill.effect.type === 'agiDown' ? 'AGI' : 'ステータス';
+          logs.push(`${unit.name}の${skill.name}！ ${effectText}-${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
         }
       }
       
@@ -1024,6 +1128,9 @@ function processTurn(
       }
     }
   }
+  
+  // バフ/デバフのduration減少
+  tickBuffDurations([...playerUnits, ...enemyUnits], logs);
   
   // 勝敗判定
   const alivePlayer = playerUnits.some(u => u.stats.hp > 0);
