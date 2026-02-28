@@ -15,6 +15,7 @@ import { environments } from '@/lib/data/environments';
 import { getLvSkill } from '@/lib/data/lvSkills';
 import { getLvBonus } from '@/lib/data/lvStatBonuses';
 import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
+import { calculateCharacterBonuses } from '@/lib/character/bonuses';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -247,6 +248,146 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <StatsDisplay stats={character.stats} title="ステータス" />
         </div>
+        
+        {/* 総合ボーナス */}
+        {(() => {
+          const bonuses = calculateCharacterBonuses(character);
+          const hasCombatBonuses = bonuses.physicalBonus > 0 || bonuses.magicBonus > 0 || 
+            bonuses.critBonus > 0 || bonuses.critDamage > 0 || bonuses.evasionBonus > 0 ||
+            bonuses.damageReduction > 0 || bonuses.healBonus > 0 || bonuses.hpRegen > 0 ||
+            bonuses.mpRegen > 0 || bonuses.hpSteal > 0 || bonuses.firstStrikeBonus > 0 ||
+            bonuses.accuracyBonus > 0 || bonuses.bonusHits > 0;
+          const hasTreasureBonuses = bonuses.dropBonus > 0 || bonuses.coinBonus > 0 ||
+            bonuses.rareDropBonus > 0 || bonuses.explorationSpeedBonus > 0;
+          
+          if (!hasCombatBonuses && !hasTreasureBonuses) return null;
+          
+          return (
+            <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+              <h3 className="text-sm text-slate-400 mb-3">📊 総合ボーナス</h3>
+              
+              {/* 戦闘系 */}
+              {hasCombatBonuses && (
+                <div className="mb-3">
+                  <div className="text-xs text-slate-500 mb-1">⚔️ 戦闘</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {bonuses.physicalBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">物理威力</span>
+                        <span className="text-red-400">+{bonuses.physicalBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.magicBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">魔法威力</span>
+                        <span className="text-blue-400">+{bonuses.magicBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.critBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">クリ率</span>
+                        <span className="text-orange-400">+{bonuses.critBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.critDamage > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">クリダメ</span>
+                        <span className="text-orange-400">+{bonuses.critDamage}%</span>
+                      </div>
+                    )}
+                    {bonuses.evasionBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">回避率</span>
+                        <span className="text-cyan-400">+{bonuses.evasionBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.damageReduction > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">被ダメ軽減</span>
+                        <span className="text-green-400">-{bonuses.damageReduction}%</span>
+                      </div>
+                    )}
+                    {bonuses.healBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">回復量</span>
+                        <span className="text-pink-400">+{bonuses.healBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.hpRegen > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">HP再生</span>
+                        <span className="text-green-400">+{bonuses.hpRegen}/ターン</span>
+                      </div>
+                    )}
+                    {bonuses.mpRegen > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">MP再生</span>
+                        <span className="text-blue-400">+{bonuses.mpRegen}/ターン</span>
+                      </div>
+                    )}
+                    {bonuses.hpSteal > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">HP吸収</span>
+                        <span className="text-purple-400">+{bonuses.hpSteal}%</span>
+                      </div>
+                    )}
+                    {bonuses.firstStrikeBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">先制率</span>
+                        <span className="text-yellow-400">+{bonuses.firstStrikeBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.accuracyBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">命中率</span>
+                        <span className="text-slate-300">+{bonuses.accuracyBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.bonusHits > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">追加攻撃</span>
+                        <span className="text-red-400">+{bonuses.bonusHits}回</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* トレハン系 */}
+              {hasTreasureBonuses && (
+                <div>
+                  <div className="text-xs text-slate-500 mb-1">🔍 トレハン</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {bonuses.dropBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">ドロップ率</span>
+                        <span className="text-green-400">+{bonuses.dropBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.rareDropBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">レア発見</span>
+                        <span className="text-purple-400">+{bonuses.rareDropBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.coinBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">コイン</span>
+                        <span className="text-yellow-400">+{bonuses.coinBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.explorationSpeedBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">探索時間</span>
+                        <span className="text-cyan-400">-{bonuses.explorationSpeedBonus}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
         
         {/* パッシブ一覧 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">

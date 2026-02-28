@@ -8,6 +8,7 @@ import { jobs } from '@/lib/data/jobs';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
+import { getPartyTreasureHuntBonuses, hasTreasureHuntBonuses } from '@/lib/drop/dropBonus';
 
 function CharacterCard({ 
   character, 
@@ -115,6 +116,53 @@ export default function PartyPage() {
           <p>ソロ: <span className="text-amber-400">合計4人まで</span>（前衛のみ・後衛のみもOK）</p>
           <p>前衛: 火力+20%, 被ダメ+20% ／ 後衛: 火力-20%, 被ダメ-20%</p>
         </div>
+        
+        {/* トレハンボーナス */}
+        {(() => {
+          const partyChars = [...frontMembers, ...backMembers];
+          if (partyChars.length === 0) return null;
+          
+          const bonuses = getPartyTreasureHuntBonuses(partyChars);
+          if (!hasTreasureHuntBonuses(bonuses)) return null;
+          
+          return (
+            <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
+              <h3 className="text-sm font-semibold text-amber-400 mb-2">🔍 トレハンスキル（パーティ合計）</h3>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {bonuses.dropBonus > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">ドロップ率</span>
+                    <span className="text-green-400">+{bonuses.dropBonus}%</span>
+                  </div>
+                )}
+                {bonuses.rareDropBonus > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">レア発見</span>
+                    <span className="text-purple-400">+{bonuses.rareDropBonus}%</span>
+                  </div>
+                )}
+                {bonuses.coinBonus > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">コイン</span>
+                    <span className="text-yellow-400">+{bonuses.coinBonus}%</span>
+                  </div>
+                )}
+                {bonuses.explorationSpeedBonus > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">探索時間</span>
+                    <span className="text-cyan-400">-{bonuses.explorationSpeedBonus}%</span>
+                  </div>
+                )}
+                {bonuses.rollCount > 4 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">抽選回数</span>
+                    <span className="text-pink-400">{bonuses.rollCount}回</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
         
         {/* パーティ */}
         <div className="mb-6 space-y-4">
