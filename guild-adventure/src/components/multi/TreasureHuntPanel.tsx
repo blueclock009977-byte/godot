@@ -2,46 +2,29 @@
 
 import { MultiRoom, RoomCharacter } from '@/lib/firebase';
 import { 
-  calculateDropBonus, 
-  calculateRareDropBonus, 
-  calculateCoinBonus, 
-  calculateExplorationSpeedBonus,
-  getDropRollCount 
+  getPartyTreasureHuntBonuses,
+  hasTreasureHuntBonuses,
+  PartyTreasureHuntBonuses,
 } from '@/lib/drop/dropBonus';
 
 interface TreasureHuntPanelProps {
   players: MultiRoom['players'];
 }
 
-interface PlayerBonuses {
-  dropBonus: number;
-  rareDropBonus: number;
-  coinBonus: number;
-  explorationSpeedBonus: number;
-  rollCount: number;
-}
-
 function calculatePlayerBonuses(
   characters: RoomCharacter[], 
   ownerId: string
-): PlayerBonuses {
+): PartyTreasureHuntBonuses {
   const chars = characters.map(rc => ({
     ...rc.character,
     ownerId,
   }));
-  
-  return {
-    dropBonus: calculateDropBonus(chars),
-    rareDropBonus: calculateRareDropBonus(chars),
-    coinBonus: calculateCoinBonus(chars),
-    explorationSpeedBonus: calculateExplorationSpeedBonus(chars),
-    rollCount: getDropRollCount(chars),
-  };
+  return getPartyTreasureHuntBonuses(chars);
 }
 
 function calculateTotalBonuses(
   players: MultiRoom['players']
-): PlayerBonuses {
+): PartyTreasureHuntBonuses {
   // 全員のキャラにownerIdを付けて合算
   const allChars = Object.entries(players).flatMap(([playerName, p]) =>
     (p.characters || []).map(rc => ({
@@ -49,25 +32,13 @@ function calculateTotalBonuses(
       ownerId: playerName,
     }))
   );
-  
-  return {
-    dropBonus: calculateDropBonus(allChars),
-    rareDropBonus: calculateRareDropBonus(allChars),
-    coinBonus: calculateCoinBonus(allChars),
-    explorationSpeedBonus: calculateExplorationSpeedBonus(allChars),
-    rollCount: getDropRollCount(allChars),
-  };
+  return getPartyTreasureHuntBonuses(allChars);
 }
 
 export default function TreasureHuntPanel({ players }: TreasureHuntPanelProps) {
   const totalBonuses = calculateTotalBonuses(players);
-  const hasBonuses = totalBonuses.dropBonus > 0 || 
-                     totalBonuses.rareDropBonus > 0 || 
-                     totalBonuses.coinBonus > 0 || 
-                     totalBonuses.explorationSpeedBonus > 0 ||
-                     totalBonuses.rollCount > 4;
 
-  if (!hasBonuses) {
+  if (!hasTreasureHuntBonuses(totalBonuses)) {
     return (
       <div className="mb-4 p-3 bg-slate-800/50 rounded-lg border border-slate-700">
         <h3 className="text-sm font-semibold text-amber-400 mb-2">🔍 トレハンスキル</h3>
@@ -121,11 +92,8 @@ export default function TreasureHuntPanel({ players }: TreasureHuntPanelProps) {
         <div className="mt-2 space-y-2">
           {Object.entries(players).map(([playerName, player]) => {
             const bonuses = calculatePlayerBonuses(player.characters || [], playerName);
-            const hasBonus = bonuses.dropBonus > 0 || bonuses.rareDropBonus > 0 || 
-                           bonuses.coinBonus > 0 || bonuses.explorationSpeedBonus > 0 ||
-                           bonuses.rollCount > 4;
             
-            if (!hasBonus) return null;
+            if (!hasTreasureHuntBonuses(bonuses)) return null;
             
             return (
               <div key={playerName} className="text-xs pl-2 border-l border-slate-600">
