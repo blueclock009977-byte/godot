@@ -266,6 +266,8 @@ interface GameStore {
   // マルチ編成保存（2人/3人マルチ用）
   lastMulti2Party: { charId: string; position: 'front' | 'back' }[] | null;
   lastMulti3Party: { charId: string; position: 'front' | 'back' }[] | null;
+  lastRoomSettings: { dungeonId: string; maxPlayers: 2 | 3; isPublic: boolean } | null;
+  saveRoomSettings: (dungeonId: string, maxPlayers: 2 | 3, isPublic: boolean) => Promise<void>;
   saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => Promise<void>;
   getLastMultiParty: (playerCount: 2 | 3) => { charId: string; position: 'front' | 'back' }[] | null;
   
@@ -343,6 +345,7 @@ export const useGameStore = create<GameStore>()(
       _dataLoaded: false,
       lastMulti2Party: null,
       lastMulti3Party: null,
+      lastRoomSettings: null,
       
       // ログイン
       login: async (username: string) => {
@@ -444,6 +447,12 @@ export const useGameStore = create<GameStore>()(
         await get().syncToServer();
       },
       
+      // ルーム設定保存
+      saveRoomSettings: async (dungeonId: string, maxPlayers: 2 | 3, isPublic: boolean) => {
+        set({ lastRoomSettings: { dungeonId, maxPlayers, isPublic } });
+        await get().syncToServer();
+      },
+
       // マルチ編成取得
       getLastMultiParty: (playerCount: 2 | 3) => {
         const { lastMulti2Party, lastMulti3Party } = get();
@@ -561,6 +570,7 @@ export const useGameStore = create<GameStore>()(
               history: userData.history || [],
               lastMulti2Party: userData.lastMulti2Party || null,
               lastMulti3Party: userData.lastMulti3Party || null,
+              lastRoomSettings: userData.lastRoomSettings || null,
               isLoading: false,
             });
             // 既存の探索を復元
@@ -722,7 +732,7 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party } = get();
+        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, lastRoomSettings } = get();
         if (!username) return;
         
         await saveUserData(username, {

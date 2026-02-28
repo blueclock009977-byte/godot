@@ -24,7 +24,7 @@ import { formatDuration } from '@/lib/utils';
 
 export default function MultiPage() {
   const router = useRouter();
-  const { username } = useGameStore();
+  const { username, lastRoomSettings, saveRoomSettings } = useGameStore();
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [roomCode, setRoomCode] = useState('');
   const [selectedDungeon, setSelectedDungeon] = useState<DungeonType>('grassland');
@@ -82,6 +82,9 @@ export default function MultiPage() {
     setIsLoading(true);
     setError('');
     
+    // ルーム設定を保存
+    await saveRoomSettings(selectedDungeon, maxPlayers, isPublic);
+    
     const code = await createRoom(username, selectedDungeon, maxPlayers, isPublic);
     if (code) {
       router.push(`/multi/${code}`);
@@ -91,6 +94,26 @@ export default function MultiPage() {
     setIsLoading(false);
   };
   
+  // 前回の設定で即座に部屋作成
+  const handleQuickCreate = async () => {
+    if (!username || !lastRoomSettings) return;
+    setIsLoading(true);
+    setError('');
+    
+    const code = await createRoom(
+      username, 
+      lastRoomSettings.dungeonId as DungeonType, 
+      lastRoomSettings.maxPlayers, 
+      lastRoomSettings.isPublic
+    );
+    if (code) {
+      router.push(`/multi/${code}`);
+    } else {
+      setError('ルーム作成に失敗しました');
+    }
+    setIsLoading(false);
+  };
+
   const handleJoin = async () => {
     if (!username || !roomCode) return;
     setIsLoading(true);
@@ -163,14 +186,27 @@ export default function MultiPage() {
               onClick={() => setMode('create')}
               className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-4 font-semibold text-lg"
             >
-              🏠 ルームを作成
+              🏠 部屋を作る
             </button>
             <button
               onClick={() => setMode('join')}
               className="w-full bg-slate-700 hover:bg-slate-600 rounded-lg py-4 font-semibold text-lg border border-slate-600"
             >
-              🚪 ルームに参加
+              🚪 部屋に入る
             </button>
+            {lastRoomSettings && (
+              <button
+                onClick={handleQuickCreate}
+                disabled={isLoading}
+                className="w-full bg-green-700 hover:bg-green-600 rounded-lg py-4 font-semibold text-lg border border-green-600 disabled:opacity-50"
+              >
+                <div>⚡ 前回の設定で部屋を作る</div>
+                <div className="text-sm font-normal text-green-300">
+                  {dungeons[lastRoomSettings.dungeonId as keyof typeof dungeons]?.name || lastRoomSettings.dungeonId} / {lastRoomSettings.maxPlayers}人 / {lastRoomSettings.isPublic ? '公開' : '非公開'}
+                </div>
+              </button>
+            )}
+            {error && <div className="text-red-400 text-sm text-center">{error}</div>}
           </div>
         )}
         

@@ -96,6 +96,7 @@ export interface UserData {
   status?: UserStatus;     // オンラインステータス
   lastMulti2Party?: { charId: string; position: 'front' | 'back' }[] | null;
   lastMulti3Party?: { charId: string; position: 'front' | 'back' }[] | null;
+  lastRoomSettings?: { dungeonId: string; maxPlayers: 2 | 3; isPublic: boolean } | null;
 }
 
 // ユーザーデータを取得
