@@ -23,7 +23,7 @@ import {
 import { getStatusDisplay } from '@/lib/utils/status';
 
 export default function FriendsPage() {
-  const { username, currentMultiRoom } = useGameStore();
+  const { username, currentMultiRoom, currentAdventure } = useGameStore();
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);  // 自分が参加中のルーム
@@ -58,8 +58,13 @@ export default function FriendsPage() {
       setMyMultiRoom(null);
     }
     
-    // 自分のステータスを更新
-    if (currentMultiRoom) {
+    // 自分のステータスを更新（探索中を優先）
+    if (currentAdventure) {
+      updateUserStatus(username, 'solo', {
+        dungeonId: currentAdventure.dungeon,
+        startTime: currentAdventure.startTime,
+      });
+    } else if (currentMultiRoom) {
       const room = await getRoom(currentMultiRoom);
       if (room) {
         updateUserStatus(username, 'multi', { roomCode: currentMultiRoom, dungeonId: room.dungeonId, startTime: room.startTime });
@@ -68,7 +73,7 @@ export default function FriendsPage() {
       updateUserStatus(username, 'lobby');
     }
     setIsLoading(false);
-  }, [username, currentMultiRoom]);
+  }, [username, currentMultiRoom, currentAdventure]);
 
   // 10秒ごとにポーリング
   usePolling(loadData, 10000, !!username);
