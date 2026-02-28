@@ -99,6 +99,7 @@ export interface UserData {
   lastMulti2Party?: { charId: string; position: 'front' | 'back' }[] | null;
   lastMulti3Party?: { charId: string; position: 'front' | 'back' }[] | null;
   lastRoomSettings?: { dungeonId: string; maxPlayers: 2 | 3; isPublic: boolean } | null;
+  lastSoloDungeonId?: string | null;  // 前回挑戦したソロダンジョン
 }
 
 // ユーザーデータを取得

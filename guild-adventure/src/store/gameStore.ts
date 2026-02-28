@@ -255,6 +255,7 @@ interface GameStore {
   currentAdventure: Adventure | null;
   currentMultiRoom: string | null; // マルチ冒険中のルームコード
   setCurrentMultiRoom: (code: string | null) => void;
+  lastSoloDungeonId: DungeonType | null; // 前回挑戦したソロダンジョン
   inventory: Record<string, number>;
   equipments: Record<string, number>;  // 装備アイテムのインベントリ
   coins: number;
@@ -336,6 +337,7 @@ export const useGameStore = create<GameStore>()(
       party: { front: [], back: [] },
       currentAdventure: null,
       currentMultiRoom: null,
+      lastSoloDungeonId: null,
       inventory: {},
       equipments: {},
       coins: 0,
@@ -379,6 +381,7 @@ export const useGameStore = create<GameStore>()(
                 equipments: userData.equipments || {},
                 coins: userData.coins || 0,
                 history: userData.history || [],
+                lastSoloDungeonId: (userData.lastSoloDungeonId as DungeonType) || null,
                 isLoading: false,
                 _dataLoaded: true,
               });
@@ -571,7 +574,9 @@ export const useGameStore = create<GameStore>()(
               lastMulti2Party: userData.lastMulti2Party || null,
               lastMulti3Party: userData.lastMulti3Party || null,
               lastRoomSettings: userData.lastRoomSettings || null,
+              lastSoloDungeonId: (userData.lastSoloDungeonId as DungeonType) || null,
               isLoading: false,
+              _dataLoaded: true,
             });
             // 既存の探索を復元
             await get().restoreAdventure();
@@ -742,7 +747,7 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, _dataLoaded } = get();
+        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, lastSoloDungeonId, _dataLoaded } = get();
         if (!username) return;
         
         // 安全チェック: データがロードされていない状態では同期しない
@@ -768,6 +773,7 @@ export const useGameStore = create<GameStore>()(
           coins,
           lastMulti2Party,
           lastMulti3Party,
+          lastSoloDungeonId,
         });
       },
       
@@ -1029,7 +1035,11 @@ export const useGameStore = create<GameStore>()(
             status: 'inProgress',
             result: battleResult, // バトル結果も保持
           },
+          lastSoloDungeonId: dungeon, // 前回のダンジョンを記録
         });
+        
+        // サーバーにも保存
+        get().syncToServer();
         
         return { success: true };
       },

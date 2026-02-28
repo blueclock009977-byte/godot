@@ -8,14 +8,14 @@ import { PageLayout } from '@/components/PageLayout';
 import { DungeonDetailModal } from '@/components/DungeonDetailModal';
 import { DifficultyStars } from '@/components/DifficultyStars';
 import { DungeonType, DungeonData } from '@/lib/types';
-import { dungeonList } from '@/lib/data/dungeons';
+import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
 import { getEquipmentDropRate } from '@/lib/data/equipments';
 import { formatDuration } from '@/lib/utils';
 
 export default function DungeonPage() {
   const router = useRouter();
-  const { party, currentAdventure, startAdventure } = useGameStore();
+  const { party, currentAdventure, startAdventure, lastSoloDungeonId } = useGameStore();
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const canStart = partyCount > 0 && partyCount <= 6 && !currentAdventure;
@@ -59,6 +59,51 @@ export default function DungeonPage() {
         {error && (
           <div className="mb-6 p-4 bg-red-900/50 rounded-lg border border-red-700">
             <p>⚠️ {error}</p>
+          </div>
+        )}
+        
+        {/* 前回挑戦したダンジョン */}
+        {lastSoloDungeonId && dungeons[lastSoloDungeonId] && (
+          <div className="mb-6">
+            <h2 className="text-sm text-slate-400 mb-2">🔄 前回挑戦したダンジョン</h2>
+            {(() => {
+              const dungeon = dungeons[lastSoloDungeonId];
+              return (
+                <div className="rounded-lg border-2 bg-slate-700 border-amber-500/50 p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-xl font-bold">{dungeon.name}</h2>
+                    <DifficultyStars level={dungeon.difficulty} />
+                  </div>
+                  
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm mb-3">
+                    <span className="text-slate-400">
+                      ⏱️ {formatDuration(dungeon.durationSeconds)}
+                    </span>
+                    <span className="text-slate-400">
+                      👥 {dungeon.recommendedPlayers}人推奨
+                    </span>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setDetailDungeon(dungeon)}
+                      className="flex-1 bg-slate-600 hover:bg-slate-500 transition-colors rounded py-2 font-semibold"
+                    >
+                      📋 詳細
+                    </button>
+                    {canStart && (
+                      <button 
+                        onClick={() => handleStart(dungeon.id)}
+                        disabled={isStarting}
+                        className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 transition-colors rounded py-2 font-semibold"
+                      >
+                        ⚔️ 出発
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
         
