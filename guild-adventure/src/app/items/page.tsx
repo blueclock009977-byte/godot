@@ -14,7 +14,7 @@ const EQUIPMENT_SELL_PRICE = 30; // 通常装備の売却価格
 
 export default function ItemsPage() {
   const router = useRouter();
-  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment } = useGameStore();
+  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer } = useGameStore();
   const [message, setMessage] = useState('');
   
   // 売却可能なアイテム（種族チケット・職業の書）
@@ -46,14 +46,14 @@ export default function ItemsPage() {
     .filter(([eqId, count]) => count > 0)
     .map(([eqId, count]) => ({ eqId, count, eq: getEquipmentById(eqId) }))
     .filter(({ eq }) => eq && eq.rarity === 'rare');
-
+  
   const handleSell = async (itemId: string) => {
     const item = getItemById(itemId);
     if (!item) return;
     
-    const success = await useItem(itemId, 1);
-    if (success) {
-      await addCoins(SELL_PRICE);
+    if (useItem(itemId, 1)) {
+      addCoins(SELL_PRICE);
+      await syncToServer();
       setMessage(`${item.name} を売却して ${SELL_PRICE} コイン獲得！`);
       setTimeout(() => setMessage(''), 2000);
     }
@@ -63,10 +63,10 @@ export default function ItemsPage() {
     const item = getItemById(itemId);
     if (!item) return;
     
-    const success = await useItem(itemId, count);
-    if (success) {
+    if (useItem(itemId, count)) {
       const totalCoins = SELL_PRICE * count;
-      await addCoins(totalCoins);
+      addCoins(totalCoins);
+      await syncToServer();
       setMessage(`${item.name} x${count} を売却して ${totalCoins} コイン獲得！`);
       setTimeout(() => setMessage(''), 2000);
     }
@@ -77,9 +77,9 @@ export default function ItemsPage() {
     const eq = getEquipmentById(eqId);
     if (!eq) return;
     
-    const success = await removeEquipment(eqId, 1);
-    if (success) {
-      await addCoins(EQUIPMENT_SELL_PRICE);
+    if (removeEquipment(eqId, 1)) {
+      addCoins(EQUIPMENT_SELL_PRICE);
+      await syncToServer();
       setMessage(`${eq.name} を売却して ${EQUIPMENT_SELL_PRICE} コイン獲得！`);
       setTimeout(() => setMessage(''), 2000);
     }
@@ -89,10 +89,10 @@ export default function ItemsPage() {
     const eq = getEquipmentById(eqId);
     if (!eq) return;
     
-    const success = await removeEquipment(eqId, count);
-    if (success) {
+    if (removeEquipment(eqId, count)) {
       const totalCoins = EQUIPMENT_SELL_PRICE * count;
-      await addCoins(totalCoins);
+      addCoins(totalCoins);
+      await syncToServer();
       setMessage(`${eq.name} x${count} を売却して ${totalCoins} コイン獲得！`);
       setTimeout(() => setMessage(''), 2000);
     }

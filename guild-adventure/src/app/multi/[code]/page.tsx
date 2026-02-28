@@ -34,7 +34,7 @@ import { useBattleProgress } from '@/hooks/useBattleProgress';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, addEquipment, addCoins, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
+  const { username, characters, addItem, addEquipment, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -257,13 +257,15 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         
         if (result.itemId) {
           setMyDrop(result.itemId);
-          await addItem(result.itemId);
+          addItem(result.itemId);
+          syncToServer();
         }
         
         // 装備ドロップを受け取り
         if (result.equipmentId) {
           setMyEquipment(result.equipmentId);
-          await addEquipment(result.equipmentId);
+          addEquipment(result.equipmentId);
+          syncToServer();
         }
         
         // multiAdventureもクリア（ログイン時の二重受け取り防止）
@@ -276,8 +278,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             const { applyCoinBonus } = require('@/lib/drop/dropBonus');
             const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
             const coinReward = applyCoinBonus(baseCoinReward, myChars);
-            await addCoins(coinReward);
+            addCoins(coinReward);
             setMyCoinReward(coinReward);
+            syncToServer();
           }
         }
 
@@ -317,7 +320,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       
       handleClaim();
     }
-  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, addEquipment, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, addEquipment, syncToServer, room?.players, addHistory]);
   
   // 退出
   const handleLeave = async () => {

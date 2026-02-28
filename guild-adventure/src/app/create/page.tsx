@@ -18,7 +18,7 @@ import { getLvBonus } from '@/lib/data/lvStatBonuses';
 
 export default function CreatePage() {
   const router = useRouter();
-  const { createCharacter, useItem, getItemCount } = useGameStore();
+  const { createCharacter, useItem, getItemCount, syncToServer } = useGameStore();
   
   const [name, setName] = useState('');
   const [race, setRace] = useState<RaceType>('human');
@@ -97,6 +97,7 @@ export default function CreatePage() {
     }
     
     await createCharacter(finalName, race, job, trait, environment);
+    await syncToServer();
     router.push('/');
   };
   

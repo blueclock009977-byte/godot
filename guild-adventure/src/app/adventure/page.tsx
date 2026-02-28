@@ -14,7 +14,7 @@ import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, addHistory } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, syncToServer, addHistory } = useGameStore();
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
@@ -155,9 +155,10 @@ export default function AdventurePage() {
                     const equipmentData = getEquipmentById(eqId);
                     const rarityText = equipmentData?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】';
                     setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || eqId} を入手！`]);
-                    await addEquipment(eqId);
+                    addEquipment(eqId);
                   }
                   if (itemIds.length > 0 || equipmentIds.length > 0) {
+                    syncToServer();
                   }
                 }
               }
@@ -179,12 +180,13 @@ export default function AdventurePage() {
                 const { applyCoinBonus } = require('@/lib/drop/dropBonus');
                 const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter(Boolean);
                 earnedCoinReward = applyCoinBonus(baseCoinReward, allChars);
-                await addCoins(earnedCoinReward);
+                addCoins(earnedCoinReward);
                 if (earnedCoinReward > baseCoinReward) {
                   setDisplayedLogs(prev => [...prev, `🪙 【コイン】${earnedCoinReward}枚獲得！（ボーナス込み）`]);
                 } else {
                   setDisplayedLogs(prev => [...prev, `🪙 【コイン】${earnedCoinReward}枚獲得！`]);
                 }
+                syncToServer();
               }
             }
 
@@ -209,7 +211,7 @@ export default function AdventurePage() {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [currentAdventure, battleResult, currentEncounter, completeAdventure, isComplete, username, addItem, addEquipment, addHistory]);
+  }, [currentAdventure, battleResult, currentEncounter, completeAdventure, isComplete, username, addItem, addEquipment, syncToServer, addHistory]);
   
   // ログが追加されたら自動スクロール
   useEffect(() => {
