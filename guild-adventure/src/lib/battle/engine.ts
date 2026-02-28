@@ -1214,28 +1214,11 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   };
 }
 
-// ドロップボーナス計算
-function calculateDropBonus(characters: Character[]): number {
-  let bonus = 0;
-  for (const char of characters) {
-    if (char.race) {
-      const raceData = races[char.race];
-      for (const passive of raceData.passives) {
-        for (const effect of passive.effects) {
-          if (effect.type === 'dropBonus') {
-            bonus += effect.value;
-          }
-        }
-      }
-    }
-  }
-  return bonus;
-}
+import { applyDropBonus } from '../drop/dropBonus';
 
 export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
   const baseRate = getDropRate(dungeon);
-  const dropBonus = calculateDropBonus(characters);
-  const dropRate = baseRate * percentBonus(dropBonus);
+  const dropRate = applyDropBonus(baseRate, characters);
   if (Math.random() * 100 < dropRate) {
     const item = getRandomItem();
     return item.id;
