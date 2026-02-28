@@ -313,8 +313,8 @@ export function rollEquipmentDrops(durationSeconds: number, characters: { race?:
   const drops: Equipment[] = [];
   for (let i = 0; i < rolls; i++) {
     if (Math.random() * 100 < dropRate) {
-      // レアリティ判定（基本3% + rareBonus）
-      const rareChance = 3 + rareBonus;
+      // レアリティ判定（基本3% × 割合ボーナス）
+      const rareChance = 3 * (1 + rareBonus / 100);
       const isRare = Math.random() * 100 < rareChance;
       const pool = isRare ? rareEquipments : normalEquipments;
       drops.push(pool[Math.floor(Math.random() * pool.length)]);
