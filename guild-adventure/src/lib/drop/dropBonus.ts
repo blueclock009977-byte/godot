@@ -10,6 +10,7 @@
  */
 
 import { races } from '../data/races';
+import { percentBonus } from '../utils';
 
 interface CharacterWithRace {
   race?: string;
@@ -426,14 +427,6 @@ export function applyExplorationSpeedBonus(baseDurationSeconds: number, characte
   // ボーナス%分だけ時間短縮（最低10%の時間は残す）
   const reduction = Math.min(bonus, 90); // 最大90%短縮
   return Math.floor(baseDurationSeconds * (100 - reduction) / 100);
-}
-
-/**
- * %ボーナスを倍率に変換
- * 例: 40% → 1.4
- */
-export function percentBonus(percent: number): number {
-  return 1 + percent / 100;
 }
 
 /**
