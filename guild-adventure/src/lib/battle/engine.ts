@@ -545,6 +545,11 @@ function calculatePhysicalDamage(
       isCritical = true;
       const critMult = 1.5 + atkEffects.critDamage / 100;
       damage *= critMult;
+      // critFollowUp（クリティカル時追撃ダメージ）
+      if (atkEffects.critFollowUp > 0) {
+        const followUpDamage = Math.floor(damage * atkEffects.critFollowUp / 100);
+        damage += followUpDamage;
+      }
     }
     
     // 個性補正
@@ -834,12 +839,20 @@ function processTurn(
           target.stats.hp = 1;
           (target as ExtendedBattleUnit).surviveLethalUsed = true;
           logs.push(`${target.name}は不屈の精神でHP1で耐えた！`);
+        } else if (target.passiveEffects.deathResist > 0 && Math.random() * 100 < target.passiveEffects.deathResist) {
+          target.stats.hp = 1;
+          logs.push(`${target.name}は死に抗いHP1で耐えた！`);
         } else {
           logs.push(`${target.name}を倒した！`);
           // mpOnKill（敵を倒すとMP回復）
           if (unit.passiveEffects.mpOnKill > 0) {
             unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
             logs.push(`${unit.name}は魂を吸収しMP${unit.passiveEffects.mpOnKill}回復！`);
+          }
+          // hpOnKill（敵を倒すとHP回復）
+          if (unit.passiveEffects.hpOnKill > 0) {
+            unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + unit.passiveEffects.hpOnKill);
+            logs.push(`${unit.name}は命を吸収しHP${unit.passiveEffects.hpOnKill}回復！`);
           }
           // revive（自己蘇生）
           if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
@@ -899,6 +912,11 @@ function processTurn(
               if (unit.passiveEffects.mpOnKill > 0) {
                 unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
                 logs.push(`${unit.name}は魂を吸収しMP${unit.passiveEffects.mpOnKill}回復！`);
+              }
+              // hpOnKill（敵を倒すとHP回復）
+              if (unit.passiveEffects.hpOnKill > 0) {
+                unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + unit.passiveEffects.hpOnKill);
+                logs.push(`${unit.name}は命を吸収しHP${unit.passiveEffects.hpOnKill}回復！`);
               }
               if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
                 target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
@@ -1086,6 +1104,17 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   (party.back || []).forEach((char) => {
     if (char) playerUnits.push(characterToUnit(char, 'back'));
   });
+  
+  // frontlineBonus（前衛3人以上でATK+）
+  const frontCount = playerUnits.filter(u => u.position === "front").length;
+  if (frontCount >= 3) {
+    for (const unit of playerUnits) {
+      if (unit.passiveEffects.frontlineBonus > 0) {
+        const bonus = Math.floor(unit.stats.atk * unit.passiveEffects.frontlineBonus / 100);
+        unit.stats.atk += bonus;
+      }
+    }
+  }
   
   if (playerUnits.length === 0) {
     return {

@@ -79,6 +79,20 @@ export interface PassiveEffects {
   degradationResist: number;
   degradationBonus: number;
   mpOnKill: number;
+  // v0.9.78追加: マスタリー2用
+  physicalFollowUp: number;
+  allyMagBonus: number;
+  debuffFollowUp: number;
+  allyMpReduction: number;
+  hpOnKill: number;
+  atkStackOnKill: number;
+  allyHitHeal: number;
+  critFollowUp: number;
+  debuffDuration: number;
+  frontlineBonus: number;
+  allyMagicHitMp: number;
+  deathResist: number;
+  allyHpRegen: number;
 }
 
 /**
@@ -102,6 +116,10 @@ export function getEmptyPassiveEffects(): PassiveEffects {
     speciesKiller: {}, speciesResist: {},
     fixedHits: 0, bonusHits: 0, noDecayHits: 0, decayReduction: 0,
     singleHitBonus: 0, degradationResist: 0, degradationBonus: 0, mpOnKill: 0,
+    // v0.9.78追加
+    physicalFollowUp: 0, allyMagBonus: 0, debuffFollowUp: 0, allyMpReduction: 0,
+    hpOnKill: 0, atkStackOnKill: 0, allyHitHeal: 0, critFollowUp: 0,
+    debuffDuration: 0, frontlineBonus: 0, allyMagicHitMp: 0, deathResist: 0, allyHpRegen: 0,
   };
 }
 

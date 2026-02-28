@@ -139,6 +139,20 @@ export type EffectType =
   | 'degradationResist' // 劣化耐性（受ける劣化-%）
   | 'degradationBonus'  // 劣化ボーナス（与える劣化+%）
   | 'mpOnKill'          // 敵を倒した時MP回復
+  // v0.9.78追加: マスタリー2用エフェクト
+  | 'physicalFollowUp'  // 味方物理攻撃後に追撃（%確率）
+  | 'allyMagBonus'      // 味方の魔法ダメージ+%
+  | 'debuffFollowUp'    // デバフ成功時追撃（%確率）
+  | 'allyMpReduction'   // 味方のMP消費-%
+  | 'hpOnKill'          // 敵撃破時HP回復
+  | 'atkStackOnKill'    // 敵撃破時ATKスタック（%）
+  | 'allyHitHeal'       // 味方がヒット時HP回復
+  | 'critFollowUp'      // クリティカル時追撃（+%ダメージ）
+  | 'debuffDuration'    // デバフ持続ターン+N
+  | 'frontlineBonus'    // 前衛3人以上でATK+%
+  | 'allyMagicHitMp'    // 味方魔法被弾時MP回復
+  | 'deathResist'       // HP0時に耐える確率（%）
+  | 'allyHpRegen'       // 味方全員の毎ターンHP回復
   ;
 
 export interface Effect {
