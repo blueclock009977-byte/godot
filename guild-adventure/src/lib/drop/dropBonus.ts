@@ -24,6 +24,7 @@ interface CharacterWithRace {
 /**
  * パーティ全体のドロップボーナス(%)を計算
  * - 種族パッシブ（人間など）
+ * - 職業パッシブ（バードなど）
  * - Lvスキル
  * - 装備効果
  * ※同じプレイヤー内の同じ効果ソースは重複しない
@@ -49,6 +50,26 @@ export function calculateDropBonus(characters: CharacterWithRace[]): number {
           }
         }
       }
+    }
+    
+    // 職業パッシブからのドロップボーナス
+    if (char.job) {
+      try {
+        const { jobs } = require('../data/jobs');
+        if (jobs[char.job]) {
+          const jobData = jobs[char.job];
+          for (const passive of jobData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'dropBonus') {
+                const sourceId = `${ownerPrefix}job_${char.job}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
     }
     
     // Lvスキルからのドロップボーナス
@@ -123,6 +144,26 @@ export function calculateCoinBonus(characters: CharacterWithRace[]): number {
             for (const effect of passive.effects || []) {
               if (effect.type === 'coinBonus') {
                 const sourceId = `${ownerPrefix}race_${char.race}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // 職業パッシブからのコインボーナス
+    if (char.job) {
+      try {
+        const { jobs } = require('../data/jobs');
+        if (jobs[char.job]) {
+          const jobData = jobs[char.job];
+          for (const passive of jobData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'coinBonus') {
+                const sourceId = `${ownerPrefix}job_${char.job}_${passive.name}`;
                 if (!appliedBonuses.has(sourceId)) {
                   appliedBonuses.set(sourceId, effect.value);
                 }
