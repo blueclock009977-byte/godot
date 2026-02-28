@@ -319,7 +319,7 @@ function GameScreen() {
             </div>
           </Link>
           
-          {partyCount > 0 && !currentAdventure && !currentMultiRoom ? (
+          {partyCount > 0 && !currentAdventure ? (
             <Link href="/dungeon" className="block">
               <div className="bg-amber-600 hover:bg-amber-500 border-amber-500 rounded-lg p-4 border transition-colors">
                 <div className="flex items-center justify-between">
@@ -337,7 +337,7 @@ function GameScreen() {
                 <div>
                   <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
                   <p className="text-slate-400 text-sm">
-                    {currentAdventure || currentMultiRoom ? '冒険中は開始できません' : 'パーティを編成してください'}
+                    {currentAdventure ? 'ソロ冒険中です' : 'パーティを編成してください'}
                   </p>
                 </div>
                 <span className="text-slate-500">🚫</span>
@@ -357,12 +357,12 @@ function GameScreen() {
               </div>
             </div>
           </Link>
-          {(currentAdventure || currentMultiRoom) ? (
+          {currentMultiRoom ? (
             <div className="bg-slate-700 rounded-lg p-4 border border-slate-600 opacity-50 cursor-not-allowed">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
-                  <p className="text-slate-400 text-sm">冒険中は参加できません</p>
+                  <p className="text-slate-400 text-sm">マルチ冒険中です</p>
                 </div>
                 <span className="text-slate-500">🚫</span>
               </div>
