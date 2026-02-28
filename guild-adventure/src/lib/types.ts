@@ -232,7 +232,7 @@ export interface SkillData {
   id: string;
   name: string;
   description: string;
-  type: 'attack' | 'magic' | 'heal' | 'buff' | 'debuff';
+  type: 'attack' | 'magic' | 'hybrid' | 'heal' | 'buff' | 'debuff';
   target: 'single' | 'all' | 'ally' | 'self' | 'allAllies';
   multiplier: number;
   mpCost: number;

@@ -629,6 +629,46 @@ function calculateMagicDamage(
   return Math.max(1, Math.floor(damage));
 }
 
+// ハイブリッドダメージ（ATK+MAG両方参照）
+function calculateHybridDamage(
+  attacker: ExtendedBattleUnit, 
+  defender: ExtendedBattleUnit, 
+  multiplier: number,
+  allyCount: number = 1
+): number {
+  const atkEffects = attacker.passiveEffects;
+  const defEffects = defender.passiveEffects;
+  
+  // ATKとMAGの平均をベースに
+  const hybridStat = (attacker.stats.atk + attacker.stats.mag) / 2;
+  
+  const atkMult = getBuffMultiplier(attacker, 'atk');
+  const rand = random(0.9, 1.1);
+  let damage = hybridStat * atkMult * multiplier * rand;
+  
+  // physicalBonusとmagicBonusの平均を適用
+  const avgBonus = (atkEffects.physicalBonus + atkEffects.magicBonus) / 2;
+  damage *= percentBonus(avgBonus);
+  
+  // 防御（物理と魔法の平均耐性）
+  const physResist = defEffects.physicalResist;
+  const magResist = (defender.magicResist || 0) + defEffects.magicResist;
+  const avgResist = (physResist + magResist) / 2;
+  if (avgResist !== 0) {
+    damage *= percentReduce(avgResist);
+  }
+  
+  // 共通ダメージ係数
+  damage = applyDamageModifiers(damage, attacker, defender, allyCount);
+  
+  // 劣化1回分蓄積
+  let addedDeg = DEGRADATION_PER_HIT + atkEffects.degradationBonus;
+  addedDeg *= percentReduce(defEffects.degradationResist);
+  defender.degradation += Math.max(0, addedDeg);
+  
+  return Math.max(1, Math.floor(damage));
+}
+
 function calculateHeal(healer: ExtendedBattleUnit, target: ExtendedBattleUnit, multiplier: number): number {
   const healerEffects = healer.passiveEffects;
   const targetEffects = target.passiveEffects;
@@ -720,7 +760,7 @@ function decideAction(
       
       if (Math.random() < 0.6) {
         const attackSkills = usableSkills.filter(({ skill }) => 
-          skill.type === 'attack' || skill.type === 'magic'
+          skill.type === 'attack' || skill.type === 'magic' || skill.type === 'hybrid'
         );
         
         if (attackSkills.length > 0) {
@@ -936,9 +976,10 @@ function processTurn(
       const castCount = (skill.type === 'magic' && skill.target === 'all' && unit.passiveEffects.doublecast > 0) ? 2 : 1;
       
       for (let cast = 0; cast < castCount; cast++) {
-        if (skill.type === 'attack' || skill.type === 'magic') {
+        if (skill.type === 'attack' || skill.type === 'magic' || skill.type === 'hybrid') {
           const targets = Array.isArray(action.target) ? action.target : [action.target];
           const isMagic = skill.type === 'magic';
+          const isHybrid = skill.type === 'hybrid';
           
           for (const t of targets) {
             let target = t as ExtendedBattleUnit;
@@ -948,6 +989,9 @@ function processTurn(
             let actualHits = 1;
             if (isMagic) {
               damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element, aliveAlliesNow.length);
+            } else if (isHybrid) {
+              // ハイブリッドスキル: ATK+MAG両方参照
+              damage = calculateHybridDamage(unit, target, skill.multiplier, aliveAlliesNow.length);
             } else {
               // 物理スキル: 命中判定は内部で行う
               const result = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);

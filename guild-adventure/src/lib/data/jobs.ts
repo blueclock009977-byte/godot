@@ -314,7 +314,7 @@ export const jobs: Record<string, JobData> = {
       { name: '魔力循環', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 3 }] },
     ],
     skills: [
-      { id: 'spellblade_slash', name: '魔法剣・閃', description: '魔力を込めた斬撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 12 },
+      { id: 'spellblade_slash', name: '魔法剣・閃', description: '魔力を込めた斬撃（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.8, mpCost: 12 },
       { id: 'enchant_blade', name: 'エンチャントブレード', description: '自身の攻撃力と魔力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 30, duration: 3 } },
       { id: 'arcane_burst', name: 'アーケインバースト', description: '全体に魔法剣の衝撃波', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 22 },
     ],
@@ -333,7 +333,7 @@ export const jobs: Record<string, JobData> = {
       { name: '魔力集中', description: 'MP消費軽減', effects: [{ type: 'mpReduction', value: 15 }] },
     ],
     skills: [
-      { id: 'magic_slash', name: 'マジックスラッシュ', description: '魔力を込めた斬撃', type: 'attack', target: 'single', multiplier: 1.6, mpCost: 10 },
+      { id: 'magic_slash', name: 'マジックスラッシュ', description: '魔力を込めた斬撃（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.6, mpCost: 10 },
       { id: 'arcane_shield', name: 'アーケインシールド', description: '自身の防御力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'defUp', value: 40, duration: 3 } },
       { id: 'battle_magic', name: 'バトルマジック', description: '全体に魔法攻撃', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 20 },
     ],
@@ -352,7 +352,7 @@ export const jobs: Record<string, JobData> = {
       { name: '符の知識', description: 'レア装備発見率上昇', effects: [{ type: 'rareDropBonus', value: 15 }] },
     ],
     skills: [
-      { id: 'rune_blade', name: 'ルーンブレード', description: 'ルーンの力で斬る', type: 'attack', target: 'single', multiplier: 1.7, mpCost: 11 },
+      { id: 'rune_blade', name: 'ルーンブレード', description: 'ルーンの力で斬る（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.7, mpCost: 11 },
       { id: 'protect_rune', name: '守護のルーン', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 18, effect: { type: 'defUp', value: 25, duration: 3 } },
       { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
     ],
