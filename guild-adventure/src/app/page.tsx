@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
+import { getEquipmentById } from '@/lib/data/equipments';
 import { getRaceShortName, getJobShortName } from '@/lib/utils';
 import { getInvitations, getFriendRequests, getPublicRooms, updateUserStatus, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -114,7 +115,7 @@ function LoginScreen() {
 
 function GameScreen() {
   const router = useRouter();
-  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, coins } = useGameStore();
+  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, equipments, coins } = useGameStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
@@ -475,6 +476,34 @@ function GameScreen() {
           )}
           <p className="text-xs text-slate-500 mt-2">
             ダンジョンボス撃破でドロップ
+          </p>
+        </div>
+        
+        {/* 装備一覧 */}
+        <div className="mt-4 bg-slate-800 rounded-lg p-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-2">⚔️ 装備</h3>
+          {Object.keys(equipments).filter(id => equipments[id] > 0).length === 0 ? (
+            <p className="text-xs text-slate-500">装備を持っていません</p>
+          ) : (
+            <div className="space-y-1 text-sm">
+              {Object.entries(equipments)
+                .filter(([_, count]) => count > 0)
+                .map(([eqId, count]) => {
+                  const eq = getEquipmentById(eqId);
+                  if (!eq) return null;
+                  return (
+                    <div key={eqId} className="flex justify-between">
+                      <span className={eq.rarity === 'rare' ? 'text-yellow-300' : 'text-slate-300'}>
+                        {eq.name}
+                      </span>
+                      <span className="text-amber-400">×{count}</span>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+          <p className="text-xs text-slate-500 mt-2">
+            キャラ詳細から装備可能
           </p>
         </div>
         
