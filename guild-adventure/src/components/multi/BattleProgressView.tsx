@@ -41,12 +41,20 @@ export default function BattleProgressView({
             <h1 className="text-2xl font-bold">{dungeonName}</h1>
             <div className="text-sm text-slate-400">マルチプレイ冒険中</div>
           </div>
-          <Link 
-            href="/friends" 
-            className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
-          >
-            👥 フレンド
-          </Link>
+          <div className="flex gap-2">
+            <Link 
+              href="/" 
+              className="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg text-sm font-semibold"
+            >
+              🏠 ホーム
+            </Link>
+            <Link 
+              href="/friends" 
+              className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
+            >
+              👥 フレンド
+            </Link>
+          </div>
         </div>
         
         {/* 進捗バー */}
