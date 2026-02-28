@@ -1,7 +1,7 @@
 'use client';
 
 import { FriendFullStatus } from '@/lib/firebase';
-import { getStatusDisplay } from '@/lib/utils/status';
+import { getStatusDisplays } from '@/lib/utils/status';
 import { Modal } from '../Modal';
 
 interface Player {
@@ -44,7 +44,7 @@ export default function InviteModal({
         ) : (
           <div className="space-y-2 max-h-64 overflow-y-auto">
             {friends.map((friend) => {
-              const status = getStatusDisplay(friendStatuses[friend]);
+              const statuses = getStatusDisplays(friendStatuses[friend]);
               const isInRoom = players[friend];
               
               return (
@@ -54,12 +54,16 @@ export default function InviteModal({
                 >
                   <div>
                     <span className="font-semibold">{friend}</span>
-                    <div className={`text-xs ${status.color}`}>
-                      {status.emoji} {status.text}
-                    </div>
-                    {status.detail && (
-                      <div className="text-xs text-slate-400">{status.detail}</div>
-                    )}
+                    {statuses.map((status, idx) => (
+                      <div key={idx}>
+                        <div className={`text-xs ${status.color}`}>
+                          {status.emoji} {status.text}
+                        </div>
+                        {status.detail && (
+                          <div className="text-xs text-slate-400 ml-4">{status.detail}</div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                   {isInRoom ? (
                     <span className="text-green-400 text-sm">参加中</span>
