@@ -88,6 +88,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         // waiting/battleどちらでもクリアする（冒険中に参加した場合も対応）
         if (data.status === 'waiting' || data.status === 'battle') {
           clearMultiAdventure(username);  // 非同期だが待たない
+          // ステータスも即座に更新（フレンド画面から正しく見えるように）
+          updateUserStatus(username, 'multi', { roomCode: code, dungeonId: data.dungeonId, startTime: data.startTime });
         }
       }
       
