@@ -59,6 +59,23 @@ function HistoryCard({
           👥 {history.players.join(', ')}
         </div>
       )}
+      {/* マルチの場合、各プレイヤーのドロップを表示 */}
+      {history.type === 'multi' && (history.playerDrops || history.playerEquipmentDrops) && (
+        <div className="text-xs mt-2 space-y-0.5">
+          {history.players?.map(player => {
+            const item = history.playerDrops?.[player];
+            const equip = history.playerEquipmentDrops?.[player];
+            if (!item && !equip) return null;
+            return (
+              <div key={player} className="text-slate-300">
+                <span className="text-slate-500">{player}:</span>
+                {item && <span className="text-amber-400 ml-1">📜{getItemById(item)?.name}</span>}
+                {equip && <span className="text-yellow-300 ml-1">⚔️{getEquipmentById(equip)?.name}</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -260,7 +260,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           }
         }
 
-        // 履歴を追加（初回のみ）
+        // 履歴を追加（初回のみ）- 全プレイヤーのドロップ情報も含める
         addHistory({
           type: 'multi',
           dungeonId: room.dungeonId,
@@ -270,6 +270,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           logs: room.battleResult.logs || [],
           roomCode: code,
           players: Object.keys(room.players),
+          playerDrops: room.playerDrops,
+          playerEquipmentDrops: room.playerEquipmentDrops,
         });
         
         setCurrentMultiRoom(null);

@@ -73,6 +73,8 @@ export interface AdventureHistory {
   // マルチの場合
   roomCode?: string;
   players?: string[];
+  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのアイテムドロップ
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ
 }
 
 export interface UserData {
