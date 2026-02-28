@@ -7,12 +7,14 @@ import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
 import { getItemById } from '@/lib/data/items';
+import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
 
 const SELL_PRICE = 20; // チケット・書の売却価格
+const EQUIPMENT_SELL_PRICE = 30; // 通常装備の売却価格
 
 export default function ItemsPage() {
   const router = useRouter();
-  const { inventory, coins, addCoins, useItem, syncToServer } = useGameStore();
+  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer } = useGameStore();
   const [message, setMessage] = useState('');
   
   // 売却可能なアイテム（種族チケット・職業の書）
@@ -26,6 +28,24 @@ export default function ItemsPage() {
     .filter(([itemId, count]) => count > 0)
     .map(([itemId, count]) => ({ itemId, count, item: getItemById(itemId) }))
     .filter(({ item }) => item && item.type !== 'raceTicket' && item.type !== 'jobBook');
+  
+  // 売却可能な装備（通常のみ）
+  const sellableEquipments = Object.entries(equipments)
+    .filter(([eqId, count]) => count > 0)
+    .map(([eqId, count]) => {
+      const eq = getEquipmentById(eqId);
+      // 装備中のキャラ数を計算
+      const equippedCount = characters.filter(c => c.equipmentId === eqId).length;
+      const available = count - equippedCount;
+      return { eqId, count, available, eq };
+    })
+    .filter(({ eq }) => eq && eq.rarity === 'normal');
+  
+  // レア装備（売却不可）
+  const rareEquipments = Object.entries(equipments)
+    .filter(([eqId, count]) => count > 0)
+    .map(([eqId, count]) => ({ eqId, count, eq: getEquipmentById(eqId) }))
+    .filter(({ eq }) => eq && eq.rarity === 'rare');
   
   const handleSell = async (itemId: string) => {
     const item = getItemById(itemId);
@@ -48,6 +68,32 @@ export default function ItemsPage() {
       addCoins(totalCoins);
       await syncToServer();
       setMessage(`${item.name} x${count} を売却して ${totalCoins} コイン獲得！`);
+      setTimeout(() => setMessage(''), 2000);
+    }
+  };
+  
+  // 装備売却
+  const handleSellEquipment = async (eqId: string) => {
+    const eq = getEquipmentById(eqId);
+    if (!eq) return;
+    
+    if (removeEquipment(eqId, 1)) {
+      addCoins(EQUIPMENT_SELL_PRICE);
+      await syncToServer();
+      setMessage(`${eq.name} を売却して ${EQUIPMENT_SELL_PRICE} コイン獲得！`);
+      setTimeout(() => setMessage(''), 2000);
+    }
+  };
+  
+  const handleSellAllEquipment = async (eqId: string, count: number) => {
+    const eq = getEquipmentById(eqId);
+    if (!eq) return;
+    
+    if (removeEquipment(eqId, count)) {
+      const totalCoins = EQUIPMENT_SELL_PRICE * count;
+      addCoins(totalCoins);
+      await syncToServer();
+      setMessage(`${eq.name} x${count} を売却して ${totalCoins} コイン獲得！`);
       setTimeout(() => setMessage(''), 2000);
     }
   };
@@ -120,7 +166,65 @@ export default function ItemsPage() {
           </div>
         )}
         
-        {sellableItems.length === 0 && otherItems.length === 0 && (
+        {/* 通常装備（売却可能） */}
+        {sellableEquipments.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-sm text-slate-400 mb-2">🎒 装備（{EQUIPMENT_SELL_PRICE}コイン/個）</h2>
+            <div className="space-y-2">
+              {sellableEquipments.map(({ eqId, count, available, eq }) => (
+                <div key={eqId} className="bg-slate-700 rounded-lg p-3 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold">{eq?.name}</span>
+                    <span className="text-slate-400 ml-2">x{count}</span>
+                    {available < count && (
+                      <span className="text-xs text-slate-500 ml-2">（{count - available}個装備中）</span>
+                    )}
+                  </div>
+                  {available > 0 ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSellEquipment(eqId)}
+                        className="bg-amber-600 hover:bg-amber-500 px-3 py-1 rounded text-sm"
+                      >
+                        1個売却
+                      </button>
+                      {available > 1 && (
+                        <button
+                          onClick={() => handleSellAllEquipment(eqId, available)}
+                          className="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-sm"
+                        >
+                          全売却
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-slate-500 text-sm">装備中</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* レア装備（売却不可） */}
+        {rareEquipments.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-sm text-yellow-400 mb-2">🌟 レア装備（売却不可）</h2>
+            <div className="space-y-2">
+              {rareEquipments.map(({ eqId, count, eq }) => (
+                <div key={eqId} className="bg-yellow-900/30 rounded-lg p-3 border border-yellow-700 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-yellow-300">{eq?.name}</span>
+                    <span className="text-slate-400 ml-2">x{count}</span>
+                  </div>
+                  <span className="text-yellow-500 text-sm">売却不可</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {sellableItems.length === 0 && otherItems.length === 0 && sellableEquipments.length === 0 && rareEquipments.length === 0 && (
           <EmptyState message="アイテムがありません" />
         )}
     </PageLayout>

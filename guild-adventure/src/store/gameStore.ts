@@ -269,6 +269,7 @@ interface GameStore {
   
   // 装備関連
   addEquipment: (equipmentId: string) => void;
+  removeEquipment: (equipmentId: string, count?: number) => boolean;
   equipItem: (characterId: string, equipmentId: string) => Promise<void>;
   unequipItem: (characterId: string) => Promise<void>;
   getEquipmentCount: (equipmentId: string) => number;
@@ -444,6 +445,27 @@ export const useGameStore = create<GameStore>()(
           },
           lastDroppedEquipment: equipmentId,
         }));
+      },
+      
+      // 装備アイテムを削除（売却用）
+      removeEquipment: (equipmentId: string, count: number = 1): boolean => {
+        const { equipments, characters } = get();
+        const owned = equipments[equipmentId] || 0;
+        
+        // 装備中のキャラ数を計算
+        const equippedCount = characters.filter(c => c.equipmentId === equipmentId).length;
+        const available = owned - equippedCount;
+        
+        // 空き（装備されてない）数が足りない
+        if (available < count) return false;
+        
+        set((state) => ({
+          equipments: {
+            ...state.equipments,
+            [equipmentId]: (state.equipments[equipmentId] || 0) - count,
+          },
+        }));
+        return true;
       },
       
       // 装備アイテムの所持数を取得
