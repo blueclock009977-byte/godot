@@ -170,17 +170,18 @@ export default function AdventurePage() {
             }
             
             // 勝利時はコインを付与
+            let earnedCoinReward = 0;
             if (battleResult.victory) {
               const baseCoinReward = dungeons[currentAdventure.dungeon]?.coinReward || 0;
               if (baseCoinReward > 0) {
                 const { applyCoinBonus } = require('@/lib/drop/dropBonus');
                 const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter(Boolean);
-                const coinReward = applyCoinBonus(baseCoinReward, allChars);
-                addCoins(coinReward);
-                if (coinReward > baseCoinReward) {
-                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！（ボーナス込み）`]);
+                earnedCoinReward = applyCoinBonus(baseCoinReward, allChars);
+                addCoins(earnedCoinReward);
+                if (earnedCoinReward > baseCoinReward) {
+                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${earnedCoinReward}枚獲得！（ボーナス込み）`]);
                 } else {
-                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！`]);
+                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${earnedCoinReward}枚獲得！`]);
                 }
                 syncToServer();
               }
@@ -193,6 +194,7 @@ export default function AdventurePage() {
               victory: battleResult.victory,
               droppedItemId: droppedItemIds[0],
               droppedEquipmentId: droppedEquipmentIds[0],
+              coinReward: earnedCoinReward,
               logs: battleResult.logs,
             });
             

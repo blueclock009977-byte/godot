@@ -54,6 +54,11 @@ function HistoryCard({
           ⚔️ {getEquipmentById(history.droppedEquipmentId)?.name}
         </div>
       )}
+      {history.victory && history.coinReward && history.coinReward > 0 && (
+        <div className="text-xs text-amber-400 mt-1">
+          🪙 {history.coinReward}コイン
+        </div>
+      )}
       {history.type === 'multi' && history.players && (
         <div className="text-xs text-slate-400 mt-1">
           👥 {history.players.join(', ')}

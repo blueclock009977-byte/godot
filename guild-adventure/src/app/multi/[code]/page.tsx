@@ -44,6 +44,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [error, setError] = useState('');
   const [myDrop, setMyDrop] = useState<string | null>(null);
   const [myEquipment, setMyEquipment] = useState<string | null>(null);
+  const [myCoinReward, setMyCoinReward] = useState<number>(0);
   const [dropClaimed, setDropClaimed] = useState(false);
   const dropClaimedRef = useRef(false); // 二重実行防止用
   
@@ -259,17 +260,24 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
             const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
             const coinReward = applyCoinBonus(baseCoinReward, myChars);
             addCoins(coinReward);
+            setMyCoinReward(coinReward);
             syncToServer();
           }
         }
 
         // 履歴を追加（初回のみ）- 全プレイヤーのドロップ情報も含める
+        const baseCoinRewardForHistory = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+        const { applyCoinBonus: applyCoinBonusForHistory } = require('@/lib/drop/dropBonus');
+        const myCharsForHistory = (room.players[username]?.characters || []).map((rc: any) => rc.character);
+        const coinRewardForHistory = room.battleResult.victory ? applyCoinBonusForHistory(baseCoinRewardForHistory, myCharsForHistory) : 0;
+        
         addHistory({
           type: 'multi',
           dungeonId: room.dungeonId,
           victory: room.battleResult.victory,
           droppedItemId: result.itemId,
           droppedEquipmentId: result.equipmentId,
+          coinReward: coinRewardForHistory,
           logs: room.battleResult.logs || [],
           roomCode: code,
           players: Object.keys(room.players),
@@ -357,7 +365,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         myEquipment={myEquipment}
         dropClaimed={dropClaimed}
         logs={room.battleResult.logs || []}
-        coinReward={room.battleResult.victory ? dungeonData?.coinReward : undefined}
+        coinReward={room.battleResult.victory ? myCoinReward : undefined}
         players={Object.keys(room.players)}
         playerDrops={room.playerDrops}
         playerEquipmentDrops={room.playerEquipmentDrops}

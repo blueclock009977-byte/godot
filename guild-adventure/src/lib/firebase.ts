@@ -68,6 +68,7 @@ export interface AdventureHistory {
   victory: boolean;
   droppedItemId?: string;
   droppedEquipmentId?: string;  // 装備ドロップ
+  coinReward?: number;  // 獲得コイン数（ボーナス適用後）
   completedAt: number;
   logs: any[];
   // マルチの場合
