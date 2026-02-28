@@ -3,6 +3,21 @@
 const FIREBASE_URL = 'https://dicedeckrandomtcg-default-rtdb.firebaseio.com';
 
 // ============================================
+// バージョンチェック
+// ============================================
+
+export async function getMinVersion(): Promise<string | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/config/minVersion.json`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data ?? null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ============================================
 // 共通ヘルパー関数
 // ============================================
 
