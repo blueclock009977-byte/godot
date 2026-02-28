@@ -147,11 +147,19 @@ function GameScreen() {
   }, []);
   usePolling(loadPublicRooms, 10000);
   
-  useEffect(() => {
-    if (currentAdventure) {
-      router.push('/adventure');
-    }
-  }, [currentAdventure, router]);
+  // ソロ冒険中の情報を計算
+  const soloAdventureInfo = currentAdventure ? (() => {
+    const { dungeons } = require('@/lib/data/dungeons');
+    const dungeonData = dungeons[currentAdventure.dungeon];
+    const elapsed = (Date.now() - currentAdventure.startTime) / 1000;
+    const remaining = Math.max(0, (currentAdventure.duration / 1000) - elapsed);
+    const isDone = remaining <= 0;
+    return {
+      dungeonName: dungeonData?.name || currentAdventure.dungeon,
+      remainingTime: Math.ceil(remaining),
+      isDone,
+    };
+  })() : null;
   
   // マルチ冒険中の情報を取得
   const [multiRoomInfo, setMultiRoomInfo] = useState<{ dungeonName: string; remainingTime: number; status: string } | null>(null);
@@ -231,6 +239,28 @@ function GameScreen() {
                   </div>
                 </div>
                 <span className="text-amber-400">→</span>
+              </div>
+            </div>
+          </Link>
+        )}
+        
+        {/* ソロ冒険中バナー */}
+        {currentAdventure && soloAdventureInfo && (
+          <Link href="/adventure" className="block mb-4">
+            <div className="bg-green-900/50 rounded-lg p-4 border border-green-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🗡️</span>
+                  <div>
+                    <p className="font-semibold">{soloAdventureInfo.dungeonName} 探索中</p>
+                    <p className="text-sm text-green-300">
+                      {soloAdventureInfo.isDone 
+                        ? '✅ 探索完了！タップして結果を確認'
+                        : `残り ${Math.floor(soloAdventureInfo.remainingTime / 60)}分${soloAdventureInfo.remainingTime % 60}秒`}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-green-400">→</span>
               </div>
             </div>
           </Link>
