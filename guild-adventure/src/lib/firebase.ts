@@ -1209,6 +1209,11 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         continue;
       }
       
+      // バトル中（done以外）の場合はスキップ（まだ受け取れない）
+      if (room.status !== 'done') {
+        continue;
+      }
+      
       // 既に受け取り済みの場合はスキップ
       if (room.playerClaimed?.[username]) {
         await removePendingResult(username, code);
