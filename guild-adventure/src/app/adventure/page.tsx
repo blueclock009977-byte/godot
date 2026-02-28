@@ -243,28 +243,38 @@ export default function AdventurePage() {
   return (
     <PageLayout>
         {/* ヘッダー */}
-        <div className="mb-6 flex justify-between items-start">
+        <div className="mb-4 flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold">
-              {isComplete ? '🎉 探索完了！' : `🔥 ${dungeon.name}を探索中...`}
+              {isComplete ? '🎉 探索完了！' : dungeon.name}
             </h1>
-            <div className="text-sm text-slate-400 mt-1">
-              遭遇: {currentEncounter}/{dungeon.encounterCount}
-            </div>
+            {!isComplete && (
+              <div className="text-sm text-slate-400 mt-1">
+                ソロプレイ冒険中
+              </div>
+            )}
           </div>
-          <Link 
-            href="/friends" 
-            className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
-          >
-            👥 フレンド
-          </Link>
+          <div className="flex gap-2">
+            <Link 
+              href="/" 
+              className="bg-slate-600 hover:bg-slate-500 px-3 py-2 rounded-lg text-sm font-semibold"
+            >
+              🏠 ホーム
+            </Link>
+            <Link 
+              href="/friends" 
+              className="bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-lg text-sm font-semibold"
+            >
+              👥 フレンド
+            </Link>
+          </div>
         </div>
         
         {/* プログレスバー */}
         <div className="mb-6">
           <div className="flex justify-between text-sm text-slate-400 mb-2">
-            <span>進行度</span>
-            <span>{Math.floor(progress)}%</span>
+            <span>進捗 {Math.floor(progress)}%</span>
+            {!isComplete && <span>残り {formatDuration(remainingSec, true)}</span>}
           </div>
           <div className="h-4 bg-slate-700 rounded-full overflow-hidden">
             <div 
@@ -272,11 +282,6 @@ export default function AdventurePage() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          {!isComplete && (
-            <div className="text-center text-sm text-slate-400 mt-2">
-              残り時間: {formatDuration(remainingSec, true)}
-            </div>
-          )}
         </div>
         
         {/* 完了時の結果画面（マルチ風） */}
