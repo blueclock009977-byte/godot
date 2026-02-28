@@ -27,7 +27,7 @@ export const raceLvSkills: Record<string, LvSkill> = {
   human_lv5: {
     id: 'human_lv5',
     name: '幸運の極み',
-    description: 'ドロップ2回抽選',
+    description: '抽選回数+1',
     effects: [{ type: 'doubleDropRoll', value: 1 }],
   },
   
