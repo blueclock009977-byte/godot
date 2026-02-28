@@ -747,7 +747,7 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, lastSoloDungeonId, _dataLoaded } = get();
+        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, lastRoomSettings, lastSoloDungeonId, _dataLoaded } = get();
         if (!username) return;
         
         // 安全チェック: データがロードされていない状態では同期しない
@@ -773,6 +773,7 @@ export const useGameStore = create<GameStore>()(
           coins,
           lastMulti2Party,
           lastMulti3Party,
+          lastRoomSettings,
           lastSoloDungeonId,
         });
       },
