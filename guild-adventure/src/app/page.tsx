@@ -306,21 +306,31 @@ function GameScreen() {
             </div>
           </Link>
           
-          <Link href="/dungeon" className="block">
-            <div className={`rounded-lg p-4 border transition-colors ${
-              partyCount > 0 
-                ? 'bg-amber-600 hover:bg-amber-500 border-amber-500' 
-                : 'bg-slate-700 border-slate-600 opacity-50'
-            }`}>
+          {partyCount > 0 && !currentAdventure && !currentMultiRoom ? (
+            <Link href="/dungeon" className="block">
+              <div className="bg-amber-600 hover:bg-amber-500 border-amber-500 rounded-lg p-4 border transition-colors">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
+                    <p className="text-slate-200 text-sm">（4キャラまで編成可能）</p>
+                  </div>
+                  <span className="text-white">→</span>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="bg-slate-700 border-slate-600 opacity-50 cursor-not-allowed rounded-lg p-4 border">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
-                  <p className="text-slate-200 text-sm">（4キャラまで編成可能）</p>
+                  <p className="text-slate-400 text-sm">
+                    {currentAdventure || currentMultiRoom ? '冒険中は開始できません' : 'パーティを編成してください'}
+                  </p>
                 </div>
-                <span className="text-white">→</span>
+                <span className="text-slate-500">🚫</span>
               </div>
             </div>
-          </Link>
+          )}
           
           
           <Link href="/items" className="block">
@@ -334,12 +344,12 @@ function GameScreen() {
               </div>
             </div>
           </Link>
-          {currentAdventure ? (
+          {(currentAdventure || currentMultiRoom) ? (
             <div className="bg-slate-700 rounded-lg p-4 border border-slate-600 opacity-50 cursor-not-allowed">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">👥 マルチプレイ</h2>
-                  <p className="text-slate-400 text-sm">ソロ冒険中は参加できません</p>
+                  <p className="text-slate-400 text-sm">冒険中は参加できません</p>
                 </div>
                 <span className="text-slate-500">🚫</span>
               </div>
