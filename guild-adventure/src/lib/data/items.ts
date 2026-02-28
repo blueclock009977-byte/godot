@@ -9,7 +9,7 @@ export interface ItemData {
   unlocks: string; // 解放する種族ID or 職業ID
 }
 
-// 種族チケット（全12種族）
+// 種族チケット（全16種族）
 export const raceTickets: ItemData[] = [
   { id: 'ticket_human', name: '人間の血統書', description: '人間を作成可能にする', type: 'raceTicket', unlocks: 'human' },
   { id: 'ticket_elf', name: 'エルフの血統書', description: 'エルフを作成可能にする', type: 'raceTicket', unlocks: 'elf' },
@@ -23,9 +23,13 @@ export const raceTickets: ItemData[] = [
   { id: 'ticket_dragonewt', name: 'ドラゴニュートの血統書', description: 'ドラゴニュートを作成可能にする', type: 'raceTicket', unlocks: 'dragonewt' },
   { id: 'ticket_angel', name: 'エンジェルの血統書', description: 'エンジェルを作成可能にする', type: 'raceTicket', unlocks: 'angel' },
   { id: 'ticket_demon', name: 'デーモンの血統書', description: 'デーモンを作成可能にする', type: 'raceTicket', unlocks: 'demon' },
+  { id: 'ticket_genasi', name: 'ジェナシの血統書', description: 'ジェナシを作成可能にする', type: 'raceTicket', unlocks: 'genasi' },
+  { id: 'ticket_aasimar', name: 'アアシマールの血統書', description: 'アアシマールを作成可能にする', type: 'raceTicket', unlocks: 'aasimar' },
+  { id: 'ticket_tiefling', name: 'ティーフリングの血統書', description: 'ティーフリングを作成可能にする', type: 'raceTicket', unlocks: 'tiefling' },
+  { id: 'ticket_dhampir', name: 'ダンピールの血統書', description: 'ダンピールを作成可能にする', type: 'raceTicket', unlocks: 'dhampir' },
 ];
 
-// 職業書（全16職業）
+// 職業書（全20職業）
 export const jobBooks: ItemData[] = [
   { id: 'book_warrior', name: '戦士の指南書', description: '戦士を作成可能にする', type: 'jobBook', unlocks: 'warrior' },
   { id: 'book_mage', name: '魔法使いの指南書', description: '魔法使いを作成可能にする', type: 'jobBook', unlocks: 'mage' },
@@ -43,6 +47,10 @@ export const jobBooks: ItemData[] = [
   { id: 'book_samurai', name: 'サムライの指南書', description: 'サムライを作成可能にする', type: 'jobBook', unlocks: 'samurai' },
   { id: 'book_witch', name: 'ウィッチの指南書', description: 'ウィッチを作成可能にする', type: 'jobBook', unlocks: 'witch' },
   { id: 'book_bard', name: 'バードの指南書', description: 'バードを作成可能にする', type: 'jobBook', unlocks: 'bard' },
+  { id: 'book_spellblade', name: '魔法剣士の指南書', description: '魔法剣士を作成可能にする', type: 'jobBook', unlocks: 'spellblade' },
+  { id: 'book_battlemage', name: '戦闘魔導士の指南書', description: '戦闘魔導士を作成可能にする', type: 'jobBook', unlocks: 'battlemage' },
+  { id: 'book_runesmith', name: '符術士の指南書', description: '符術士を作成可能にする', type: 'jobBook', unlocks: 'runesmith' },
+  { id: 'book_redmage', name: '赤魔道士の指南書', description: '赤魔道士を作成可能にする', type: 'jobBook', unlocks: 'redmage' },
 ];
 
 // 全アイテム
