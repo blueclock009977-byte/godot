@@ -119,7 +119,7 @@ export const jobs: Record<string, JobData> = {
   sage: {
     id: 'sage',
     name: '賢者',
-    description: 'MP+25、MAG+6。魔法+15%、回復+15%の万能魔法職。レア鑑定+3%！',
+    description: 'MP+25、MAG+6。魔法+15%、回復+15%の万能魔法職。レア鑑定+20%！',
     statModifiers: { maxHp: 5, maxMp: 25, mag: 6, def: 1 },
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
@@ -239,7 +239,7 @@ export const jobs: Record<string, JobData> = {
   witch: {
     id: 'witch',
     name: 'ウィッチ',
-    description: 'MP+28、MAG+7。魔法+20%、デバフ成功+20%。レア感知+5%！',
+    description: 'MP+28、MAG+7。魔法+20%、デバフ成功+20%。レア感知+20%！',
     statModifiers: { maxHp: -5, maxMp: 28, mag: 7, agi: 3, def: -1 },
     passives: [
       { name: '呪術', description: '魔法威力と状態異常成功率が上昇', effects: [{ type: 'magicBonus', value: 20 }, { type: 'debuffBonus', value: 20 }] },

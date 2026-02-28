@@ -19,7 +19,7 @@ export const races: Record<string, RaceData> = {
   elf: {
     id: 'elf',
     name: 'エルフ',
-    description: '魔法と素早さに特化した種族。HPは低いがMAGとAGIが高く、魔法攻撃が強力。レア発見+3%！',
+    description: '魔法と素早さに特化した種族。HPは低いがMAGとAGIが高く、魔法攻撃が強力。レア発見+20%！',
     baseStats: { maxHp: 75, maxMp: 80, atk: 7, def: 6, agi: 16, mag: 16 },
     passives: [
       { name: '魔力の血統', description: '魔法攻撃の威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -189,7 +189,7 @@ export const races: Record<string, RaceData> = {
   demon: {
     id: 'demon',
     name: 'デーモン',
-    description: '高いMAGとHP吸収を持つ闇の魔法使い。レア嗅覚+5%！',
+    description: '高いMAGとHP吸収を持つ闇の魔法使い。レア嗅覚+20%！',
     baseStats: { maxHp: 90, maxMp: 65, atk: 9, def: 8, agi: 10, mag: 17 },  // HP-5, MP-5, ATK-1, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
