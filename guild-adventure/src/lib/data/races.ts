@@ -189,10 +189,10 @@ export const races: Record<string, RaceData> = {
   demon: {
     id: 'demon',
     name: 'デーモン',
-    description: '闇の魔法とHP吸収を持つ種族。レア嗅覚+20%だが戦闘力は控えめ。',
-    baseStats: { maxHp: 90, maxMp: 65, atk: 9, def: 8, agi: 10, mag: 15 },  // MAG17→15 トレハン持ちなのでエルフ(16)より低く
+    description: '高いMAGとHP吸収を持つ闇の魔法使い。レア嗅覚+20%！',
+    baseStats: { maxHp: 90, maxMp: 65, atk: 9, def: 8, agi: 10, mag: 17 },
     passives: [
-      { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 20 }] },  // 25→20 トレハン持ちなので控えめ
+      { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
       { name: '生命吸収', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 15 }] },
       { name: '恐怖のオーラ', description: '敵の命中率を下げる', effects: [{ type: 'evasionBonus', value: 15 }] },
       { name: '竜耐性', description: '竜系からの被ダメージ軽減', effects: [{ type: 'speciesResist_dragon', value: 30 }] },
