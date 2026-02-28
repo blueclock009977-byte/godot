@@ -440,14 +440,20 @@ function GameScreen() {
             <p className="text-xs text-slate-500">まだ冒険者がいません</p>
           ) : (
             <div className="space-y-2">
-              {characters.map(char => (
+              {characters.map(char => {
+                const eq = char.equipmentId ? getEquipmentById(char.equipmentId) : null;
+                return (
                 <Link key={char.id} href={`/character/${char.id}`} className="block">
                   <div className="flex justify-between items-center p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
                     <div>
-                      <span className="font-semibold">{char.name}</span>
-                      <span className="text-xs text-slate-400 ml-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{char.name}</span>
+                        <span className="text-xs text-amber-400">Lv.{char.level || 1}</span>
+                      </div>
+                      <div className="text-xs text-slate-400">
                         {getRaceShortName(char.race)}・{getJobShortName(char.job)}
-                      </span>
+                        {eq && <span className={`ml-2 ${eq.rarity === "rare" ? "text-yellow-300" : "text-slate-300"}`}>🎒{eq.name}</span>}
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {char.raceMastery && <span className="text-amber-400 text-xs">★種</span>}
@@ -456,7 +462,7 @@ function GameScreen() {
                     </div>
                   </div>
                 </Link>
-              ))}
+              );})}
             </div>
           )}
         </div>
