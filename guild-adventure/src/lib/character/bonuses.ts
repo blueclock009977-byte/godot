@@ -419,14 +419,15 @@ export function calculatePartyTreasureHuntBonuses(
   let dropBonus = 0;
   let coinBonus = 0;
   let rareDropBonus = 0;
-  let explorationSpeedBonus = 0;
+  let explorationSpeedMultiplier = 1.0;  // 掛け算で計算
   let doubleDropRoll = 0;
   
   for (const effectMap of appliedSources.values()) {
     dropBonus += effectMap.get('dropBonus') || 0;
     coinBonus += effectMap.get('coinBonus') || 0;
     rareDropBonus += effectMap.get('rareDropBonus') || 0;
-    explorationSpeedBonus += effectMap.get('explorationSpeedBonus') || 0;
+    const speedBonus = effectMap.get('explorationSpeedBonus') || 0;
+    if (speedBonus > 0) explorationSpeedMultiplier *= (100 - speedBonus) / 100;
     doubleDropRoll += effectMap.get('doubleDropRoll') || 0;
   }
   
@@ -434,7 +435,7 @@ export function calculatePartyTreasureHuntBonuses(
     dropBonus,
     coinBonus,
     rareDropBonus,
-    explorationSpeedBonus,
+    explorationSpeedBonus: Math.round((1 - explorationSpeedMultiplier) * 100),
     rollCount: 4 + doubleDropRoll,
   };
 }
