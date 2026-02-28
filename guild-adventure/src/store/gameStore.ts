@@ -732,8 +732,23 @@ export const useGameStore = create<GameStore>()(
       
       // サーバー同期
       syncToServer: async () => {
-        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, lastRoomSettings } = get();
+        const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, _dataLoaded } = get();
         if (!username) return;
+        
+        // 安全チェック: データがロードされていない状態では同期しない
+        if (!_dataLoaded) {
+          console.warn('[syncToServer] データ未ロード状態のため同期をスキップ');
+          return;
+        }
+        
+        // 安全チェック: サーバーにキャラがいるのにローカルが0人の場合は同期しない
+        if (characters.length === 0) {
+          const serverData = await getUserData(username);
+          if (serverData?.characters && serverData.characters.length > 0) {
+            console.error('[syncToServer] 危険な操作を検出: サーバーにキャラがいるのにローカルが0人。同期をスキップ');
+            return;
+          }
+        }
         
         await saveUserData(username, {
           characters,
