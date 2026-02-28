@@ -76,7 +76,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
   };
   
   const currentLevel = character?.level || 1;
-  const levelUpCost = currentLevel < 5 ? currentLevel * 100 : 0;
+  const levelUpCost = currentLevel < 5 ? (currentLevel === 4 ? 500 : currentLevel * 100) : 0;
   const canLevelUp = currentLevel < 5 && coins >= levelUpCost;
   
   const handleLevelUp = async () => {

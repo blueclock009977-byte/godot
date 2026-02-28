@@ -816,8 +816,8 @@ export const useGameStore = create<GameStore>()(
         const currentLevel = character.level || 1;
         if (currentLevel >= 5) return { success: false }; // 最大レベル
         
-        // レベルアップコスト: Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
-        const cost = currentLevel * 100;
+        // レベルアップコスト: Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 500
+        const cost = currentLevel === 4 ? 500 : currentLevel * 100;
         if (coins < cost) return { success: false };
         
         const newLevel = currentLevel + 1;
@@ -891,7 +891,7 @@ export const useGameStore = create<GameStore>()(
         
         // 回収コイン計算
         // ベース: 20コイン + レベルに応じた強化コストの10%
-        // Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
+        // Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 500
         // 累計: Lv2まで100, Lv3まで300, Lv4まで600, Lv5まで1000
         const levelCosts = [0, 0, 100, 300, 600, 1000]; // Lvごとの累計コスト
         const level = character?.level || 1;
