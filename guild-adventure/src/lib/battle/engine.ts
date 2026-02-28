@@ -528,7 +528,7 @@ function calculatePhysicalDamage(
     
     // 物理耐性（モンスター + プレイヤーパッシブ）
     const totalPhysResist = (defender.physicalResist || 0) + defEffects.physicalResist;
-    if (totalPhysResist > 0) {
+    if (totalPhysResist !== 0) {
       damage *= percentReduce(totalPhysResist);
     }
 
@@ -614,7 +614,7 @@ function calculateMagicDamage(
   
   // 魔法耐性（モンスター + プレイヤーパッシブ）
   const totalMagResist = (defender.magicResist || 0) + defEffects.magicResist;
-  if (totalMagResist > 0) {
+  if (totalMagResist !== 0) {
     damage *= percentReduce(totalMagResist);
   }
   
