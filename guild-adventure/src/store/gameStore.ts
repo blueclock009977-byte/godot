@@ -1065,9 +1065,8 @@ export const useGameStore = create<GameStore>()(
             setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
           };
           
-          // マルチ冒険の復元（進行中ならここで終了）
-          const multiRestored = await restoreMultiAdventureHelper(ctx);
-          if (multiRestored) return;
+          // マルチ冒険の復元
+          await restoreMultiAdventureHelper(ctx);
           
           // ソロ冒険の復元
           const { adventure } = await restoreSoloAdventureHelper(ctx, get().addEquipment);
