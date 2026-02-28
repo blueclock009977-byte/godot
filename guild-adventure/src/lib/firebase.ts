@@ -930,7 +930,17 @@ export async function getFriendFullStatus(username: string): Promise<FriendFullS
     multiRoom = await getRoom(status.roomCode);
   }
   
-  return { status, currentAdventure, multiAdventure, multiRoom };
+  // multiAdventureのルームがまだ存在するかチェック（古いデータを無視）
+  let validMultiAdventure = multiAdventure;
+  if (multiAdventure && !multiAdventure.claimed) {
+    const adventureRoom = await getRoom(multiAdventure.roomCode);
+    if (!adventureRoom) {
+      // ルームが存在しない = 古いデータなので無視
+      validMultiAdventure = null;
+    }
+  }
+  
+  return { status, currentAdventure, multiAdventure: validMultiAdventure, multiRoom };
 }
 
 // 複数フレンドの詳細ステータスを取得
