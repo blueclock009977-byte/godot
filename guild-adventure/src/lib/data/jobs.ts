@@ -357,7 +357,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
     ],
     masterySkill: { name: '大紋章', description: '味方全体の被ダメ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
-    masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-8%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 8 }] },
+    masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-10%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 10 }] },
   },
 
   redmage: {

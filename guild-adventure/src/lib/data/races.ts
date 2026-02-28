@@ -153,7 +153,7 @@ export const races: Record<string, RaceData> = {
       { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '急所狙い', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 20 }] },
-      { name: '近道発見', description: '探索時間が短縮', effects: [{ type: 'explorationSpeedBonus', value: 8 }] },
+      { name: '近道発見', description: '探索時間が短縮', effects: [{ type: 'explorationSpeedBonus', value: 10 }] },
     ],
     skills: [
       { id: 'ambush', name: '奇襲', description: '先制で高ダメージの一撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 10 },
