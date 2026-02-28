@@ -42,8 +42,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [selectedChars, setSelectedChars] = useState<RoomCharacter[]>([]);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState('');
-  const [myDrop, setMyDrop] = useState<string | null>(null);
-  const [myEquipment, setMyEquipment] = useState<string | null>(null);
+  const [myDrop, setMyDrop] = useState<string[] | null>(null);
+  const [myEquipment, setMyEquipment] = useState<string[] | null>(null);
   const [myCoinReward, setMyCoinReward] = useState<number>(0);
   const [dropClaimed, setDropClaimed] = useState(false);
   const dropClaimedRef = useRef(false); // 二重実行防止用
@@ -249,11 +249,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         // success=false は既に処理済み（別端末やリロードで再実行された場合）
         if (!result.success) {
           // 既に処理済みでもルームからドロップ情報を取得して表示
-          if (room?.playerDrops?.[username]) {
-            setMyDrop(room.playerDrops[username]);
+          // 複数対応優先、後方互換で単一も
+          const drops = room?.playerDropsMulti?.[username] || (room?.playerDrops?.[username] ? [room.playerDrops[username]] : null);
+          const equips = room?.playerEquipmentDropsMulti?.[username] || (room?.playerEquipmentDrops?.[username] ? [room.playerEquipmentDrops[username]] : null);
+          if (drops) {
+            setMyDrop(drops);
           }
-          if (room?.playerEquipmentDrops?.[username]) {
-            setMyEquipment(room.playerEquipmentDrops[username]);
+          if (equips) {
+            setMyEquipment(equips);
           }
           await clearMultiAdventure(username);
           setCurrentMultiRoom(null);
@@ -261,15 +264,26 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           return;
         }
         
-        if (result.itemId) {
-          setMyDrop(result.itemId);
+        // 複数アイテムドロップを受け取り
+        if (result.itemIds && result.itemIds.length > 0) {
+          setMyDrop(result.itemIds);
+          result.itemIds.forEach(id => addItem(id));
+          syncToServer();
+        } else if (result.itemId) {
+          // 後方互換
+          setMyDrop([result.itemId]);
           addItem(result.itemId);
           syncToServer();
         }
         
-        // 装備ドロップを受け取り
-        if (result.equipmentId) {
-          setMyEquipment(result.equipmentId);
+        // 複数装備ドロップを受け取り
+        if (result.equipmentIds && result.equipmentIds.length > 0) {
+          setMyEquipment(result.equipmentIds);
+          result.equipmentIds.forEach(id => addEquipment(id));
+          syncToServer();
+        } else if (result.equipmentId) {
+          // 後方互換
+          setMyEquipment([result.equipmentId]);
           addEquipment(result.equipmentId);
           syncToServer();
         }
@@ -401,6 +415,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         players={Object.keys(room.players)}
         playerDrops={room.playerDrops}
         playerEquipmentDrops={room.playerEquipmentDrops}
+        playerDropsMulti={room.playerDropsMulti}
+        playerEquipmentDropsMulti={room.playerEquipmentDropsMulti}
         myUsername={username || undefined}
       />
     );

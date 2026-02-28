@@ -65,17 +65,22 @@ function HistoryCard({
         </div>
       )}
       {/* マルチの場合、各プレイヤーのドロップを表示 */}
-      {history.type === 'multi' && (history.playerDrops || history.playerEquipmentDrops) && (
+      {history.type === 'multi' && (history.playerDrops || history.playerEquipmentDrops || history.playerDropsMulti || history.playerEquipmentDropsMulti) && (
         <div className="text-xs mt-2 space-y-0.5">
           {history.players?.map(player => {
-            const item = history.playerDrops?.[player];
-            const equip = history.playerEquipmentDrops?.[player];
-            if (!item && !equip) return null;
+            // 複数対応優先、後方互換で単一も
+            const items = history.playerDropsMulti?.[player] || (history.playerDrops?.[player] ? [history.playerDrops[player]] : undefined);
+            const equips = history.playerEquipmentDropsMulti?.[player] || (history.playerEquipmentDrops?.[player] ? [history.playerEquipmentDrops[player]] : undefined);
+            if ((!items || items.length === 0) && (!equips || equips.length === 0)) return null;
             return (
               <div key={player} className="text-slate-300">
                 <span className="text-slate-500">{player}:</span>
-                {item && <span className="text-amber-400 ml-1">📜{getItemById(item)?.name}</span>}
-                {equip && <span className="text-yellow-300 ml-1">⚔️{getEquipmentById(equip)?.name}</span>}
+                {items?.map((item, i) => (
+                  <span key={i} className="text-amber-400 ml-1">📜{getItemById(item!)?.name}</span>
+                ))}
+                {equips?.map((equip, i) => (
+                  <span key={i} className="text-yellow-300 ml-1">⚔️{getEquipmentById(equip!)?.name}</span>
+                ))}
               </div>
             );
           })}

@@ -674,12 +674,20 @@ export const useGameStore = create<GameStore>()(
         let coinsToAdd = 0;
         
         for (const result of results) {
-          // アイテム集計
-          if (result.itemId) {
+          // アイテム集計（複数対応）
+          if (result.itemIds && result.itemIds.length > 0) {
+            for (const id of result.itemIds) {
+              itemsToAdd[id] = (itemsToAdd[id] || 0) + 1;
+            }
+          } else if (result.itemId) {
             itemsToAdd[result.itemId] = (itemsToAdd[result.itemId] || 0) + 1;
           }
-          // 装備集計
-          if (result.equipmentId) {
+          // 装備集計（複数対応）
+          if (result.equipmentIds && result.equipmentIds.length > 0) {
+            for (const id of result.equipmentIds) {
+              equipmentsToAdd[id] = (equipmentsToAdd[id] || 0) + 1;
+            }
+          } else if (result.equipmentId) {
             equipmentsToAdd[result.equipmentId] = (equipmentsToAdd[result.equipmentId] || 0) + 1;
           }
           // コイン集計（勝利時のみ）
@@ -721,6 +729,8 @@ export const useGameStore = create<GameStore>()(
             players: result.players,
             playerDrops: result.playerDrops,
             playerEquipmentDrops: result.playerEquipmentDrops,
+            playerDropsMulti: result.playerDropsMulti,
+            playerEquipmentDropsMulti: result.playerEquipmentDropsMulti,
           });
         }
         

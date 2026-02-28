@@ -74,8 +74,10 @@ export interface AdventureHistory {
   // マルチの場合
   roomCode?: string;
   players?: string[];
-  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのアイテムドロップ
-  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ
+  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのアイテムドロップ（後方互換）
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ（後方互換）
+  playerDropsMulti?: Record<string, string[] | undefined>;  // 複数ドロップ対応
+  playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数装備ドロップ対応
 }
 
 export interface UserData {
@@ -209,8 +211,10 @@ export interface MultiRoom {
   battleResult?: any;
   startTime?: number;  // 冒険開始時刻
   actualDurationSeconds?: number;  // 短縮後の探索時間
-  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ
-  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ
+  playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ（後方互換）
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 各プレイヤーの装備ドロップ（後方互換）
+  playerDropsMulti?: Record<string, string[] | undefined>;  // 複数ドロップ対応
+  playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数装備ドロップ対応
   playerClaimed?: Record<string, boolean>;           // 受け取り済みフラグ
   isPublic?: boolean;  // 公開ルームかどうか
   createdAt: number;
@@ -332,7 +336,9 @@ export async function updateRoomStatus(
   battleResult?: any,
   playerDrops?: Record<string, string | undefined>,
   playerEquipmentDrops?: Record<string, string | undefined>,
-  actualDurationSeconds?: number
+  actualDurationSeconds?: number,
+  playerDropsMulti?: Record<string, string[] | undefined>,
+  playerEquipmentDropsMulti?: Record<string, string[] | undefined>
 ): Promise<boolean> {
   try {
     const data: any = { status, updatedAt: Date.now() };
@@ -345,7 +351,7 @@ export async function updateRoomStatus(
     if (battleResult) {
       data.battleResult = battleResult;
     }
-    // ドロップ情報
+    // ドロップ情報（後方互換）
     if (playerDrops) {
       data.playerDrops = playerDrops;
       data.playerClaimed = Object.keys(playerDrops).reduce((acc, key) => {
@@ -353,9 +359,16 @@ export async function updateRoomStatus(
         return acc;
       }, {} as Record<string, boolean>);
     }
-    // 装備ドロップ情報
+    // 装備ドロップ情報（後方互換）
     if (playerEquipmentDrops) {
       data.playerEquipmentDrops = playerEquipmentDrops;
+    }
+    // 複数ドロップ対応
+    if (playerDropsMulti) {
+      data.playerDropsMulti = playerDropsMulti;
+    }
+    if (playerEquipmentDropsMulti) {
+      data.playerEquipmentDropsMulti = playerEquipmentDropsMulti;
     }
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}.json`, {
       method: 'PATCH',
@@ -404,7 +417,7 @@ export async function saveRoomBattleResult(
 
 // マルチのドロップ受け取り
 // マルチのドロップ受け取り（ETag条件付き書き込みで競合防止）
-export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string }> {
+export async function claimMultiDrop(code: string, username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string; itemIds?: string[]; equipmentIds?: string[] }> {
   try {
     // まずルーム情報を取得（ドロップアイテム用）
     const room = await getRoom(code);
@@ -447,10 +460,13 @@ export async function claimMultiDrop(code: string, username: string): Promise<{ 
     }
     
     if (putRes.ok) {
-      // ドロップがあれば返す（勝利時のみ）
-      const itemId = room.playerDrops?.[username];
-      const equipmentId = room.playerEquipmentDrops?.[username];
-      return { success: true, itemId, equipmentId };
+      // 複数ドロップ対応（playerDropsMulti優先、なければ後方互換でplayerDrops）
+      const itemIds = room.playerDropsMulti?.[username];
+      const equipmentIds = room.playerEquipmentDropsMulti?.[username];
+      // 後方互換
+      const itemId = itemIds?.[0] || room.playerDrops?.[username];
+      const equipmentId = equipmentIds?.[0] || room.playerEquipmentDrops?.[username];
+      return { success: true, itemId, equipmentId, itemIds, equipmentIds };
     }
     
     return { success: false };
@@ -1062,8 +1078,10 @@ export interface MultiAdventureResult {
   roomCode: string;
   dungeonId: string;
   victory: boolean;
-  droppedItemId?: string;
-  droppedEquipmentId?: string;
+  droppedItemId?: string;  // 後方互換
+  droppedEquipmentId?: string;  // 後方互換
+  droppedItemIds?: string[];  // 複数対応
+  droppedEquipmentIds?: string[];  // 複数対応
   completedAt: number;
   logs: any[];
   players: string[];
@@ -1079,7 +1097,9 @@ export async function saveMultiAdventureForUser(
   droppedItemId: string | undefined,
   logs: any[],
   players: string[],
-  droppedEquipmentId?: string
+  droppedEquipmentId?: string,
+  droppedItemIds?: string[],
+  droppedEquipmentIds?: string[]
 ): Promise<boolean> {
   try {
     const result: MultiAdventureResult = {
@@ -1088,6 +1108,8 @@ export async function saveMultiAdventureForUser(
       victory,
       droppedItemId,
       droppedEquipmentId,
+      droppedItemIds,
+      droppedEquipmentIds,
       completedAt: Date.now(),
       logs,
       players,
@@ -1157,13 +1179,17 @@ export interface PendingResult {
   roomCode: string;
   dungeonId: string;
   victory: boolean;
-  itemId?: string;
-  equipmentId?: string;
+  itemId?: string;  // 後方互換
+  equipmentId?: string;  // 後方互換
+  itemIds?: string[];  // 複数対応
+  equipmentIds?: string[];  // 複数対応
   coinReward: number;
   logs: any[];
   players: string[];
-  playerDrops?: Record<string, string | undefined>;
-  playerEquipmentDrops?: Record<string, string | undefined>;
+  playerDrops?: Record<string, string | undefined>;  // 後方互換
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 後方互換
+  playerDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
+  playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
 }
 
 // 未受取リストに追加
@@ -1227,9 +1253,12 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         continue;
       }
       
-      // ドロップを受け取り
-      const itemId = room.playerDrops?.[username];
-      const equipmentId = room.playerEquipmentDrops?.[username];
+      // ドロップを受け取り（複数対応優先）
+      const itemIds = room.playerDropsMulti?.[username];
+      const equipmentIds = room.playerEquipmentDropsMulti?.[username];
+      // 後方互換
+      const itemId = itemIds?.[0] || room.playerDrops?.[username];
+      const equipmentId = equipmentIds?.[0] || room.playerEquipmentDrops?.[username];
       
       results.push({
         roomCode: code,
@@ -1237,11 +1266,15 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         victory: room.battleResult?.victory || false,
         itemId,
         equipmentId,
+        itemIds,
+        equipmentIds,
         coinReward: 0, // クライアント側で計算
         logs: room.battleResult?.logs || [],
         players: Object.keys(room.players || {}),
         playerDrops: room.playerDrops,
         playerEquipmentDrops: room.playerEquipmentDrops,
+        playerDropsMulti: room.playerDropsMulti,
+        playerEquipmentDropsMulti: room.playerEquipmentDropsMulti,
       });
       
       // playerClaimedをtrueに更新

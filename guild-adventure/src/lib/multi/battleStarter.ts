@@ -206,8 +206,8 @@ export async function startMultiBattle(
   const dungeonData = dungeons[latestRoom.dungeonId];
   const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData?.durationSeconds || 3600, allCharsWithOwner);
   
-  // Firebaseにバトル結果を保存
-  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops, actualDurationSeconds);
+  // Firebaseにバトル結果を保存（複数ドロップ対応）
+  await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops, actualDurationSeconds, playerDropsMulti, playerEquipmentDropsMulti);
   
   // 各プレイヤーにマルチ冒険結果を保存 & pendingResultsに追加 & ステータス更新
   const playerNames = Object.keys(latestRoom.players);
@@ -221,7 +221,9 @@ export async function startMultiBattle(
       playerDrops?.[playerName],
       result.logs,
       playerNames,
-      playerEquipmentDrops?.[playerName]
+      playerEquipmentDrops?.[playerName],
+      playerDropsMulti?.[playerName],
+      playerEquipmentDropsMulti?.[playerName]
     );
     // pendingResultsに追加（ログイン時に自動受取できるように）
     await addPendingResult(playerName, roomCode);

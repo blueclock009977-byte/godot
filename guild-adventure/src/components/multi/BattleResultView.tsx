@@ -8,16 +8,18 @@ import { BattleLog } from '@/lib/types';
 interface BattleResultViewProps {
   victory: boolean;
   dungeonName: string;
-  myDrop: string | null;
-  myEquipment: string | null;
+  myDrop: string[] | null;  // 複数対応
+  myEquipment: string[] | null;  // 複数対応
   dropClaimed: boolean;
   logs: BattleLog[];
   coinReward?: number;
   onGoHome: () => void;
   // 全プレイヤーのドロップ情報
   players?: string[];
-  playerDrops?: Record<string, string | undefined>;
-  playerEquipmentDrops?: Record<string, string | undefined>;
+  playerDrops?: Record<string, string | undefined>;  // 後方互換
+  playerEquipmentDrops?: Record<string, string | undefined>;  // 後方互換
+  playerDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
+  playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
   myUsername?: string;
 }
 
@@ -33,6 +35,8 @@ export default function BattleResultView({
   players,
   playerDrops,
   playerEquipmentDrops,
+  playerDropsMulti,
+  playerEquipmentDropsMulti,
   myUsername,
 }: BattleResultViewProps) {
   return (
@@ -50,40 +54,41 @@ export default function BattleResultView({
               🪙 {coinReward}コイン獲得！
             </div>
           )}
-          {myDrop && (
+          {myDrop && myDrop.length > 0 && (
             <div className="text-amber-400 text-lg mb-4">
-              📜 【書ドロップ】{getItemById(myDrop)?.name || myDrop}
+              📜 【書ドロップ】{myDrop.map(id => getItemById(id)?.name || id).join('、')}
             </div>
           )}
-          {myEquipment && (
+          {myEquipment && myEquipment.length > 0 && (
             <div className="text-yellow-300 text-lg mb-4">
-              ⚔️ 【装備ドロップ】{getEquipmentById(myEquipment)?.name || myEquipment}
+              ⚔️ 【装備ドロップ】{myEquipment.map(id => getEquipmentById(id)?.name || id).join('、')}
             </div>
           )}
-          {victory && !myDrop && !myEquipment && dropClaimed && (
+          {victory && (!myDrop || myDrop.length === 0) && (!myEquipment || myEquipment.length === 0) && dropClaimed && (
             <div className="text-slate-400 mb-4">ドロップなし...</div>
           )}
           
           {/* 他のプレイヤーのドロップ */}
-          {victory && players && (playerDrops || playerEquipmentDrops) && (
+          {victory && players && (playerDrops || playerEquipmentDrops || playerDropsMulti || playerEquipmentDropsMulti) && (
             <div className="mt-4 mb-4 p-3 bg-slate-700 rounded-lg text-left">
               <div className="text-sm text-slate-400 mb-2">👥 パーティのドロップ</div>
               {players.map(player => {
                 const isMe = player === myUsername;
-                const item = playerDrops?.[player];
-                const equip = playerEquipmentDrops?.[player];
+                // 複数対応優先、後方互換で単一も
+                const items = playerDropsMulti?.[player] || (playerDrops?.[player] ? [playerDrops[player]] : undefined);
+                const equips = playerEquipmentDropsMulti?.[player] || (playerEquipmentDrops?.[player] ? [playerEquipmentDrops[player]] : undefined);
                 return (
                   <div key={player} className="text-sm py-1">
                     <span className={isMe ? 'text-amber-400' : 'text-slate-300'}>
                       {player}{isMe ? '(自分)' : ''}:
                     </span>
-                    {item && (
-                      <span className="text-amber-400 ml-2">📜{getItemById(item)?.name}</span>
-                    )}
-                    {equip && (
-                      <span className="text-yellow-300 ml-2">⚔️{getEquipmentById(equip)?.name}</span>
-                    )}
-                    {!item && !equip && (
+                    {items && items.length > 0 && items.map((item, i) => (
+                      <span key={i} className="text-amber-400 ml-2">📜{getItemById(item!)?.name}</span>
+                    ))}
+                    {equips && equips.length > 0 && equips.map((equip, i) => (
+                      <span key={i} className="text-yellow-300 ml-2">⚔️{getEquipmentById(equip!)?.name}</span>
+                    ))}
+                    {(!items || items.length === 0) && (!equips || equips.length === 0) && (
                       <span className="text-slate-500 ml-2">-</span>
                     )}
                   </div>
