@@ -82,6 +82,7 @@ function calculateStats(
 interface RestoreContext {
   username: string;
   addItem: (itemId: string) => void;
+  addCoins: (amount: number) => void;
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
   syncToServer: () => Promise<void>;
   setCurrentMultiRoom: (code: string | null) => void;
@@ -147,7 +148,7 @@ interface SoloRestoreResult {
 }
 
 async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id: string) => void): Promise<SoloRestoreResult> {
-  const { username, addItem, addHistory, syncToServer } = ctx;
+  const { username, addItem, addCoins, addHistory, syncToServer } = ctx;
   
   const adventure = await getAdventureOnServer(username);
   if (!adventure) return { adventure: null };
@@ -167,6 +168,8 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   if (elapsed >= duration && !adventure.claimed) {
     let droppedItemId: string | undefined;
     let droppedEquipmentId: string | undefined;
+    let coinReward = 0;
+    
     if (adventure.battleResult?.victory) {
       const claimResult = await claimAdventureDrop(username);
       if (claimResult.success) {
@@ -178,6 +181,16 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
           droppedEquipmentId = claimResult.equipmentId;
           addEquipment(claimResult.equipmentId);
         }
+        
+        // コインを付与（リロード時でも付与）
+        const baseCoinReward = dungeonData.coinReward || 0;
+        if (baseCoinReward > 0) {
+          const { applyCoinBonus } = require('@/lib/drop/dropBonus');
+          const allChars = [...(adventure.party?.front || []), ...(adventure.party?.back || [])].filter(Boolean);
+          coinReward = applyCoinBonus(baseCoinReward, allChars);
+          addCoins(coinReward);
+        }
+        
         await syncToServer();
       }
     }
@@ -188,6 +201,7 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
       victory: adventure.battleResult?.victory || false,
       droppedItemId,
       droppedEquipmentId,
+      coinReward,
       logs: adventure.battleResult?.logs || [],
     });
     
@@ -1039,8 +1053,8 @@ export const useGameStore = create<GameStore>()(
           lastSoloDungeonId: dungeon, // 前回のダンジョンを記録
         });
         
-        // サーバーにも保存
-        get().syncToServer();
+        // サーバーにも保存（awaitで確実に保存）
+        await get().syncToServer();
         
         return { success: true };
       },
@@ -1081,6 +1095,7 @@ export const useGameStore = create<GameStore>()(
           const ctx: RestoreContext = {
             username,
             addItem: get().addItem,
+            addCoins: get().addCoins,
             addHistory: get().addHistory,
             syncToServer: get().syncToServer,
             setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
