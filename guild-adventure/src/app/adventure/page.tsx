@@ -65,7 +65,7 @@ export default function AdventurePage() {
     // battleResultがない場合は完了処理だけ行う
     if (!battleResult) {
       const dungeon = dungeons[currentAdventure.dungeon];
-      const totalTime = dungeon.durationSeconds * 1000;
+      const totalTime = currentAdventure.duration || (dungeon.durationSeconds * 1000);
       const elapsed = Date.now() - currentAdventure.startTime;
       
       if (elapsed >= totalTime && !isCompleteRef.current) {
@@ -85,7 +85,7 @@ export default function AdventurePage() {
     }
     
     const dungeon = dungeons[currentAdventure.dungeon];
-    const totalTime = dungeon.durationSeconds * 1000;
+    const totalTime = currentAdventure.duration || (dungeon.durationSeconds * 1000);
     const startTime = currentAdventure.startTime;
     const encounterCount = dungeon.encounterCount;
     const timePerEncounter = totalTime / encounterCount;
@@ -230,8 +230,10 @@ export default function AdventurePage() {
   }
   
   const dungeon = dungeons[currentAdventure.dungeon];
+  // 短縮後の時間を使用（currentAdventure.durationに保存されている）
+  const actualDuration = currentAdventure.duration || (dungeon.durationSeconds * 1000);
   const remainingMs = Math.max(0, 
-    currentAdventure.startTime + (dungeon.durationSeconds * 1000) - Date.now()
+    currentAdventure.startTime + actualDuration - Date.now()
   );
   const remainingSec = Math.ceil(remainingMs / 1000);
   
