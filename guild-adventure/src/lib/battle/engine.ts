@@ -770,6 +770,17 @@ function processTurn(
     }
   }
   
+  // allyHpRegen（味方全員の毎ターンHP回復）
+  const totalAllyHpRegen = playerUnits.reduce((sum, u) => sum + (u.stats.hp > 0 ? u.passiveEffects.allyHpRegen : 0), 0);
+  if (totalAllyHpRegen > 0) {
+    for (const unit of playerUnits) {
+      if (unit.stats.hp > 0) {
+        unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + totalAllyHpRegen);
+        logs.push(`${unit.name}は祝福によりHP${totalAllyHpRegen}回復`);
+      }
+    }
+  }
+  
   for (const unit of allUnits) {
     if (unit.stats.hp <= 0) continue;
     
@@ -808,6 +819,15 @@ function processTurn(
       const hitText = actualHits > 1 ? `${actualHits}HIT! ` : (hitCount > 1 ? `${actualHits}/${hitCount}HIT ` : '');
       const degText = degradationAdded > 0 ? ` [劣化+${degradationAdded}%]` : '';
       logs.push(`${unit.name}の攻撃！ ${hitText}${target.name}に${damage}ダメージ！${critText}${degText}`);
+      
+      // allyHitHeal（味方被弾時にパーティ全体から回復）
+      if (target.isPlayer && target.stats.hp > 0) {
+        const totalHeal = playerUnits.reduce((sum, u) => sum + (u.stats.hp > 0 ? u.passiveEffects.allyHitHeal : 0), 0);
+        if (totalHeal > 0) {
+          target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + totalHeal);
+          logs.push(`聖なる加護が${target.name}をHP${totalHeal}回復！`);
+        }
+      }
       
       // HP吸収
       if (unit.passiveEffects.hpSteal > 0) {
@@ -854,11 +874,34 @@ function processTurn(
             unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + unit.passiveEffects.hpOnKill);
             logs.push(`${unit.name}は命を吸収しHP${unit.passiveEffects.hpOnKill}回復！`);
           }
+          // atkStackOnKill（敵を倒すとATK累積上昇）
+          if (unit.passiveEffects.atkStackOnKill > 0) {
+            const atkGain = Math.floor(unit.stats.atk * unit.passiveEffects.atkStackOnKill / 100);
+            unit.stats.atk += atkGain;
+            logs.push(`${unit.name}の殺意が高まりATK+${atkGain}！`);
+          }
           // revive（自己蘇生）
           if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
             target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
             target.reviveUsed = true;
             logs.push(`${target.name}は不死の力で蘇った！`);
+          }
+        }
+      }
+      
+      // physicalFollowUp（味方物理攻撃後に追撃）
+      if (unit.isPlayer && target.stats.hp > 0) {
+        for (const ally of playerUnits) {
+          if (ally.id !== unit.id && ally.stats.hp > 0 && ally.passiveEffects.physicalFollowUp > 0) {
+            if (Math.random() * 100 < ally.passiveEffects.physicalFollowUp) {
+              const followUpDamage = Math.floor(ally.stats.atk * 0.5);
+              target.stats.hp = Math.max(0, target.stats.hp - followUpDamage);
+              logs.push(`${ally.name}が連携追撃！${target.name}に${followUpDamage}ダメージ！`);
+              if (target.stats.hp <= 0) {
+                logs.push(`${target.name}を倒した！`);
+                break;
+              }
+            }
           }
         }
       }
@@ -900,6 +943,23 @@ function processTurn(
             const mpText = cast === 0 ? `(MP-${actualCost})` : '';
             logs.push(`${unit.name}の${skill.name}！ ${target.name}に${damage}ダメージ！${mpText}`);
             
+            // allyHitHeal（味方被弾時回復）
+            if (target.isPlayer && target.stats.hp > 0) {
+              const totalHeal = playerUnits.reduce((sum, u) => sum + (u.stats.hp > 0 ? u.passiveEffects.allyHitHeal : 0), 0);
+              if (totalHeal > 0) {
+                target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + totalHeal);
+                logs.push(`聖なる加護が${target.name}をHP${totalHeal}回復！`);
+              }
+            }
+            // allyMagicHitMp（味方魔法被弾時MP回復）
+            if (isMagic && target.isPlayer && target.stats.hp > 0) {
+              const totalMpRegen = playerUnits.reduce((sum, u) => sum + (u.stats.hp > 0 ? u.passiveEffects.allyMagicHitMp : 0), 0);
+              if (totalMpRegen > 0) {
+                target.stats.mp = Math.min(target.stats.maxMp, target.stats.mp + totalMpRegen);
+                logs.push(`精霊の加護が${target.name}のMP${totalMpRegen}回復！`);
+              }
+            }
+            
             // HP吸収
             if (unit.passiveEffects.hpSteal > 0) {
               const steal = applyPercent(damage, unit.passiveEffects.hpSteal);
@@ -917,6 +977,12 @@ function processTurn(
               if (unit.passiveEffects.hpOnKill > 0) {
                 unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + unit.passiveEffects.hpOnKill);
                 logs.push(`${unit.name}は命を吸収しHP${unit.passiveEffects.hpOnKill}回復！`);
+              }
+              // atkStackOnKill（敵を倒すとATK累積上昇）
+              if (unit.passiveEffects.atkStackOnKill > 0) {
+                const atkGain = Math.floor(unit.stats.atk * unit.passiveEffects.atkStackOnKill / 100);
+                unit.stats.atk += atkGain;
+                logs.push(`${unit.name}の殺意が高まりATK+${atkGain}！`);
               }
               if (target.passiveEffects.revive > 0 && !target.reviveUsed) {
                 target.stats.hp = applyPercent(target.stats.maxHp, target.passiveEffects.revive);
@@ -953,7 +1019,19 @@ function processTurn(
               logs.push(`${target.name}は${skill.name}を抵抗した！`);
               continue;
             }
-            applyBuff(target, skill.effect, skill.name);
+            // debuffDuration（デバフ持続延長）を適用
+            const durationBonus = unit.passiveEffects.debuffDuration || 0;
+            const extendedEffect = durationBonus > 0 
+              ? { ...skill.effect, duration: (skill.effect.duration || 1) + durationBonus }
+              : skill.effect;
+            applyBuff(target, extendedEffect, skill.name);
+            // debuffFollowUp（デバフ成功時追撃）
+            if (unit.passiveEffects.debuffFollowUp > 0 && target.stats.hp > 0) {
+              const followUpDamage = Math.floor(unit.stats.atk * unit.passiveEffects.debuffFollowUp / 100);
+              target.stats.hp = Math.max(0, target.stats.hp - followUpDamage);
+              logs.push(`${unit.name}の追撃！${target.name}に${followUpDamage}ダメージ！`);
+              if (target.stats.hp <= 0) logs.push(`${target.name}を倒した！`);
+            }
           }
           const effectText = skill.effect.type === 'atkDown' ? 'ATK' : skill.effect.type === 'agiDown' ? 'AGI' : 'ステータス';
           logs.push(`${unit.name}の${skill.name}！ ${effectText}-${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
@@ -1113,6 +1191,23 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
         const bonus = Math.floor(unit.stats.atk * unit.passiveEffects.frontlineBonus / 100);
         unit.stats.atk += bonus;
       }
+    }
+  }
+
+  // allyMagBonus（味方全体のMAG+%）
+  const totalAllyMagBonus = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMagBonus, 0);
+  if (totalAllyMagBonus > 0) {
+    for (const unit of playerUnits) {
+      const bonus = Math.floor(unit.stats.mag * totalAllyMagBonus / 100);
+      unit.stats.mag += bonus;
+    }
+  }
+
+  // allyMpReduction（味方全体のMP消費軽減）
+  const totalAllyMpReduction = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMpReduction, 0);
+  if (totalAllyMpReduction > 0) {
+    for (const unit of playerUnits) {
+      unit.passiveEffects.mpReduction += totalAllyMpReduction;
     }
   }
   
