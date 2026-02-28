@@ -325,7 +325,7 @@ function GameScreen() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
-                    <p className="text-slate-200 text-sm">（4キャラまで編成可能）</p>
+                    <p className="text-slate-200 text-sm">（6キャラまで編成可能）</p>
                   </div>
                   <span className="text-white">→</span>
                 </div>
