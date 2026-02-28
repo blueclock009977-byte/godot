@@ -311,8 +311,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         // 全員がclaimedならルームを削除
         await deleteRoomIfAllClaimed(code);
         
-        // ステータスをロビーに戻す
-        await updateUserStatus(username, 'lobby');
+        // ソロ冒険中でなければステータスをロビーに戻す
+        const { getAdventureOnServer } = await import('@/lib/firebase');
+        const soloAdventure = await getAdventureOnServer(username);
+        if (!soloAdventure) {
+          await updateUserStatus(username, 'lobby');
+        }
         
         setCurrentMultiRoom(null);
         setDropClaimed(true);

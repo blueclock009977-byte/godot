@@ -663,9 +663,13 @@ export async function clearAdventureOnServer(username: string): Promise<boolean>
       method: 'DELETE',
     });
     
+    
     if (res.ok) {
-      // ステータスをロビーに戻す
-      await updateUserStatus(username, 'lobby');
+      // マルチ冒険中でなければステータスをロビーに戻す
+      const currentStatus = await getUserStatus(username);
+      if (currentStatus?.activity !== 'multi') {
+        await updateUserStatus(username, 'lobby');
+      }
     }
     
     return res.ok;
