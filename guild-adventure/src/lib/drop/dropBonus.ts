@@ -2,9 +2,11 @@
  * ドロップボーナス計算の共通モジュール
  * 書・装備・その他すべてのドロップで使用
  * 
- * 重複ルール：同じ効果ソースは1回だけカウント
- * - 人間4人いても「幸運+40%」は1回
- * - 人間の「幸運」とシーフLv3の「宝探し」は別々にカウント
+ * 重複ルール：
+ * - 同じプレイヤー内の同じ効果ソースは1回だけカウント
+ *   （人間4人いても「幸運+40%」は1回）
+ * - 別プレイヤーの同じ効果ソースは重複OK
+ *   （マルチで俺と他の人が人間出してたら両方有効）
  */
 
 import { races } from '../data/races';
@@ -15,6 +17,7 @@ interface CharacterWithRace {
   equipmentId?: string;
   lv3Skill?: string;
   lv5Skill?: string;
+  ownerId?: string;  // プレイヤー識別子（マルチ用）
 }
 
 /**
@@ -22,20 +25,23 @@ interface CharacterWithRace {
  * - 種族パッシブ（人間など）
  * - Lvスキル
  * - 装備効果
- * ※同じ効果ソースは重複しない
+ * ※同じプレイヤー内の同じ効果ソースは重複しない
+ * ※別プレイヤーの同じスキルは重複OK
  */
 export function calculateDropBonus(characters: CharacterWithRace[]): number {
   // 効果ソースID → ボーナス値（重複防止用）
   const appliedBonuses: Map<string, number> = new Map();
   
   for (const char of characters) {
+    const ownerPrefix = char.ownerId ? `${char.ownerId}_` : '';
+    
     // 種族パッシブからのドロップボーナス
     if (char.race && races[char.race as keyof typeof races]) {
       const raceData = races[char.race as keyof typeof races];
       for (const passive of raceData.passives || []) {
         for (const effect of passive.effects || []) {
           if (effect.type === 'dropBonus') {
-            const sourceId = `race_${char.race}_${passive.name}`;
+            const sourceId = `${ownerPrefix}race_${char.race}_${passive.name}`;
             if (!appliedBonuses.has(sourceId)) {
               appliedBonuses.set(sourceId, effect.value);
             }
@@ -53,7 +59,7 @@ export function calculateDropBonus(characters: CharacterWithRace[]): number {
         if (skill?.effects) {
           for (const effect of skill.effects) {
             if (effect.type === 'dropBonus') {
-              const sourceId = `lvskill_${skillId}`;
+              const sourceId = `${ownerPrefix}lvskill_${skillId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -65,7 +71,7 @@ export function calculateDropBonus(characters: CharacterWithRace[]): number {
       }
     }
     
-    // 装備からのドロップボーナス（装備は各キャラ1個なので自然に重複しない）
+    // 装備からのドロップボーナス
     if (char.equipmentId) {
       try {
         const { getEquipmentById } = require('../data/equipments');
@@ -73,7 +79,7 @@ export function calculateDropBonus(characters: CharacterWithRace[]): number {
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'dropBonus') {
-              const sourceId = `equipment_${char.equipmentId}`;
+              const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -97,12 +103,35 @@ export function calculateDropBonus(characters: CharacterWithRace[]): number {
 
 /**
  * パーティ全体のコインボーナス(%)を計算
- * ※同じ効果ソースは重複しない
+ * ※同じプレイヤー内の同じ効果ソースは重複しない
+ * ※別プレイヤーの同じスキルは重複OK
  */
 export function calculateCoinBonus(characters: CharacterWithRace[]): number {
   const appliedBonuses: Map<string, number> = new Map();
   
   for (const char of characters) {
+    const ownerPrefix = char.ownerId ? `${char.ownerId}_` : '';
+    
+    // 種族パッシブからのコインボーナス
+    if (char.race) {
+      try {
+        const { races } = require('../data/races');
+        if (races[char.race]) {
+          const raceData = races[char.race];
+          for (const passive of raceData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'coinBonus') {
+                const sourceId = `${ownerPrefix}race_${char.race}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
     // Lvスキルからのコインボーナス
     for (const skillId of [char.lv3Skill, char.lv5Skill]) {
       if (!skillId) continue;
@@ -112,7 +141,7 @@ export function calculateCoinBonus(characters: CharacterWithRace[]): number {
         if (skill?.effects) {
           for (const effect of skill.effects) {
             if (effect.type === 'coinBonus') {
-              const sourceId = `lvskill_${skillId}`;
+              const sourceId = `${ownerPrefix}lvskill_${skillId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -130,7 +159,7 @@ export function calculateCoinBonus(characters: CharacterWithRace[]): number {
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'coinBonus') {
-              const sourceId = `equipment_${char.equipmentId}`;
+              const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -149,15 +178,17 @@ export function calculateCoinBonus(characters: CharacterWithRace[]): number {
 }
 
 /**
- * ドロップ抽選回数を計算（1 + 追加抽選数）
- * ※同じ効果ソースは重複しない
- * 例: 人間Lv5 + 四葉のクローバー = 1 + 1 + 1 = 3回
+ * ドロップ抽選回数を計算（基本4回 + 追加抽選数）
+ * ※同じプレイヤー内の同じ効果ソースは重複しない
+ * ※別プレイヤーの同じスキルは重複OK
  */
 export function getDropRollCount(characters: CharacterWithRace[]): number {
   const appliedSources: Set<string> = new Set();
   let extraRolls = 0;
   
   for (const char of characters) {
+    const ownerPrefix = char.ownerId ? `${char.ownerId}_` : '';
+    
     // LvスキルからのdoubleDropRoll
     for (const skillId of [char.lv3Skill, char.lv5Skill]) {
       if (!skillId) continue;
@@ -167,7 +198,7 @@ export function getDropRollCount(characters: CharacterWithRace[]): number {
         if (skill?.effects) {
           for (const effect of skill.effects) {
             if (effect.type === 'doubleDropRoll' && effect.value > 0) {
-              const sourceId = `lvskill_${skillId}`;
+              const sourceId = `${ownerPrefix}lvskill_${skillId}`;
               if (!appliedSources.has(sourceId)) {
                 appliedSources.add(sourceId);
                 extraRolls += effect.value;
@@ -186,7 +217,7 @@ export function getDropRollCount(characters: CharacterWithRace[]): number {
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'doubleDropRoll' && effect.value > 0) {
-              const sourceId = `equipment_${char.equipmentId}`;
+              const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
               if (!appliedSources.has(sourceId)) {
                 appliedSources.add(sourceId);
                 extraRolls += effect.value;
@@ -216,12 +247,15 @@ export function applyCoinBonus(baseCoins: number, characters: CharacterWithRace[
 
 /**
  * レア装備ドロップボーナス(%)を計算
- * ※同じ効果ソースは重複しない
+ * ※同じプレイヤー内の同じ効果ソースは重複しない
+ * ※別プレイヤーの同じスキルは重複OK
  */
 export function calculateRareDropBonus(characters: CharacterWithRace[]): number {
   const appliedBonuses: Map<string, number> = new Map();
   
   for (const char of characters) {
+    const ownerPrefix = char.ownerId ? `${char.ownerId}_` : '';
+    
     // 種族パッシブからのボーナス
     if (char.race) {
       try {
@@ -231,7 +265,7 @@ export function calculateRareDropBonus(characters: CharacterWithRace[]): number 
           for (const passive of raceData.passives || []) {
             for (const effect of passive.effects || []) {
               if (effect.type === 'rareDropBonus') {
-                const sourceId = `race_${char.race}_${passive.name}`;
+                const sourceId = `${ownerPrefix}race_${char.race}_${passive.name}`;
                 if (!appliedBonuses.has(sourceId)) {
                   appliedBonuses.set(sourceId, effect.value);
                 }
@@ -251,7 +285,7 @@ export function calculateRareDropBonus(characters: CharacterWithRace[]): number 
           for (const passive of jobData.passives || []) {
             for (const effect of passive.effects || []) {
               if (effect.type === 'rareDropBonus') {
-                const sourceId = `job_${char.job}_${passive.name}`;
+                const sourceId = `${ownerPrefix}job_${char.job}_${passive.name}`;
                 if (!appliedBonuses.has(sourceId)) {
                   appliedBonuses.set(sourceId, effect.value);
                 }
@@ -270,7 +304,7 @@ export function calculateRareDropBonus(characters: CharacterWithRace[]): number 
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'rareDropBonus') {
-              const sourceId = `equipment_${char.equipmentId}`;
+              const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -290,12 +324,15 @@ export function calculateRareDropBonus(characters: CharacterWithRace[]): number 
 
 /**
  * 探索時間短縮ボーナス(%)を計算
- * ※同じ効果ソースは重複しない
+ * ※同じプレイヤー内の同じ効果ソースは重複しない
+ * ※別プレイヤーの同じスキルは重複OK
  */
 export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]): number {
   const appliedBonuses: Map<string, number> = new Map();
   
   for (const char of characters) {
+    const ownerPrefix = char.ownerId ? `${char.ownerId}_` : '';
+    
     // 種族パッシブからのボーナス
     if (char.race) {
       try {
@@ -305,7 +342,7 @@ export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]):
           for (const passive of raceData.passives || []) {
             for (const effect of passive.effects || []) {
               if (effect.type === 'explorationSpeedBonus') {
-                const sourceId = `race_${char.race}_${passive.name}`;
+                const sourceId = `${ownerPrefix}race_${char.race}_${passive.name}`;
                 if (!appliedBonuses.has(sourceId)) {
                   appliedBonuses.set(sourceId, effect.value);
                 }
@@ -325,7 +362,7 @@ export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]):
           for (const passive of jobData.passives || []) {
             for (const effect of passive.effects || []) {
               if (effect.type === 'explorationSpeedBonus') {
-                const sourceId = `job_${char.job}_${passive.name}`;
+                const sourceId = `${ownerPrefix}job_${char.job}_${passive.name}`;
                 if (!appliedBonuses.has(sourceId)) {
                   appliedBonuses.set(sourceId, effect.value);
                 }
@@ -345,7 +382,7 @@ export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]):
         if (skill?.effects) {
           for (const effect of skill.effects) {
             if (effect.type === 'explorationSpeedBonus') {
-              const sourceId = `lvskill_${skillId}`;
+              const sourceId = `${ownerPrefix}lvskill_${skillId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }
@@ -363,7 +400,7 @@ export function calculateExplorationSpeedBonus(characters: CharacterWithRace[]):
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'explorationSpeedBonus') {
-              const sourceId = `equipment_${char.equipmentId}`;
+              const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
               if (!appliedBonuses.has(sourceId)) {
                 appliedBonuses.set(sourceId, effect.value);
               }

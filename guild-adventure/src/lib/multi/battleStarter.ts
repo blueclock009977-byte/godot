@@ -5,7 +5,7 @@ import {
   RoomCharacter,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
-import { runBattle, rollDrop } from '@/lib/battle/engine';
+import { runBattle, rollDrops } from '@/lib/battle/engine';
 import { Character, Party, BattleResult } from '@/lib/types';
 
 /**
@@ -53,17 +53,26 @@ function createStartLog(
 
 /**
  * 各プレイヤーのドロップを計算
+ * マルチでは全員のキャラを合算してボーナス計算（ただしownerId付き）
  */
 function calculatePlayerDrops(
   dungeonId: string,
   players: Record<string, { characters: RoomCharacter[] }>
-): Record<string, string | undefined> {
-  const playerDrops: Record<string, string | undefined> = {};
+): Record<string, string[] | undefined> {
+  const playerDrops: Record<string, string[] | undefined> = {};
   
-  Object.entries(players).forEach(([playerName, player]) => {
-    const chars = (player.characters || []).map(rc => rc.character);
-    const drop = rollDrop(dungeonId as any, chars);
-    playerDrops[playerName] = drop;
+  // 全員のキャラにownerIdを付けて結合（マルチボーナス計算用）
+  const allCharsWithOwner = Object.entries(players).flatMap(([playerName, player]) => 
+    (player.characters || []).map(rc => ({
+      ...rc.character,
+      ownerId: playerName,
+    }))
+  );
+  
+  // 各プレイヤーごとに個別抽選（ボーナスは全員分で計算）
+  Object.entries(players).forEach(([playerName, _]) => {
+    const drops = rollDrops(dungeonId as any, allCharsWithOwner);
+    playerDrops[playerName] = drops.length > 0 ? drops : undefined;
   });
   
   return playerDrops;
@@ -73,19 +82,27 @@ function calculatePlayerDrops(
 function calculatePlayerEquipmentDrops(
   dungeonId: string,
   players: Record<string, { characters: RoomCharacter[] }>
-): Record<string, string | undefined> {
+): Record<string, string[] | undefined> {
   const { dungeons } = require('@/lib/data/dungeons');
-  const { rollEquipmentDrop } = require('@/lib/data/equipments');
+  const { rollEquipmentDrops } = require('@/lib/data/equipments');
   
   const dungeonData = dungeons[dungeonId];
   const durationSeconds = dungeonData?.durationSeconds || 3600;
   
-  const playerEquipmentDrops: Record<string, string | undefined> = {};
+  const playerEquipmentDrops: Record<string, string[] | undefined> = {};
   
-  Object.entries(players).forEach(([playerName, player]) => {
-    const chars = (player.characters || []).map(rc => rc.character);
-    const equipment = rollEquipmentDrop(durationSeconds, chars);
-    playerEquipmentDrops[playerName] = equipment?.id;
+  // 全員のキャラにownerIdを付けて結合（マルチボーナス計算用）
+  const allCharsWithOwner = Object.entries(players).flatMap(([playerName, player]) => 
+    (player.characters || []).map(rc => ({
+      ...rc.character,
+      ownerId: playerName,
+    }))
+  );
+  
+  // 各プレイヤーごとに個別抽選（ボーナスは全員分で計算）
+  Object.entries(players).forEach(([playerName, _]) => {
+    const equipments = rollEquipmentDrops(durationSeconds, allCharsWithOwner);
+    playerEquipmentDrops[playerName] = equipments.length > 0 ? equipments.map((e: any) => e.id) : undefined;
   });
   
   return playerEquipmentDrops;
@@ -125,24 +142,37 @@ export async function startMultiBattle(
   const startLog = createStartLog(latestRoom.dungeonId, latestRoom.players);
   (result as any).startLog = startLog;
   
-  // 勝利時は各プレイヤーのドロップを計算
+  // 勝利時は各プレイヤーのドロップを計算（複数対応）
   let playerDrops: Record<string, string | undefined> | undefined;
   let playerEquipmentDrops: Record<string, string | undefined> | undefined;
+  let playerDropsMulti: Record<string, string[] | undefined> | undefined;
+  let playerEquipmentDropsMulti: Record<string, string[] | undefined> | undefined;
   if (result.victory) {
-    playerDrops = calculatePlayerDrops(latestRoom.dungeonId, latestRoom.players);
-    playerEquipmentDrops = calculatePlayerEquipmentDrops(latestRoom.dungeonId, latestRoom.players);
+    playerDropsMulti = calculatePlayerDrops(latestRoom.dungeonId, latestRoom.players);
+    playerEquipmentDropsMulti = calculatePlayerEquipmentDrops(latestRoom.dungeonId, latestRoom.players);
+    
+    // 後方互換用（最初の1つだけ）
+    playerDrops = Object.fromEntries(
+      Object.entries(playerDropsMulti).map(([k, v]) => [k, v?.[0]])
+    );
+    playerEquipmentDrops = Object.fromEntries(
+      Object.entries(playerEquipmentDropsMulti).map(([k, v]) => [k, v?.[0]])
+    );
   }
   
   const startTime = Date.now();
   
-  // 探索時間短縮ボーナスを計算（全員のキャラで）
+  // 探索時間短縮ボーナスを計算（全員のキャラで、ownerId付き）
   const { applyExplorationSpeedBonus } = require('../drop/dropBonus');
-  const allChars = Object.values(latestRoom.players).flatMap(p => 
-    (p.characters || []).map(rc => rc.character)
+  const allCharsWithOwner = Object.entries(latestRoom.players).flatMap(([playerName, p]) => 
+    (p.characters || []).map(rc => ({
+      ...rc.character,
+      ownerId: playerName,
+    }))
   );
   const { dungeons } = require('../data/dungeons');
   const dungeonData = dungeons[latestRoom.dungeonId];
-  const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData?.durationSeconds || 3600, allChars);
+  const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData?.durationSeconds || 3600, allCharsWithOwner);
   
   // Firebaseにバトル結果を保存
   await updateRoomStatus(roomCode, 'battle', startTime, result, playerDrops, playerEquipmentDrops, actualDurationSeconds);
