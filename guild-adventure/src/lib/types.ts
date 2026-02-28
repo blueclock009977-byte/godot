@@ -349,8 +349,10 @@ export interface BattleResult {
   logs: BattleLog[];
   encountersCleared: number;
   totalEncounters: number;
-  droppedItemId?: string;      // ボス撃破時にドロップしたアイテムID
-  droppedEquipmentId?: string; // 装備アイテムドロップID
+  droppedItemId?: string;       // ボス撃破時にドロップしたアイテムID（後方互換）
+  droppedEquipmentId?: string;  // 装備アイテムドロップID（後方互換）
+  droppedItemIds?: string[];    // 複数ドロップ対応
+  droppedEquipmentIds?: string[]; // 複数装備ドロップ対応
 }
 
 // ============================================

@@ -808,27 +808,28 @@ export const useGameStore = create<GameStore>()(
         // バトル計算（開始時に結果を決定）
         const battleResult = runBattle(party, dungeon);
         
-        // ドロップ抽選（勝利時のみ）
-        let droppedItemId: string | undefined;
-        let droppedEquipmentId: string | undefined;
+        // ドロップ抽選（勝利時のみ、複数ドロップ対応）
+        let droppedItemIds: string[] = [];
+        let droppedEquipmentIds: string[] = [];
         if (battleResult.victory) {
           const allChars = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
-          droppedItemId = rollDrop(dungeon, allChars);
+          const { rollDrops } = require('@/lib/battle/engine');
+          droppedItemIds = rollDrops(dungeon, allChars);
           
           // 装備ドロップ抽選（書とは別枠）
-          const { rollEquipmentDrop } = require('@/lib/data/equipments');
-          const droppedEquipment = rollEquipmentDrop(dungeonData.durationSeconds, allChars);
-          if (droppedEquipment) {
-            droppedEquipmentId = droppedEquipment.id;
-          }
+          const { rollEquipmentDrops } = require('@/lib/data/equipments');
+          const droppedEquipments = rollEquipmentDrops(dungeonData.durationSeconds, allChars);
+          droppedEquipmentIds = droppedEquipments.map((e: any) => e.id);
         }
         
-        // バトル結果にドロップを含める
-        battleResult.droppedItemId = droppedItemId;
-        battleResult.droppedEquipmentId = droppedEquipmentId;
+        // バトル結果にドロップを含める（後方互換 + 複数対応）
+        battleResult.droppedItemId = droppedItemIds[0];
+        battleResult.droppedEquipmentId = droppedEquipmentIds[0];
+        battleResult.droppedItemIds = droppedItemIds;
+        battleResult.droppedEquipmentIds = droppedEquipmentIds;
         
         // サーバーに探索開始を記録（バトル結果+ドロップ含む）
-        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemId, droppedEquipmentId);
+        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemIds, droppedEquipmentIds);
         if (!result.success) {
           if (result.existingAdventure) {
             return { success: false, error: '別の端末で探索中です。そちらを完了してください。' };

@@ -1216,16 +1216,24 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
 
 import { applyDropBonus, getDropRollCount } from '../drop/dropBonus';
 
-export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
+// 複数ドロップ対応（成功した数だけドロップ）
+export function rollDrops(dungeon: DungeonType, characters: Character[] = []): string[] {
   const baseRate = getDropRate(dungeon);
   const dropRate = applyDropBonus(baseRate, characters);
   const rolls = getDropRollCount(characters);
   
+  const drops: string[] = [];
   for (let i = 0; i < rolls; i++) {
     if (Math.random() * 100 < dropRate) {
       const item = getRandomItem();
-      return item.id;
+      drops.push(item.id);
     }
   }
-  return undefined;
+  return drops;
+}
+
+// 後方互換（1つだけ返す）
+export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
+  const drops = rollDrops(dungeon, characters);
+  return drops[0];
 }

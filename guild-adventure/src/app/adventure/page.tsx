@@ -123,10 +123,10 @@ export default function AdventurePage() {
             setDisplayedLogs(prev => [...prev, ...newLogs]);
           }
           
-          // ドロップ受け取り（サーバーでclaimed=falseの場合のみ）
+          // ドロップ受け取り（サーバーでclaimed=falseの場合のみ、複数対応）
           const handleDrop = async () => {
-            let droppedItemId: string | undefined;
-            let droppedEquipmentId: string | undefined;
+            let droppedItemIds: string[] = [];
+            let droppedEquipmentIds: string[] = [];
             let alreadyProcessed = false;
             
             try {
@@ -136,23 +136,25 @@ export default function AdventurePage() {
                   // 既に処理済み（リロードや別端末）
                   alreadyProcessed = true;
                 } else {
-                  // アイテムドロップ
-                  if (claimResult.itemId) {
-                    droppedItemId = claimResult.itemId;
-                    const itemData = getItemById(claimResult.itemId);
-                    setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || claimResult.itemId} を入手！`]);
-                    addItem(claimResult.itemId);
+                  // アイテムドロップ（複数対応）
+                  const itemIds = claimResult.itemIds || (claimResult.itemId ? [claimResult.itemId] : []);
+                  for (const itemId of itemIds) {
+                    droppedItemIds.push(itemId);
+                    const itemData = getItemById(itemId);
+                    setDisplayedLogs(prev => [...prev, `💎 【ドロップ】${itemData?.name || itemId} を入手！`]);
+                    addItem(itemId);
                   }
-                  // 装備ドロップ
-                  if (claimResult.equipmentId) {
-                    droppedEquipmentId = claimResult.equipmentId;
-                    const { getEquipmentById } = require('@/lib/data/equipments');
-                    const equipmentData = getEquipmentById(droppedEquipmentId);
+                  // 装備ドロップ（複数対応）
+                  const equipmentIds = claimResult.equipmentIds || (claimResult.equipmentId ? [claimResult.equipmentId] : []);
+                  const { getEquipmentById } = require('@/lib/data/equipments');
+                  for (const eqId of equipmentIds) {
+                    droppedEquipmentIds.push(eqId);
+                    const equipmentData = getEquipmentById(eqId);
                     const rarityText = equipmentData?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】';
-                    setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || droppedEquipmentId} を入手！`]);
-                    addEquipment(droppedEquipmentId);
+                    setDisplayedLogs(prev => [...prev, `${rarityText}${equipmentData?.name || eqId} を入手！`]);
+                    addEquipment(eqId);
                   }
-                  if (claimResult.itemId || claimResult.equipmentId) {
+                  if (itemIds.length > 0 || equipmentIds.length > 0) {
                     syncToServer();
                   }
                 }
@@ -189,12 +191,12 @@ export default function AdventurePage() {
               type: 'solo',
               dungeonId: currentAdventure.dungeon,
               victory: battleResult.victory,
-              droppedItemId,
+              droppedItemId: droppedItemIds[0],
               logs: battleResult.logs,
             });
             
             // 完了処理
-            completeAdventure({ ...battleResult, droppedItemId });
+            completeAdventure({ ...battleResult, droppedItemId: droppedItemIds[0], droppedItemIds });
           };
           
           handleDrop();
@@ -290,21 +292,25 @@ export default function AdventurePage() {
                 🪙 {dungeon.coinReward}コイン獲得！
               </div>
             )}
-            {currentAdventure.result.droppedItemId && (
-              <div className="text-amber-400 text-lg mb-4">
-                💎 【ドロップ】{getItemById(currentAdventure.result.droppedItemId)?.name || currentAdventure.result.droppedItemId}
+            {/* 複数アイテムドロップ表示 */}
+            {(currentAdventure.result.droppedItemIds || (currentAdventure.result.droppedItemId ? [currentAdventure.result.droppedItemId] : [])).map((itemId, idx) => (
+              <div key={`item-${idx}`} className="text-amber-400 text-lg mb-2">
+                💎 【ドロップ】{getItemById(itemId)?.name || itemId}
               </div>
-            )}
-            {currentAdventure.result.droppedEquipmentId && (() => {
+            ))}
+            {/* 複数装備ドロップ表示 */}
+            {(currentAdventure.result.droppedEquipmentIds || (currentAdventure.result.droppedEquipmentId ? [currentAdventure.result.droppedEquipmentId] : [])).map((eqId, idx) => {
               const { getEquipmentById } = require('@/lib/data/equipments');
-              const eq = getEquipmentById(currentAdventure.result.droppedEquipmentId);
+              const eq = getEquipmentById(eqId);
               return (
-                <div className={`text-lg mb-4 ${eq?.rarity === 'rare' ? 'text-yellow-300' : 'text-green-400'}`}>
-                  {eq?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】'}{eq?.name || currentAdventure.result.droppedEquipmentId}
+                <div key={`eq-${idx}`} className={`text-lg mb-2 ${eq?.rarity === 'rare' ? 'text-yellow-300' : 'text-green-400'}`}>
+                  {eq?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】'}{eq?.name || eqId}
                 </div>
               );
-            })()}
-            {currentAdventure.result.victory && !currentAdventure.result.droppedItemId && !currentAdventure.result.droppedEquipmentId && (
+            })}
+            {currentAdventure.result.victory && 
+             !(currentAdventure.result.droppedItemIds?.length || currentAdventure.result.droppedItemId) && 
+             !(currentAdventure.result.droppedEquipmentIds?.length || currentAdventure.result.droppedEquipmentId) && (
               <div className="text-slate-400 mb-4">ドロップなし...</div>
             )}
             <button

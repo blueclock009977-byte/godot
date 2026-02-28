@@ -303,22 +303,26 @@ export function getEquipmentDropRate(durationSeconds: number): number {
 
 import { applyDropBonus, getDropRollCount } from '../drop/dropBonus';
 
-// ランダムで装備をドロップ（通常97%、レア3%）
-// characters: ドロップボーナス計算用（人間など）
-export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment | null {
+// 複数装備ドロップ対応（成功した数だけドロップ）
+export function rollEquipmentDrops(durationSeconds: number, characters: { race?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment[] {
   const baseRate = getEquipmentDropRate(durationSeconds);
   const dropRate = applyDropBonus(baseRate, characters);
   const rolls = getDropRollCount(characters);
   
+  const drops: Equipment[] = [];
   for (let i = 0; i < rolls; i++) {
-    // ドロップ判定
     if (Math.random() * 100 < dropRate) {
       // レアリティ判定（レア3%、通常97%）
       const isRare = Math.random() * 100 < 3;
       const pool = isRare ? rareEquipments : normalEquipments;
-      return pool[Math.floor(Math.random() * pool.length)];
+      drops.push(pool[Math.floor(Math.random() * pool.length)]);
     }
   }
-  
-  return null; // ドロップなし
+  return drops;
+}
+
+// 後方互換（1つだけ返す）
+export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment | null {
+  const drops = rollEquipmentDrops(durationSeconds, characters);
+  return drops[0] || null;
 }

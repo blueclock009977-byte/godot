@@ -475,8 +475,10 @@ export interface ServerAdventure {
   startTime: number;
   party: any;
   battleResult: any;        // バトル結果
-  droppedItemId?: string;   // ドロップアイテムID
-  droppedEquipmentId?: string; // ドロップ装備ID
+  droppedItemId?: string;   // ドロップアイテムID（後方互換）
+  droppedEquipmentId?: string; // ドロップ装備ID（後方互換）
+  droppedItemIds?: string[];    // 複数ドロップ対応
+  droppedEquipmentIds?: string[]; // 複数装備ドロップ対応
   claimed: boolean;         // 受け取り済みフラグ
 }
 
@@ -486,8 +488,8 @@ export async function startAdventureOnServer(
   dungeon: string, 
   party: any,
   battleResult: any,
-  droppedItemId?: string,
-  droppedEquipmentId?: string
+  droppedItemIds?: string[],
+  droppedEquipmentIds?: string[]
 ): Promise<{ success: boolean; existingAdventure?: ServerAdventure }> {
   try {
     // 現在の探索状態を確認
@@ -508,8 +510,10 @@ export async function startAdventureOnServer(
       startTime: Date.now(),
       party,
       battleResult,
-      droppedItemId,
-      droppedEquipmentId,
+      droppedItemId: droppedItemIds?.[0],
+      droppedEquipmentId: droppedEquipmentIds?.[0],
+      droppedItemIds,
+      droppedEquipmentIds,
       claimed: false,
     };
     
@@ -527,7 +531,7 @@ export async function startAdventureOnServer(
 
 // ドロップ受け取り（claimed=falseの場合のみ成功）
 // ドロップ受け取り（ETag条件付き書き込みで競合防止）
-export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string }> {
+export async function claimAdventureDrop(username: string): Promise<{ success: boolean; itemId?: string; equipmentId?: string; itemIds?: string[]; equipmentIds?: string[] }> {
   try {
     // 1. ETag付きでGET（現在の値と一意識別子を取得）
     const getRes = await fetch(
@@ -566,7 +570,13 @@ export async function claimAdventureDrop(username: string): Promise<{ success: b
     if (putRes.ok) {
       // ドロップアイテム＋装備を取得
       const adventure = await getAdventureOnServer(username);
-      return { success: true, itemId: adventure?.droppedItemId, equipmentId: adventure?.droppedEquipmentId };
+      return { 
+        success: true, 
+        itemId: adventure?.droppedItemId, 
+        equipmentId: adventure?.droppedEquipmentId,
+        itemIds: adventure?.droppedItemIds,
+        equipmentIds: adventure?.droppedEquipmentIds,
+      };
     }
     
     return { success: false };
