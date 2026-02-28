@@ -129,12 +129,25 @@ function GameScreen() {
       ]);
       setInvitations(invites);
       setFriendRequests(requests);
-      // ロビーにいることを更新
-      updateUserStatus(username!, 'lobby');
+      // ステータス更新（マルチルーム参加中ならmulti、そうでなければlobby）
+      if (currentMultiRoom) {
+        // マルチルーム参加中はルーム情報も含めて更新
+        const { getRoom } = await import('@/lib/firebase');
+        const room = await getRoom(currentMultiRoom);
+        if (room) {
+          updateUserStatus(username!, 'multi', { 
+            roomCode: currentMultiRoom, 
+            dungeonId: room.dungeonId, 
+            startTime: room.startTime 
+          });
+        }
+      } else {
+        updateUserStatus(username!, 'lobby');
+      }
     } catch (e) {
       console.error('Failed to load notifications:', e);
     }
-  }, [username]);
+  }, [username, currentMultiRoom]);
   usePolling(loadNotifications, 10000, !!username);
   
   // 公開ルーム数を取得
