@@ -187,11 +187,13 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
       dungeonId: adventure.dungeon,
       victory: adventure.battleResult?.victory || false,
       droppedItemId,
+      droppedEquipmentId,
       logs: adventure.battleResult?.logs || [],
     });
     
     await clearAdventureOnServer(username);
-    return { adventure, droppedItemId };
+    // 履歴追加済みなのでnullを返す（adventure/page.tsxでの二重追加を防ぐ）
+    return { adventure: null, droppedItemId };
   }
   
   return { adventure };
