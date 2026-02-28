@@ -271,6 +271,46 @@ async function unlockMastery(
   return true;
 }
 
+// マスタリー2解放ヘルパー（10枚消費）
+// ============================================
+
+async function unlockMastery2(
+  get: () => GameStore,
+  set: (fn: (state: GameStore) => Partial<GameStore>) => void,
+  characterId: string,
+  masteryType: MasteryType
+): Promise<boolean> {
+  const { characters, inventory } = get();
+  const char = characters.find(c => c.id === characterId);
+  
+  const mastery1Key = masteryType === 'race' ? 'raceMastery' : 'jobMastery';
+  const mastery2Key = masteryType === 'race' ? 'raceMastery2' : 'jobMastery2';
+  
+  // マスタリー1が解放されていないと解放不可
+  if (!char || !char[mastery1Key] || char[mastery2Key]) return false;
+  
+  // アイテムID: race→ticket_X, job→book_X
+  const itemPrefix = masteryType === 'race' ? 'ticket' : 'book';
+  const itemKey = masteryType === 'race' ? char.race : char.job;
+  const itemId = `${itemPrefix}_${itemKey}`;
+  
+  if ((inventory[itemId] || 0) < 10) return false;
+  
+  // アイテム10枚消費 + マスタリー2解放
+  set((state) => ({
+    inventory: {
+      ...state.inventory,
+      [itemId]: (state.inventory[itemId] || 0) - 10,
+    },
+    characters: state.characters.map(c =>
+      c.id === characterId ? { ...c, [mastery2Key]: true } : c
+    ),
+  }));
+  
+  await get().syncToServer();
+  return true;
+}
+
 // ============================================
 // ストア定義
 // ============================================
@@ -346,6 +386,8 @@ interface GameStore {
   // マスタリー解放
   unlockRaceMastery: (characterId: string) => Promise<boolean>;
   unlockJobMastery: (characterId: string) => Promise<boolean>;
+  unlockRaceMastery2: (characterId: string) => Promise<boolean>;
+  unlockJobMastery2: (characterId: string) => Promise<boolean>;
   levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }>;
   
   // 履歴管理
@@ -856,6 +898,16 @@ export const useGameStore = create<GameStore>()(
       unlockJobMastery: async (characterId: string): Promise<boolean> => {
         return unlockMastery(get, set, characterId, 'job');
       },
+      // 種族マスタリー2解放（チケット10枚消費）
+      unlockRaceMastery2: async (characterId: string): Promise<boolean> => {
+        return unlockMastery2(get, set, characterId, 'race');
+      },
+      
+      // 職業マスタリー2解放（指南書10枚消費）
+      unlockJobMastery2: async (characterId: string): Promise<boolean> => {
+        return unlockMastery2(get, set, characterId, 'job');
+      },
+      
       
       
       // キャラクターレベルアップ

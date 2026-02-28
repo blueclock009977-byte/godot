@@ -178,6 +178,8 @@ interface CharacterInput {
   job?: string;
   raceMastery?: boolean;
   jobMastery?: boolean;
+  raceMastery2?: boolean;
+  jobMastery2?: boolean;
   lv3Skill?: string;
   lv5Skill?: string;
   equipmentId?: string;
@@ -205,6 +207,10 @@ export function calculateCharacterBonuses(char: CharacterInput): CharacterBonuse
     if (char.raceMastery && raceData.masterySkill?.type === 'passive') {
       applyEffects(bonuses, raceData.masterySkill.effects || []);
     }
+    // 種族マスタリー2
+    if (char.raceMastery2 && raceData.masterySkill2?.type === 'passive') {
+      applyEffects(bonuses, raceData.masterySkill2.effects || []);
+    }
   }
   
   // 2. 職業パッシブ
@@ -217,6 +223,10 @@ export function calculateCharacterBonuses(char: CharacterInput): CharacterBonuse
     // 職業マスタリー
     if (char.jobMastery && jobData.masterySkill?.type === 'passive') {
       applyEffects(bonuses, jobData.masterySkill.effects || []);
+    }
+    // 職業マスタリー2
+    if (char.jobMastery2 && jobData.masterySkill2?.type === 'passive') {
+      applyEffects(bonuses, jobData.masterySkill2.effects || []);
     }
   }
   
@@ -304,6 +314,16 @@ export function calculatePartyTreasureHuntBonuses(
           appliedSources.get(sourceId)!.set(effect.type, effect.value);
         }
       }
+      // 種族マスタリー2
+      if (char.raceMastery2 && raceData.masterySkill2?.type === 'passive') {
+        const sourceId = `${ownerPrefix}race_mastery2_${char.race}`;
+        if (!appliedSources.has(sourceId)) {
+          appliedSources.set(sourceId, new Map());
+        }
+        for (const effect of raceData.masterySkill2.effects || []) {
+          appliedSources.get(sourceId)!.set(effect.type, effect.value);
+        }
+      }
     }
     
     // 職業パッシブ
@@ -326,6 +346,16 @@ export function calculatePartyTreasureHuntBonuses(
           appliedSources.set(sourceId, new Map());
         }
         for (const effect of jobData.masterySkill.effects || []) {
+          appliedSources.get(sourceId)!.set(effect.type, effect.value);
+        }
+      }
+      // 職業マスタリー2
+      if (char.jobMastery2 && jobData.masterySkill2?.type === 'passive') {
+        const sourceId = `${ownerPrefix}job_mastery2_${char.job}`;
+        if (!appliedSources.has(sourceId)) {
+          appliedSources.set(sourceId, new Map());
+        }
+        for (const effect of jobData.masterySkill2.effects || []) {
           appliedSources.get(sourceId)!.set(effect.type, effect.value);
         }
       }

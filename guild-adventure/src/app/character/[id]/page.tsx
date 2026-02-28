@@ -25,6 +25,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     getItemCount, 
     unlockRaceMastery, 
     unlockJobMastery,
+    unlockRaceMastery2,
+    unlockJobMastery2,
     deleteCharacter,
     coins,
     levelUpCharacter,
@@ -60,6 +62,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
   
   const canUnlockRaceMastery = !character.raceMastery && raceTicketCount >= 5;
   const canUnlockJobMastery = !character.jobMastery && jobBookCount >= 5;
+  const canUnlockRaceMastery2 = character.raceMastery && !character.raceMastery2 && raceTicketCount >= 10;
+  const canUnlockJobMastery2 = character.jobMastery && !character.jobMastery2 && jobBookCount >= 10;
   
   const handleUnlockRaceMastery = async () => {
     if (!canUnlockRaceMastery || isLoading) return;
@@ -72,6 +76,20 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     if (!canUnlockJobMastery || isLoading) return;
     setIsLoading(true);
     await unlockJobMastery(character.id);
+    setIsLoading(false);
+  };
+  
+  const handleUnlockRaceMastery2 = async () => {
+    if (!canUnlockRaceMastery2 || isLoading) return;
+    setIsLoading(true);
+    await unlockRaceMastery2(character.id);
+    setIsLoading(false);
+  };
+  
+  const handleUnlockJobMastery2 = async () => {
+    if (!canUnlockJobMastery2 || isLoading) return;
+    setIsLoading(true);
+    await unlockJobMastery2(character.id);
     setIsLoading(false);
   };
   
@@ -448,9 +466,10 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         
-        {/* 種族マスタリー解放 */}
+{/* 種族マスタリー解放 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">種族マスタリー: {raceData.name}</h3>
+          {/* マスタリー1 */}
           {raceData.masterySkill && (
             <div className="mb-3">
               <div className={`font-semibold ${character.raceMastery ? 'text-amber-400' : 'text-slate-500'}`}>
@@ -460,9 +479,9 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
           {character.raceMastery ? (
-            <div className="text-green-400 text-sm">✓ 解放済み</div>
+            <div className="text-green-400 text-sm mb-3">✓ 解放済み</div>
           ) : (
-            <div>
+            <div className="mb-3">
               <div className="text-xs text-slate-400 mb-2">
                 必要: {raceData.name}の血統書 ×5 (所持: {raceTicketCount})
               </div>
@@ -479,11 +498,45 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               </button>
             </div>
           )}
+          
+          {/* マスタリー2 */}
+          {raceData.masterySkill2 && character.raceMastery && (
+            <>
+              <div className="border-t border-slate-600 my-3"></div>
+              <div className="mb-3">
+                <div className={`font-semibold ${character.raceMastery2 ? 'text-purple-400' : 'text-slate-500'}`}>
+                  ★★ {raceData.masterySkill2.name}
+                </div>
+                <div className="text-xs text-slate-400">{raceData.masterySkill2.description}</div>
+              </div>
+              {character.raceMastery2 ? (
+                <div className="text-green-400 text-sm">✓ 解放済み</div>
+              ) : (
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">
+                    必要: {raceData.name}の血統書 ×10 (所持: {raceTicketCount})
+                  </div>
+                  <button
+                    onClick={handleUnlockRaceMastery2}
+                    disabled={!canUnlockRaceMastery2 || isLoading}
+                    className={`w-full py-2 rounded text-sm font-semibold ${
+                      canUnlockRaceMastery2
+                        ? 'bg-purple-600 hover:bg-purple-500'
+                        : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {isLoading ? '...' : '解放する'}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        
-        {/* 職業マスタリー解放 */}
+
+{/* 職業マスタリー解放 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">職業マスタリー: {jobData.name}</h3>
+          {/* マスタリー1 */}
           {jobData.masterySkill && (
             <div className="mb-3">
               <div className={`font-semibold ${character.jobMastery ? 'text-amber-400' : 'text-slate-500'}`}>
@@ -493,9 +546,9 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
             </div>
           )}
           {character.jobMastery ? (
-            <div className="text-green-400 text-sm">✓ 解放済み</div>
+            <div className="text-green-400 text-sm mb-3">✓ 解放済み</div>
           ) : (
-            <div>
+            <div className="mb-3">
               <div className="text-xs text-slate-400 mb-2">
                 必要: {jobData.name}の指南書 ×5 (所持: {jobBookCount})
               </div>
@@ -512,8 +565,41 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               </button>
             </div>
           )}
+          
+          {/* マスタリー2 */}
+          {jobData.masterySkill2 && character.jobMastery && (
+            <>
+              <div className="border-t border-slate-600 my-3"></div>
+              <div className="mb-3">
+                <div className={`font-semibold ${character.jobMastery2 ? 'text-purple-400' : 'text-slate-500'}`}>
+                  ★★ {jobData.masterySkill2.name}
+                </div>
+                <div className="text-xs text-slate-400">{jobData.masterySkill2.description}</div>
+              </div>
+              {character.jobMastery2 ? (
+                <div className="text-green-400 text-sm">✓ 解放済み</div>
+              ) : (
+                <div>
+                  <div className="text-xs text-slate-400 mb-2">
+                    必要: {jobData.name}の指南書 ×10 (所持: {jobBookCount})
+                  </div>
+                  <button
+                    onClick={handleUnlockJobMastery2}
+                    disabled={!canUnlockJobMastery2 || isLoading}
+                    className={`w-full py-2 rounded text-sm font-semibold ${
+                      canUnlockJobMastery2
+                        ? 'bg-purple-600 hover:bg-purple-500'
+                        : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {isLoading ? '...' : '解放する'}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
-        
+
         {/* 装備セクション */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-3">🎒 持ち物</h3>

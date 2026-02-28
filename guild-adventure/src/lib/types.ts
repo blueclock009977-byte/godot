@@ -251,6 +251,8 @@ export interface Character {
   position?: Position;
   raceMastery?: boolean;  // 種族マスタリー解放済み
   jobMastery?: boolean;   // 職業マスタリー解放済み
+  raceMastery2?: boolean; // 種族マスタリー2解放済み
+  jobMastery2?: boolean;  // 職業マスタリー2解放済み
   level?: number;          // キャラレベル（1-5）
   lv2Bonus?: string;       // Lv2で獲得したステータスボーナスID
   lv4Bonus?: string;       // Lv4で獲得したステータスボーナスID
@@ -322,6 +324,8 @@ export interface BattleUnit {
   skills?: SkillData[];
   raceMastery?: boolean;
   jobMastery?: boolean;
+  raceMastery2?: boolean;
+  jobMastery2?: boolean;
   lv3Skill?: string;
   lv5Skill?: string;
   equipmentId?: string;  // 装備中のアイテムID

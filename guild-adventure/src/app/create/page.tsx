@@ -210,6 +210,25 @@ export default function CreatePage() {
                 </div>
               </>
             )}
+            {races[race].masterySkill2 && (
+              <>
+                <div className="text-purple-400 font-semibold">👑👑 マスタリー2</div>
+                <div className="bg-slate-700 rounded p-2">
+                  <div className="font-semibold text-purple-300">{races[race].masterySkill2.name}</div>
+                  {races[race].masterySkill2.effects && (
+                    <div className="text-green-300">
+                      {races[race].masterySkill2.effects.map((e, i) => (
+                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      ))}
+                    </div>
+                  )}
+                  {races[race].masterySkill2.skill && (
+                    <SkillDetail skill={races[race].masterySkill2.skill} />
+                  )}
+                  <div className="text-slate-400">{races[race].masterySkill2.description}</div>
+                </div>
+              </>
+            )}
             
             {/* Lvボーナス（コインで獲得） */}
             <div className="text-amber-400 font-semibold">🪙 レベルアップボーナス</div>
@@ -317,6 +336,25 @@ export default function CreatePage() {
                     <SkillDetail skill={jobs[job].masterySkill.skill} />
                   )}
                   <div className="text-slate-400">{jobs[job].masterySkill.description}</div>
+                </div>
+              </>
+            )}
+            {jobs[job].masterySkill2 && (
+              <>
+                <div className="text-purple-400 font-semibold">👑👑 マスタリー2</div>
+                <div className="bg-slate-700 rounded p-2">
+                  <div className="font-semibold text-purple-300">{jobs[job].masterySkill2.name}</div>
+                  {jobs[job].masterySkill2.effects && (
+                    <div className="text-green-300">
+                      {jobs[job].masterySkill2.effects.map((e, i) => (
+                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      ))}
+                    </div>
+                  )}
+                  {jobs[job].masterySkill2.skill && (
+                    <SkillDetail skill={jobs[job].masterySkill2.skill} />
+                  )}
+                  <div className="text-slate-400">{jobs[job].masterySkill2.description}</div>
                 </div>
               </>
             )}
