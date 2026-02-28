@@ -16,6 +16,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'cleave', name: '薙ぎ払い', description: '全体に物理攻撃', type: 'attack', target: 'all', multiplier: 1.0, mpCost: 15 },
     ],
     masterySkill: { name: '武神の構え', description: '物理ダメージ+30%', type: 'passive', effects: [{ type: 'physicalBonus', value: 30 }] },
+    masterySkill2: { name: '闘志の連鎖', description: '味方の物理攻撃後30%で追撃', type: 'passive', effects: [{ type: 'physicalFollowUp', value: 30 }] },
   },
   mage: {
     id: 'mage',
@@ -33,6 +34,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'thunder', name: 'サンダー', description: '単体に雷撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 12, element: 'wind' },
     ],
     masterySkill: { name: '魔力解放', description: '全体魔法が2回発動', type: 'passive', effects: [{ type: 'doublecast', value: 100 }] },
+    masterySkill2: { name: '魔力共鳴', description: '味方全体のMAG+15%', type: 'passive', effects: [{ type: 'allyMagBonus', value: 15 }] },
   },
   priest: {
     id: 'priest',
@@ -49,6 +51,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'holy_light', name: 'ホーリーライト', description: '聖なる光で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 14 },
     ],
     masterySkill: { name: '聖域', description: '味方全体の被ダメージ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
+    masterySkill2: { name: '神の奇跡', description: 'レアドロップ率+30%', type: 'passive', effects: [{ type: 'rareDropBonus', value: 30 }] },
   },
   thief: {
     id: 'thief',
@@ -67,6 +70,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'assassinate', name: '暗殺', description: '超高威力の一撃', type: 'attack', target: 'single', multiplier: 2.5, mpCost: 25 },
     ],
     masterySkill: { name: '暗殺術', description: 'HP低い敵に確定クリティカル', type: 'passive', effects: [{ type: 'critBonus', value: 100 }] },
+    masterySkill2: { name: 'お宝嗅覚', description: 'ドロップ率+40%、コイン+30%', type: 'passive', effects: [{ type: 'dropBonus', value: 40 }, { type: 'coinBonus', value: 30 }] },
   },
   knight: {
     id: 'knight',
@@ -83,6 +87,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'holy_strike', name: '聖なる一撃', description: '聖なる力を込めた攻撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 18 },
     ],
     masterySkill: { name: '鉄壁の守護', description: '50%で味方を庇う', type: 'passive', effects: [{ type: 'cover', value: 50 }] },
+    masterySkill2: { name: '不屈の魂', description: 'HP30%以下で被ダメ-50%', type: 'passive', effects: [{ type: 'lowHpDefense', value: 50 }] },
   },
   hunter: {
     id: 'hunter',
@@ -99,6 +104,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'rapid_fire', name: '速射', description: '素早く攻撃', type: 'attack', target: 'single', multiplier: 1.4, mpCost: 12 },
     ],
     masterySkill: { name: '必中の矢', description: '回避無視+クリティカル率+30%', type: 'passive', effects: [{ type: 'accuracyBonus', value: 100 }, { type: 'critBonus', value: 30 }] },
+    masterySkill2: { name: '狩人の報酬', description: '敵を倒すとMP15回復', type: 'passive', effects: [{ type: 'mpOnKill', value: 15 }] },
   },
   ninja: {
     id: 'ninja',
@@ -116,6 +122,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'fatal_blow', name: '必殺', description: '高威力の一撃', type: 'attack', target: 'single', multiplier: 2.2, mpCost: 25 },
     ],
     masterySkill: { name: '分身の術', description: '25%で攻撃を完全回避', type: 'passive', effects: [{ type: 'perfectEvasion', value: 25 }] },
+    masterySkill2: { name: '影縫い', description: '状態異常付与時に追撃', type: 'passive', effects: [{ type: 'debuffFollowUp', value: 50 }] },
   },
   sage: {
     id: 'sage',
@@ -133,6 +140,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'meteor', name: 'メテオ', description: '全体に超高威力魔法', type: 'magic', target: 'all', multiplier: 2.0, mpCost: 40, element: 'fire' },
     ],
     masterySkill: { name: '叡智の結晶', description: 'MP消費-50%', type: 'passive', effects: [{ type: 'mpReduction', value: 50 }] },
+    masterySkill2: { name: '賢者の導き', description: '味方全体のMP消費-20%', type: 'passive', effects: [{ type: 'allyMpReduction', value: 20 }] },
   },
   berserker: {
     id: 'berserker',
@@ -150,6 +158,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'blood_rage', name: '血の咆哮', description: '攻撃力を大幅上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'atkUp', value: 50, duration: 3 } },
     ],
     masterySkill: { name: '血の狂宴', description: '攻撃ごとにATK+5%（累積）', type: 'passive', effects: [{ type: 'attackStack', value: 5 }] },
+    masterySkill2: { name: '殺戮の快感', description: '敵を倒すとHP20回復＆ATK+10%累積', type: 'passive', effects: [{ type: 'hpOnKill', value: 20 }, { type: 'atkStackOnKill', value: 10 }] },
   },
   paladin: {
     id: 'paladin',
@@ -166,6 +175,7 @@ export const jobs: Record<string, JobData> = {
       { name: 'divine_shield', id: 'divine_shield', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 20, effect: { type: 'defUp', value: 30, duration: 3 } },
     ],
     masterySkill: { name: '聖騎士の誓約', description: '味方死亡時、自動で1回蘇生', type: 'passive', effects: [{ type: 'autoRevive', value: 1 }] },
+    masterySkill2: { name: '聖なる加護', description: '味方がダメージを受けるとHP5回復', type: 'passive', effects: [{ type: 'allyHitHeal', value: 5 }] },
   },
   necromancer: {
     id: 'necromancer',
@@ -182,6 +192,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'death_wave', name: '死の波動', description: '全体に闇魔法', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 28 },
     ],
     masterySkill: { name: '魂吸収', description: '敵を倒すとMP15回復', type: 'passive', effects: [{ type: 'mpOnKill', value: 15 }] },
+    masterySkill2: { name: '死霊の宴', description: '敵を倒すとHP15回復', type: 'passive', effects: [{ type: 'hpOnKill', value: 15 }] },
   },
   monk: {
     id: 'monk',
@@ -198,6 +209,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'inner_peace', name: '精神統一', description: '自身のHP回復', type: 'heal', target: 'self', multiplier: 1.5, mpCost: 15 },
     ],
     masterySkill: { name: '無我の境地', description: '全攻撃を50%で反撃', type: 'passive', effects: [{ type: 'counterRate', value: 50 }] },
+    masterySkill2: { name: '悟りの境地', description: 'HP/MP+10/ターン、被ダメ-15%', type: 'passive', effects: [{ type: 'hpRegen', value: 10 }, { type: 'mpRegen', value: 10 }, { type: 'damageReduction', value: 15 }] },
   },
   ranger: {
     id: 'ranger',
@@ -215,6 +227,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'natures_blessing', name: '自然の恵み', description: '味方全体を少し回復', type: 'heal', target: 'allAllies', multiplier: 0.6, mpCost: 18 },
     ],
     masterySkill: { name: '自然の化身', description: '毎ターンHP/MP大幅回復', type: 'passive', effects: [{ type: 'hpRegen', value: 15 }, { type: 'mpRegen', value: 10 }] },
+    masterySkill2: { name: '大地の恵み', description: '探索時間-30%、ドロップ+25%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 30 }, { type: 'dropBonus', value: 25 }] },
   },
   samurai: {
     id: 'samurai',
@@ -236,6 +249,7 @@ export const jobs: Record<string, JobData> = {
       type: 'active',
       skill: { id: 'issen', name: '一閃', description: '防御無視の全体攻撃', type: 'attack', target: 'all', multiplier: 2.5, mpCost: 40 },
     },
+    masterySkill2: { name: '剣聖', description: 'クリティカル時に追加ダメージ+50%', type: 'passive', effects: [{ type: 'critFollowUp', value: 50 }] },
   },
   witch: {
     id: 'witch',
@@ -258,6 +272,7 @@ export const jobs: Record<string, JobData> = {
       type: 'active',
       skill: { id: 'grand_curse', name: '大呪術', description: '敵全体を呪う', type: 'debuff', target: 'all', multiplier: 0, mpCost: 35, effect: { type: 'statDown', value: 30, duration: 3 } },
     },
+    masterySkill2: { name: '呪いの連鎖', description: 'デバフ付与時に追撃＆デバフ延長+1', type: 'passive', effects: [{ type: 'debuffFollowUp', value: 40 }, { type: 'debuffDuration', value: 1 }] },
   },
   bard: {
     id: 'bard',
@@ -280,6 +295,7 @@ export const jobs: Record<string, JobData> = {
       type: 'active',
       skill: { id: 'heroic_tale', name: '英雄譚', description: '味方全体を大幅強化', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 30, effect: { type: 'atkUp', value: 25, duration: 5 } },
     },
+    masterySkill2: { name: '幸運の歌', description: '追加抽選+1、レアドロップ+20%', type: 'passive', effects: [{ type: 'doubleDropRoll', value: 1 }, { type: 'rareDropBonus', value: 20 }] },
   },
 };
 

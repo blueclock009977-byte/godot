@@ -166,6 +166,7 @@ export interface RaceData {
   passives: PassiveSkill[];
   skills?: SkillData[];  // 種族固有スキル
   masterySkill?: MasterySkill;  // マスタリースキル
+  masterySkill2?: MasterySkill;  // マスタリー2スキル
 }
 
 export interface JobData {
@@ -176,6 +177,7 @@ export interface JobData {
   passives: PassiveSkill[];
   skills: SkillData[];
   masterySkill?: MasterySkill;  // マスタリースキル
+  masterySkill2?: MasterySkill;  // マスタリー2スキル
 }
 
 

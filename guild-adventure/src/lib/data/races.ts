@@ -15,6 +15,7 @@ export const races: Record<string, RaceData> = {
       { id: 'inspire', name: '鼓舞', description: '味方全体の攻撃力を上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 20, duration: 3 } },
     ],
     masterySkill: { name: '英雄の器', description: '味方全員の全ステータス+10%', type: 'passive', effects: [{ type: 'allStats', value: 10 }] },
+    masterySkill2: { name: '人類の結束', description: '前衛3人以上でATK+25%', type: 'passive', effects: [{ type: 'frontlineBonus', value: 25 }] },
   },
   elf: {
     id: 'elf',
@@ -32,6 +33,7 @@ export const races: Record<string, RaceData> = {
       { id: 'spirit_arrow', name: '精霊の矢', description: '精霊の力で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 10, element: 'wind' },
     ],
     masterySkill: { name: '精霊契約', description: '味方の魔法攻撃後に追撃', type: 'passive', effects: [{ type: 'followUp', value: 50 }] },
+    masterySkill2: { name: '精霊の守護', description: '味方が魔法ダメージを受けるとMP3回復', type: 'passive', effects: [{ type: 'allyMagicHitMp', value: 3 }] },
   },
   dwarf: {
     id: 'dwarf',
@@ -48,6 +50,7 @@ export const races: Record<string, RaceData> = {
       { id: 'iron_wall', name: '鉄壁', description: '自身の防御力を大幅上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'defUp', value: 50, duration: 3 } },
     ],
     masterySkill: { name: '守護の盾', description: '50%の確率で味方を庇う', type: 'passive', effects: [{ type: 'cover', value: 50 }] },
+    masterySkill2: { name: '秘宝の鼻', description: 'レア装備ドロップ+40%', type: 'passive', effects: [{ type: 'rareDropBonus', value: 40 }] },
   },
   halfling: {
     id: 'halfling',
@@ -65,6 +68,7 @@ export const races: Record<string, RaceData> = {
       { id: 'vital_strike', name: '急所狙い', description: 'クリティカル率の高い一撃', type: 'attack', target: 'single', multiplier: 1.5, mpCost: 8 },
     ],
     masterySkill: { name: '幸運の星', description: 'クリティカル時ダメージ2倍', type: 'passive', effects: [{ type: 'critDamage', value: 100 }] },
+    masterySkill2: { name: '幸運の風', description: '追加抽選+2', type: 'passive', effects: [{ type: 'doubleDropRoll', value: 2 }] },
   },
   orc: {
     id: 'orc',
@@ -81,6 +85,7 @@ export const races: Record<string, RaceData> = {
       { id: 'fury_strike', name: '怒りの一撃', description: '渾身の大ダメージ攻撃', type: 'attack', target: 'single', multiplier: 2.2, mpCost: 12 },
     ],
     masterySkill: { name: '狂戦士の魂', description: 'HP30%以下で攻撃力2倍', type: 'passive', effects: [{ type: 'lowHpBonus', value: 100 }] },
+    masterySkill2: { name: '戦士の絆', description: '味方の物理攻撃後30%で追撃', type: 'passive', effects: [{ type: 'physicalFollowUp', value: 30 }] },
   },
   lizardman: {
     id: 'lizardman',
@@ -97,6 +102,7 @@ export const races: Record<string, RaceData> = {
       { id: 'regenerate', name: '再生', description: '自身のHPを回復', type: 'heal', target: 'self', multiplier: 1.5, mpCost: 10 },
     ],
     masterySkill: { name: '不死の再生', description: '戦闘中1回、瀕死から全回復', type: 'passive', effects: [{ type: 'revive', value: 100 }] },
+    masterySkill2: { name: '生命の循環', description: '敵を倒すとHP25回復', type: 'passive', effects: [{ type: 'hpOnKill', value: 25 }] },
   },
   fairy: {
     id: 'fairy',
@@ -114,6 +120,7 @@ export const races: Record<string, RaceData> = {
       { id: 'fairy_heal', name: '癒しの光', description: '味方一人のHPを回復', type: 'heal', target: 'ally', multiplier: 1.3, mpCost: 12 },
     ],
     masterySkill: { name: '妖精の祝福', description: '味方への回復量+50%', type: 'passive', effects: [{ type: 'healBonus', value: 50 }] },
+    masterySkill2: { name: '妖精の導き', description: '探索時間-40%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 40 }] },
   },
   undead: {
     id: 'undead',
@@ -131,6 +138,7 @@ export const races: Record<string, RaceData> = {
       { id: 'life_drain', name: '生命吸収', description: 'ダメージを与えHP吸収', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 14 },
     ],
     masterySkill: { name: '死の抱擁', description: '与ダメージの30%HP吸収', type: 'passive', effects: [{ type: 'hpSteal', value: 30 }] },
+    masterySkill2: { name: '死者の執念', description: 'HP0で50%の確率で耐える', type: 'passive', effects: [{ type: 'deathResist', value: 50 }] },
   },
   goblin: {
     id: 'goblin',
@@ -148,6 +156,7 @@ export const races: Record<string, RaceData> = {
       { id: 'ambush', name: '奇襲', description: '先制で高ダメージの一撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 10 },
     ],
     masterySkill: { name: '群狼戦術', description: '味方が多いほどダメージ上昇', type: 'passive', effects: [{ type: 'allyCountBonus', value: 10 }] },
+    masterySkill2: { name: '略奪者', description: 'コインボーナス+50%', type: 'passive', effects: [{ type: 'coinBonus', value: 50 }] },
   },
   dragonewt: {
     id: 'dragonewt',
@@ -169,6 +178,7 @@ export const races: Record<string, RaceData> = {
       type: 'active',
       skill: { id: 'dragon_roar', name: '竜の咆哮', description: '防御無視の全体攻撃', type: 'magic', target: 'all', multiplier: 2.0, mpCost: 35, element: 'fire' },
     },
+    masterySkill2: { name: '龍の怒り', description: 'クリティカル時に追撃+50%ダメージ', type: 'passive', effects: [{ type: 'critFollowUp', value: 50 }] },
   },
   angel: {
     id: 'angel',
@@ -185,6 +195,7 @@ export const races: Record<string, RaceData> = {
       { id: 'divine_blessing', name: '聖なる祝福', description: '味方全体を回復', type: 'heal', target: 'allAllies', multiplier: 0.9, mpCost: 22 },
     ],
     masterySkill: { name: '奇跡の復活', description: '味方死亡時、戦闘中1回蘇生', type: 'passive', effects: [{ type: 'autoRevive', value: 1 }] },
+    masterySkill2: { name: '天使の祝福', description: '味方全体HP+8/ターン', type: 'passive', effects: [{ type: 'allyHpRegen', value: 8 }] },
   },
   demon: {
     id: 'demon',
@@ -208,6 +219,7 @@ export const races: Record<string, RaceData> = {
       type: 'active',
       skill: { id: 'soul_pact', name: '魂の契約', description: 'HP20%消費、超高威力魔法', type: 'magic', target: 'single', multiplier: 4.0, mpCost: 30 },
     },
+    masterySkill2: { name: '地獄の契約', description: '与ダメ+30%、被ダメ+15%', type: 'passive', effects: [{ type: 'damageBonus', value: 30 }, { type: 'damageReduction', value: -15 }] },
   },
 };
 
