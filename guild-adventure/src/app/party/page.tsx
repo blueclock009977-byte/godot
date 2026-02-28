@@ -70,7 +70,7 @@ export default function PartyPage() {
   const availableChars = characters.filter(c => !partyCharIds.includes(c.id));
   
   // キャラをパーティに追加（ソロは合計4人まで）
-  const MAX_PARTY_SIZE = 4;
+  const MAX_PARTY_SIZE = 6;
   
   const handleAddToParty = (position: Position) => {
     if (!selectedChar) return;
