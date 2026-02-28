@@ -81,7 +81,7 @@ export default function WaitingRoomView({
               👥 招待
             </button>
             <button onClick={onGoHome} className="text-blue-400 hover:text-blue-300 text-sm">
-              🏠
+              🏠 ホーム
             </button>
             <button onClick={onLeave} className="text-red-400 hover:text-red-300 text-sm">
               退出
