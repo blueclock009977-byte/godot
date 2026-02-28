@@ -44,12 +44,15 @@ export default function AdventurePage() {
     setDisplayedLogs(startLog);
   }, [currentAdventure]);
   
-  // ステータス更新（ソロ冒険中）
+  // ステータス更新（ソロ冒険中のみ、完了後は更新しない）
   useEffect(() => {
-    if (!username || !currentAdventure) return;
+    if (!username || !currentAdventure || currentAdventure.status === 'completed') return;
     updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon, startTime: currentAdventure.startTime });
     const interval = setInterval(() => {
-      updateUserStatus(username, 'solo', { dungeonId: currentAdventure.dungeon, startTime: currentAdventure.startTime });
+      // 完了後は更新しない
+      const adventure = useGameStore.getState().currentAdventure;
+      if (!adventure || adventure.status === 'completed') return;
+      updateUserStatus(username, 'solo', { dungeonId: adventure.dungeon, startTime: adventure.startTime });
     }, 30000); // 30秒ごと
     return () => clearInterval(interval);
   }, [username, currentAdventure]);
