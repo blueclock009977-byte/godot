@@ -82,6 +82,11 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         const myChars = data.players[username].characters || [];
         setSelectedChars(myChars);
         setIsReady(data.players[username].ready);
+        
+        // 新しいマルチに参加したら、古いmultiAdventureをクリア（ステータス表示のため）
+        if (data.status === 'waiting') {
+          clearMultiAdventure(username);  // 非同期だが待たない
+        }
       }
       
       // 自分がキックされた（playersに自分がいない）場合
@@ -219,8 +224,10 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         
         // success=false は既に処理済み（別端末やリロードで再実行された場合）
         if (!result.success) {
+          // 既に処理済みでもmultiAdventureをクリア（古いデータが残らないように）
+          await clearMultiAdventure(username);
           setCurrentMultiRoom(null);
-        setDropClaimed(true);
+          setDropClaimed(true);
           return;
         }
         
