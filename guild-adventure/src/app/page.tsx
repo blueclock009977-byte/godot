@@ -134,7 +134,7 @@ function GameScreen() {
       ]);
       setInvitations(invites);
       setFriendRequests(requests);
-      // アクティブな場合のみlastSeenを更新（5分操作なしでオフライン扱い）
+      // アクティブな場合のみlastSeenを更新（1分操作なしでオフライン扱い）
       if (isActive()) {
         const { updateLastSeen } = await import('@/lib/firebase');
         updateLastSeen(username!);

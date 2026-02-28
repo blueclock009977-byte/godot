@@ -1014,11 +1014,11 @@ export async function getMultipleUserStatus(usernames: string[]): Promise<Record
   return results;
 }
 
-// オンライン判定（5分以内に更新があればオンライン）
+// オンライン判定（1分以内に更新があればオンライン）
 export function isOnline(status: UserStatus | null): boolean {
   if (!status) return false;
-  const fiveMinAgo = Date.now() - 5 * 60 * 1000;
-  return status.lastSeen > fiveMinAgo;
+  const oneMinAgo = Date.now() - 1 * 60 * 1000;
+  return status.lastSeen > oneMinAgo;
 }
 
 // フレンドの詳細ステータスを取得（冒険状態も含む）
