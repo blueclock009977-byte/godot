@@ -178,20 +178,24 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   
   // 探索時間が終了している場合
   if (elapsed >= duration && !adventure.claimed) {
-    let droppedItemId: string | undefined;
-    let droppedEquipmentId: string | undefined;
+    let droppedItemIds: string[] = [];
+    let droppedEquipmentIds: string[] = [];
     let coinReward = 0;
     
     if (adventure.battleResult?.victory) {
       const claimResult = await claimAdventureDrop(username);
       if (claimResult.success) {
-        if (claimResult.itemId) {
-          droppedItemId = claimResult.itemId;
-          addItem(claimResult.itemId);
+        // 複数アイテムドロップ対応
+        const itemIds = claimResult.itemIds || (claimResult.itemId ? [claimResult.itemId] : []);
+        for (const itemId of itemIds) {
+          droppedItemIds.push(itemId);
+          addItem(itemId);
         }
-        if (claimResult.equipmentId) {
-          droppedEquipmentId = claimResult.equipmentId;
-          addEquipment(claimResult.equipmentId);
+        // 複数装備ドロップ対応
+        const equipmentIds = claimResult.equipmentIds || (claimResult.equipmentId ? [claimResult.equipmentId] : []);
+        for (const eqId of equipmentIds) {
+          droppedEquipmentIds.push(eqId);
+          addEquipment(eqId);
         }
         
         // コインを付与（リロード時でも付与）
@@ -211,15 +215,17 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
       type: 'solo',
       dungeonId: adventure.dungeon,
       victory: adventure.battleResult?.victory || false,
-      droppedItemId,
-      droppedEquipmentId,
+      droppedItemId: droppedItemIds[0],
+      droppedItemIds: droppedItemIds.length > 0 ? droppedItemIds : undefined,
+      droppedEquipmentId: droppedEquipmentIds[0],
+      droppedEquipmentIds: droppedEquipmentIds.length > 0 ? droppedEquipmentIds : undefined,
       coinReward,
       logs: adventure.battleResult?.logs || [],
     });
     
     await clearAdventureOnServer(username);
     // 履歴追加済みなのでnullを返す（adventure/page.tsxでの二重追加を防ぐ）
-    return { adventure: null, droppedItemId };
+    return { adventure: null, droppedItemId: droppedItemIds[0] };
   }
   
   return { adventure };

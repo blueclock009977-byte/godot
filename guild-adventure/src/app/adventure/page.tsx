@@ -192,13 +192,15 @@ export default function AdventurePage() {
               }
             }
 
-            // 履歴を追加（初回のみ）
+            // 履歴を追加（初回のみ）- 複数ドロップ対応
             addHistory({
               type: 'solo',
               dungeonId: currentAdventure.dungeon,
               victory: battleResult.victory,
               droppedItemId: droppedItemIds[0],
+              droppedItemIds: droppedItemIds.length > 0 ? droppedItemIds : undefined,
               droppedEquipmentId: droppedEquipmentIds[0],
+              droppedEquipmentIds: droppedEquipmentIds.length > 0 ? droppedEquipmentIds : undefined,
               coinReward: earnedCoinReward,
               logs: battleResult.logs,
             });

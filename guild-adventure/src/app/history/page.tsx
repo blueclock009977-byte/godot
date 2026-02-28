@@ -44,16 +44,18 @@ function HistoryCard({
         <span className="text-xs text-slate-400">{dateStr}</span>
       </div>
       <div className="font-semibold mt-1">{dungeon?.name || history.dungeonId}</div>
-      {history.droppedItemId && (
-        <div className="text-xs text-amber-400 mt-1">
-          📜 {getItemById(history.droppedItemId)?.name}
+      {/* アイテムドロップ（複数対応） */}
+      {(history.droppedItemIds || (history.droppedItemId ? [history.droppedItemId] : [])).map((itemId: string, idx: number) => (
+        <div key={`item-${idx}`} className="text-xs text-amber-400 mt-1">
+          📜 {getItemById(itemId)?.name}
         </div>
-      )}
-      {history.droppedEquipmentId && (
-        <div className="text-xs text-yellow-300 mt-1">
-          ⚔️ {getEquipmentById(history.droppedEquipmentId)?.name}
+      ))}
+      {/* 装備ドロップ（複数対応） */}
+      {(history.droppedEquipmentIds || (history.droppedEquipmentId ? [history.droppedEquipmentId] : [])).map((eqId: string, idx: number) => (
+        <div key={`eq-${idx}`} className="text-xs text-yellow-300 mt-1">
+          ⚔️ {getEquipmentById(eqId)?.name}
         </div>
-      )}
+      ))}
       {history.victory && history.coinReward && history.coinReward > 0 && (
         <div className="text-xs text-amber-400 mt-1">
           🪙 {history.coinReward}コイン
