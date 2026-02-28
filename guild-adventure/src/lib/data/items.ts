@@ -74,16 +74,17 @@ export const initialInventory: Record<string, number> = {
 };
 
 // ダンジョンのドロップ確率（%）
+// ※基本4回抽選のため、確率は1/4に設定（期待値は同じ）
 export function getDropRate(dungeonId: string): number {
   const rates: Record<string, number> = {
-    grassland: 0.4,
-    forest: 8,
-    cave: 50,
-    sea: 100,
-    desert: 100,
-    volcano: 100,
-    snowfield: 100,
-    temple: 100,
+    grassland: 0.1,    // 0.4 / 4
+    forest: 2,         // 8 / 4
+    cave: 12.5,        // 50 / 4
+    sea: 25,           // 100 / 4
+    desert: 25,
+    volcano: 25,
+    snowfield: 25,
+    temple: 25,
   };
   return rates[dungeonId] || 0;
 }

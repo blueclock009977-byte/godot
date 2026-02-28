@@ -197,7 +197,7 @@ export function getDropRollCount(characters: CharacterWithRace[]): number {
     }
   }
   
-  return 1 + extraRolls; // 基本1回 + 追加抽選
+  return 4 + extraRolls; // 基本4回 + 追加抽選
 }
 
 // 後方互換のため残す

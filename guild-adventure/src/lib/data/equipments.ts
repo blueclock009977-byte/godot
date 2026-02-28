@@ -294,10 +294,11 @@ export function getEquipmentById(id: string): Equipment | undefined {
 }
 
 // ダンジョン時間に応じたドロップ率（%）
-// 1時間 = 20%、それ以下は比例
+// ※基本4回抽選のため、確率は1/4に設定（期待値は同じ）
+// 1時間 = 5%、それ以下は比例
 export function getEquipmentDropRate(durationSeconds: number): number {
-  const rate = (durationSeconds / 3600) * 20;
-  return Math.max(0.1, Math.min(20, rate)); // 0.1%〜20%
+  const rate = (durationSeconds / 3600) * 5; // 20 / 4 = 5
+  return Math.max(0.025, Math.min(5, rate)); // 0.025%〜5%
 }
 
 import { applyDropBonus, getDropRollCount } from '../drop/dropBonus';
