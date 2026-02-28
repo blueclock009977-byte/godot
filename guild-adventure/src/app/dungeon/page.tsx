@@ -10,6 +10,7 @@ import { DifficultyStars } from '@/components/DifficultyStars';
 import { DungeonType, DungeonData } from '@/lib/types';
 import { dungeonList } from '@/lib/data/dungeons';
 import { getDropRate } from '@/lib/data/items';
+import { getEquipmentDropRate } from '@/lib/data/equipments';
 import { formatDuration } from '@/lib/utils';
 
 export default function DungeonPage() {
@@ -88,7 +89,10 @@ export default function DungeonPage() {
                   👹 {dungeon.encounterCount}回遭遇
                 </span>
                 <span className="text-amber-400">
-                  📦 ドロップ: {getDropRate(dungeon.id)}%
+                  📜 書: {getDropRate(dungeon.id)}%
+                </span>
+                <span className="text-green-400">
+                  🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}%
                 </span>
               </div>
               
