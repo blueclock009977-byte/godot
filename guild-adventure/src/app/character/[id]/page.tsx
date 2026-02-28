@@ -441,6 +441,20 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                 label="★職業" 
               />
             )}
+            {/* 種族マスタリー2（パッシブの場合） */}
+            {character.raceMastery2 && raceData.masterySkill2?.type === 'passive' && raceData.masterySkill2.effects && (
+              <PassiveDetail 
+                passive={{ name: raceData.masterySkill2.name, description: raceData.masterySkill2.description, effects: raceData.masterySkill2.effects }} 
+                label="★★種族" 
+              />
+            )}
+            {/* 職業マスタリー2（パッシブの場合） */}
+            {character.jobMastery2 && jobData.masterySkill2?.type === 'passive' && jobData.masterySkill2.effects && (
+              <PassiveDetail 
+                passive={{ name: jobData.masterySkill2.name, description: jobData.masterySkill2.description, effects: jobData.masterySkill2.effects }} 
+                label="★★職業" 
+              />
+            )}
           </div>
         </div>
         
@@ -462,6 +476,13 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
             )}
             {character.jobMastery && jobData.masterySkill?.type === 'active' && jobData.masterySkill.skill && (
               <SkillDetail skill={jobData.masterySkill.skill} label="★職業" />
+            )}
+            {/* マスタリー2スキル（アクティブのみ） */}
+            {character.raceMastery2 && raceData.masterySkill2?.type === 'active' && raceData.masterySkill2.skill && (
+              <SkillDetail skill={raceData.masterySkill2.skill} label="★★種族" />
+            )}
+            {character.jobMastery2 && jobData.masterySkill2?.type === 'active' && jobData.masterySkill2.skill && (
+              <SkillDetail skill={jobData.masterySkill2.skill} label="★★職業" />
             )}
           </div>
         </div>
