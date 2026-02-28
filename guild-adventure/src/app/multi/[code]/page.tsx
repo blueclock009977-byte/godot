@@ -309,7 +309,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     return (
       <BattleProgressView
         dungeonName={dungeonData?.name || '不明なダンジョン'}
-        durationSeconds={dungeonData?.durationSeconds || 30}
+        durationSeconds={room.actualDurationSeconds || dungeonData?.durationSeconds || 30}
         startTime={room.startTime}
         progress={progress}
         displayedLogs={displayedLogs}
