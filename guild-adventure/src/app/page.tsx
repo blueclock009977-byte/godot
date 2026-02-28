@@ -423,17 +423,6 @@ function GameScreen() {
           </Link>
         </div>
         
-        {currentAdventure && currentAdventure.status === 'inProgress' && (
-          <div className="mt-8 bg-amber-900/50 rounded-lg p-4 border border-amber-700">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="animate-pulse">🔥</span>
-              <span className="font-semibold">冒険中...</span>
-            </div>
-            <Link href="/adventure" className="text-amber-400 hover:underline text-sm">
-              冒険の状況を見る →
-            </Link>
-          </div>
-        )}
         
         <div className="mt-8 bg-slate-800 rounded-lg p-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">👤 所属冒険者 ({characters.length}人)</h3>
