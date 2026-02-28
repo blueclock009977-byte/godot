@@ -64,6 +64,32 @@ export function formatEffect(effect: { type: string; value: number }): string {
 }
 
 /**
+ * 複数のパッシブ効果をフォーマット（物理+魔法が同じ値なら「物魔」にまとめる）
+ */
+export function formatEffects(effects: { type: string; value: number }[]): string[] {
+  const result: string[] = [];
+  const physicalBonus = effects.find(e => e.type === 'physicalBonus');
+  const magicBonus = effects.find(e => e.type === 'magicBonus');
+  
+  // 物理と魔法が同じ値なら「物魔ダメ」にまとめる
+  if (physicalBonus && magicBonus && physicalBonus.value === magicBonus.value) {
+    result.push(`物魔ダメ+${physicalBonus.value}%`);
+    // 残りのeffectを処理
+    for (const effect of effects) {
+      if (effect.type !== 'physicalBonus' && effect.type !== 'magicBonus') {
+        result.push(formatEffect(effect));
+      }
+    }
+  } else {
+    // 通常処理
+    for (const effect of effects) {
+      result.push(formatEffect(effect));
+    }
+  }
+  return result;
+}
+
+/**
  * スキル効果のフォーマット
  */
 function formatSkillEffect(effect: SkillEffect): string {
@@ -161,10 +187,10 @@ export function PassiveDetail({ passive, label }: PassiveDetailProps) {
         {label && `[${label}] `}{passive.name}
       </div>
       <div className="text-green-300">
-        {passive.effects.map((e, i) => (
+        {formatEffects(passive.effects).map((text, i) => (
           <span key={i}>
             {i > 0 && ', '}
-            {formatEffect(e)}
+            {text}
           </span>
         ))}
       </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
-import { SkillDetail, PassiveDetail, formatEffect } from '@/components/SkillDisplay';
+import { SkillDetail, PassiveDetail, formatEffect, formatEffects } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
 import { races, raceList } from '@/lib/data/races';
@@ -198,8 +198,8 @@ export default function CreatePage() {
                   <div className="font-semibold text-purple-300">{races[race].masterySkill.name}</div>
                   {races[race].masterySkill.effects && (
                     <div className="text-green-300">
-                      {races[race].masterySkill.effects.map((e, i) => (
-                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      {formatEffects(races[race].masterySkill.effects).map((text, i) => (
+                        <span key={i}>{i > 0 && ', '}{text}</span>
                       ))}
                     </div>
                   )}
@@ -217,8 +217,8 @@ export default function CreatePage() {
                   <div className="font-semibold text-purple-300">{races[race].masterySkill2.name}</div>
                   {races[race].masterySkill2.effects && (
                     <div className="text-green-300">
-                      {races[race].masterySkill2.effects.map((e, i) => (
-                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      {formatEffects(races[race].masterySkill2.effects).map((text, i) => (
+                        <span key={i}>{i > 0 && ', '}{text}</span>
                       ))}
                     </div>
                   )}
@@ -327,8 +327,8 @@ export default function CreatePage() {
                   <div className="font-semibold text-purple-300">{jobs[job].masterySkill.name}</div>
                   {jobs[job].masterySkill.effects && (
                     <div className="text-green-300">
-                      {jobs[job].masterySkill.effects.map((e, i) => (
-                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      {formatEffects(jobs[job].masterySkill.effects).map((text, i) => (
+                        <span key={i}>{i > 0 && ', '}{text}</span>
                       ))}
                     </div>
                   )}
@@ -346,8 +346,8 @@ export default function CreatePage() {
                   <div className="font-semibold text-purple-300">{jobs[job].masterySkill2.name}</div>
                   {jobs[job].masterySkill2.effects && (
                     <div className="text-green-300">
-                      {jobs[job].masterySkill2.effects.map((e, i) => (
-                        <span key={i}>{i > 0 && ', '}{formatEffect(e)}</span>
+                      {formatEffects(jobs[job].masterySkill2.effects).map((text, i) => (
+                        <span key={i}>{i > 0 && ', '}{text}</span>
                       ))}
                     </div>
                   )}
