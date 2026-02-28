@@ -8,7 +8,8 @@ import { useUserActivity } from '@/hooks/useUserActivity';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
-import { getRaceShortName, getJobShortName } from '@/lib/utils';
+import { races } from '@/lib/data/races';
+import { jobs } from '@/lib/data/jobs';
 import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
 
@@ -451,7 +452,7 @@ function GameScreen() {
                         <span className="text-xs text-amber-400">Lv.{char.level || 1}</span>
                       </div>
                       <div className="text-xs text-slate-400">
-                        {getRaceShortName(char.race)}・{getJobShortName(char.job)}
+                        {races[char.race]?.name || char.race} / {jobs[char.job]?.name || char.job}
                         {eq && <span className={`ml-2 ${eq.rarity === "rare" ? "text-yellow-300" : "text-slate-300"}`}>🎒{eq.name}</span>}
                       </div>
                     </div>
