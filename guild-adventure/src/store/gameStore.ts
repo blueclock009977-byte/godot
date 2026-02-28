@@ -418,8 +418,16 @@ export const useGameStore = create<GameStore>()(
       },
       
       
-      // マルチルームコード設定
-      setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
+      // マルチルームコード設定（Firebaseにも保存）
+      setCurrentMultiRoom: (code) => {
+        set({ currentMultiRoom: code });
+        const username = get().username;
+        if (username) {
+          import('@/lib/firebase').then(({ setCurrentMultiRoomOnServer }) => {
+            setCurrentMultiRoomOnServer(username, code);
+          });
+        }
+      },
       
       // マルチ編成保存
       saveMultiParty: (playerCount: 2 | 3, chars: { charId: string; position: 'front' | 'back' }[]) => {
@@ -550,12 +558,17 @@ export const useGameStore = create<GameStore>()(
             // 既存の探索を復元
             await get().restoreAdventure();
             
-            // マルチ冒険中かチェック
-            const status = await getUserStatus(storedUsername);
-            if (status?.activity === 'multi' && status?.roomCode) {
-              const room = await getRoom(status.roomCode);
+            // マルチルームをサーバーから復元
+            const { getCurrentMultiRoomOnServer } = await import('@/lib/firebase');
+            const savedRoomCode = await getCurrentMultiRoomOnServer(storedUsername);
+            if (savedRoomCode) {
+              const room = await getRoom(savedRoomCode);
               if (room && (room.status === 'battle' || room.status === 'waiting')) {
-                set({ currentMultiRoom: status.roomCode });
+                set({ currentMultiRoom: savedRoomCode });
+              } else {
+                // ルームが存在しないか終了済みならクリア
+                const { setCurrentMultiRoomOnServer } = await import('@/lib/firebase');
+                setCurrentMultiRoomOnServer(storedUsername, null);
               }
             }
             

@@ -612,6 +612,15 @@ export async function getAdventureOnServer(username: string): Promise<ServerAdve
   return firebaseGet<ServerAdventure>(`guild-adventure/users/${username}/currentAdventure`);
 }
 
+// マルチルームコードを保存/取得
+export async function setCurrentMultiRoomOnServer(username: string, roomCode: string | null): Promise<boolean> {
+  return firebaseSet(`guild-adventure/users/${username}/currentMultiRoom`, roomCode);
+}
+
+export async function getCurrentMultiRoomOnServer(username: string): Promise<string | null> {
+  return firebaseGet<string>(`guild-adventure/users/${username}/currentMultiRoom`);
+}
+
 // ============================================
 // フレンド機能
 // ============================================
