@@ -371,7 +371,7 @@ export const jobs: Record<string, JobData> = {
       { name: '回避術', description: '回避率上昇', effects: [{ type: 'evasionBonus', value: 12 }] },
     ],
     skills: [
-      { id: 'red_slash', name: 'レッドスラッシュ', description: '素早い斬撃', type: 'attack', target: 'single', multiplier: 1.5, mpCost: 8 },
+      { id: 'red_slash', name: 'レッドスラッシュ', description: '素早い斬撃（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.5, mpCost: 8 },
       { id: 'red_magic', name: 'レッドマジック', description: '炎の魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 10, element: 'fire' },
       { id: 'red_cure', name: 'レッドキュア', description: '味方一人を回復', type: 'heal', target: 'ally', multiplier: 1.2, mpCost: 12 },
     ],
