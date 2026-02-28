@@ -17,7 +17,6 @@ export function getDungeonName(dungeonId: string): string {
 
 /**
  * 残り時間（分）を計算するヘルパー
- * actualDurationSecondsがあればそれを使う（探索時間短縮考慮）
  */
 export function calculateRemainingMinutes(startTime: number, dungeonId: string, actualDurationSeconds?: number): number {
   const duration = actualDurationSeconds || dungeons[dungeonId as keyof typeof dungeons]?.durationSeconds || 0;
@@ -27,135 +26,102 @@ export function calculateRemainingMinutes(startTime: number, dungeonId: string, 
 
 /**
  * フレンドのステータス表示情報を取得する共通関数
- * friends/page.tsx と multi/[code]/page.tsx で共用
+ * ソロとマルチの両方を同時に表示可能
  */
 export function getStatusDisplay(fullStatus: FriendFullStatus | undefined): StatusDisplay {
+  const statuses = getStatusDisplays(fullStatus);
+  return statuses[0] || { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
+}
+
+/**
+ * 複数のステータスを取得（ソロ+マルチ同時表示用）
+ */
+export function getStatusDisplays(fullStatus: FriendFullStatus | undefined): StatusDisplay[] {
   if (!fullStatus) {
-    return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
+    return [{ text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' }];
   }
 
   const { status, currentAdventure, multiAdventure, multiRoom } = fullStatus;
+  const results: StatusDisplay[] = [];
 
-  // ソロ冒険中をチェック（Web閉じても表示）
+  // ソロ冒険中をチェック
   if (currentAdventure) {
     const dungeonName = getDungeonName(currentAdventure.dungeon);
     const remaining = calculateRemainingMinutes(currentAdventure.startTime, currentAdventure.dungeon);
 
     if (remaining > 0) {
-      // まだ冒険中
-      return {
+      results.push({
         text: 'ソロ冒険中',
         color: 'text-amber-400',
         emoji: '⚔️',
         detail: `${dungeonName} (残り${remaining}分)`,
-      };
+      });
     } else {
-      // 帰還待ち
-      return {
+      results.push({
         text: '帰還待ち',
         color: 'text-orange-400',
         emoji: '🏠',
         detail: `${dungeonName} の結果確認待ち`,
-      };
+      });
     }
   }
 
-  // マルチルームの状態をチェック（冒険中かどうか）
+  // マルチルームの状態をチェック
   if (multiRoom && status?.activity === 'multi') {
     const dungeonName = getDungeonName(multiRoom.dungeonId);
 
     if (multiRoom.status === 'battle') {
-      // マルチ冒険中
       const startTime = multiRoom.startTime || Date.now();
       const remaining = calculateRemainingMinutes(startTime, multiRoom.dungeonId, multiRoom.actualDurationSeconds);
       if (remaining > 0) {
-        return {
+        results.push({
           text: 'マルチ冒険中',
           color: 'text-purple-400',
           emoji: '⚔️👥',
           detail: `${dungeonName} (残り${remaining}分)`,
-        };
+        });
       } else {
-        // 時間終了 → 結果待ち
-        return {
+        results.push({
           text: 'マルチ結果待ち',
           color: 'text-purple-400',
           emoji: '👥',
           detail: `${dungeonName} の結果確認待ち`,
-        };
+        });
       }
     } else if (multiRoom.status === 'done') {
-      // マルチ完了 → 結果待ち
-      return {
+      results.push({
         text: 'マルチ結果待ち',
         color: 'text-purple-400',
         emoji: '👥',
         detail: `${dungeonName} の結果確認待ち`,
-      };
+      });
     } else if (multiRoom.status === 'waiting' || multiRoom.status === 'ready') {
-      // マルチ待機中
       const playerCount = Object.keys(multiRoom.players || {}).length;
-      return {
+      results.push({
         text: 'マルチ待機中',
         color: 'text-blue-400',
         emoji: '👥',
         detail: `${dungeonName} (${playerCount}/${multiRoom.maxPlayers}人)`,
-      };
+      });
     }
-  }
-
-  // マルチ結果待ちをチェック
-  if (multiAdventure && !multiAdventure.claimed) {
+  } else if (multiAdventure && !multiAdventure.claimed) {
+    // マルチ結果待ちをチェック（multiRoomがない場合）
     const dungeonName = getDungeonName(multiAdventure.dungeonId);
-    return {
+    results.push({
       text: 'マルチ結果待ち',
       color: 'text-purple-400',
       emoji: '👥',
       detail: `${dungeonName} の結果確認待ち`,
-    };
+    });
   }
 
-  // 通常のステータス
-  if (!status || !isOnline(status)) {
-    return { text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' };
+  // 何もなければオンライン/オフライン
+  if (results.length === 0) {
+    if (!status || !isOnline(status)) {
+      return [{ text: 'オフライン', color: 'text-slate-500', emoji: '⚫', detail: '' }];
+    }
+    return [{ text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' }];
   }
 
-  switch (status.activity) {
-    case 'lobby':
-      return { text: 'ロビー', color: 'text-green-400', emoji: '🟢', detail: 'オンライン' };
-    case 'multi':
-      // status.dungeonIdがあれば詳細表示
-      if (status.dungeonId) {
-        const dungeonName = getDungeonName(status.dungeonId);
-        if (status.startTime) {
-          const remaining = calculateRemainingMinutes(status.startTime, status.dungeonId);
-          return {
-            text: 'マルチ中',
-            color: 'text-purple-400',
-            emoji: '👥',
-            detail: `${dungeonName} (残り${remaining}分)`,
-          };
-        }
-        return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥', detail: dungeonName };
-      }
-      return { text: 'マルチ中', color: 'text-purple-400', emoji: '👥', detail: '' };
-    case 'solo':
-      // status.dungeonIdとstartTimeがあれば詳細表示
-      if (status.dungeonId) {
-        const dungeonName = getDungeonName(status.dungeonId);
-        if (status.startTime) {
-          const remaining = calculateRemainingMinutes(status.startTime, status.dungeonId);
-          return {
-            text: 'ソロ中',
-            color: 'text-amber-400',
-            emoji: '⚔️',
-            detail: `${dungeonName} (残り${remaining}分)`,
-          };
-        }
-        return { text: 'ソロ中', color: 'text-amber-400', emoji: '⚔️', detail: dungeonName };
-      }
-      return { text: 'ソロ中', color: 'text-amber-400', emoji: '⚔️', detail: '' };
-    default:
-      return { text: 'オンライン', color: 'text-green-400', emoji: '🟢', detail: '' };
-  }
+  return results;
 }

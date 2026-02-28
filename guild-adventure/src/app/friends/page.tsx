@@ -20,7 +20,7 @@ import {
   FriendFullStatus,
   MultiRoom,
 } from '@/lib/firebase';
-import { getStatusDisplay } from '@/lib/utils/status';
+import { getStatusDisplay, getStatusDisplays } from '@/lib/utils/status';
 
 export default function FriendsPage() {
   const { username, currentMultiRoom } = useGameStore();
@@ -182,27 +182,31 @@ export default function FriendsPage() {
               {friends.map((friend) => {
                 // 同じマルチルームにいるフレンドはルーム情報から直接ステータスを生成
                 const isInMyRoom = myMultiRoom && myMultiRoom.players && myMultiRoom.players[friend];
-                let status;
+                let statuses;
                 if (isInMyRoom) {
                   // 自分と同じルームにいる → ルーム情報から直接ステータスを生成
-                  status = getStatusDisplay({
+                  statuses = getStatusDisplays({
                     ...friendStatuses[friend],
                     multiRoom: myMultiRoom,
                     status: { activity: 'multi', lastSeen: Date.now(), roomCode: currentMultiRoom || undefined, dungeonId: myMultiRoom.dungeonId, startTime: myMultiRoom.startTime },
                   });
                 } else {
-                  status = getStatusDisplay(friendStatuses[friend]);
+                  statuses = getStatusDisplays(friendStatuses[friend]);
                 }
                 return (
                   <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
                     <div>
                       <span className="font-semibold">{friend}</span>
-                      <div className={`text-xs ${status.color}`}>
-                        {status.emoji} {status.text}
-                      </div>
-                      {status.detail && (
-                        <div className="text-xs text-slate-400">{status.detail}</div>
-                      )}
+                      {statuses.map((status, idx) => (
+                        <div key={idx}>
+                          <div className={`text-xs ${status.color}`}>
+                            {status.emoji} {status.text}
+                          </div>
+                          {status.detail && (
+                            <div className="text-xs text-slate-400 ml-4">{status.detail}</div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                     <button
                       onClick={() => handleRemove(friend)}
