@@ -1,5 +1,5 @@
 // レベルアップ時のステータスボーナス（Lv2, Lv4で獲得）
-// 種族12 × 2 + 職業16 × 2 = 56ボーナス
+// 種族16 × 2 + 職業20 × 2 = 72ボーナス
 
 import { Stats } from '../types';
 
@@ -181,6 +181,62 @@ export const raceLvBonuses: Record<string, LvStatBonus> = {
     name: '深淵の力',
     description: 'ATK+12, MAG+12',
     statModifiers: { atk: 12, mag: 12 },
+  },
+
+  // ジェナシ - 元素・両刀型
+  genasi_lv2: {
+    id: 'genasi_lv2',
+    name: '元素の目覚め',
+    description: 'ATK+5, MAG+5, MP+10',
+    statModifiers: { atk: 5, mag: 5, maxMp: 10 },
+  },
+  genasi_lv4: {
+    id: 'genasi_lv4',
+    name: '元素の覚醒',
+    description: 'ATK+8, MAG+8, MP+15',
+    statModifiers: { atk: 8, mag: 8, maxMp: 15 },
+  },
+
+  // アアシマール - 万能型
+  aasimar_lv2: {
+    id: 'aasimar_lv2',
+    name: '聖なる光',
+    description: 'MAG+8, HP+10, DEF+3',
+    statModifiers: { mag: 8, maxHp: 10, def: 3 },
+  },
+  aasimar_lv4: {
+    id: 'aasimar_lv4',
+    name: '天使の祝福',
+    description: 'MAG+12, HP+15, DEF+5',
+    statModifiers: { mag: 12, maxHp: 15, def: 5 },
+  },
+
+  // ティーフリング - 攻撃・魔法型
+  tiefling_lv2: {
+    id: 'tiefling_lv2',
+    name: '闘争本能',
+    description: 'ATK+7, MAG+7',
+    statModifiers: { atk: 7, mag: 7 },
+  },
+  tiefling_lv4: {
+    id: 'tiefling_lv4',
+    name: '悪魔の血脈',
+    description: 'ATK+10, MAG+10',
+    statModifiers: { atk: 10, mag: 10 },
+  },
+
+  // ダンピール - 攻撃・HP型
+  dhampir_lv2: {
+    id: 'dhampir_lv2',
+    name: '渇きの衝動',
+    description: 'ATK+8, HP+15',
+    statModifiers: { atk: 8, maxHp: 15 },
+  },
+  dhampir_lv4: {
+    id: 'dhampir_lv4',
+    name: '真祖の覚醒',
+    description: 'ATK+12, HP+20, AGI+5',
+    statModifiers: { atk: 12, maxHp: 20, agi: 5 },
   },
 };
 
@@ -425,6 +481,62 @@ export const jobLvBonuses: Record<string, LvStatBonus> = {
     name: '魅惑の舞踏',
     description: 'AGI+15, MAG+10',
     statModifiers: { agi: 15, mag: 10 },
+  },
+
+  // 魔法剣士 - 両刀型
+  spellblade_lv2: {
+    id: 'spellblade_lv2',
+    name: '魔法剣の基礎',
+    description: 'ATK+5, MAG+5',
+    statModifiers: { atk: 5, mag: 5 },
+  },
+  spellblade_lv4: {
+    id: 'spellblade_lv4',
+    name: '剣魔一体',
+    description: 'ATK+8, MAG+8, MP+10',
+    statModifiers: { atk: 8, mag: 8, maxMp: 10 },
+  },
+
+  // 戦闘魔導士 - 魔法寄り両刀
+  battlemage_lv2: {
+    id: 'battlemage_lv2',
+    name: '戦闘魔術の心得',
+    description: 'MAG+7, ATK+5, HP+10',
+    statModifiers: { mag: 7, atk: 5, maxHp: 10 },
+  },
+  battlemage_lv4: {
+    id: 'battlemage_lv4',
+    name: '魔導戦士の覚醒',
+    description: 'MAG+10, ATK+8, HP+15',
+    statModifiers: { mag: 10, atk: 8, maxHp: 15 },
+  },
+
+  // 符術士 - バランス両刀
+  runesmith_lv2: {
+    id: 'runesmith_lv2',
+    name: 'ルーンの知識',
+    description: 'ATK+5, MAG+5, DEF+3',
+    statModifiers: { atk: 5, mag: 5, def: 3 },
+  },
+  runesmith_lv4: {
+    id: 'runesmith_lv4',
+    name: '大符術師',
+    description: 'ATK+8, MAG+8, DEF+5',
+    statModifiers: { atk: 8, mag: 8, def: 5 },
+  },
+
+  // 赤魔道士 - 万能型
+  redmage_lv2: {
+    id: 'redmage_lv2',
+    name: '赤魔法の基礎',
+    description: 'ATK+4, MAG+4, AGI+4',
+    statModifiers: { atk: 4, mag: 4, agi: 4 },
+  },
+  redmage_lv4: {
+    id: 'redmage_lv4',
+    name: '万能の極意',
+    description: 'ATK+6, MAG+6, AGI+6, HP+10',
+    statModifiers: { atk: 6, mag: 6, agi: 6, maxHp: 10 },
   },
 };
 

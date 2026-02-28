@@ -1,5 +1,5 @@
 // レベルスキルデータ（Lv3, Lv5で習得）
-// 種族12 × 2 + 職業16 × 2 = 56スキル
+// 種族16 × 2 + 職業20 × 2 = 72スキル
 // v0.8.70: 条件付き効果で完全実装
 
 import { Stats, Effect } from '../types';
@@ -232,6 +232,80 @@ export const raceLvSkills: Record<string, LvSkill> = {
     effects: [
       { type: 'lowHpDamageBonus', value: 80 },
       { type: 'lowHpThreshold', value: 50 },
+    ],
+  },
+
+  // ジェナシ - 元素特化
+  genasi_lv3: {
+    id: 'genasi_lv3',
+    name: '元素の波動',
+    description: '属性攻撃+30%',
+    effects: [{ type: 'damageBonus', value: 30 }],
+  },
+  genasi_lv5: {
+    id: 'genasi_lv5',
+    name: '元素の極み',
+    description: '物理+40%、魔法+40%',
+    effects: [
+      { type: 'physicalBonus', value: 40 },
+      { type: 'magicBonus', value: 40 },
+    ],
+  },
+
+  // アアシマール - 支援特化
+  aasimar_lv3: {
+    id: 'aasimar_lv3',
+    name: '聖なる守護',
+    description: '味方全体の被ダメ-10%',
+    effects: [{ type: 'allyDefense', value: 10 }],
+  },
+  aasimar_lv5: {
+    id: 'aasimar_lv5',
+    name: '天使の奇跡',
+    description: '回復+50%、味方HP+5/ターン',
+    effects: [
+      { type: 'healBonus', value: 50 },
+      { type: 'allyHpRegen', value: 5 },
+    ],
+  },
+
+  // ティーフリング - 攻撃・デバフ特化
+  tiefling_lv3: {
+    id: 'tiefling_lv3',
+    name: '呪いの刻印',
+    description: 'デバフ成功率+40%、デバフ時追撃30%',
+    effects: [
+      { type: 'debuffBonus', value: 40 },
+      { type: 'debuffFollowUp', value: 30 },
+    ],
+  },
+  tiefling_lv5: {
+    id: 'tiefling_lv5',
+    name: '地獄の契約',
+    description: '与ダメ+60%、被ダメ+30%',
+    effects: [
+      { type: 'damageBonus', value: 60 },
+      { type: 'damageReduction', value: -30 },
+    ],
+  },
+
+  // ダンピール - HP吸収特化
+  dhampir_lv3: {
+    id: 'dhampir_lv3',
+    name: '血の渇望',
+    description: 'HP吸収+30%、クリ+15%',
+    effects: [
+      { type: 'hpSteal', value: 30 },
+      { type: 'critBonus', value: 15 },
+    ],
+  },
+  dhampir_lv5: {
+    id: 'dhampir_lv5',
+    name: '真祖の力',
+    description: 'HP吸収+50%、HP0で50%耐え',
+    effects: [
+      { type: 'hpSteal', value: 50 },
+      { type: 'deathResist', value: 50 },
     ],
   },
 };
@@ -535,6 +609,88 @@ export const jobLvSkills: Record<string, LvSkill> = {
     effects: [
       { type: 'allyAtkBonus', value: 40 },
       { type: 'allyDefense', value: 30 },
+    ],
+  },
+
+  // 魔法剣士 - 両刀特化
+  spellblade_lv3: {
+    id: 'spellblade_lv3',
+    name: '魔法剣の奥義',
+    description: '物理+25%、魔法+25%',
+    effects: [
+      { type: 'physicalBonus', value: 25 },
+      { type: 'magicBonus', value: 25 },
+    ],
+  },
+  spellblade_lv5: {
+    id: 'spellblade_lv5',
+    name: '剣魔融合・極',
+    description: 'クリ時追撃+50%、味方MAG+20%',
+    effects: [
+      { type: 'critFollowUp', value: 50 },
+      { type: 'allyMagBonus', value: 20 },
+    ],
+  },
+
+  // 戦闘魔導士 - 近接魔法特化
+  battlemage_lv3: {
+    id: 'battlemage_lv3',
+    name: '魔導戦術',
+    description: '物理+20%、魔法+30%、被ダメ-10%',
+    effects: [
+      { type: 'physicalBonus', value: 20 },
+      { type: 'magicBonus', value: 30 },
+      { type: 'damageReduction', value: 10 },
+    ],
+  },
+  battlemage_lv5: {
+    id: 'battlemage_lv5',
+    name: '戦闘魔導の極み',
+    description: '味方物理攻撃後40%追撃',
+    effects: [{ type: 'physicalFollowUp', value: 40 }],
+  },
+
+  // 符術士 - 支援・防御特化
+  runesmith_lv3: {
+    id: 'runesmith_lv3',
+    name: '守護のルーン',
+    description: '味方被ダメ-15%、レア+20%',
+    effects: [
+      { type: 'allyDefense', value: 15 },
+      { type: 'rareDropBonus', value: 20 },
+    ],
+  },
+  runesmith_lv5: {
+    id: 'runesmith_lv5',
+    name: '大紋章の極み',
+    description: '物理+35%、魔法+35%、探索-20%',
+    effects: [
+      { type: 'physicalBonus', value: 35 },
+      { type: 'magicBonus', value: 35 },
+      { type: 'explorationSpeedBonus', value: 20 },
+    ],
+  },
+
+  // 赤魔道士 - 万能特化
+  redmage_lv3: {
+    id: 'redmage_lv3',
+    name: '赤魔法の応用',
+    description: '物理+15%、魔法+15%、回復+15%',
+    effects: [
+      { type: 'physicalBonus', value: 15 },
+      { type: 'magicBonus', value: 15 },
+      { type: 'healBonus', value: 15 },
+    ],
+  },
+  redmage_lv5: {
+    id: 'redmage_lv5',
+    name: '万能の極み',
+    description: '物理+30%、魔法+30%、回復+30%、ドロップ+30%',
+    effects: [
+      { type: 'physicalBonus', value: 30 },
+      { type: 'magicBonus', value: 30 },
+      { type: 'healBonus', value: 30 },
+      { type: 'dropBonus', value: 30 },
     ],
   },
 };
