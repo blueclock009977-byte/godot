@@ -616,34 +616,58 @@ export const useGameStore = create<GameStore>()(
       
       // 未受取のマルチ結果を自動受取
       claimAllPendingResults: async () => {
-        const { username, addItem, addEquipment, addCoins, addHistory, syncToServer } = get();
+        const username = get().username;
         if (!username) return 0;
         
         const { claimAllPendingMultiResults } = await import('@/lib/firebase');
         const { dungeons } = await import('@/lib/data/dungeons');
-        const { applyCoinBonus } = await import('@/lib/drop/dropBonus');
         
         const results = await claimAllPendingMultiResults(username);
+        if (results.length === 0) return 0;
+        
+        // アイテム/装備/コインを集計してから一括でset()
+        const itemsToAdd: Record<string, number> = {};
+        const equipmentsToAdd: Record<string, number> = {};
+        let coinsToAdd = 0;
         
         for (const result of results) {
-          // アイテム追加
+          // アイテム集計
           if (result.itemId) {
-            addItem(result.itemId);
+            itemsToAdd[result.itemId] = (itemsToAdd[result.itemId] || 0) + 1;
           }
-          // 装備追加
+          // 装備集計
           if (result.equipmentId) {
-            addEquipment(result.equipmentId);
+            equipmentsToAdd[result.equipmentId] = (equipmentsToAdd[result.equipmentId] || 0) + 1;
           }
-          // コイン追加（勝利時のみ）
+          // コイン集計（勝利時のみ）
           if (result.victory) {
             const dungeon = dungeons[result.dungeonId as keyof typeof dungeons];
             if (dungeon?.coinReward) {
-              // TODO: キャラのボーナスは適用できない（キャラ情報がない）
-              addCoins(dungeon.coinReward);
+              coinsToAdd += dungeon.coinReward;
             }
           }
-          // 履歴追加
-          await addHistory({
+        }
+        
+        // 一括でstateを更新
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            ...Object.fromEntries(
+              Object.entries(itemsToAdd).map(([id, count]) => [id, (state.inventory[id] || 0) + count])
+            ),
+          },
+          equipments: {
+            ...state.equipments,
+            ...Object.fromEntries(
+              Object.entries(equipmentsToAdd).map(([id, count]) => [id, (state.equipments[id] || 0) + count])
+            ),
+          },
+          coins: state.coins + coinsToAdd,
+        }));
+        
+        // 履歴を追加
+        for (const result of results) {
+          await get().addHistory({
             type: 'multi',
             dungeonId: result.dungeonId,
             victory: result.victory,
@@ -657,9 +681,8 @@ export const useGameStore = create<GameStore>()(
           });
         }
         
-        if (results.length > 0) {
-          await syncToServer();
-        }
+        // サーバーに保存
+        await get().syncToServer();
         
         return results.length;
       },
