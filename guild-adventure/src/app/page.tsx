@@ -108,7 +108,7 @@ function LoginScreen() {
         </div>
         
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.6 Beta</p>
+          <p>v0.9.63 Beta</p>
         </div>
       </div>
     </main>
@@ -511,7 +511,7 @@ function GameScreen() {
         </div>
         
         <div className="mt-8 text-center text-slate-500 text-xs">
-          <p>v0.8.6 Beta</p>
+          <p>v0.9.63 Beta</p>
         </div>
       </div>
     </main>

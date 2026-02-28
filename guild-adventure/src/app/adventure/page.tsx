@@ -19,6 +19,7 @@ export default function AdventurePage() {
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [earnedCoinReward, setEarnedCoinReward] = useState<number | null>(null);
   const isCompleteRef = useRef(false); // 二重実行防止用
   const logContainerRef = useRef<HTMLDivElement>(null);
   
@@ -180,6 +181,7 @@ export default function AdventurePage() {
                 const { applyCoinBonus } = require('@/lib/drop/dropBonus');
                 const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter(Boolean);
                 earnedCoinReward = applyCoinBonus(baseCoinReward, allChars);
+                setEarnedCoinReward(earnedCoinReward);
                 addCoins(earnedCoinReward);
                 if (earnedCoinReward > baseCoinReward) {
                   setDisplayedLogs(prev => [...prev, `🪙 【コイン】${earnedCoinReward}枚獲得！（ボーナス込み）`]);
@@ -300,7 +302,7 @@ export default function AdventurePage() {
             </div>
             {currentAdventure.result.victory && (
               <div className="text-amber-400 text-lg mb-4">
-                🪙 {dungeon.coinReward}コイン獲得！
+                🪙 {earnedCoinReward ?? dungeon.coinReward}コイン獲得！{earnedCoinReward && earnedCoinReward > dungeon.coinReward && "（ボーナス込み）"}
               </div>
             )}
             {/* 複数アイテムドロップ表示 */}
