@@ -521,7 +521,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           )}
           
           {/* マスタリー2 */}
-          {raceData.masterySkill2 && character.raceMastery && (
+          {raceData.masterySkill2 && (
             <>
               <div className="border-t border-slate-600 my-3"></div>
               <div className="mb-3">
@@ -532,6 +532,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               </div>
               {character.raceMastery2 ? (
                 <div className="text-green-400 text-sm">✓ 解放済み</div>
+              ) : !character.raceMastery ? (
+                <div className="text-xs text-slate-500">※マスタリー1を先に解放</div>
               ) : (
                 <div>
                   <div className="text-xs text-slate-400 mb-2">
@@ -588,7 +590,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           )}
           
           {/* マスタリー2 */}
-          {jobData.masterySkill2 && character.jobMastery && (
+          {jobData.masterySkill2 && (
             <>
               <div className="border-t border-slate-600 my-3"></div>
               <div className="mb-3">
@@ -599,6 +601,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               </div>
               {character.jobMastery2 ? (
                 <div className="text-green-400 text-sm">✓ 解放済み</div>
+              ) : !character.jobMastery ? (
+                <div className="text-xs text-slate-500">※マスタリー1を先に解放</div>
               ) : (
                 <div>
                   <div className="text-xs text-slate-400 mb-2">
