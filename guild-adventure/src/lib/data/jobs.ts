@@ -316,7 +316,7 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'spellblade_slash', name: '魔法剣・閃', description: '魔力を込めた斬撃（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.8, mpCost: 12 },
       { id: 'enchant_blade', name: 'エンチャントブレード', description: '自身の攻撃力と魔力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 30, duration: 3 } },
-      { id: 'arcane_burst', name: 'アーケインバースト', description: '全体に魔法剣の衝撃波', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 22 },
+      { id: 'arcane_burst', name: 'アーケインバースト', description: '全体に魔法剣の衝撃波（ATK+MAG参照）', type: 'hybrid', target: 'all', multiplier: 1.3, mpCost: 22 },
     ],
     masterySkill: { name: '魔法剣・極', description: '物理+魔法両方+30%', type: 'passive', effects: [{ type: 'physicalBonus', value: 30 }, { type: 'magicBonus', value: 30 }] },
     masterySkill2: { name: '魔力共鳴', description: '味方全体のMAG+15%', type: 'passive', effects: [{ type: 'allyMagBonus', value: 15 }] },
@@ -335,7 +335,7 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'magic_slash', name: 'マジックスラッシュ', description: '魔力を込めた斬撃（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.6, mpCost: 10 },
       { id: 'arcane_shield', name: 'アーケインシールド', description: '自身の防御力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'defUp', value: 40, duration: 3 } },
-      { id: 'battle_magic', name: 'バトルマジック', description: '全体に魔法攻撃', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 20 },
+      { id: 'battle_magic', name: 'バトルマジック', description: '全体に魔法攻撃（ATK+MAG参照）', type: 'hybrid', target: 'all', multiplier: 1.4, mpCost: 20 },
     ],
     masterySkill: { name: '魔導騎士', description: '物理・魔法+25%、被ダメ-15%', type: 'passive', effects: [{ type: 'physicalBonus', value: 25 }, { type: 'magicBonus', value: 25 }, { type: 'damageReduction', value: 15 }] },
     masterySkill2: { name: '戦場の魔導', description: '味方の物理攻撃後30%で追撃', type: 'passive', effects: [{ type: 'physicalFollowUp', value: 30 }] },
@@ -354,7 +354,7 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'rune_blade', name: 'ルーンブレード', description: 'ルーンの力で斬る（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.7, mpCost: 11 },
       { id: 'protect_rune', name: '守護のルーン', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 18, effect: { type: 'defUp', value: 25, duration: 3 } },
-      { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
+      { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ（ATK+MAG参照）', type: 'hybrid', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
     ],
     masterySkill: { name: '大紋章', description: '味方全体の被ダメ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
     masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-10%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 10 }] },

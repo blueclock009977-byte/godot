@@ -634,6 +634,7 @@ function calculateHybridDamage(
   attacker: ExtendedBattleUnit, 
   defender: ExtendedBattleUnit, 
   multiplier: number,
+  skillElement?: ElementType,
   allyCount: number = 1
 ): number {
   const atkEffects = attacker.passiveEffects;
@@ -649,6 +650,9 @@ function calculateHybridDamage(
   // physicalBonusとmagicBonusの平均を適用
   const avgBonus = (atkEffects.physicalBonus + atkEffects.magicBonus) / 2;
   damage *= percentBonus(avgBonus);
+  
+  // 属性相性
+  damage *= getElementMultiplier(skillElement, defender.elementModifier);
   
   // 防御（物理と魔法の平均耐性）
   const physResist = defEffects.physicalResist;
@@ -991,7 +995,7 @@ function processTurn(
               damage = calculateMagicDamage(unit, target, skill.multiplier, skill.element, aliveAlliesNow.length);
             } else if (isHybrid) {
               // ハイブリッドスキル: ATK+MAG両方参照
-              damage = calculateHybridDamage(unit, target, skill.multiplier, aliveAlliesNow.length);
+              damage = calculateHybridDamage(unit, target, skill.multiplier, skill.element, aliveAlliesNow.length);
             } else {
               // 物理スキル: 命中判定は内部で行う
               const result = calculatePhysicalDamage(unit, target, aliveAlliesNow.length);
