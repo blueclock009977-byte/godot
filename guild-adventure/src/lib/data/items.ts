@@ -89,10 +89,10 @@ export function getDropRate(dungeonId: string): number {
     forest: 2,         // 8 / 4
     cave: 12.5,        // 50 / 4
     sea: 25,           // 100 / 4
-    desert: 25,
-    volcano: 25,
-    snowfield: 25,
-    temple: 25,
+    desert: 28,        // +3%
+    volcano: 31,       // +6%
+    snowfield: 34,     // +9%
+    temple: 37,        // +12%
   };
   return rates[dungeonId] || 0;
 }
