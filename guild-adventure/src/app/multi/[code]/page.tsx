@@ -248,7 +248,13 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         
         // success=false は既に処理済み（別端末やリロードで再実行された場合）
         if (!result.success) {
-          // 既に処理済みでもmultiAdventureをクリア（古いデータが残らないように）
+          // 既に処理済みでもルームからドロップ情報を取得して表示
+          if (room?.playerDrops?.[username]) {
+            setMyDrop(room.playerDrops[username]);
+          }
+          if (room?.playerEquipmentDrops?.[username]) {
+            setMyEquipment(room.playerEquipmentDrops[username]);
+          }
           await clearMultiAdventure(username);
           setCurrentMultiRoom(null);
           setDropClaimed(true);
