@@ -290,6 +290,12 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     router.push('/multi');
   };
   
+  // ホームに戻る（退出せずに）
+  const handleGoHome = () => {
+    // currentMultiRoomは維持したまま（後で戻れるように）
+    router.push('/');
+  };
+  
   // ルームが削除された場合
   if (roomDeleted) {
     return (
@@ -360,6 +366,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         onToggleReady={toggleReady}
         onStartBattle={startBattle}
         onLeave={handleLeave}
+        onGoHome={handleGoHome}
         onShowInviteModal={() => setShowInviteModal(true)}
         onSaveParty={handleSaveParty}
         onLoadParty={handleLoadParty}

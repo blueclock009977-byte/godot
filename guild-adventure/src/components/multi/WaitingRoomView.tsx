@@ -23,6 +23,7 @@ interface WaitingRoomViewProps {
   onToggleReady: () => void;
   onStartBattle: () => void;
   onLeave: () => void;
+  onGoHome: () => void;
   onShowInviteModal: () => void;
   onSaveParty: () => void;
   onLoadParty: () => void;
@@ -46,6 +47,7 @@ export default function WaitingRoomView({
   onToggleReady,
   onStartBattle,
   onLeave,
+  onGoHome,
   onShowInviteModal,
   onSaveParty,
   onLoadParty,
@@ -77,6 +79,9 @@ export default function WaitingRoomView({
               className="text-purple-400 hover:text-purple-300 text-sm"
             >
               👥 招待
+            </button>
+            <button onClick={onGoHome} className="text-blue-400 hover:text-blue-300 text-sm">
+              🏠
             </button>
             <button onClick={onLeave} className="text-red-400 hover:text-red-300 text-sm">
               退出
