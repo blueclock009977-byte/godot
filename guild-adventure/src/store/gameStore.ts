@@ -566,10 +566,19 @@ export const useGameStore = create<GameStore>()(
             const savedRoomCode = await getCurrentMultiRoomOnServer(storedUsername);
             if (savedRoomCode) {
               const room = await getRoom(savedRoomCode);
-              if (room && (room.status === 'battle' || room.status === 'waiting')) {
-                set({ currentMultiRoom: savedRoomCode });
+              if (room) {
+                // waiting/battle → 復元
+                // done で未受取 → 復元（結果画面を表示できるように）
+                const isUnclaimed = room.status === 'done' && !room.playerClaimed?.[storedUsername];
+                if (room.status === 'battle' || room.status === 'waiting' || isUnclaimed) {
+                  set({ currentMultiRoom: savedRoomCode });
+                } else {
+                  // 受取済み or ルーム終了 → クリア
+                  const { setCurrentMultiRoomOnServer } = await import('@/lib/firebase');
+                  setCurrentMultiRoomOnServer(storedUsername, null);
+                }
               } else {
-                // ルームが存在しないか終了済みならクリア
+                // ルームが存在しない → クリア
                 const { setCurrentMultiRoomOnServer } = await import('@/lib/firebase');
                 setCurrentMultiRoomOnServer(storedUsername, null);
               }
