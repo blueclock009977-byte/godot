@@ -220,7 +220,7 @@ export const jobs: Record<string, JobData> = {
     passives: [
       { name: '野生の勘', description: '先制率と回避率が上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }, { type: 'evasionBonus', value: 15 }] },
       { name: '自然治癒', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 5 }] },
-      { name: '探索術', description: 'ドロップ率+20%、探索時間-10%', effects: [{ type: 'dropBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 10 }] },
+      { name: '探索術', description: 'ドロップ率+20%、探索時間-5%', effects: [{ type: 'dropBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 5 }] },
     ],
     skills: [
       { id: 'snipe', name: '狙撃', description: '高威力の一撃', type: 'attack', target: 'single', multiplier: 2.0, mpCost: 14 },
@@ -228,7 +228,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'natures_blessing', name: '自然の恵み', description: '味方全体を少し回復', type: 'heal', target: 'allAllies', multiplier: 0.6, mpCost: 18 },
     ],
     masterySkill: { name: '自然の化身', description: '毎ターンHP/MP大幅回復', type: 'passive', effects: [{ type: 'hpRegen', value: 15 }, { type: 'mpRegen', value: 10 }] },
-    masterySkill2: { name: '大地の恵み', description: '探索時間-30%、ドロップ+25%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 30 }, { type: 'dropBonus', value: 25 }] },
+    masterySkill2: { name: '大地の恵み', description: '探索時間-15%、ドロップ+25%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 15 }, { type: 'dropBonus', value: 25 }] },
   },
   samurai: {
     id: 'samurai',
@@ -357,7 +357,7 @@ export const jobs: Record<string, JobData> = {
       { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
     ],
     masterySkill: { name: '大紋章', description: '味方全体の被ダメ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
-    masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-15%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 15 }] },
+    masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-8%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 8 }] },
   },
 
   redmage: {

@@ -663,11 +663,11 @@ export const jobLvSkills: Record<string, LvSkill> = {
   runesmith_lv5: {
     id: 'runesmith_lv5',
     name: '大紋章の極み',
-    description: '物理+35%、魔法+35%、探索-20%',
+    description: '物理+35%、魔法+35%、探索-10%',
     effects: [
       { type: 'physicalBonus', value: 35 },
       { type: 'magicBonus', value: 35 },
-      { type: 'explorationSpeedBonus', value: 20 },
+      { type: 'explorationSpeedBonus', value: 10 },
     ],
   },
 

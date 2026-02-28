@@ -123,7 +123,7 @@ export const races: Record<string, RaceData> = {
       { id: 'fairy_heal', name: '癒しの光', description: '味方一人のHPを回復', type: 'heal', target: 'ally', multiplier: 1.3, mpCost: 12 },
     ],
     masterySkill: { name: '妖精の祝福', description: '味方への回復量+50%', type: 'passive', effects: [{ type: 'healBonus', value: 50 }] },
-    masterySkill2: { name: '妖精の導き', description: '探索時間-40%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 40 }] },
+    masterySkill2: { name: '妖精の導き', description: '探索時間-20%', type: 'passive', effects: [{ type: 'explorationSpeedBonus', value: 20 }] },
   },
   undead: {
     id: 'undead',
@@ -153,7 +153,7 @@ export const races: Record<string, RaceData> = {
       { name: '追撃', description: '攻撃回数+1', effects: [{ type: 'bonusHits', value: 1 }] },
       { name: '急所狙い', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 20 }] },
-      { name: '近道発見', description: '探索時間が短縮', effects: [{ type: 'explorationSpeedBonus', value: 15 }] },
+      { name: '近道発見', description: '探索時間が短縮', effects: [{ type: 'explorationSpeedBonus', value: 8 }] },
     ],
     skills: [
       { id: 'ambush', name: '奇襲', description: '先制で高ダメージの一撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 10 },
