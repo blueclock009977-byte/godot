@@ -5,62 +5,149 @@ import { elementNames } from '@/lib/utils';
  * パッシブ効果の表示用フォーマット
  */
 export function formatEffect(effect: { type: string; value: number }): string {
-  const effectMap: Record<string, string> = {
-    critBonus: 'クリ率',
-    evasionBonus: '回避',
-    damageBonus: 'ダメージ',
-    dropBonus: 'ドロップ率',
-    magicBonus: '魔法ダメ',
-    physicalBonus: '物理ダメ',
-    firstStrikeBonus: '先制率',
-    mpRegen: 'MP回復/T',
-    hpRegen: 'HP回復/T',
-    damageReduction: '被ダメ',
-    poisonResist: '毒耐性',
-    statusResist: '状態異常耐性',
-    healBonus: '回復量',
-    healReceived: '被回復',
-    hpSteal: 'HP吸収',
-    critDamage: 'クリダメ',
-    allyDefense: '味方被ダメ',
-    allyAtkBonus: '味方ATK',
-    intimidate: '敵ATK',
-    mpReduction: 'MP消費',
-    accuracyBonus: '命中',
-    cover: '庇う確率',
-    counterRate: '反撃確率',
-    perfectEvasion: '完全回避',
-    allStats: '全ステ',
-    lowHpBonus: 'HP30%以下ATK',
-    allyCountBonus: '味方1人につきダメ',
-    followUp: '追撃確率',
-    revive: '蘇生HP',
-    autoRevive: '自動蘇生回数',
-    doublecast: '2回発動',
-    attackStack: '攻撃毎ATK累積',
-    debuffBonus: 'デバフ成功率',
-    summonUndead: '召喚確率',
-  };
+  const { type, value } = effect;
   
   // 系統特攻/耐性
-  if (effect.type.startsWith('speciesKiller_')) {
-    const species = effect.type.replace('speciesKiller_', '');
-    const speciesMap: Record<string, string> = {
-      humanoid: '人型', beast: '獣', undead: '不死', demon: '悪魔', dragon: '竜',
-    };
-    return `${speciesMap[species] || species}特攻+${effect.value}%`;
+  const speciesMap: Record<string, string> = {
+    humanoid: '人型', beast: '獣', undead: '不死', demon: '悪魔', dragon: '竜',
+  };
+  if (type.startsWith('speciesKiller_')) {
+    const species = type.replace('speciesKiller_', '');
+    return `${speciesMap[species] || species}特攻+${value}%`;
   }
-  if (effect.type.startsWith('speciesResist_')) {
-    const species = effect.type.replace('speciesResist_', '');
-    const speciesMap: Record<string, string> = {
-      humanoid: '人型', beast: '獣', undead: '不死', demon: '悪魔', dragon: '竜',
-    };
-    return `${speciesMap[species] || species}耐性-${effect.value}%被ダメ`;
+  if (type.startsWith('speciesResist_')) {
+    const species = type.replace('speciesResist_', '');
+    return `${speciesMap[species] || species}耐性-${value}%`;
   }
   
-  const name = effectMap[effect.type] || effect.type;
-  const sign = effect.value >= 0 ? '+' : '';
-  return `${name}${sign}${effect.value}%`;
+  // 属性耐性/弱点
+  const elementMap: Record<string, string> = {
+    fire: '🔥火', water: '💧水', thunder: '⚡雷', ice: '❄️氷',
+    earth: '🪨土', wind: '🌪️風', light: '✨光', dark: '🌑闇',
+  };
+  if (type.endsWith('Resist') && elementMap[type.replace('Resist', '')]) {
+    const elem = type.replace('Resist', '');
+    return value >= 0 
+      ? `${elementMap[elem]}耐性+${value}%`
+      : `${elementMap[elem]}弱点${value}%`;
+  }
+  if (type.endsWith('Bonus') && elementMap[type.replace('Bonus', '')]) {
+    const elem = type.replace('Bonus', '');
+    return `${elementMap[elem]}攻撃+${value}%`;
+  }
+  
+  // その他全効果
+  const effectMap: Record<string, { name: string; suffix?: string; invert?: boolean }> = {
+    // 基本ダメージ
+    damageBonus: { name: 'ダメージ' },
+    damageReduction: { name: '被ダメ', invert: true },
+    physicalBonus: { name: '物理ダメ' },
+    magicBonus: { name: '魔法ダメ' },
+    physicalResist: { name: '物理耐性' },
+    magicResist: { name: '魔法耐性' },
+    // クリティカル
+    critBonus: { name: 'クリ率' },
+    critDamage: { name: 'クリダメ' },
+    // 回避・命中
+    evasionBonus: { name: '回避' },
+    accuracyBonus: { name: '命中' },
+    perfectEvasion: { name: '完全回避' },
+    backlineEvasion: { name: '後衛回避' },
+    // 先制・追撃
+    firstStrikeBonus: { name: '先制率' },
+    followUp: { name: '追撃確率' },
+    // 回復
+    healBonus: { name: '回復量' },
+    healReceived: { name: '被回復' },
+    hpRegen: { name: 'HP/T', suffix: '' },
+    mpRegen: { name: 'MP/T', suffix: '' },
+    hpSteal: { name: 'HP吸収' },
+    // 状態異常
+    statusResist: { name: '状態耐性' },
+    poisonResist: { name: '毒耐性' },
+    stunResist: { name: 'スタン耐性' },
+    // MP関連
+    mpReduction: { name: 'MP消費', invert: true },
+    mpOnKill: { name: '撃破時MP', suffix: '' },
+    // 味方支援
+    allyDefense: { name: '味方被ダメ', invert: true },
+    allyAtkBonus: { name: '味方ATK' },
+    allyMagBonus: { name: '味方魔法' },
+    allyMpReduction: { name: '味方MP消費', invert: true },
+    allyHpRegen: { name: '味方HP/T', suffix: '' },
+    allyHitHeal: { name: '味方被弾時HP', suffix: '' },
+    allyMagicHitMp: { name: '味方魔法被弾MP', suffix: '' },
+    allyCountBonus: { name: '味方1人につき' },
+    // 敵弱体
+    intimidate: { name: '敵ATK', invert: true },
+    debuffBonus: { name: 'デバフ成功率' },
+    debuffDuration: { name: 'デバフ延長', suffix: 'T' },
+    // 反撃・庇う
+    cover: { name: '庇う確率' },
+    counterRate: { name: '反撃確率' },
+    counterDamageBonus: { name: '反撃ダメ' },
+    // 特殊攻撃
+    doubleAttack: { name: '2回攻撃' },
+    doublecast: { name: '魔法2回発動' },
+    attackStack: { name: '攻撃毎ATK累積' },
+    atkStackOnKill: { name: '撃破時ATK累積' },
+    // ヒット数・連撃
+    bonusHits: { name: '追加ヒット', suffix: '回' },
+    fixedHits: { name: '固定ヒット', suffix: '回' },
+    noDecayHits: { name: '減衰なし', suffix: '回' },
+    decayReduction: { name: '減衰緩和' },
+    singleHitBonus: { name: '単発ボーナス' },
+    // 劣化
+    degradationResist: { name: '劣化耐性' },
+    degradationBonus: { name: '劣化付与' },
+    // 条件付き効果
+    lowHpBonus: { name: 'HP30%↓ATK' },
+    lowHpDamageBonus: { name: 'HP↓ダメ' },
+    lowHpDefense: { name: 'HP↓被ダメ', invert: true },
+    lowHpBonusHits: { name: 'HP↓追加ヒット', suffix: '回' },
+    fullHpAtkBonus: { name: 'HP満タンATK' },
+    frontlineBonus: { name: '前衛3↑ATK' },
+    // クリティカル条件
+    critAfterEvade: { name: '回避後クリ確定', suffix: '' },
+    critOnFirstStrike: { name: '先制クリ確定', suffix: '' },
+    firstHitCrit: { name: '初撃クリ確定', suffix: '' },
+    extraAttackOnCrit: { name: 'クリ追撃' },
+    critFollowUp: { name: 'クリ追撃ダメ' },
+    // 追撃系
+    physicalFollowUp: { name: '物理追撃確率' },
+    debuffFollowUp: { name: 'デバフ追撃確率' },
+    // 蘇生・耐久
+    revive: { name: '蘇生HP', suffix: '' },
+    autoRevive: { name: '自動蘇生', suffix: '回' },
+    surviveLethal: { name: '致死耐え', suffix: '回' },
+    deathResist: { name: 'HP0耐え確率' },
+    // 撃破ボーナス
+    hpOnKill: { name: '撃破時HP', suffix: '' },
+    // ステータス
+    allStats: { name: '全ステ' },
+    ignoreDefense: { name: '防御無視' },
+    // 探索・ドロップ
+    dropBonus: { name: 'ドロップ率' },
+    rareDropBonus: { name: 'レア装備率' },
+    doubleDropRoll: { name: '2回抽選確率' },
+    explorationSpeedBonus: { name: '探索時間', invert: true },
+    coinBonus: { name: 'コイン' },
+    // 召喚
+    summonUndead: { name: '召喚確率' },
+    fullRegen: { name: '全回復確率' },
+  };
+  
+  const config = effectMap[type];
+  if (config) {
+    const suffix = config.suffix !== undefined ? config.suffix : '%';
+    const displayValue = config.invert ? -value : value;
+    const sign = displayValue >= 0 ? '+' : '';
+    return `${config.name}${sign}${displayValue}${suffix}`;
+  }
+  
+  // 未定義のエフェクト（フォールバック）
+  const sign = value >= 0 ? '+' : '';
+  return `${type}${sign}${value}`;
 }
 
 /**
