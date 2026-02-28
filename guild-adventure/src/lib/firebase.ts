@@ -1,4 +1,5 @@
 // Firebase Realtime Database REST API
+import { Character, Party } from "@/lib/types";
 
 const FIREBASE_URL = 'https://dicedeckrandomtcg-default-rtdb.firebaseio.com';
 
@@ -1258,5 +1259,218 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
   } catch (e) {
     console.error('Failed to claim pending multi results:', e);
     return [];
+  }
+}
+
+// ========================================
+// Server-First API（サーバーを更新してから結果を返す）
+// ========================================
+
+// キャラクターを追加
+export async function addCharacterToServer(username: string, character: Character): Promise<Character[] | null> {
+  try {
+    // 現在のキャラリストを取得
+    const userData = await getUserData(username);
+    const characters = userData?.characters || [];
+    
+    // 新しいキャラを追加
+    const newCharacters = [...characters, character];
+    
+    // サーバーに保存
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/characters.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newCharacters),
+    });
+    
+    if (!res.ok) return null;
+    return newCharacters;
+  } catch (e) {
+    console.error('addCharacterToServer failed:', e);
+    return null;
+  }
+}
+
+// キャラクターを削除
+export async function removeCharacterFromServer(username: string, characterId: string): Promise<{ characters: Character[], party: Party } | null> {
+  try {
+    const userData = await getUserData(username);
+    if (!userData) return null;
+    
+    const characters = (userData.characters || []).filter((c: Character) => c.id !== characterId);
+    const party = {
+      front: (userData.party?.front || []).map((c: Character | null) => c?.id === characterId ? null : c),
+      back: (userData.party?.back || []).map((c: Character | null) => c?.id === characterId ? null : c),
+    };
+    
+    // サーバーに保存
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/characters.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(characters),
+    });
+    await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/party.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(party),
+    });
+    
+    return { characters, party };
+  } catch (e) {
+    console.error('removeCharacterFromServer failed:', e);
+    return null;
+  }
+}
+
+// コインを追加
+export async function addCoinsToServer(username: string, amount: number): Promise<number | null> {
+  try {
+    const userData = await getUserData(username);
+    const newCoins = (userData?.coins || 0) + amount;
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/coins.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newCoins),
+    });
+    
+    if (!res.ok) return null;
+    return newCoins;
+  } catch (e) {
+    console.error('addCoinsToServer failed:', e);
+    return null;
+  }
+}
+
+// アイテムを追加
+export async function addItemToServer(username: string, itemId: string, count: number = 1): Promise<Record<string, number> | null> {
+  try {
+    const userData = await getUserData(username);
+    const inventory = userData?.inventory || {};
+    inventory[itemId] = (inventory[itemId] || 0) + count;
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/inventory.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inventory),
+    });
+    
+    if (!res.ok) return null;
+    return inventory;
+  } catch (e) {
+    console.error('addItemToServer failed:', e);
+    return null;
+  }
+}
+
+// アイテムを消費
+export async function useItemOnServer(username: string, itemId: string, count: number = 1): Promise<Record<string, number> | null> {
+  try {
+    const userData = await getUserData(username);
+    const inventory = userData?.inventory || {};
+    
+    if ((inventory[itemId] || 0) < count) return null; // 足りない
+    
+    inventory[itemId] = (inventory[itemId] || 0) - count;
+    if (inventory[itemId] <= 0) delete inventory[itemId];
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/inventory.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inventory),
+    });
+    
+    if (!res.ok) return null;
+    return inventory;
+  } catch (e) {
+    console.error('useItemOnServer failed:', e);
+    return null;
+  }
+}
+
+// 装備を追加
+export async function addEquipmentToServer(username: string, equipmentId: string, count: number = 1): Promise<Record<string, number> | null> {
+  try {
+    const userData = await getUserData(username);
+    const equipments = userData?.equipments || {};
+    equipments[equipmentId] = (equipments[equipmentId] || 0) + count;
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/equipments.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(equipments),
+    });
+    
+    if (!res.ok) return null;
+    return equipments;
+  } catch (e) {
+    console.error('addEquipmentToServer failed:', e);
+    return null;
+  }
+}
+
+// パーティを更新
+export async function updatePartyOnServer(username: string, party: Party): Promise<Party | null> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/party.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(party),
+    });
+    
+    if (!res.ok) return null;
+    return party;
+  } catch (e) {
+    console.error('updatePartyOnServer failed:', e);
+    return null;
+  }
+}
+
+// キャラクターを更新（装備変更、レベルアップなど）
+export async function updateCharacterOnServer(username: string, characterId: string, updates: Partial<Character>): Promise<Character[] | null> {
+  try {
+    const userData = await getUserData(username);
+    if (!userData) return null;
+    
+    const characters = (userData.characters || []).map((c: Character) => 
+      c.id === characterId ? { ...c, ...updates } : c
+    );
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/characters.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(characters),
+    });
+    
+    if (!res.ok) return null;
+    return characters;
+  } catch (e) {
+    console.error('updateCharacterOnServer failed:', e);
+    return null;
+  }
+}
+
+// 装備を消費
+export async function removeEquipmentFromServer(username: string, equipmentId: string, count: number = 1): Promise<Record<string, number> | null> {
+  try {
+    const userData = await getUserData(username);
+    const equipments = userData?.equipments || {};
+    
+    if ((equipments[equipmentId] || 0) < count) return null;
+    
+    equipments[equipmentId] = (equipments[equipmentId] || 0) - count;
+    if (equipments[equipmentId] <= 0) delete equipments[equipmentId];
+    
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/equipments.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(equipments),
+    });
+    
+    if (!res.ok) return null;
+    return equipments;
+  } catch (e) {
+    console.error('removeEquipmentFromServer failed:', e);
+    return null;
   }
 }

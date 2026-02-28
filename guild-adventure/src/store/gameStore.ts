@@ -36,6 +36,16 @@ import {
   clearMultiAdventure,
   getUserStatus,
   getRoom,
+  // Server-First API
+  addCharacterToServer,
+  removeCharacterFromServer,
+  addCoinsToServer,
+  addItemToServer,
+  useItemOnServer,
+  addEquipmentToServer,
+  updatePartyOnServer,
+  updateCharacterOnServer,
+  removeEquipmentFromServer,
 } from '@/lib/firebase';
 import { initialInventory } from '@/lib/data/items';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
@@ -81,14 +91,13 @@ function calculateStats(
 
 interface RestoreContext {
   username: string;
-  addItem: (itemId: string) => void;
+  addItem: (itemId: string) => Promise<void>;
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
-  syncToServer: () => Promise<void>;
   setCurrentMultiRoom: (code: string | null) => void;
 }
 
 async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean> {
-  const { username, addItem, addHistory, syncToServer, setCurrentMultiRoom } = ctx;
+  const { username, addItem, addHistory, setCurrentMultiRoom } = ctx;
   
   const multiAdventure = await getMultiAdventure(username);
   if (!multiAdventure || multiAdventure.claimed) return false;
@@ -122,8 +131,7 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
   let droppedItemId: string | undefined;
   if (claimResult.itemId) {
     droppedItemId = claimResult.itemId;
-    addItem(claimResult.itemId);
-    await syncToServer();
+    await addItem(claimResult.itemId);
   }
   
   // 履歴に追加
@@ -147,7 +155,7 @@ interface SoloRestoreResult {
 }
 
 async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id: string) => void): Promise<SoloRestoreResult> {
-  const { username, addItem, addHistory, syncToServer } = ctx;
+  const { username, addItem, addHistory } = ctx;
   
   const adventure = await getAdventureOnServer(username);
   if (!adventure) return { adventure: null };
@@ -172,13 +180,12 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
       if (claimResult.success) {
         if (claimResult.itemId) {
           droppedItemId = claimResult.itemId;
-          addItem(claimResult.itemId);
+          await addItem(claimResult.itemId);
         }
         if (claimResult.equipmentId) {
           droppedEquipmentId = claimResult.equipmentId;
-          addEquipment(claimResult.equipmentId);
+          await addEquipment(claimResult.equipmentId);
         }
-        await syncToServer();
       }
     }
     
@@ -272,8 +279,8 @@ interface GameStore {
   getLastMultiParty: (playerCount: 2 | 3) => { charId: string; position: 'front' | 'back' }[] | null;
   
   // 装備関連
-  addEquipment: (equipmentId: string) => void;
-  removeEquipment: (equipmentId: string, count?: number) => boolean;
+  addEquipment: (equipmentId: string) => Promise<void>;
+  removeEquipment: (equipmentId: string, count?: number) => Promise<boolean>;
   equipItem: (characterId: string, equipmentId: string) => Promise<void>;
   unequipItem: (characterId: string) => Promise<void>;
   getEquipmentCount: (equipmentId: string) => number;
@@ -290,7 +297,7 @@ interface GameStore {
     job: JobType,
     trait: TraitType,
     environment: EnvironmentType,
-  ) => Promise<Character>;
+  ) => Promise<Character | null>;
   deleteCharacter: (id: string) => Promise<number>;  // 返り値は回収コイン
   
   // パーティ管理
@@ -305,9 +312,9 @@ interface GameStore {
   restoreAdventure: () => Promise<void>;
   
   // アイテム管理
-  addItem: (itemId: string, count?: number) => void;
-  addCoins: (amount: number) => void;
-  useItem: (itemId: string, count?: number) => boolean;
+  addItem: (itemId: string, count?: number) => Promise<void>;
+  addCoins: (amount: number) => Promise<void>;
+  useItem: (itemId: string, count?: number) => Promise<boolean>;
   getItemCount: (itemId: string) => number;
   
   // マスタリー解放
@@ -321,8 +328,8 @@ interface GameStore {
   // 未受取のマルチ結果を自動受取
   claimAllPendingResults: () => Promise<number>;  // 返り値は受け取った件数
   
-  // サーバー同期
   syncToServer: () => Promise<void>;
+  // サーバー同期
 }
 
 export const useGameStore = create<GameStore>()(
@@ -459,35 +466,38 @@ export const useGameStore = create<GameStore>()(
         return playerCount === 2 ? lastMulti2Party : lastMulti3Party;
       },
       
-      // 装備アイテムを追加
-      addEquipment: (equipmentId: string) => {
-        set((state) => ({
-          equipments: {
-            ...state.equipments,
-            [equipmentId]: (state.equipments[equipmentId] || 0) + 1,
-          },
-          lastDroppedEquipment: equipmentId,
-        }));
+      // 装備アイテムを追加（Server-First）
+      addEquipment: async (equipmentId: string) => {
+        const { username } = get();
+        if (!username) return;
+        
+        const newEquipments = await addEquipmentToServer(username, equipmentId);
+        if (!newEquipments) {
+          console.error('[addEquipment] サーバー保存失敗');
+          return;
+        }
+        
+        set({ equipments: newEquipments, lastDroppedEquipment: equipmentId });
       },
       
-      // 装備アイテムを削除（売却用）
-      removeEquipment: (equipmentId: string, count: number = 1): boolean => {
-        const { equipments, characters } = get();
-        const owned = equipments[equipmentId] || 0;
+      // 装備アイテムを削除（Server-First、売却用）
+      removeEquipment: async (equipmentId: string, count: number = 1): Promise<boolean> => {
+        const { username, equipments, characters } = get();
+        if (!username) return false;
         
-        // 装備中のキャラ数を計算
+        const owned = equipments[equipmentId] || 0;
         const equippedCount = characters.filter(c => c.equipmentId === equipmentId).length;
         const available = owned - equippedCount;
         
-        // 空き（装備されてない）数が足りない
         if (available < count) return false;
         
-        set((state) => ({
-          equipments: {
-            ...state.equipments,
-            [equipmentId]: (state.equipments[equipmentId] || 0) - count,
-          },
-        }));
+        const newEquipments = await removeEquipmentFromServer(username, equipmentId, count);
+        if (!newEquipments) {
+          console.error('[removeEquipment] サーバー保存失敗');
+          return false;
+        }
+        
+        set({ equipments: newEquipments });
         return true;
       },
       
@@ -496,36 +506,40 @@ export const useGameStore = create<GameStore>()(
         return get().equipments[equipmentId] || 0;
       },
       
-      // キャラに装備を付ける
+      // キャラに装備を付ける（Server-First）
       equipItem: async (characterId: string, equipmentId: string) => {
-        const { characters, equipments, username, syncToServer } = get();
+        const { characters, equipments, username } = get();
+        if (!username) return;
         
         // 所持数チェック
         if ((equipments[equipmentId] || 0) <= 0) return;
         
-        // 既に装備中のキャラがいるかチェック（同じアイテムを複数人に付けない）
+        // 既に装備中のキャラがいるかチェック
         const equippedCount = characters.filter(c => c.equipmentId === equipmentId).length;
         if (equippedCount >= equipments[equipmentId]) return;
         
-        // キャラを更新
-        const newCharacters = characters.map(c => 
-          c.id === characterId ? { ...c, equipmentId } : c
-        );
+        // サーバーでキャラを更新
+        const newCharacters = await updateCharacterOnServer(username, characterId, { equipmentId });
+        if (!newCharacters) {
+          console.error('[equipItem] サーバー保存失敗');
+          return;
+        }
         
         set({ characters: newCharacters });
-        await syncToServer();
       },
       
-      // 装備を外す
+      // 装備を外す（Server-First）
       unequipItem: async (characterId: string) => {
-        const { characters, syncToServer } = get();
+        const { username } = get();
+        if (!username) return;
         
-        const newCharacters = characters.map(c => 
-          c.id === characterId ? { ...c, equipmentId: undefined } : c
-        );
+        const newCharacters = await updateCharacterOnServer(username, characterId, { equipmentId: undefined });
+        if (!newCharacters) {
+          console.error('[unequipItem] サーバー保存失敗');
+          return;
+        }
         
         set({ characters: newCharacters });
-        await syncToServer();
       },
 
       // ログアウト
@@ -729,8 +743,7 @@ export const useGameStore = create<GameStore>()(
         
         return results.length;
       },
-      
-      // サーバー同期
+  // サーバー同期
       syncToServer: async () => {
         const { username, characters, party, inventory, equipments, coins, lastMulti2Party, lastMulti3Party, _dataLoaded } = get();
         if (!username) return;
@@ -762,32 +775,47 @@ export const useGameStore = create<GameStore>()(
       },
       
       // アイテムを追加
-      addItem: (itemId: string, count: number = 1) => {
-        set((state) => ({
-          inventory: {
-            ...state.inventory,
-            [itemId]: (state.inventory[itemId] || 0) + count,
-          },
-          lastDroppedItem: itemId,
-        }));
+      addItem: async (itemId: string, count: number = 1) => {
+        const { username } = get();
+        if (!username) return;
+        
+        // サーバーに追加
+        const newInventory = await addItemToServer(username, itemId, count);
+        if (!newInventory) {
+          console.error('[addItem] サーバー保存失敗');
+          return;
+        }
+        
+        set({ inventory: newInventory, lastDroppedItem: itemId });
       },
       
       
-      // コインを追加
-      addCoins: (amount: number) => {
-        set((state) => ({ coins: state.coins + amount }));
+      // コインを追加（Server-First）
+      addCoins: async (amount: number) => {
+        const { username } = get();
+        if (!username) return;
+        
+        const newCoins = await addCoinsToServer(username, amount);
+        if (newCoins === null) {
+          console.error('[addCoins] サーバー保存失敗');
+          return;
+        }
+        
+        set({ coins: newCoins });
       },
-      // アイテムを消費
-      useItem: (itemId: string, count: number = 1): boolean => {
-        const { inventory } = get();
+      // アイテムを消費（Server-First）
+      useItem: async (itemId: string, count: number = 1): Promise<boolean> => {
+        const { username, inventory } = get();
+        if (!username) return false;
         if ((inventory[itemId] || 0) < count) return false;
         
-        set((state) => ({
-          inventory: {
-            ...state.inventory,
-            [itemId]: (state.inventory[itemId] || 0) - count,
-          },
-        }));
+        const newInventory = await useItemOnServer(username, itemId, count);
+        if (!newInventory) {
+          console.error('[useItem] サーバー保存失敗');
+          return false;
+        }
+        
+        set({ inventory: newInventory });
         return true;
       },
       
@@ -808,15 +836,17 @@ export const useGameStore = create<GameStore>()(
       
       
       // キャラクターレベルアップ
+      // レベルアップ（Server-First）
       levelUpCharacter: async (characterId: string): Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }> => {
-        const { characters, coins } = get();
+        const { username, characters, coins } = get();
+        if (!username) return { success: false };
+        
         const character = characters.find(c => c.id === characterId);
         if (!character) return { success: false };
         
         const currentLevel = character.level || 1;
-        if (currentLevel >= 5) return { success: false }; // 最大レベル
+        if (currentLevel >= 5) return { success: false };
         
-        // レベルアップコスト: Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
         const cost = currentLevel * 100;
         if (coins < cost) return { success: false };
         
@@ -824,7 +854,6 @@ export const useGameStore = create<GameStore>()(
         let skill: string | undefined;
         let bonus: string | undefined;
         
-        // Lv2, Lv4でステータスボーナス抽選
         if (newLevel === 2 || newLevel === 4) {
           const isRaceBonus = Math.random() < 0.5;
           bonus = isRaceBonus 
@@ -832,38 +861,43 @@ export const useGameStore = create<GameStore>()(
             : `${character.job}_lv${newLevel}`;
         }
         
-        // Lv3, Lv5でスキル抽選
         if (newLevel === 3 || newLevel === 5) {
-          // 種族か職業のスキルを50%ずつで抽選
           const isRaceSkill = Math.random() < 0.5;
           skill = isRaceSkill 
             ? `${character.race}_lv${newLevel}` 
             : `${character.job}_lv${newLevel}`;
         }
         
-        // コイン消費
-        set((state) => ({ coins: state.coins - cost }));
+        // サーバーでコイン消費
+        const newCoins = await addCoinsToServer(username, -cost);
+        if (newCoins === null) {
+          console.error('[levelUpCharacter] コイン消費失敗');
+          return { success: false };
+        }
         
-        // キャラクター更新（ボーナスはIDを保存、実際のステータス計算はバトル時に行う）
-        set((state) => ({
-          characters: state.characters.map(c => {
-            if (c.id !== characterId) return c;
-            return {
-              ...c,
-              level: newLevel,
-              ...(newLevel === 2 ? { lv2Bonus: bonus } : {}),
-              ...(newLevel === 4 ? { lv4Bonus: bonus } : {}),
-              ...(newLevel === 3 ? { lv3Skill: skill } : {}),
-              ...(newLevel === 5 ? { lv5Skill: skill } : {}),
-            };
-          }),
-        }));
+        // サーバーでキャラ更新
+        const updates: Partial<Character> = {
+          level: newLevel,
+          ...(newLevel === 2 ? { lv2Bonus: bonus } : {}),
+          ...(newLevel === 4 ? { lv4Bonus: bonus } : {}),
+          ...(newLevel === 3 ? { lv3Skill: skill } : {}),
+          ...(newLevel === 5 ? { lv5Skill: skill } : {}),
+        };
         
-        await get().syncToServer();
+        const newCharacters = await updateCharacterOnServer(username, characterId, updates);
+        if (!newCharacters) {
+          console.error('[levelUpCharacter] キャラ更新失敗');
+          return { success: false };
+        }
+        
+        set({ coins: newCoins, characters: newCharacters });
         return { success: true, newLevel, skill, bonus };
       },
-      // キャラクター作成
+      // キャラクター作成（Server-First）
       createCharacter: async (name, race, job, trait, environment) => {
+        const { username } = get();
+        if (!username) return null;
+        
         const stats = calculateStats(race, job, trait, environment);
         const newCharacter: Character = {
           id: crypto.randomUUID(),
@@ -875,94 +909,120 @@ export const useGameStore = create<GameStore>()(
           stats,
         };
         
-        set((state) => ({
-          characters: [...state.characters, newCharacter],
-        }));
+        // サーバーに追加して結果を取得
+        const newCharacters = await addCharacterToServer(username, newCharacter);
+        if (!newCharacters) {
+          console.error('[createCharacter] サーバー保存失敗');
+          return null;
+        }
         
-        // サーバーに同期
-        await get().syncToServer();
+        // サーバーの結果でローカルを更新
+        set({ characters: newCharacters });
         
         return newCharacter;
       },
       
-      // キャラクター削除（コイン回収付き）
+      // キャラクター削除（Server-First、コイン回収付き）
       deleteCharacter: async (id) => {
+        const { username } = get();
+        if (!username) return 0;
+        
         const character = get().characters.find((c) => c.id === id);
         
         // 回収コイン計算
-        // ベース: 20コイン + レベルに応じた強化コストの10%
-        // Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
-        // 累計: Lv2まで100, Lv3まで300, Lv4まで600, Lv5まで1000
-        const levelCosts = [0, 0, 100, 300, 600, 1000]; // Lvごとの累計コスト
+        const levelCosts = [0, 0, 100, 300, 600, 1000];
         const level = character?.level || 1;
         const refundCoins = 20 + Math.floor((levelCosts[level] || 0) * 0.1);
         
-        set((state) => {
-          const newParty = {
-            front: (state.party.front || []).map((c) => c?.id === id ? null : c),
-            back: (state.party.back || []).map((c) => c?.id === id ? null : c),
-          };
-          
-          return {
-            characters: state.characters.filter((c) => c.id !== id),
-            party: newParty,
-            coins: state.coins + refundCoins,
-          };
-        });
+        // サーバーからキャラを削除
+        const result = await removeCharacterFromServer(username, id);
+        if (!result) {
+          console.error('[deleteCharacter] サーバー削除失敗');
+          return 0;
+        }
         
-        await get().syncToServer();
+        // コインを追加（サーバー）
+        const newCoins = await addCoinsToServer(username, refundCoins);
+        
+        // ローカルを更新
+        set({
+          characters: result.characters,
+          party: result.party,
+          coins: newCoins ?? get().coins + refundCoins,
+        });
         
         return refundCoins;
       },
       
       // パーティに追加（可変長、枠数制限なし）
       addToParty: async (characterId, position, slot) => {
+        const { username } = get();
+        if (!username) return;
+        
         const character = get().characters.find((c) => c.id === characterId);
         if (!character) return;
         
-        set((state) => {
-          // 既にパーティにいる場合は削除
-          let newFront = (state.party.front || []).filter((c) => c?.id !== characterId);
-          let newBack = (state.party.back || []).filter((c) => c?.id !== characterId);
-          
-          // 新しい位置に追加
-          const charWithPosition = { ...character, position };
-          if (position === 'front') {
-            newFront = [...newFront, charWithPosition];
-          } else {
-            newBack = [...newBack, charWithPosition];
-          }
-          
-          return {
-            party: { front: newFront, back: newBack },
-          };
-        });
+        // 新しいパーティを計算
+        let newFront = (get().party.front || []).filter((c) => c?.id !== characterId);
+        let newBack = (get().party.back || []).filter((c) => c?.id !== characterId);
         
-        await get().syncToServer();
+        const charWithPosition = { ...character, position };
+        if (position === 'front') {
+          newFront = [...newFront, charWithPosition];
+        } else {
+          newBack = [...newBack, charWithPosition];
+        }
+        
+        const newParty = { front: newFront, back: newBack };
+        
+        // サーバーに保存
+        const result = await updatePartyOnServer(username, newParty);
+        if (!result) {
+          console.error('[addToParty] サーバー保存失敗');
+          return;
+        }
+        
+        // ローカルを更新
+        set({ party: result });
       },
       
-      // パーティから削除
+      // パーティから削除（Server-First）
       removeFromParty: async (position, slot) => {
-        set((state) => {
-          const newParty = { ...state.party };
-          if (position === 'front') {
-            newParty.front = (state.party.front || []).filter((_, i) => i !== slot);
-          } else {
-            newParty.back = (state.party.back || []).filter((_, i) => i !== slot);
-          }
-          return { party: newParty };
-        });
+        const { username, party } = get();
+        if (!username) return;
         
-        await get().syncToServer();
+        const newParty = { ...party };
+        if (position === 'front') {
+          newParty.front = (party.front || []).filter((_, i) => i !== slot);
+        } else {
+          newParty.back = (party.back || []).filter((_, i) => i !== slot);
+        }
+        
+        // サーバーに保存
+        const result = await updatePartyOnServer(username, newParty);
+        if (!result) {
+          console.error('[removeFromParty] サーバー保存失敗');
+          return;
+        }
+        
+        set({ party: result });
       },
       
-      // パーティクリア
+      // パーティクリア（Server-First）
       clearParty: async () => {
-        set({
-          party: { front: [], back: [] },
-        });
+        const { username } = get();
+        if (!username) return;
         
-        await get().syncToServer();
+        const emptyParty = { front: [], back: [] };
+        
+        // サーバーに保存
+        const result = await updatePartyOnServer(username, emptyParty);
+        if (!result) {
+          console.error('[clearParty] サーバー保存失敗');
+          return;
+        }
+        
+        set({ party: result });
       },
       
       // 冒険開始（バトル計算+ドロップ抽選→サーバー保存）
@@ -1061,7 +1121,6 @@ export const useGameStore = create<GameStore>()(
             username,
             addItem: get().addItem,
             addHistory: get().addHistory,
-            syncToServer: get().syncToServer,
             setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
           };
           
