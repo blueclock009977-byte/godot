@@ -460,19 +460,6 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
-  // LvスキルのstatModifiers適用
-  for (const skillId of [unit.lv3Skill, unit.lv5Skill]) {
-    if (!skillId) continue;
-    const skill = getLvSkill(skillId);
-    if (skill?.statModifiers) {
-      const mods = skill.statModifiers;
-      if (mods.hp) { unit.stats.hp += mods.hp; unit.stats.maxHp += mods.hp; }
-      if (mods.atk) unit.stats.atk += mods.atk;
-      if (mods.def) unit.stats.def += mods.def;
-      if (mods.agi) unit.stats.agi += mods.agi;
-      if (mods.mag) unit.stats.mag += mods.mag;
-    }
-  }
   return unit;
 }
 
@@ -863,24 +850,6 @@ function processTurn(
     if (effects.mpRegen > 0 && unit.stats.hp > 0) {
       const regen = effects.mpRegen;
       unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + regen);
-    }
-  }
-  
-  // intimidate適用（敵ATK低下）
-  for (const unit of playerUnits) {
-    if (unit.stats.hp > 0 && unit.passiveEffects.intimidate > 0) {
-      for (const enemy of enemyUnits) {
-        if (enemy.stats.hp > 0) {
-          // 毎ターンではなく戦闘開始時に1回だけにすべきだが、簡易実装
-        }
-      }
-    }
-  }
-  
-  // allyAtkBonus適用
-  for (const unit of playerUnits) {
-    if (unit.stats.hp > 0 && unit.passiveEffects.allyAtkBonus > 0) {
-      // これも戦闘開始時に1回だけ適用すべき
     }
   }
   

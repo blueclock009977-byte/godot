@@ -1,112 +1,86 @@
 {
-  "taskId": "ga-refactor-2026-02-27",
-  "goal": "Guild Adventureのソロ/マルチ処理を共通化・リファクタリング",
+  "taskId": "code-review-2026-02-28",
+  "goal": "Guild Adventureコード全体のレビュー、不具合・実装漏れの修正、リファクタリング",
   "completionCriteria": [
+    "全ファイルを確認済み",
+    "不具合が修正されている",
     "重複コードが統合されている",
-    "TypeScriptエラーがない",
-    "chain-state.jsonのlogに変更履歴がある"
+    "REPORT.mdに変更ログがある"
   ],
   "judgmentCriteria": [
-    "1. 既存機能が壊れない",
-    "2. コードの可読性向上",
-    "3. 変更量は最小限",
-    "4. ソロ/マルチで仕様が異なる場合は相談"
+    "既存機能が壊れない",
+    "コードの可読性向上",
+    "DRY原則に従う",
+    "変更量は必要最小限"
   ],
   "constraints": [
-    "1cronで1タスクのみ",
-    "ソロ/マルチで仕様が異なる場合はパパに相談"
+    "外部API変更禁止",
+    "破壊的変更は報告して確認"
   ],
-  "currentPhase": 3,
-  "phaseAttempt": 11,
+  "currentPhase": "final",
+  "phaseAttempt": 2,
   "maxAttempts": 30,
-  "startedAt": "2026-02-27T04:44:00Z",
+  "startedAt": "2026-02-28T14:57:00+09:00",
   "discordChannel": "channel:1471429991005950013",
   "assumptions": [],
   "log": [
     {
-      "time": "2026-02-27T04:46:00Z",
-      "action": "refactor",
-      "file": "src/app/friends/page.tsx",
-      "detail": "getDungeonName()とcalculateRemainingMinutes()ヘルパー関数を抽出、getStatusDisplay内の重複コードを削減"
+      "phase": 1,
+      "attempt": 1,
+      "action": "コード全体調査",
+      "reasoning": "全51ファイルを確認し、問題点を特定",
+      "result": "3件の改善点を発見",
+      "next": "Phase 2で修正実行"
     },
     {
-      "time": "2026-02-27T04:49:00Z",
-      "action": "refactor",
-      "file": "src/lib/utils/status.ts",
-      "detail": "getStatusDisplay()を共通ヘルパーに抽出。friends/page.tsxとmulti/[code]/page.tsxの重複を解消"
+      "phase": 2,
+      "attempt": 1,
+      "action": "Finding #1 DRY違反を修正",
+      "reasoning": "percentBonus関数がutils.tsとdropBonus.tsで重複していた",
+      "result": "dropBonus.tsからローカル定義を削除し、utils.tsからimportに変更。ビルド成功確認済み。",
+      "next": "Finding #2の修正へ"
     },
     {
-      "time": "2026-02-27T04:54:00Z",
-      "action": "refactor",
-      "file": "src/components/multi/InviteModal.tsx",
-      "detail": "フレンド招待モーダルを別コンポーネントに抽出。multi/[code]/page.tsx: 791行→715行（-76行）"
-    },
-    {
-      "time": "2026-02-27T05:01:00Z",
-      "action": "refactor",
-      "file": "src/components/multi/BattleResultView.tsx",
-      "detail": "結果画面UIを別コンポーネントに抽出。multi/[code]/page.tsx: 715行→675行（-40行）"
-    },
-    {
-      "time": "2026-02-27T05:04:00Z",
-      "action": "refactor",
-      "file": "src/components/multi/BattleProgressView.tsx",
-      "detail": "バトル進行UI（プログレスバー+ログ表示）を別コンポーネントに抽出。multi/[code]/page.tsx: 675行→630行（-45行）"
-    },
-    {
-      "time": "2026-02-27T05:08:00Z",
-      "action": "refactor",
-      "file": "src/components/multi/CharacterSelectPanel.tsx",
-      "detail": "キャラ選択UI（選択中表示+キャラ一覧）を別コンポーネントに抽出。multi/[code]/page.tsx: 630行→573行（-57行）"
-    },
-    {
-      "time": "2026-02-27T05:12:00Z",
-      "action": "refactor",
-      "file": "src/store/gameStore.ts",
-      "detail": "restoreAdventureをヘルパー関数に分離: restoreMultiAdventureHelper + restoreSoloAdventureHelper。restoreAdventure本体が90行→30行に削減"
-    },
-    {
-      "time": "2026-02-27T05:18:00Z",
-      "action": "refactor",
-      "file": "src/components/multi/WaitingRoomView.tsx",
-      "detail": "待機中UI（ヘッダー+プレイヤー一覧+キャラ選択+準備完了ボタン）を別コンポーネントに抽出。multi/[code]/page.tsx: 532行→469行（-63行）"
-    },
-    {
-      "time": "2026-02-27T05:23:00Z",
-      "action": "refactor",
-      "file": "src/lib/multi/battleStarter.ts",
-      "detail": "startMultiBattleヘルパーを新規作成。パーティ構築、バトル実行、ドロップ計算、Firebase保存を抽出。multi/[code]/page.tsx: 469行→401行（-68行）"
-    },
-    {
-      "time": "2026-02-27T05:27:00Z",
-      "action": "refactor",
-      "file": "src/hooks/useBattleProgress.ts",
-      "detail": "バトルログ表示関連のuseEffect2つをカスタムフックに抽出。multi/[code]/page.tsx: 401行→334行（-67行）"
-    },
-    {
-      "time": "2026-02-27T05:31:00Z",
-      "action": "review",
-      "file": "全体",
-      "detail": "リファクタリング完了レビュー。ソロ303行/マルチ334行/gameStore744行（ヘルパー抽出済み）。ソロとマルチはログ表示の仕組みが異なり（ソロはroomStatusなし、ドロップ処理あり）、useBattleProgressの共通化は見送り"
+      "phase": 2,
+      "attempt": 2,
+      "action": "Finding #2 & #3 不要コード削除",
+      "reasoning": "monsterToUnitのLvスキル適用とprocessTurnの空ループは害はないが可読性を下げる",
+      "result": "monsterToUnitから不要なLvスキル適用コードを削除。processTurnから空のintimidate/allyAtkBonusループを削除。ビルド成功確認済み。",
+      "next": "全findings完了。Phase Finalへ"
     }
   ],
   "findings": [
-    "multi/[code]/page.tsx: 791行 → 334行（-457行, 58%削減）",
-    "ソロ側: 303行、これ以上の共通化はソロ/マルチの仕様差が大きく難しい",
-    "gameStore: 744行（すでにヘルパー関数に分離済み）"
+    {
+      "id": 1,
+      "type": "DRY違反",
+      "severity": "medium",
+      "location": "lib/drop/dropBonus.ts:435",
+      "description": "percentBonus関数がlib/utils.ts:68と重複定義されている",
+      "fix": "dropBonus.tsからpercentBonus定義を削除し、utils.tsからimportする",
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "type": "不要コード",
+      "severity": "low",
+      "location": "lib/battle/engine.ts:monsterToUnit",
+      "description": "モンスターにはlv3Skill/lv5Skillがないため、Lvスキル適用処理は実行されない（害はない）",
+      "fix": "削除",
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "type": "不要コード",
+      "severity": "low",
+      "location": "lib/battle/engine.ts:processTurn",
+      "description": "intimidate/allyAtkBonusの空ループが残っていた（戦闘開始時に適用済み）",
+      "fix": "削除",
+      "status": "done"
+    }
   ],
   "completed": [
-    "friends/page.tsx: getDungeonName, calculateRemainingMinutes ヘルパー抽出",
-    "lib/utils/status.ts: getStatusDisplay共通化（friends + multi両方で使用）",
-    "components/multi/InviteModal.tsx: フレンド招待モーダルを抽出",
-    "components/multi/BattleResultView.tsx: 結果画面UIを抽出",
-    "components/multi/BattleProgressView.tsx: バトル進行UIを抽出",
-    "components/multi/CharacterSelectPanel.tsx: キャラ選択UIを抽出",
-    "store/gameStore.ts: restoreAdventureをヘルパー関数に分離",
-    "components/multi/WaitingRoomView.tsx: 待機中UIを抽出",
-    "lib/multi/battleStarter.ts: startMultiBattleヘルパーを新規作成",
-    "hooks/useBattleProgress.ts: バトルログ表示のuseEffectをカスタムフックに抽出",
-    "全体レビュー: リファクタリング完了"
-  ],
-  "status": "completed"
+    "percentBonus関数の重複定義をutils.tsからのimportに統一",
+    "monsterToUnitから不要なLvスキル適用コードを削除",
+    "processTurnから空のintimidate/allyAtkBonusループを削除"
+  ]
 }
