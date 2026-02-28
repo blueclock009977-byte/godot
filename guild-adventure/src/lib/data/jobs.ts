@@ -119,11 +119,12 @@ export const jobs: Record<string, JobData> = {
   sage: {
     id: 'sage',
     name: '賢者',
-    description: 'MP+25、MAG+6。魔法+15%、回復+15%の万能魔法職。ドラゴニュートで両刀に。',
+    description: 'MP+25、MAG+6。魔法+15%、回復+15%の万能魔法職。レア鑑定+3%！',
     statModifiers: { maxHp: 5, maxMp: 25, mag: 6, def: 1 },
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
       { name: '瞑想', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 4 }] },
+      { name: '鑑定眼', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 3 }] },
     ],
     skills: [
       { id: 'sage_fire', name: '賢者の炎', description: '単体に炎魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 12, element: 'fire' },
@@ -238,11 +239,12 @@ export const jobs: Record<string, JobData> = {
   witch: {
     id: 'witch',
     name: 'ウィッチ',
-    description: 'MP+28、MAG+7。魔法+20%、デバフ成功+20%。デーモンで呪い特化に。',
+    description: 'MP+28、MAG+7。魔法+20%、デバフ成功+20%。レア感知+5%！',
     statModifiers: { maxHp: -5, maxMp: 28, mag: 7, agi: 3, def: -1 },
     passives: [
       { name: '呪術', description: '魔法威力と状態異常成功率が上昇', effects: [{ type: 'magicBonus', value: 20 }, { type: 'debuffBonus', value: 20 }] },
       { name: '魔女の知恵', description: 'MP消費軽減', effects: [{ type: 'mpReduction', value: 15 }] },
+      { name: '占いの目', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 5 }] },
     ],
     skills: [
       { id: 'curse', name: '呪詛', description: '敵のステータスを下げる', type: 'debuff', target: 'single', multiplier: 0, mpCost: 10, effect: { type: 'statDown', value: 30, duration: 3 } },

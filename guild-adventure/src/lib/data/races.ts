@@ -19,13 +19,14 @@ export const races: Record<string, RaceData> = {
   elf: {
     id: 'elf',
     name: 'エルフ',
-    description: '魔法と素早さに特化した種族。HPは低いがMAGとAGIが高く、魔法攻撃が強力。魔法使いや賢者と相性◎',
+    description: '魔法と素早さに特化した種族。HPは低いがMAGとAGIが高く、魔法攻撃が強力。レア発見+3%！',
     baseStats: { maxHp: 75, maxMp: 80, atk: 7, def: 6, agi: 16, mag: 16 },
     passives: [
       { name: '魔力の血統', description: '魔法攻撃の威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
       { name: '風の加護', description: '回避率と先制率が上昇', effects: [{ type: 'evasionBonus', value: 15 }, { type: 'firstStrikeBonus', value: 20 }] },
       { name: 'MP自然回復', description: '毎ターンMPが回復', effects: [{ type: 'mpRegen', value: 3 }] },
       { name: '悪魔狩り', description: '悪魔系への与ダメージ+30%', effects: [{ type: 'speciesKiller_demon', value: 30 }] },
+      { name: '鷹の目', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 3 }] },
     ],
     skills: [
       { id: 'spirit_arrow', name: '精霊の矢', description: '精霊の力で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 10, element: 'wind' },
@@ -188,7 +189,7 @@ export const races: Record<string, RaceData> = {
   demon: {
     id: 'demon',
     name: 'デーモン',
-    description: '高いMAGとHP吸収を持つ闘の魔法使い。ウィッチやネクロマンサーと相性◎',
+    description: '高いMAGとHP吸収を持つ闇の魔法使い。レア嗅覚+5%！',
     baseStats: { maxHp: 90, maxMp: 65, atk: 9, def: 8, agi: 10, mag: 17 },  // HP-5, MP-5, ATK-1, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '闇の力', description: '魔法威力が上昇', effects: [{ type: 'magicBonus', value: 25 }] },
@@ -196,6 +197,7 @@ export const races: Record<string, RaceData> = {
       { name: '恐怖のオーラ', description: '敵の命中率を下げる', effects: [{ type: 'evasionBonus', value: 15 }] },
       { name: '竜耐性', description: '竜系からの被ダメージ軽減', effects: [{ type: 'speciesResist_dragon', value: 30 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 40 }] },
+      { name: '欲望の嗅覚', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 5 }] },
     ],
     skills: [
       { id: 'curse_eye', name: '呪いの眼', description: '敵の攻撃・防御を低下', type: 'debuff', target: 'single', multiplier: 0, mpCost: 14, effect: { type: 'statDown', value: 25, duration: 3 } },

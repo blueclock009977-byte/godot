@@ -128,6 +128,7 @@ export type EffectType =
   | 'coinBonus'         // コイン獲得+%
   | 'doubleDropRoll'    // ドロップ2回抽選
   | 'dropBonus'         // ドロップ率+%
+  | 'rareDropBonus'     // レア装備確率+%
   | 'explorationSpeedBonus' // 探索時間-%
   // 連撃・劣化関連
   | 'fixedHits'         // ヒット数固定（AGI無視）

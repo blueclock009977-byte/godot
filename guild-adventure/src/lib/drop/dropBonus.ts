@@ -215,6 +215,80 @@ export function applyCoinBonus(baseCoins: number, characters: CharacterWithRace[
 }
 
 /**
+ * レア装備ドロップボーナス(%)を計算
+ * ※同じ効果ソースは重複しない
+ */
+export function calculateRareDropBonus(characters: CharacterWithRace[]): number {
+  const appliedBonuses: Map<string, number> = new Map();
+  
+  for (const char of characters) {
+    // 種族パッシブからのボーナス
+    if (char.race) {
+      try {
+        const { races } = require('../data/races');
+        if (races[char.race]) {
+          const raceData = races[char.race];
+          for (const passive of raceData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'rareDropBonus') {
+                const sourceId = `race_${char.race}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // 職業パッシブからのボーナス
+    if (char.job) {
+      try {
+        const { jobs } = require('../data/jobs');
+        if (jobs[char.job]) {
+          const jobData = jobs[char.job];
+          for (const passive of jobData.passives || []) {
+            for (const effect of passive.effects || []) {
+              if (effect.type === 'rareDropBonus') {
+                const sourceId = `job_${char.job}_${passive.name}`;
+                if (!appliedBonuses.has(sourceId)) {
+                  appliedBonuses.set(sourceId, effect.value);
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+    
+    // 装備からのボーナス
+    if (char.equipmentId) {
+      try {
+        const { getEquipmentById } = require('../data/equipments');
+        const equipment = getEquipmentById(char.equipmentId);
+        if (equipment?.effects) {
+          for (const effect of equipment.effects) {
+            if (effect.type === 'rareDropBonus') {
+              const sourceId = `equipment_${char.equipmentId}`;
+              if (!appliedBonuses.has(sourceId)) {
+                appliedBonuses.set(sourceId, effect.value);
+              }
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }
+  
+  let bonus = 0;
+  for (const value of appliedBonuses.values()) {
+    bonus += value;
+  }
+  return bonus;
+}
+
+/**
  * 探索時間短縮ボーナス(%)を計算
  * ※同じ効果ソースは重複しない
  */

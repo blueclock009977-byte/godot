@@ -301,19 +301,21 @@ export function getEquipmentDropRate(durationSeconds: number): number {
   return Math.max(0.025, Math.min(5, rate)); // 0.025%〜5%
 }
 
-import { applyDropBonus, getDropRollCount } from '../drop/dropBonus';
+import { applyDropBonus, getDropRollCount, calculateRareDropBonus } from '../drop/dropBonus';
 
 // 複数装備ドロップ対応（成功した数だけドロップ）
-export function rollEquipmentDrops(durationSeconds: number, characters: { race?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment[] {
+export function rollEquipmentDrops(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment[] {
   const baseRate = getEquipmentDropRate(durationSeconds);
   const dropRate = applyDropBonus(baseRate, characters);
   const rolls = getDropRollCount(characters);
+  const rareBonus = calculateRareDropBonus(characters);
   
   const drops: Equipment[] = [];
   for (let i = 0; i < rolls; i++) {
     if (Math.random() * 100 < dropRate) {
-      // レアリティ判定（レア3%、通常97%）
-      const isRare = Math.random() * 100 < 3;
+      // レアリティ判定（基本3% + rareBonus）
+      const rareChance = 3 + rareBonus;
+      const isRare = Math.random() * 100 < rareChance;
       const pool = isRare ? rareEquipments : normalEquipments;
       drops.push(pool[Math.floor(Math.random() * pool.length)]);
     }
@@ -322,7 +324,7 @@ export function rollEquipmentDrops(durationSeconds: number, characters: { race?:
 }
 
 // 後方互換（1つだけ返す）
-export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment | null {
+export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment | null {
   const drops = rollEquipmentDrops(durationSeconds, characters);
   return drops[0] || null;
 }
