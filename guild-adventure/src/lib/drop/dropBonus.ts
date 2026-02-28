@@ -148,10 +148,14 @@ export function calculateCoinBonus(characters: CharacterWithRace[]): number {
 }
 
 /**
- * ドロップ2回抽選が有効か判定
- * ※同じ効果ソースは重複しない（複数あっても1回分）
+ * ドロップ抽選回数を計算（1 + 追加抽選数）
+ * ※同じ効果ソースは重複しない
+ * 例: 人間Lv5 + 四葉のクローバー = 1 + 1 + 1 = 3回
  */
-export function hasDoubleDropRoll(characters: CharacterWithRace[]): boolean {
+export function getDropRollCount(characters: CharacterWithRace[]): number {
+  const appliedSources: Set<string> = new Set();
+  let extraRolls = 0;
+  
   for (const char of characters) {
     // LvスキルからのdoubleDropRoll
     for (const skillId of [char.lv3Skill, char.lv5Skill]) {
@@ -162,7 +166,11 @@ export function hasDoubleDropRoll(characters: CharacterWithRace[]): boolean {
         if (skill?.effects) {
           for (const effect of skill.effects) {
             if (effect.type === 'doubleDropRoll' && effect.value > 0) {
-              return true;
+              const sourceId = `lvskill_${skillId}`;
+              if (!appliedSources.has(sourceId)) {
+                appliedSources.add(sourceId);
+                extraRolls += effect.value;
+              }
             }
           }
         }
@@ -177,14 +185,24 @@ export function hasDoubleDropRoll(characters: CharacterWithRace[]): boolean {
         if (equipment?.effects) {
           for (const effect of equipment.effects) {
             if (effect.type === 'doubleDropRoll' && effect.value > 0) {
-              return true;
+              const sourceId = `equipment_${char.equipmentId}`;
+              if (!appliedSources.has(sourceId)) {
+                appliedSources.add(sourceId);
+                extraRolls += effect.value;
+              }
             }
           }
         }
       } catch (e) {}
     }
   }
-  return false;
+  
+  return 1 + extraRolls; // 基本1回 + 追加抽選
+}
+
+// 後方互換のため残す
+export function hasDoubleDropRoll(characters: CharacterWithRace[]): boolean {
+  return getDropRollCount(characters) > 1;
 }
 
 /**
