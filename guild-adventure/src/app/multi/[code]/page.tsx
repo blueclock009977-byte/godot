@@ -98,8 +98,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
       if (username && data.players && !data.players[username] && data.status === 'waiting') {
         setRoomDeleted(true);
       }
-    } else if (hadRoomOnce) {
-      // ルームが存在していたのに消えた場合（ホストが退出）
+    } else if (hadRoomOnce && !dropClaimedRef.current) {
+      // ルームが存在していたのに消えた場合（ホストが退出）、ただし報酬受け取り済みなら正常終了
       setRoomDeleted(true);
     }
   }, [code, username, hadRoomOnce, setCurrentMultiRoom]);
