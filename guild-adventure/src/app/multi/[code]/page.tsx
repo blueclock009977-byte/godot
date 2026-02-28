@@ -277,6 +277,10 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           playerEquipmentDrops: room.playerEquipmentDrops,
         });
         
+        // pendingResultsから削除（自動受取リストから除外）
+        const { removePendingResult } = await import('@/lib/firebase');
+        await removePendingResult(username, code);
+        
         setCurrentMultiRoom(null);
         setDropClaimed(true);
       };

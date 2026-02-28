@@ -1058,7 +1058,10 @@ export async function clearMultiAdventure(username: string): Promise<boolean> {
   }
 }
 
-// 未受取のマルチ結果を全て自動受取
+// ============================================
+// 未受取マルチ結果の管理（pendingResults）
+// ============================================
+
 export interface PendingResult {
   roomCode: string;
   dungeonId: string;
@@ -1072,27 +1075,66 @@ export interface PendingResult {
   playerEquipmentDrops?: Record<string, string | undefined>;
 }
 
+// 未受取リストに追加
+export async function addPendingResult(username: string, roomCode: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/pendingResults/${roomCode}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(true),
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 未受取リストから削除
+export async function removePendingResult(username: string, roomCode: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/pendingResults/${roomCode}.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// 未受取リストを取得
+export async function getPendingResults(username: string): Promise<string[]> {
+  const data = await firebaseGet<Record<string, boolean>>(`guild-adventure/users/${username}/pendingResults`);
+  return data ? Object.keys(data) : [];
+}
+
+// 未受取のマルチ結果を全て自動受取（軽量版: pendingResultsのみチェック）
 export async function claimAllPendingMultiResults(username: string): Promise<PendingResult[]> {
   try {
-    // 全ルームを取得
-    const roomsRes = await fetch(`${FIREBASE_URL}/guild-adventure/rooms.json`);
-    if (!roomsRes.ok) return [];
-    const rooms = await roomsRes.json();
-    if (!rooms) return [];
+    // pendingResultsを取得（1リクエスト）
+    const pendingCodes = await getPendingResults(username);
+    if (pendingCodes.length === 0) return [];
     
     const results: PendingResult[] = [];
     
-    for (const [code, room] of Object.entries(rooms) as [string, any][]) {
-      // status=done, 自分がplayers内にいる, playerClaimed[username]=false
-      if (room.status !== 'done') continue;
-      if (!room.players?.[username]) continue;
-      if (room.playerClaimed?.[username]) continue;
+    for (const code of pendingCodes) {
+      // ルーム情報を取得
+      const room = await getRoom(code);
+      if (!room) {
+        // ルームが存在しない場合はpendingから削除
+        await removePendingResult(username, code);
+        continue;
+      }
+      
+      // 既に受け取り済みの場合はスキップ
+      if (room.playerClaimed?.[username]) {
+        await removePendingResult(username, code);
+        continue;
+      }
       
       // ドロップを受け取り
       const itemId = room.playerDrops?.[username];
       const equipmentId = room.playerEquipmentDrops?.[username];
       
-      // dungeonデータからcoinRewardを計算（ここでは0、後でクライアント側で計算）
       results.push({
         roomCode: code,
         dungeonId: room.dungeonId,
@@ -1101,7 +1143,7 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         equipmentId,
         coinReward: 0, // クライアント側で計算
         logs: room.battleResult?.logs || [],
-        players: Object.keys(room.players),
+        players: Object.keys(room.players || {}),
         playerDrops: room.playerDrops,
         playerEquipmentDrops: room.playerEquipmentDrops,
       });
@@ -1112,6 +1154,9 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(true),
       });
+      
+      // pendingResultsから削除
+      await removePendingResult(username, code);
     }
     
     return results;
