@@ -169,10 +169,17 @@ export default function AdventurePage() {
             
             // 勝利時はコインを付与
             if (battleResult.victory) {
-              const coinReward = dungeons[currentAdventure.dungeon]?.coinReward || 0;
-              if (coinReward > 0) {
+              const baseCoinReward = dungeons[currentAdventure.dungeon]?.coinReward || 0;
+              if (baseCoinReward > 0) {
+                const { applyCoinBonus } = require('@/lib/drop/dropBonus');
+                const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter(Boolean);
+                const coinReward = applyCoinBonus(baseCoinReward, allChars);
                 addCoins(coinReward);
-                setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！`]);
+                if (coinReward > baseCoinReward) {
+                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！（ボーナス込み）`]);
+                } else {
+                  setDisplayedLogs(prev => [...prev, `🪙 【コイン】${coinReward}枚獲得！`]);
+                }
                 syncToServer();
               }
             }

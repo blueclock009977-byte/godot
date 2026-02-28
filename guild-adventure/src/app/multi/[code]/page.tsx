@@ -238,10 +238,13 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         // multiAdventureもクリア（ログイン時の二重受け取り防止）
         await clearMultiAdventure(username);
         
-        // 勝利時はコインを付与
+        // 勝利時はコインを付与（自分のキャラのボーナス適用）
         if (room.battleResult.victory) {
-          const coinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
-          if (coinReward > 0) {
+          const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+          if (baseCoinReward > 0) {
+            const { applyCoinBonus } = require('@/lib/drop/dropBonus');
+            const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
+            const coinReward = applyCoinBonus(baseCoinReward, myChars);
             addCoins(coinReward);
             syncToServer();
           }

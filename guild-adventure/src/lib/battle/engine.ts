@@ -1214,14 +1214,21 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   };
 }
 
-import { applyDropBonus } from '../drop/dropBonus';
+import { applyDropBonus, hasDoubleDropRoll } from '../drop/dropBonus';
 
 export function rollDrop(dungeon: DungeonType, characters: Character[] = []): string | undefined {
   const baseRate = getDropRate(dungeon);
   const dropRate = applyDropBonus(baseRate, characters);
-  if (Math.random() * 100 < dropRate) {
-    const item = getRandomItem();
-    return item.id;
+  const doubleRoll = hasDoubleDropRoll(characters);
+  
+  // 抽選回数（doubleDropRollなら2回）
+  const rolls = doubleRoll ? 2 : 1;
+  
+  for (let i = 0; i < rolls; i++) {
+    if (Math.random() * 100 < dropRate) {
+      const item = getRandomItem();
+      return item.id;
+    }
   }
   return undefined;
 }
