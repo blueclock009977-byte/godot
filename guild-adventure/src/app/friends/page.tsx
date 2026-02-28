@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { usePolling } from '@/hooks/usePolling';
+import { useUserActivity } from '@/hooks/useUserActivity';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
@@ -23,6 +24,7 @@ import { getStatusDisplay } from '@/lib/utils/status';
 
 export default function FriendsPage() {
   const { username, currentMultiRoom } = useGameStore();
+  const { isActive } = useUserActivity();
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
   const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);  // 自分が参加中のルーム
@@ -57,11 +59,13 @@ export default function FriendsPage() {
       setMyMultiRoom(null);
     }
     
-    // lastSeenだけ更新（activityは冒険開始/終了時のみ変更）
-    const { updateLastSeen } = await import('@/lib/firebase');
-    updateLastSeen(username);
+    // アクティブな場合のみlastSeenを更新（5分操作なしでオフライン扱い）
+    if (isActive()) {
+      const { updateLastSeen } = await import('@/lib/firebase');
+      updateLastSeen(username);
+    }
     setIsLoading(false);
-  }, [username, currentMultiRoom]);
+  }, [username, currentMultiRoom, isActive]);
 
   // 10秒ごとにポーリング
   usePolling(loadData, 10000, !!username);

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { usePolling } from '@/hooks/usePolling';
+import { useUserActivity } from '@/hooks/useUserActivity';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
@@ -120,6 +121,9 @@ function GameScreen() {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
   
+  // ユーザーアクティビティ検知
+  const { isActive } = useUserActivity();
+  
   // 通知をポーリング + ステータス更新
   const loadNotifications = useCallback(async () => {
     try {
@@ -129,13 +133,15 @@ function GameScreen() {
       ]);
       setInvitations(invites);
       setFriendRequests(requests);
-      // lastSeenだけ更新（activityは冒険開始/終了時のみ変更）
-      const { updateLastSeen } = await import('@/lib/firebase');
-      updateLastSeen(username!);
+      // アクティブな場合のみlastSeenを更新（5分操作なしでオフライン扱い）
+      if (isActive()) {
+        const { updateLastSeen } = await import('@/lib/firebase');
+        updateLastSeen(username!);
+      }
     } catch (e) {
       console.error('Failed to load notifications:', e);
     }
-  }, [username]);
+  }, [username, isActive]);
   usePolling(loadNotifications, 10000, !!username);
   
   // 公開ルーム数を取得
