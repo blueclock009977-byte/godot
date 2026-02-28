@@ -62,6 +62,8 @@ export interface Stats {
 export type EffectType = 
   | 'damageBonus'       // 与ダメージ+%
   | 'damageReduction'   // 被ダメージ-%
+  | 'physicalResist'    // 物理被ダメージ-%
+  | 'magicResist'       // 魔法被ダメージ-%
   | 'critBonus'         // クリティカル率+%
   | 'critDamage'        // クリティカルダメージ+%
   | 'evasionBonus'      // 回避率+%

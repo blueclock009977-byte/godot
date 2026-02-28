@@ -526,9 +526,10 @@ function calculatePhysicalDamage(
     const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
     damage = damage * attackerMod / defenderMod;
     
-    // 物理耐性
-    if (defender.physicalResist) {
-      damage *= percentReduce(defender.physicalResist);
+    // 物理耐性（モンスター + プレイヤーパッシブ）
+    const totalPhysResist = (defender.physicalResist || 0) + defEffects.physicalResist;
+    if (totalPhysResist > 0) {
+      damage *= percentReduce(totalPhysResist);
     }
 
     // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）
@@ -611,9 +612,10 @@ function calculateMagicDamage(
   // 属性相性
   damage *= getElementMultiplier(skillElement, defender.elementModifier);
   
-  // 魔法耐性
-  if (defender.magicResist) {
-    damage *= percentReduce(defender.magicResist);
+  // 魔法耐性（モンスター + プレイヤーパッシブ）
+  const totalMagResist = (defender.magicResist || 0) + defEffects.magicResist;
+  if (totalMagResist > 0) {
+    damage *= percentReduce(totalMagResist);
   }
   
   // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）

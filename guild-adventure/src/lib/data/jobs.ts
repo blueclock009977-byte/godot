@@ -78,7 +78,7 @@ export const jobs: Record<string, JobData> = {
     description: 'HP+40、DEF+8。被ダメ-25%の最強タンク。ドワーフで最硬の壁役に。',
     statModifiers: { maxHp: 40, maxMp: 10, def: 8, agi: -3 },
     passives: [
-      { name: '鉄壁', description: '被ダメージを大幅軽減', effects: [{ type: 'damageReduction', value: 25 }] },
+      { name: '鉄壁', description: '被ダメージを大幅軽減、特に物理に強い', effects: [{ type: 'damageReduction', value: 15 }, { type: 'physicalResist', value: 20 }] },
       { name: '鎧の守り', description: '劣化耐性+40%', effects: [{ type: 'degradationResist', value: 40 }] },
     ],
     skills: [
@@ -132,6 +132,7 @@ export const jobs: Record<string, JobData> = {
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
       { name: '瞑想', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 4 }] },
+      { name: '魔力障壁', description: '魔法ダメージを軽減', effects: [{ type: 'magicResist', value: 15 }] },
       { name: '鑑定眼', description: 'レア装備発見率+20%', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
@@ -167,7 +168,7 @@ export const jobs: Record<string, JobData> = {
     statModifiers: { maxHp: 25, maxMp: 20, atk: 4, def: 5, mag: 4 },
     passives: [
       { name: '聖騎士の誓い', description: '物理攻撃と回復量が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'healBonus', value: 20 }] },
-      { name: '神の盾', description: '被ダメージ軽減', effects: [{ type: 'damageReduction', value: 15 }] },
+      { name: '神の盾', description: '神の加護で物理/魔法両方軽減', effects: [{ type: 'physicalResist', value: 10 }, { type: 'magicResist', value: 10 }] },
     ],
     skills: [
       { id: 'holy_blade', name: '聖剣', description: '聖なる力で斬りつける', type: 'attack', target: 'single', multiplier: 1.7, mpCost: 12 },

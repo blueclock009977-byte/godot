@@ -93,6 +93,9 @@ export interface PassiveEffects {
   allyMagicHitMp: number;
   deathResist: number;
   allyHpRegen: number;
+  // v0.9.85追加: 物理/魔法耐性
+  physicalResist: number;
+  magicResist: number;
 }
 
 /**
@@ -120,6 +123,8 @@ export function getEmptyPassiveEffects(): PassiveEffects {
     physicalFollowUp: 0, allyMagBonus: 0, debuffFollowUp: 0, allyMpReduction: 0,
     hpOnKill: 0, atkStackOnKill: 0, allyHitHeal: 0, critFollowUp: 0,
     debuffDuration: 0, frontlineBonus: 0, allyMagicHitMp: 0, deathResist: 0, allyHpRegen: 0,
+    // v0.9.85追加
+    physicalResist: 0, magicResist: 0,
   };
 }
 

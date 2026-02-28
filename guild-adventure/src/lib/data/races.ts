@@ -27,6 +27,7 @@ export const races: Record<string, RaceData> = {
       { name: '風の加護', description: '回避率と先制率が上昇', effects: [{ type: 'evasionBonus', value: 15 }, { type: 'firstStrikeBonus', value: 20 }] },
       { name: 'MP自然回復', description: '毎ターンMPが回復', effects: [{ type: 'mpRegen', value: 3 }] },
       { name: '悪魔狩り', description: '悪魔系への与ダメージ+30%', effects: [{ type: 'speciesKiller_demon', value: 30 }] },
+      { name: '精霊の守護', description: '魔法ダメージを軽減', effects: [{ type: 'magicResist', value: 15 }] },
       { name: '鷹の目', description: 'レア装備発見率+20%', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
@@ -41,7 +42,7 @@ export const races: Record<string, RaceData> = {
     description: '最高のHPとDEF、高いATKを持つ重装タンク。AGIとMAGは低いが、生存力抜群。騎士やパラディンと相性◎',
     baseStats: { maxHp: 140, maxMp: 30, atk: 14, def: 16, agi: 5, mag: 5 },
     passives: [
-      { name: '鋼の肉体', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 20 }] },
+      { name: '鋼の肉体', description: '被ダメージを軽減、特に物理に強い', effects: [{ type: 'damageReduction', value: 15 }, { type: 'physicalResist', value: 15 }] },
       { name: '怪力', description: '物理攻撃の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }] },
       { name: '頑強', description: '劣化耐性+50%', effects: [{ type: 'degradationResist', value: 50 }] },
       { name: '竜殺し', description: '竜系からの被ダメージ軽減', effects: [{ type: 'speciesResist_dragon', value: 20 }] },
@@ -80,6 +81,7 @@ export const races: Record<string, RaceData> = {
       { name: '一撃必殺', description: '攻撃回数1固定、威力+50%', effects: [{ type: 'fixedHits', value: 1 }, { type: 'singleHitBonus', value: 50 }] },
       { name: '無謀', description: '被ダメージが増加', effects: [{ type: 'damageReduction', value: -15 }] },
       { name: '獣殺し', description: '獣系への与ダメージ上昇', effects: [{ type: 'speciesKiller_beast', value: 40 }] },
+      { name: '厚い皮膚', description: '物理ダメージを軽減', effects: [{ type: 'physicalResist', value: 10 }] },
     ],
     skills: [
       { id: 'fury_strike', name: '怒りの一撃', description: '渾身の大ダメージ攻撃', type: 'attack', target: 'single', multiplier: 2.2, mpCost: 12 },
@@ -94,7 +96,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 110, maxMp: 40, atk: 12, def: 14, agi: 9, mag: 8 },
     passives: [
       { name: '再生能力', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 8 }] },
-      { name: '硬い鱗', description: '被ダメ軽減+劣化耐性30%', effects: [{ type: 'damageReduction', value: 10 }, { type: 'degradationResist', value: 30 }] },
+      { name: '硬い鱗', description: '被ダメ軽減+物理/魔法耐性+劣化耐性', effects: [{ type: 'damageReduction', value: 5 }, { type: 'physicalResist', value: 10 }, { type: 'magicResist', value: 10 }, { type: 'degradationResist', value: 30 }] },
       { name: '両刀の才', description: '物理と魔法の威力上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 10 }] },
       { name: '獣耐性', description: '獣系からの被ダメージ軽減', effects: [{ type: 'speciesResist_beast', value: 15 }] },
     ],
@@ -114,6 +116,7 @@ export const races: Record<string, RaceData> = {
       { name: '妖精の翅', description: '回避率が大幅上昇', effects: [{ type: 'evasionBonus', value: 30 }] },
       { name: '癒しの力', description: '回復量が上昇', effects: [{ type: 'healBonus', value: 30 }] },
       { name: '聖光', description: '不死系への与ダメージ上昇', effects: [{ type: 'speciesKiller_undead', value: 50 }] },
+      { name: '妖精の体', description: '魔法ダメージを大幅軽減', effects: [{ type: 'magicResist', value: 25 }] },
       { name: '宝石眼', description: 'コイン獲得が上昇', effects: [{ type: 'coinBonus', value: 20 }] },
     ],
     skills: [
@@ -165,7 +168,7 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 105, maxMp: 50, atk: 13, def: 11, agi: 8, mag: 13 },  // HP-10, MP-5, ATK-1, DEF-1, MAG-1 ナーフ
     passives: [
       { name: '竜の血', description: '物理・魔法威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
-      { name: '竜鱗', description: '炎耐性と被ダメージ軽減', effects: [{ type: 'damageReduction', value: 10 }] },
+      { name: '竜鱗', description: '竜の鱗で物理/魔法両方軽減', effects: [{ type: 'physicalResist', value: 10 }, { type: 'magicResist', value: 10 }] },
       { name: '威圧', description: '敵の攻撃力を下げる', effects: [{ type: 'intimidate', value: 10 }] },
       { name: '竜殺し', description: '竜系への与ダメージ大幅上昇', effects: [{ type: 'speciesKiller_dragon', value: 80 }] },
     ],
@@ -190,6 +193,7 @@ export const races: Record<string, RaceData> = {
       { name: '守護の翼', description: '味方の被ダメージを軽減', effects: [{ type: 'allyDefense', value: 10 }] },
       { name: '浄化', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 50 }] },
       { name: '悪魔狩り', description: '悪魔系への与ダメージ上昇', effects: [{ type: 'speciesKiller_demon', value: 60 }] },
+      { name: '天使の体', description: '魔法ダメージを軽減', effects: [{ type: 'magicResist', value: 15 }] },
     ],
     skills: [
       { id: 'divine_blessing', name: '聖なる祝福', description: '味方全体を回復', type: 'heal', target: 'allAllies', multiplier: 0.9, mpCost: 22 },
