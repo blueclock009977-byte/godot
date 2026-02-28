@@ -93,13 +93,15 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
   
   const multiAdventure = await getMultiAdventure(username);
   
-  // multiAdventureがない、または既にclaimed → クリーンアップして終了
-  if (!multiAdventure || multiAdventure.claimed) {
-    // 念のためcurrentMultiRoomもクリア（残骸対策）
+  // multiAdventureがない場合は何もしない（待機中の可能性がある）
+  if (!multiAdventure) {
+    return false;
+  }
+  
+  // 既にclaimed → クリーンアップして終了
+  if (multiAdventure.claimed) {
+    await clearMultiAdventure(username);
     await setCurrentMultiRoom(null);
-    if (multiAdventure?.claimed) {
-      await clearMultiAdventure(username);
-    }
     return false;
   }
   
