@@ -69,7 +69,7 @@ export default function PartyPage() {
   // 待機中キャラ
   const availableChars = characters.filter(c => !partyCharIds.includes(c.id));
   
-  // キャラをパーティに追加（ソロは合計4人まで）
+  // キャラをパーティに追加（ソロは合計6人まで）
   const MAX_PARTY_SIZE = 6;
   
   const handleAddToParty = (position: Position) => {
@@ -77,7 +77,7 @@ export default function PartyPage() {
     
     // 合計4人制限チェック
     if (partyCount >= MAX_PARTY_SIZE) {
-      alert('ソロは4人までです');
+      alert('ソロは6人までです');
       return;
     }
     
@@ -113,7 +113,7 @@ export default function PartyPage() {
         
         {/* 説明 */}
         <div className="mb-4 p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs text-slate-400">
-          <p>ソロ: <span className="text-amber-400">合計4人まで</span>（前衛のみ・後衛のみもOK）</p>
+          <p>ソロ: <span className="text-amber-400">合計6人まで</span>（前衛のみ・後衛のみもOK）</p>
           <p>前衛: 火力+20%, 被ダメ+20% ／ 後衛: 火力-20%, 被ダメ-20%</p>
         </div>
         
