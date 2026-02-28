@@ -124,7 +124,7 @@ export const jobs: Record<string, JobData> = {
     passives: [
       { name: '叡智', description: '魔法威力と回復量が上昇', effects: [{ type: 'magicBonus', value: 15 }, { type: 'healBonus', value: 15 }] },
       { name: '瞑想', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 4 }] },
-      { name: '鑑定眼', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 3 }] },
+      { name: '鑑定眼', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
       { id: 'sage_fire', name: '賢者の炎', description: '単体に炎魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 12, element: 'fire' },
@@ -244,7 +244,7 @@ export const jobs: Record<string, JobData> = {
     passives: [
       { name: '呪術', description: '魔法威力と状態異常成功率が上昇', effects: [{ type: 'magicBonus', value: 20 }, { type: 'debuffBonus', value: 20 }] },
       { name: '魔女の知恵', description: 'MP消費軽減', effects: [{ type: 'mpReduction', value: 15 }] },
-      { name: '占いの目', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 5 }] },
+      { name: '占いの目', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
       { id: 'curse', name: '呪詛', description: '敵のステータスを下げる', type: 'debuff', target: 'single', multiplier: 0, mpCost: 10, effect: { type: 'statDown', value: 30, duration: 3 } },
