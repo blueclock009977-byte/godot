@@ -233,7 +233,11 @@ function GameScreen() {
                       {multiRoomInfo.status === 'done' 
                         ? '✅ 探索完了！タップして結果を確認'
                         : multiRoomInfo.status === 'battle'
-                        ? `残り ${Math.floor(multiRoomInfo.remainingTime / 60)}分${multiRoomInfo.remainingTime % 60}秒`
+                        ? (multiRoomInfo.remainingTime <= 0
+                          ? '✅ 探索完了！タップして結果を確認'
+                          : `残り ${Math.floor(multiRoomInfo.remainingTime / 60)}分${multiRoomInfo.remainingTime % 60}秒`)
+                        : multiRoomInfo.status === 'waiting'
+                        ? '👥 待機中... タップしてルームへ'
                         : '待機中...'}
                     </p>
                   </div>
