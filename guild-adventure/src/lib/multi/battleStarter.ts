@@ -7,6 +7,14 @@ import {
 import { dungeons } from '@/lib/data/dungeons';
 import { runBattle, rollDrops } from '@/lib/battle/engine';
 import { Character, Party, BattleResult } from '@/lib/types';
+import {
+  calculateDropBonus,
+  calculateRareDropBonus,
+  calculateCoinBonus,
+  calculateExplorationSpeedBonus,
+  getDropRollCount,
+  applyExplorationSpeedBonus,
+} from '@/lib/drop/dropBonus';
 
 /**
  * 全プレイヤーのキャラクターからパーティを構築
@@ -31,7 +39,7 @@ function buildPartyFromPlayers(
 }
 
 /**
- * バトル結果に参加者情報を追加
+ * バトル結果に参加者情報とトレハンスキルを追加
  */
 function createStartLog(
   dungeonId: string,
@@ -47,6 +55,31 @@ function createStartLog(
     }).join(', ');
     log += `  ${playerName}: ${chars}\n`;
   });
+  
+  // トレハンスキル情報を追加
+  const allCharsWithOwner = Object.entries(players).flatMap(([playerName, p]) =>
+    (p.characters || []).map(rc => ({
+      ...rc.character,
+      ownerId: playerName,
+    }))
+  );
+  
+  const dropBonus = calculateDropBonus(allCharsWithOwner);
+  const rareDropBonus = calculateRareDropBonus(allCharsWithOwner);
+  const coinBonus = calculateCoinBonus(allCharsWithOwner);
+  const speedBonus = calculateExplorationSpeedBonus(allCharsWithOwner);
+  const rollCount = getDropRollCount(allCharsWithOwner);
+  
+  const bonuses: string[] = [];
+  if (dropBonus > 0) bonuses.push(`ドロップ+${dropBonus}%`);
+  if (rareDropBonus > 0) bonuses.push(`レア発見+${rareDropBonus}%`);
+  if (coinBonus > 0) bonuses.push(`コイン+${coinBonus}%`);
+  if (speedBonus > 0) bonuses.push(`探索時間-${speedBonus}%`);
+  if (rollCount > 4) bonuses.push(`抽選${rollCount}回`);
+  
+  if (bonuses.length > 0) {
+    log += `🔍 トレハン: ${bonuses.join(', ')}\n`;
+  }
   
   return log;
 }
@@ -138,7 +171,7 @@ export async function startMultiBattle(
   // バトル実行
   const result = runBattle(party, latestRoom.dungeonId as any);
   
-  // 参加者ログを追加
+  // 参加者ログを追加（トレハンスキル情報含む）
   const startLog = createStartLog(latestRoom.dungeonId, latestRoom.players);
   (result as any).startLog = startLog;
   
@@ -163,7 +196,6 @@ export async function startMultiBattle(
   const startTime = Date.now();
   
   // 探索時間短縮ボーナスを計算（全員のキャラで、ownerId付き）
-  const { applyExplorationSpeedBonus } = require('../drop/dropBonus');
   const allCharsWithOwner = Object.entries(latestRoom.players).flatMap(([playerName, p]) => 
     (p.characters || []).map(rc => ({
       ...rc.character,

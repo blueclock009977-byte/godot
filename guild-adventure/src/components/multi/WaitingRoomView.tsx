@@ -4,6 +4,7 @@ import { Character } from '@/lib/types';
 import { RoomCharacter, MultiRoom } from '@/lib/firebase';
 import CharacterSelectPanel from './CharacterSelectPanel';
 import PlayerListPanel from './PlayerListPanel';
+import TreasureHuntPanel from './TreasureHuntPanel';
 
 interface WaitingRoomViewProps {
   room: MultiRoom;
@@ -90,6 +91,9 @@ export default function WaitingRoomView({
           maxPlayers={room.maxPlayers}
           maxCharsPerPlayer={maxCharsPerPlayer}
         />
+        
+        {/* トレハンスキル表示 */}
+        <TreasureHuntPanel players={room.players} />
         
         {/* キャラ選択パネル */}
         <CharacterSelectPanel
