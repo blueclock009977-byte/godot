@@ -95,9 +95,14 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     }
   };
 
+  // 回収コイン計算（削除確認用）
+  const levelCosts = [0, 0, 100, 300, 600, 1000];
+  const refundCoins = 20 + Math.floor((levelCosts[currentLevel] || 0) * 0.1);
+  
   const handleDelete = async () => {
-    if (!confirm(`${character.name}を削除しますか？`)) return;
-    await deleteCharacter(character.id);
+    if (!confirm(`${character.name}を削除しますか？\n🪙 ${refundCoins}コイン回収できます`)) return;
+    const coins = await deleteCharacter(character.id);
+    alert(`${character.name}を削除しました\n🪙 ${coins}コイン回収！`);
     router.push('/');
   };
   
@@ -603,7 +608,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           onClick={handleDelete}
           className="w-full py-2 rounded text-sm text-red-400 border border-red-400 hover:bg-red-400/20"
         >
-          キャラクターを削除
+          キャラクターを削除（🪙{refundCoins}回収）
         </button>
     </PageLayout>
   );

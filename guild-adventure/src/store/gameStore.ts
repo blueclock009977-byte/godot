@@ -287,7 +287,7 @@ interface GameStore {
     trait: TraitType,
     environment: EnvironmentType,
   ) => Promise<Character>;
-  deleteCharacter: (id: string) => Promise<void>;
+  deleteCharacter: (id: string) => Promise<number>;  // 返り値は回収コイン
   
   // パーティ管理
   addToParty: (characterId: string, position: Position, slot: number) => Promise<void>;
@@ -730,8 +730,18 @@ export const useGameStore = create<GameStore>()(
         return newCharacter;
       },
       
-      // キャラクター削除
+      // キャラクター削除（コイン回収付き）
       deleteCharacter: async (id) => {
+        const character = get().characters.find((c) => c.id === id);
+        
+        // 回収コイン計算
+        // ベース: 20コイン + レベルに応じた強化コストの10%
+        // Lv1→2: 100, Lv2→3: 200, Lv3→4: 300, Lv4→5: 400
+        // 累計: Lv2まで100, Lv3まで300, Lv4まで600, Lv5まで1000
+        const levelCosts = [0, 0, 100, 300, 600, 1000]; // Lvごとの累計コスト
+        const level = character?.level || 1;
+        const refundCoins = 20 + Math.floor((levelCosts[level] || 0) * 0.1);
+        
         set((state) => {
           const newParty = {
             front: (state.party.front || []).map((c) => c?.id === id ? null : c),
@@ -741,10 +751,13 @@ export const useGameStore = create<GameStore>()(
           return {
             characters: state.characters.filter((c) => c.id !== id),
             party: newParty,
+            coins: state.coins + refundCoins,
           };
         });
         
         await get().syncToServer();
+        
+        return refundCoins;
       },
       
       // パーティに追加（可変長、枠数制限なし）
