@@ -96,6 +96,9 @@ export interface PassiveEffects {
   // v0.9.85追加: 物理/魔法耐性
   physicalResist: number;
   magicResist: number;
+  // v0.9.98追加: 属性耐性/強化
+  elementResist: Record<string, number>;  // { fire: 30, water: -20 } のように
+  elementBonus: Record<string, number>;   // 属性攻撃強化
 }
 
 /**
@@ -125,6 +128,8 @@ export function getEmptyPassiveEffects(): PassiveEffects {
     debuffDuration: 0, frontlineBonus: 0, allyMagicHitMp: 0, deathResist: 0, allyHpRegen: 0,
     // v0.9.85追加
     physicalResist: 0, magicResist: 0,
+    // v0.9.98追加
+    elementResist: {}, elementBonus: {},
   };
 }
 
@@ -171,6 +176,22 @@ function applyEffect(bonuses: CharacterBonuses, effect: Effect): void {
   if (type.startsWith('speciesResist_')) {
     const species = type.replace('speciesResist_', '');
     bonuses.speciesResist[species] = (bonuses.speciesResist[species] || 0) + effect.value;
+    bonuses.rawEffects.push(effect);
+    return;
+  }
+  
+  // 属性耐性（fireResist → elementResist['fire']）
+  if (type.endsWith('Resist') && ['fire', 'water', 'thunder', 'ice', 'earth', 'wind', 'light', 'dark'].some(e => type.startsWith(e))) {
+    const element = type.replace('Resist', '');
+    bonuses.elementResist[element] = (bonuses.elementResist[element] || 0) + effect.value;
+    bonuses.rawEffects.push(effect);
+    return;
+  }
+  
+  // 属性攻撃強化（fireBonus → elementBonus['fire']）
+  if (type.endsWith('Bonus') && ['fire', 'water', 'thunder', 'ice', 'earth', 'wind', 'light', 'dark'].some(e => type.startsWith(e))) {
+    const element = type.replace('Bonus', '');
+    bonuses.elementBonus[element] = (bonuses.elementBonus[element] || 0) + effect.value;
     bonuses.rawEffects.push(effect);
     return;
   }

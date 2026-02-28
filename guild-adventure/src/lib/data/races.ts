@@ -132,10 +132,10 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 90, maxMp: 50, atk: 11, def: 12, agi: 6, mag: 14 },
     passives: [
       { name: '不死の呪い', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 80 }] },
-      { name: '腐食攻撃', description: '与える劣化+3%', effects: [{ type: 'degradationBonus', value: 3 }] },
+      { name: '闇の眷属', description: '闇耐性+30%、闇攻撃+20%', effects: [{ type: 'darkResist', value: 30 }, { type: 'darkBonus', value: 20 }] },
+      { name: '聖光弱点', description: '光弱点-30%', effects: [{ type: 'lightResist', value: -30 }] },
       { name: 'HP吸収', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 20 }] },
       { name: '不死耐性', description: '不死系からの被ダメージ軽減', effects: [{ type: 'speciesResist_undead', value: 50 }] },
-      { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 30 }] },
     ],
     skills: [
       { id: 'life_drain', name: '生命吸収', description: 'ダメージを与えHP吸収', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 14 },
@@ -237,7 +237,8 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 90, maxMp: 60, atk: 10, def: 8, agi: 12, mag: 12 },
     passives: [
       { name: '元素親和', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
-      { name: '属性強化', description: '属性攻撃のダメージ+20%', effects: [{ type: 'damageBonus', value: 20 }] },
+      { name: '属性強化', description: '火/水/雷/氷攻撃+20%', effects: [{ type: 'fireBonus', value: 20 }, { type: 'waterBonus', value: 20 }, { type: 'thunderBonus', value: 20 }, { type: 'iceBonus', value: 20 }] },
+      { name: '元素耐性', description: '火/水/雷/氷耐性+15%', effects: [{ type: 'fireResist', value: 15 }, { type: 'waterResist', value: 15 }, { type: 'thunderResist', value: 15 }, { type: 'iceResist', value: 15 }] },
       { name: '精霊の恩恵', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 4 }] },
       { name: '悪魔耐性', description: '悪魔系からの被ダメージ軽減', effects: [{ type: 'speciesResist_demon', value: 25 }] },
     ],
@@ -256,7 +257,8 @@ export const races: Record<string, RaceData> = {
     passives: [
       { name: '聖なる血統', description: '物理・魔法・回復すべてが上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 10 }, { type: 'healBonus', value: 15 }] },
       { name: '神の加護', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 10 }] },
-      { name: '浄化の光', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 40 }] },
+      { name: '聖なる光', description: '光耐性+30%、光攻撃+25%', effects: [{ type: 'lightResist', value: 30 }, { type: 'lightBonus', value: 25 }] },
+      { name: '闇への弱さ', description: '闇弱点-20%', effects: [{ type: 'darkResist', value: -20 }] },
       { name: '不死狩り', description: '不死系への与ダメージ上昇', effects: [{ type: 'speciesKiller_undead', value: 40 }] },
     ],
     skills: [
@@ -273,7 +275,8 @@ export const races: Record<string, RaceData> = {
     baseStats: { maxHp: 85, maxMp: 65, atk: 11, def: 7, agi: 11, mag: 13 },
     passives: [
       { name: '闘魔法', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 15 }] },
-      { name: '呪いの血', description: 'デバフ成功率上昇', effects: [{ type: 'debuffBonus', value: 25 }] },
+      { name: '地獄の血', description: '火耐性+30%、火攻撃+25%', effects: [{ type: 'fireResist', value: 30 }, { type: 'fireBonus', value: 25 }] },
+      { name: '聖光弱点', description: '光弱点-20%', effects: [{ type: 'lightResist', value: -20 }] },
       { name: '生命奪取', description: '与ダメの一部をHP回復', effects: [{ type: 'hpSteal', value: 15 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 30 }] },
     ],
@@ -292,7 +295,8 @@ export const races: Record<string, RaceData> = {
     passives: [
       { name: '吸血衝動', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 25 }] },
       { name: '夜の眷属', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 10 }] },
-      { name: '夜目', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
+      { name: '闇の加護', description: '闇耐性+30%、闇攻撃+20%', effects: [{ type: 'darkResist', value: 30 }, { type: 'darkBonus', value: 20 }] },
+      { name: '陽光弱点', description: '光弱点-30%', effects: [{ type: 'lightResist', value: -30 }] },
       { name: '不死耐性', description: '不死系からの被ダメージ軽減', effects: [{ type: 'speciesResist_undead', value: 30 }] },
     ],
     skills: [

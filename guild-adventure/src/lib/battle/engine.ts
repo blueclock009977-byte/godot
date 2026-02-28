@@ -305,6 +305,15 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
+  // 属性耐性をelementModifierに変換
+  const elemResist = unit.passiveEffects.elementResist;
+  if (Object.keys(elemResist).length > 0) {
+    unit.elementModifier = {} as Partial<Record<ElementType, number>>;
+    for (const [elem, value] of Object.entries(elemResist)) {
+      unit.elementModifier[elem as ElementType] = value;
+    }
+  }
+  
   // allStats適用
   if (unit.passiveEffects.allStats > 0) {
     const mult = 1 + unit.passiveEffects.allStats / 100;
@@ -609,6 +618,11 @@ function calculateMagicDamage(
   // magicBonus
   damage *= percentBonus(atkEffects.magicBonus);
   
+  // 属性攻撃強化
+  if (skillElement && atkEffects.elementBonus[skillElement]) {
+    damage *= percentBonus(atkEffects.elementBonus[skillElement]);
+  }
+  
   // 属性相性
   damage *= getElementMultiplier(skillElement, defender.elementModifier);
   
@@ -650,6 +664,11 @@ function calculateHybridDamage(
   // physicalBonusとmagicBonusの平均を適用
   const avgBonus = (atkEffects.physicalBonus + atkEffects.magicBonus) / 2;
   damage *= percentBonus(avgBonus);
+  
+  // 属性攻撃強化
+  if (skillElement && atkEffects.elementBonus[skillElement]) {
+    damage *= percentBonus(atkEffects.elementBonus[skillElement]);
+  }
   
   // 属性相性
   damage *= getElementMultiplier(skillElement, defender.elementModifier);

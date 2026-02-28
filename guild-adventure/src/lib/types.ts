@@ -98,6 +98,24 @@ export type EffectType =
   | 'speciesResist_undead'    // 不死耐性
   | 'speciesResist_demon'     // 悪魔耐性
   | 'speciesResist_dragon'    // 竜耐性
+  // 属性耐性（被ダメ軽減%、負の値で弱点）
+  | 'fireResist'        // 火耐性
+  | 'waterResist'       // 水耐性
+  | 'thunderResist'     // 雷耐性
+  | 'iceResist'         // 氷耐性
+  | 'earthResist'       // 土耐性
+  | 'windResist'        // 風耐性
+  | 'lightResist'       // 光耐性
+  | 'darkResist'        // 闇耐性
+  // 属性攻撃強化（与ダメ+%）
+  | 'fireBonus'         // 火攻撃+%
+  | 'waterBonus'        // 水攻撃+%
+  | 'thunderBonus'      // 雷攻撃+%
+  | 'iceBonus'          // 氷攻撃+%
+  | 'earthBonus'        // 土攻撃+%
+  | 'windBonus'         // 風攻撃+%
+  | 'lightBonus'        // 光攻撃+%
+  | 'darkBonus'         // 闇攻撃+%
   // マスタリー用
   | 'allStats'          // 全ステータス+%
   | 'followUp'          // 追撃率+%
