@@ -26,7 +26,7 @@ export const races: Record<string, RaceData> = {
       { name: '風の加護', description: '回避率と先制率が上昇', effects: [{ type: 'evasionBonus', value: 15 }, { type: 'firstStrikeBonus', value: 20 }] },
       { name: 'MP自然回復', description: '毎ターンMPが回復', effects: [{ type: 'mpRegen', value: 3 }] },
       { name: '悪魔狩り', description: '悪魔系への与ダメージ+30%', effects: [{ type: 'speciesKiller_demon', value: 30 }] },
-      { name: '鷹の目', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 20 }] },
+      { name: '鷹の目', description: 'レア装備発見率+20%', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
       { id: 'spirit_arrow', name: '精霊の矢', description: '精霊の力で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 10, element: 'wind' },
@@ -197,7 +197,7 @@ export const races: Record<string, RaceData> = {
       { name: '恐怖のオーラ', description: '敵の命中率を下げる', effects: [{ type: 'evasionBonus', value: 15 }] },
       { name: '竜耐性', description: '竜系からの被ダメージ軽減', effects: [{ type: 'speciesResist_dragon', value: 30 }] },
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 40 }] },
-      { name: '欲望の嗅覚', description: 'レア装備発見率が上昇', effects: [{ type: 'rareDropBonus', value: 20 }] },
+      { name: '欲望の嗅覚', description: 'レア装備発見率+20%', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
       { id: 'curse_eye', name: '呪いの眼', description: '敵の攻撃・防御を低下', type: 'debuff', target: 'single', multiplier: 0, mpCost: 14, effect: { type: 'statDown', value: 25, duration: 3 } },
