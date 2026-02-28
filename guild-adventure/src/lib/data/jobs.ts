@@ -200,11 +200,12 @@ export const jobs: Record<string, JobData> = {
   ranger: {
     id: 'ranger',
     name: 'レンジャー',
-    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。持久戦に強い万能職。',
+    description: 'バランス型ステ。先制+25%、回避+15%、毎ターンHP回復。探索でドロップ率UP！',
     statModifiers: { maxHp: 10, maxMp: 15, atk: 4, def: 2, agi: 6, mag: 2 },
     passives: [
       { name: '野生の勘', description: '先制率と回避率が上昇', effects: [{ type: 'firstStrikeBonus', value: 25 }, { type: 'evasionBonus', value: 15 }] },
       { name: '自然治癒', description: '毎ターンHP回復', effects: [{ type: 'hpRegen', value: 5 }] },
+      { name: '探索術', description: 'ドロップ率が上昇', effects: [{ type: 'dropBonus', value: 20 }] },
     ],
     skills: [
       { id: 'snipe', name: '狙撃', description: '高威力の一撃', type: 'attack', target: 'single', multiplier: 2.0, mpCost: 14 },
@@ -258,11 +259,12 @@ export const jobs: Record<string, JobData> = {
   bard: {
     id: 'bard',
     name: 'バード',
-    description: 'MP+25、AGI+5。味方ATK+10%の支援特化。パーティ全体を強化！',
+    description: 'MP+25、AGI+5。味方ATK+10%の支援特化。旅で得たドロップ&コインUP！',
     statModifiers: { maxHp: 5, maxMp: 25, atk: 2, def: 1, agi: 5, mag: 4 },
     passives: [
       { name: '歌声', description: '味方の攻撃力が上昇', effects: [{ type: 'allyAtkBonus', value: 10 }] },
       { name: '魔力の旋律', description: 'MPリジェネ', effects: [{ type: 'mpRegen', value: 4 }] },
+      { name: '旅の経験', description: 'ドロップ率とコイン獲得が上昇', effects: [{ type: 'dropBonus', value: 15 }, { type: 'coinBonus', value: 25 }] },
     ],
     skills: [
       { id: 'battle_hymn', name: '勇気の歌', description: '味方全体の攻撃力上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 25, duration: 3 } },

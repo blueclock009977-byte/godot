@@ -58,6 +58,7 @@ export const races: Record<string, RaceData> = {
       { name: '小さな体', description: '回避率上昇、被ダメージ増加', effects: [{ type: 'evasionBonus', value: 25 }, { type: 'damageReduction', value: -10 }] },
       { name: '先制の才', description: '先制率が上昇', effects: [{ type: 'firstStrikeBonus', value: 20 }] },
       { name: '急所知識', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 25 }] },
+      { name: 'お宝嗅覚', description: 'コイン獲得が上昇', effects: [{ type: 'coinBonus', value: 25 }] },
     ],
     skills: [
       { id: 'vital_strike', name: '急所狙い', description: 'クリティカル率の高い一撃', type: 'attack', target: 'single', multiplier: 1.5, mpCost: 8 },
@@ -106,6 +107,7 @@ export const races: Record<string, RaceData> = {
       { name: '妖精の翅', description: '回避率が大幅上昇', effects: [{ type: 'evasionBonus', value: 30 }] },
       { name: '癒しの力', description: '回復量が上昇', effects: [{ type: 'healBonus', value: 30 }] },
       { name: '聖光', description: '不死系への与ダメージ上昇', effects: [{ type: 'speciesKiller_undead', value: 50 }] },
+      { name: '宝石眼', description: 'コイン獲得が上昇', effects: [{ type: 'coinBonus', value: 20 }] },
     ],
     skills: [
       { id: 'fairy_heal', name: '癒しの光', description: '味方一人のHPを回復', type: 'heal', target: 'ally', multiplier: 1.3, mpCost: 12 },
