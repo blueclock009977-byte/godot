@@ -1057,3 +1057,66 @@ export async function clearMultiAdventure(username: string): Promise<boolean> {
     return false;
   }
 }
+
+// 未受取のマルチ結果を全て自動受取
+export interface PendingResult {
+  roomCode: string;
+  dungeonId: string;
+  victory: boolean;
+  itemId?: string;
+  equipmentId?: string;
+  coinReward: number;
+  logs: any[];
+  players: string[];
+  playerDrops?: Record<string, string | undefined>;
+  playerEquipmentDrops?: Record<string, string | undefined>;
+}
+
+export async function claimAllPendingMultiResults(username: string): Promise<PendingResult[]> {
+  try {
+    // 全ルームを取得
+    const roomsRes = await fetch(`${FIREBASE_URL}/guild-adventure/rooms.json`);
+    if (!roomsRes.ok) return [];
+    const rooms = await roomsRes.json();
+    if (!rooms) return [];
+    
+    const results: PendingResult[] = [];
+    
+    for (const [code, room] of Object.entries(rooms) as [string, any][]) {
+      // status=done, 自分がplayers内にいる, playerClaimed[username]=false
+      if (room.status !== 'done') continue;
+      if (!room.players?.[username]) continue;
+      if (room.playerClaimed?.[username]) continue;
+      
+      // ドロップを受け取り
+      const itemId = room.playerDrops?.[username];
+      const equipmentId = room.playerEquipmentDrops?.[username];
+      
+      // dungeonデータからcoinRewardを計算（ここでは0、後でクライアント側で計算）
+      results.push({
+        roomCode: code,
+        dungeonId: room.dungeonId,
+        victory: room.battleResult?.victory || false,
+        itemId,
+        equipmentId,
+        coinReward: 0, // クライアント側で計算
+        logs: room.battleResult?.logs || [],
+        players: Object.keys(room.players),
+        playerDrops: room.playerDrops,
+        playerEquipmentDrops: room.playerEquipmentDrops,
+      });
+      
+      // playerClaimedをtrueに更新
+      await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/playerClaimed/${username}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(true),
+      });
+    }
+    
+    return results;
+  } catch (e) {
+    console.error('Failed to claim pending multi results:', e);
+    return [];
+  }
+}

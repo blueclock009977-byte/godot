@@ -314,6 +314,9 @@ interface GameStore {
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
   
+  // 未受取のマルチ結果を自動受取
+  claimAllPendingResults: () => Promise<number>;  // 返り値は受け取った件数
+  
   // サーバー同期
   syncToServer: () => Promise<void>;
 }
@@ -572,6 +575,12 @@ export const useGameStore = create<GameStore>()(
               }
             }
             
+            // 未受取のマルチ結果を自動受取
+            const pendingCount = await get().claimAllPendingResults();
+            if (pendingCount > 0) {
+              console.log(`[autoLogin] ${pendingCount}件の未受取マルチ結果を自動受取しました`);
+            }
+            
             set({ _dataLoaded: true });
             return true;
           }
@@ -603,6 +612,56 @@ export const useGameStore = create<GameStore>()(
         
         // Firebaseに保存
         await addAdventureHistory(username, history);
+      },
+      
+      // 未受取のマルチ結果を自動受取
+      claimAllPendingResults: async () => {
+        const { username, addItem, addEquipment, addCoins, addHistory, syncToServer } = get();
+        if (!username) return 0;
+        
+        const { claimAllPendingMultiResults } = await import('@/lib/firebase');
+        const { dungeons } = await import('@/lib/data/dungeons');
+        const { applyCoinBonus } = await import('@/lib/drop/dropBonus');
+        
+        const results = await claimAllPendingMultiResults(username);
+        
+        for (const result of results) {
+          // アイテム追加
+          if (result.itemId) {
+            addItem(result.itemId);
+          }
+          // 装備追加
+          if (result.equipmentId) {
+            addEquipment(result.equipmentId);
+          }
+          // コイン追加（勝利時のみ）
+          if (result.victory) {
+            const dungeon = dungeons[result.dungeonId as keyof typeof dungeons];
+            if (dungeon?.coinReward) {
+              // TODO: キャラのボーナスは適用できない（キャラ情報がない）
+              addCoins(dungeon.coinReward);
+            }
+          }
+          // 履歴追加
+          await addHistory({
+            type: 'multi',
+            dungeonId: result.dungeonId,
+            victory: result.victory,
+            droppedItemId: result.itemId,
+            droppedEquipmentId: result.equipmentId,
+            logs: result.logs,
+            roomCode: result.roomCode,
+            players: result.players,
+            playerDrops: result.playerDrops,
+            playerEquipmentDrops: result.playerEquipmentDrops,
+          });
+        }
+        
+        if (results.length > 0) {
+          await syncToServer();
+        }
+        
+        return results.length;
       },
       
       // サーバー同期
