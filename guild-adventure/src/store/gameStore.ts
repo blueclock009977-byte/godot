@@ -85,14 +85,23 @@ interface RestoreContext {
   addCoins: (amount: number) => void;
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
   syncToServer: () => Promise<void>;
-  setCurrentMultiRoom: (code: string | null) => void;
+  setCurrentMultiRoom: (code: string | null) => Promise<void>;
 }
 
 async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean> {
   const { username, addItem, addHistory, syncToServer, setCurrentMultiRoom } = ctx;
   
   const multiAdventure = await getMultiAdventure(username);
-  if (!multiAdventure || multiAdventure.claimed) return false;
+  
+  // multiAdventureがない、または既にclaimed → クリーンアップして終了
+  if (!multiAdventure || multiAdventure.claimed) {
+    // 念のためcurrentMultiRoomもクリア（残骸対策）
+    await setCurrentMultiRoom(null);
+    if (multiAdventure?.claimed) {
+      await clearMultiAdventure(username);
+    }
+    return false;
+  }
   
   // ルーム情報を取得して時間経過をチェック
   const room = await getRoom(multiAdventure.roomCode);
@@ -106,7 +115,7 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
       // まだ冒険時間が経過していない場合
       if (elapsed < duration) {
         console.log('[restoreMultiAdventure] multi adventure still in progress');
-        setCurrentMultiRoom(multiAdventure.roomCode);
+        await setCurrentMultiRoom(multiAdventure.roomCode);
         return true; // 処理したがまだ進行中
       }
     }
@@ -139,6 +148,7 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
   });
   
   await clearMultiAdventure(username);
+  await setCurrentMultiRoom(null);  // マルチ状態を確実にクリア
   return true;
 }
 
@@ -447,13 +457,12 @@ export const useGameStore = create<GameStore>()(
       
       
       // マルチルームコード設定（Firebaseにも保存）
-      setCurrentMultiRoom: (code) => {
+      setCurrentMultiRoom: async (code) => {
         set({ currentMultiRoom: code });
         const username = get().username;
         if (username) {
-          import('@/lib/firebase').then(({ setCurrentMultiRoomOnServer }) => {
-            setCurrentMultiRoomOnServer(username, code);
-          });
+          const { setCurrentMultiRoomOnServer } = await import('@/lib/firebase');
+          await setCurrentMultiRoomOnServer(username, code);
         }
       },
       
@@ -1101,7 +1110,11 @@ export const useGameStore = create<GameStore>()(
             addCoins: get().addCoins,
             addHistory: get().addHistory,
             syncToServer: get().syncToServer,
-            setCurrentMultiRoom: (code) => set({ currentMultiRoom: code }),
+            setCurrentMultiRoom: async (code) => {
+              set({ currentMultiRoom: code });
+              const { setCurrentMultiRoomOnServer } = await import('@/lib/firebase');
+              await setCurrentMultiRoomOnServer(username, code);
+            },
           };
           
           // マルチ冒険の復元
