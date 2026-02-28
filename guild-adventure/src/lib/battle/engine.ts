@@ -146,14 +146,19 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
 // 属性・系統計算
 // ============================================
 
-function getElementMultiplier(attackElement: ElementType | undefined, defenderElement: ElementType | undefined): number {
-  if (!attackElement || attackElement === 'none' || !defenderElement || defenderElement === 'none') {
+function getElementMultiplier(
+  attackElement: ElementType | undefined,
+  defenderElementModifier?: Partial<Record<ElementType, number>>
+): number {
+  // 攻撃属性がnoneまたは未設定の場合は1.0
+  if (!attackElement || attackElement === 'none') {
     return 1.0;
   }
-  if (ELEMENT_ADVANTAGE[attackElement] === defenderElement) {
-    return ELEMENT_MULTIPLIER;
-  }
-  return 1.0;
+  // 防御側の属性耐性/弱点を取得
+  const modifier = defenderElementModifier?.[attackElement] || 0;
+  // 正の値=耐性（ダメージ減）、負の値=弱点（ダメージ増）
+  // 例: 50 → 0.5倍、-50 → 1.5倍
+  return 1 - modifier / 100;
 }
 
 function getSpeciesKillerMultiplier(attackerEffects: PassiveEffects, defenderSpecies?: SpeciesType): number {
@@ -326,6 +331,9 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     skills: monster.skills,
     species: monster.species,
     element: monster.element || 'none',
+    elementModifier: monster.elementModifier,
+    physicalResist: monster.physicalResist,
+    magicResist: monster.magicResist,
     speciesKiller: monster.speciesKiller,
     speciesResist: monster.speciesResist,
     passiveEffects: getEmptyPassiveEffects(),
@@ -518,6 +526,11 @@ function calculatePhysicalDamage(
     const defenderMod = POSITION_MODIFIERS[defender.position as Position]?.defense || 1.0;
     damage = damage * attackerMod / defenderMod;
     
+    // 物理耐性
+    if (defender.physicalResist) {
+      damage *= percentReduce(defender.physicalResist);
+    }
+
     // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）
     damage = applyDamageModifiers(damage, attacker, defender, allyCount);
     
@@ -596,7 +609,12 @@ function calculateMagicDamage(
   damage *= percentBonus(atkEffects.magicBonus);
   
   // 属性相性
-  damage *= getElementMultiplier(skillElement, defender.element);
+  damage *= getElementMultiplier(skillElement, defender.elementModifier);
+  
+  // 魔法耐性
+  if (defender.magicResist) {
+    damage *= percentReduce(defender.magicResist);
+  }
   
   // 共通ダメージ係数（damageBonus, lowHpBonus, allyCountBonus, 系統特攻/耐性, damageReduction, 劣化）
   damage = applyDamageModifiers(damage, attacker, defender, allyCount);

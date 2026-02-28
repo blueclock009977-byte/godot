@@ -37,7 +37,7 @@ export const dungeons: Record<string, DungeonData> = {
   cave: {
     id: 'cave',
     name: '洞窟',
-    description: '暗い洞窟。高防御の敵が多い。物理攻撃が有効。',
+    description: '暗い洞窟。ゴーレム系は物理耐性高＆魔法弱点。魔法で攻めよう！',
     difficulty: 3,
     recommendedPlayers: 5,
     durationSeconds: 1800, // 30分
@@ -53,7 +53,7 @@ export const dungeons: Record<string, DungeonData> = {
   sea: {
     id: 'sea',
     name: '海',
-    description: '危険な海域。物理耐性の敵が多い。魔法攻撃が有効。',
+    description: '危険な海域。水属性敵多数。火魔法が有効！',
     difficulty: 4,
     recommendedPlayers: 6,
     durationSeconds: 3600, // 60分
@@ -69,7 +69,7 @@ export const dungeons: Record<string, DungeonData> = {
   desert: {
     id: 'desert',
     name: '砂漠',
-    description: '灼熱の砂漠。分裂する敵が多い。連続攻撃が有効。',
+    description: '灼熱の砂漠。土属性敵多数。水魔法が有効！',
     difficulty: 5,
     recommendedPlayers: 6,
     durationSeconds: 3600, // 1時間
@@ -85,7 +85,7 @@ export const dungeons: Record<string, DungeonData> = {
   volcano: {
     id: 'volcano',
     name: '火山',
-    description: '煮えたぎる火山。再生する敵が多い。必殺攻撃が有効。',
+    description: '煮えたぎる火山。火属性敵は火耐性極高。水魔法必須！',
     difficulty: 6,
     recommendedPlayers: 6,
     durationSeconds: 3600, // 1時間
@@ -101,7 +101,7 @@ export const dungeons: Record<string, DungeonData> = {
   snowfield: {
     id: 'snowfield',
     name: '雪原',
-    description: '極寒の雪原。凍結攻撃に注意。状態異常耐性が重要。',
+    description: '極寒の雪原。水属性敵多数、魔法耐性あり。火魔法が有効！',
     difficulty: 7,
     recommendedPlayers: 6,
     durationSeconds: 3600, // 1時間

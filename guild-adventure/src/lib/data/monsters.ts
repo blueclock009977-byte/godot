@@ -2,6 +2,7 @@ import { Monster, SkillData } from '../types';
 
 // ============================================
 // 草原のモンスター（★）- 2人推奨・初心者向け
+// 耐性なし（チュートリアル）
 // ============================================
 
 export const grasslandMonsters: Monster[] = [
@@ -31,6 +32,7 @@ export const grasslandBoss: Monster = {
   name: 'スライムキング',
   species: 'beast',
   element: 'water',
+  elementModifier: { water: 30, fire: -30 },  // 水耐性30%, 火弱点
   stats: { hp: 80, maxHp: 80, mp: 20, maxMp: 20, atk: 8, def: 5, agi: 3, mag: 3 },
   skills: [{
     id: 'split',
@@ -45,6 +47,7 @@ export const grasslandBoss: Monster = {
 
 // ============================================
 // 森林のモンスター（★★）- 4人推奨・回避型
+// 風・土属性、物理耐性あり
 // ============================================
 
 export const forestMonsters: Monster[] = [
@@ -59,6 +62,8 @@ export const forestMonsters: Monster[] = [
     name: 'フォレストフェアリー',
     species: 'humanoid',
     element: 'wind',
+    elementModifier: { wind: 30, earth: -30 },  // 風耐性、土弱点
+    magicResist: 20,  // 妖精は魔法に強い
     stats: { hp: 35, maxHp: 35, mp: 30, maxMp: 30, atk: 4, def: 3, agi: 22, mag: 18 },
   },
   {
@@ -74,6 +79,8 @@ export const forestBoss: Monster = {
   name: 'トレント',
   species: 'beast',
   element: 'earth',
+  elementModifier: { earth: 40, fire: -40 },  // 土耐性、火弱点
+  physicalResist: 20,  // 樹木は物理に強い
   stats: { hp: 300, maxHp: 300, mp: 40, maxMp: 40, atk: 18, def: 25, agi: 3, mag: 12 },
   skills: [{
     id: 'root_bind',
@@ -90,6 +97,7 @@ export const forestBoss: Monster = {
 
 // ============================================
 // 洞窟のモンスター（★★★）- 5人推奨・高防御
+// ゴーレム系は物理耐性高い、魔法で攻めよう！
 // ============================================
 
 export const caveMonsters: Monster[] = [
@@ -104,12 +112,16 @@ export const caveMonsters: Monster[] = [
     name: 'ストーンゴーレム',
     species: 'humanoid',
     element: 'earth',
+    elementModifier: { earth: 50, water: -40 },  // 土耐性高、水弱点
+    physicalResist: 40,  // 石なので物理に強い
+    magicResist: -20,    // 魔法に弱い
     stats: { hp: 170, maxHp: 170, mp: 0, maxMp: 0, atk: 19, def: 30, agi: 2, mag: 0 },
   },
   {
     id: 'cave_troll',
     name: 'トロール',
     species: 'humanoid',
+    physicalResist: 20,  // タフな肉体
     stats: { hp: 210, maxHp: 210, mp: 0, maxMp: 0, atk: 24, def: 17, agi: 5, mag: 0 },
   },
 ];
@@ -119,6 +131,7 @@ export const caveBoss: Monster = {
   name: 'ダークドラゴン',
   species: 'dragon',
   element: 'fire',
+  elementModifier: { fire: 40, water: -40 },  // 火耐性、水弱点
   stats: { hp: 500, maxHp: 500, mp: 50, maxMp: 50, atk: 30, def: 25, agi: 10, mag: 22 },
   skills: [{
     id: 'flame_breath',
@@ -134,7 +147,8 @@ export const caveBoss: Monster = {
 };
 
 // ============================================
-// 海のモンスター（★★★★）- 6人推奨・高AGI
+// 海のモンスター（★★★★）- 6人推奨・水属性
+// 水耐性高い、火魔法で攻めよう！
 // ============================================
 
 export const seaMonsters: Monster[] = [
@@ -143,6 +157,7 @@ export const seaMonsters: Monster[] = [
     name: 'マーマン',
     species: 'humanoid',
     element: 'water',
+    elementModifier: { water: 40, fire: -40 },  // 水耐性、火弱点
     stats: { hp: 135, maxHp: 135, mp: 27, maxMp: 27, atk: 22, def: 13, agi: 20, mag: 18 },
   },
   {
@@ -150,6 +165,7 @@ export const seaMonsters: Monster[] = [
     name: 'シーサーペント',
     species: 'beast',
     element: 'water',
+    elementModifier: { water: 40, fire: -40 },
     stats: { hp: 160, maxHp: 160, mp: 0, maxMp: 0, atk: 27, def: 16, agi: 22, mag: 0 },
   },
   {
@@ -157,6 +173,8 @@ export const seaMonsters: Monster[] = [
     name: 'ゴーストシップ',
     species: 'undead',
     element: 'water',
+    elementModifier: { water: 30, fire: -30 },
+    magicResist: 20,  // 実体がないので魔法耐性
     stats: { hp: 180, maxHp: 180, mp: 36, maxMp: 36, atk: 18, def: 22, agi: 9, mag: 27 },
   },
 ];
@@ -166,6 +184,8 @@ export const seaBoss: Monster = {
   name: 'クラーケン',
   species: 'beast',
   element: 'water',
+  elementModifier: { water: 50, fire: -50 },  // 水耐性高、火に激弱
+  magicResist: 25,  // 巨大な体で魔法耐性
   stats: { hp: 700, maxHp: 700, mp: 45, maxMp: 45, atk: 35, def: 22, agi: 16, mag: 27 },
   skills: [{
     id: 'tidal_wave',
@@ -180,7 +200,8 @@ export const seaBoss: Monster = {
 };
 
 // ============================================
-// 砂漠のモンスター（★★★★★）- 6人推奨・スタン注意
+// 砂漠のモンスター（★★★★★）- 6人推奨・土属性
+// 土耐性、水魔法で攻めよう！
 // ============================================
 
 export const desertMonsters: Monster[] = [
@@ -189,18 +210,22 @@ export const desertMonsters: Monster[] = [
     name: 'サンドワーム',
     species: 'beast',
     element: 'earth',
+    elementModifier: { earth: 40, water: -40 },  // 土耐性、水弱点
     stats: { hp: 210, maxHp: 210, mp: 0, maxMp: 0, atk: 32, def: 17, agi: 7, mag: 0 },
   },
   {
     id: 'mummy',
     name: 'マミー',
     species: 'undead',
+    physicalResist: 25,  // 包帯で物理軽減
+    elementModifier: { fire: -30 },  // 燃えやすい
     stats: { hp: 170, maxHp: 170, mp: 25, maxMp: 25, atk: 25, def: 25, agi: 4, mag: 21 },
   },
   {
     id: 'scorpion_king',
     name: 'スコーピオン',
     species: 'beast',
+    physicalResist: 20,  // 外骨格
     stats: { hp: 185, maxHp: 185, mp: 0, maxMp: 0, atk: 30, def: 30, agi: 13, mag: 0 },
   },
 ];
@@ -210,6 +235,8 @@ export const desertBoss: Monster = {
   name: 'スフィンクス',
   species: 'beast',
   element: 'earth',
+  elementModifier: { earth: 40, water: -40 },
+  magicResist: 20,  // 知恵の獣
   stats: { hp: 850, maxHp: 850, mp: 68, maxMp: 68, atk: 38, def: 34, agi: 17, mag: 34 },
   skills: [{
     id: 'riddle',
@@ -225,7 +252,8 @@ export const desertBoss: Monster = {
 };
 
 // ============================================
-// 火山のモンスター（★★★★★★）- 6人推奨・高火力
+// 火山のモンスター（★★★★★★）- 6人推奨・火属性
+// 火耐性非常に高い、水魔法必須！
 // ============================================
 
 export const volcanoMonsters: Monster[] = [
@@ -234,6 +262,8 @@ export const volcanoMonsters: Monster[] = [
     name: 'ファイアエレメンタル',
     species: 'demon',
     element: 'fire',
+    elementModifier: { fire: 70, water: -70 },  // 火耐性極高、水激弱
+    physicalResist: 30,  // 実体が薄い
     stats: { hp: 170, maxHp: 170, mp: 42, maxMp: 42, atk: 21, def: 13, agi: 17, mag: 38 },
   },
   {
@@ -241,6 +271,8 @@ export const volcanoMonsters: Monster[] = [
     name: 'ラーヴァゴーレム',
     species: 'humanoid',
     element: 'fire',
+    elementModifier: { fire: 60, water: -50 },
+    physicalResist: 30,  // 溶岩の体
     stats: { hp: 300, maxHp: 300, mp: 0, maxMp: 0, atk: 38, def: 38, agi: 3, mag: 0 },
   },
   {
@@ -248,6 +280,7 @@ export const volcanoMonsters: Monster[] = [
     name: 'サラマンダー',
     species: 'beast',
     element: 'fire',
+    elementModifier: { fire: 50, water: -50 },
     stats: { hp: 240, maxHp: 240, mp: 34, maxMp: 34, atk: 34, def: 21, agi: 19, mag: 30 },
   },
 ];
@@ -257,6 +290,8 @@ export const volcanoBoss: Monster = {
   name: 'イフリート',
   species: 'demon',
   element: 'fire',
+  elementModifier: { fire: 80, water: -60 },  // 火ほぼ無効、水大弱点
+  magicResist: 15,  // 魔法耐性も少し
   stats: { hp: 1000, maxHp: 1000, mp: 85, maxMp: 85, atk: 47, def: 30, agi: 21, mag: 47 },
   skills: [{
     id: 'hellfire',
@@ -272,7 +307,8 @@ export const volcanoBoss: Monster = {
 };
 
 // ============================================
-// 雪原のモンスター（★★★★★★★）- 6人推奨・AGIデバフ
+// 雪原のモンスター（★★★★★★★）- 6人推奨・水属性
+// 水耐性高い、火魔法で攻めよう！
 // ============================================
 
 export const snowfieldMonsters: Monster[] = [
@@ -281,6 +317,7 @@ export const snowfieldMonsters: Monster[] = [
     name: 'アイスウルフ',
     species: 'beast',
     element: 'water',
+    elementModifier: { water: 50, fire: -50 },
     stats: { hp: 255, maxHp: 255, mp: 0, maxMp: 0, atk: 38, def: 21, agi: 30, mag: 0 },
   },
   {
@@ -288,6 +325,8 @@ export const snowfieldMonsters: Monster[] = [
     name: 'フロストジャイアント',
     species: 'humanoid',
     element: 'water',
+    elementModifier: { water: 50, fire: -50 },
+    physicalResist: 25,  // 巨人の体
     stats: { hp: 380, maxHp: 380, mp: 25, maxMp: 25, atk: 47, def: 34, agi: 7, mag: 21 },
   },
   {
@@ -295,6 +334,9 @@ export const snowfieldMonsters: Monster[] = [
     name: 'アイスレイス',
     species: 'undead',
     element: 'water',
+    elementModifier: { water: 60, fire: -60 },
+    magicResist: 30,  // 幽霊なので魔法耐性
+    physicalResist: 30,  // 実体がない
     stats: { hp: 210, maxHp: 210, mp: 51, maxMp: 51, atk: 25, def: 17, agi: 25, mag: 43 },
   },
 ];
@@ -304,6 +346,8 @@ export const snowfieldBoss: Monster = {
   name: 'アイスクイーン',
   species: 'demon',
   element: 'water',
+  elementModifier: { water: 70, fire: -60 },
+  magicResist: 30,  // 氷の女王は魔法耐性
   stats: { hp: 1190, maxHp: 1190, mp: 100, maxMp: 100, atk: 42, def: 38, agi: 25, mag: 55 },
   skills: [{
     id: 'absolute_zero',
@@ -321,6 +365,7 @@ export const snowfieldBoss: Monster = {
 
 // ============================================
 // 神殿のモンスター（★★★★★★★★）- 6人推奨・最高難度
+// バランス型だが全体的に耐性あり
 // ============================================
 
 export const templeMonsters: Monster[] = [
@@ -329,6 +374,8 @@ export const templeMonsters: Monster[] = [
     name: '堕天使',
     species: 'demon',
     element: 'wind',
+    elementModifier: { wind: 40, earth: -30 },
+    magicResist: 25,  // 天使の加護
     stats: { hp: 400, maxHp: 400, mp: 80, maxMp: 80, atk: 50, def: 35, agi: 40, mag: 55 },
   },
   {
@@ -336,12 +383,16 @@ export const templeMonsters: Monster[] = [
     name: 'エンシェントドラゴン',
     species: 'dragon',
     element: 'fire',
+    elementModifier: { fire: 60, water: -50 },
+    physicalResist: 20,  // 硬い鱗
     stats: { hp: 600, maxHp: 600, mp: 50, maxMp: 50, atk: 65, def: 50, agi: 25, mag: 40 },
   },
   {
     id: 'lich',
     name: 'リッチ',
     species: 'undead',
+    magicResist: 40,  // 魔法使いなので魔法耐性高
+    physicalResist: -20,  // 骨なので物理に弱い
     stats: { hp: 350, maxHp: 350, mp: 100, maxMp: 100, atk: 35, def: 30, agi: 20, mag: 70 },
   },
 ];
@@ -351,6 +402,9 @@ export const templeBoss: Monster = {
   name: '破壊神',
   species: 'demon',
   element: 'fire',
+  elementModifier: { fire: 70, water: -50 },
+  physicalResist: 20,
+  magicResist: 20,  // 神なので両方耐性
   stats: { hp: 2000, maxHp: 2000, mp: 150, maxMp: 150, atk: 70, def: 50, agi: 35, mag: 70 },
   skills: [
     {

@@ -297,6 +297,86 @@ export const jobs: Record<string, JobData> = {
     },
     masterySkill2: { name: '幸運の歌', description: '追加抽選+1、レアドロップ+20%', type: 'passive', effects: [{ type: 'doubleDropRoll', value: 1 }, { type: 'rareDropBonus', value: 20 }] },
   },
+
+  // ============================================
+  // 両刀職業（物理+魔法ハイブリッド）
+  // ============================================
+
+  spellblade: {
+    id: 'spellblade',
+    name: '魔法剣士',
+    description: 'HP+10、MP+20、ATK+4、MAG+4。剣に魔力を纏わせる両刀使い。物理+魔法の複合ダメージが強力。',
+    statModifiers: { maxHp: 10, maxMp: 20, atk: 4, mag: 4 },
+    passives: [
+      { name: '魔法剣', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
+      { name: '剣魔融合', description: 'クリティカル時に追加魔法ダメージ', effects: [{ type: 'critFollowUp', value: 30 }] },
+      { name: '魔力循環', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 3 }] },
+    ],
+    skills: [
+      { id: 'spellblade_slash', name: '魔法剣・閃', description: '魔力を込めた斬撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 12 },
+      { id: 'enchant_blade', name: 'エンチャントブレード', description: '自身の攻撃力と魔力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 15, effect: { type: 'atkUp', value: 30, duration: 3 } },
+      { id: 'arcane_burst', name: 'アーケインバースト', description: '全体に魔法剣の衝撃波', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 22 },
+    ],
+    masterySkill: { name: '魔法剣・極', description: '物理+魔法両方+30%', type: 'passive', effects: [{ type: 'physicalBonus', value: 30 }, { type: 'magicBonus', value: 30 }] },
+    masterySkill2: { name: '魔力共鳴', description: '味方全体のMAG+15%', type: 'passive', effects: [{ type: 'allyMagBonus', value: 15 }] },
+  },
+
+  battlemage: {
+    id: 'battlemage',
+    name: '戦闘魔導士',
+    description: 'HP+15、MP+25、ATK+3、MAG+5。殴れる魔法使い。近接戦闘しながら魔法も使える万能型。',
+    statModifiers: { maxHp: 15, maxMp: 25, atk: 3, mag: 5 },
+    passives: [
+      { name: '戦闘魔術', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 12 }, { type: 'magicBonus', value: 18 }] },
+      { name: '魔力装甲', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 10 }] },
+      { name: '魔力集中', description: 'MP消費軽減', effects: [{ type: 'mpReduction', value: 15 }] },
+    ],
+    skills: [
+      { id: 'magic_slash', name: 'マジックスラッシュ', description: '魔力を込めた斬撃', type: 'attack', target: 'single', multiplier: 1.6, mpCost: 10 },
+      { id: 'arcane_shield', name: 'アーケインシールド', description: '自身の防御力を上昇', type: 'buff', target: 'self', multiplier: 0, mpCost: 12, effect: { type: 'defUp', value: 40, duration: 3 } },
+      { id: 'battle_magic', name: 'バトルマジック', description: '全体に魔法攻撃', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 20 },
+    ],
+    masterySkill: { name: '魔導騎士', description: '物理・魔法+25%、被ダメ-15%', type: 'passive', effects: [{ type: 'physicalBonus', value: 25 }, { type: 'magicBonus', value: 25 }, { type: 'damageReduction', value: 15 }] },
+    masterySkill2: { name: '戦場の魔導', description: '味方の物理攻撃後30%で追撃', type: 'passive', effects: [{ type: 'physicalFollowUp', value: 30 }] },
+  },
+
+  runesmith: {
+    id: 'runesmith',
+    name: '符術士',
+    description: 'HP+5、MP+20、ATK+3、DEF+2、MAG+4。武器にルーンを刻み、物理攻撃に魔法効果を付与する。',
+    statModifiers: { maxHp: 5, maxMp: 20, atk: 3, def: 2, mag: 4 },
+    passives: [
+      { name: 'ルーン刻印', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 12 }, { type: 'magicBonus', value: 12 }] },
+      { name: '防護符', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 12 }] },
+      { name: '符の知識', description: 'レア装備発見率上昇', effects: [{ type: 'rareDropBonus', value: 15 }] },
+    ],
+    skills: [
+      { id: 'rune_blade', name: 'ルーンブレード', description: 'ルーンの力で斬る', type: 'attack', target: 'single', multiplier: 1.7, mpCost: 11 },
+      { id: 'protect_rune', name: '守護のルーン', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 18, effect: { type: 'defUp', value: 25, duration: 3 } },
+      { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ', type: 'magic', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
+    ],
+    masterySkill: { name: '大紋章', description: '味方全体の被ダメ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
+    masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-15%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 15 }] },
+  },
+
+  redmage: {
+    id: 'redmage',
+    name: '赤魔道士',
+    description: 'HP+10、MP+20、ATK+3、MAG+3、AGI+2。物理・魔法・回復すべてをこなす器用貧乏の極み。',
+    statModifiers: { maxHp: 10, maxMp: 20, atk: 3, mag: 3, agi: 2 },
+    passives: [
+      { name: '連続魔', description: '物理・魔法・回復すべてが上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 10 }, { type: 'healBonus', value: 10 }] },
+      { name: '魔力回復', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 5 }] },
+      { name: '回避術', description: '回避率上昇', effects: [{ type: 'evasionBonus', value: 12 }] },
+    ],
+    skills: [
+      { id: 'red_slash', name: 'レッドスラッシュ', description: '素早い斬撃', type: 'attack', target: 'single', multiplier: 1.5, mpCost: 8 },
+      { id: 'red_magic', name: 'レッドマジック', description: '炎の魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 10, element: 'fire' },
+      { id: 'red_cure', name: 'レッドキュア', description: '味方一人を回復', type: 'heal', target: 'ally', multiplier: 1.2, mpCost: 12 },
+    ],
+    masterySkill: { name: '赤魔法の極み', description: '物理・魔法・回復+25%', type: 'passive', effects: [{ type: 'physicalBonus', value: 25 }, { type: 'magicBonus', value: 25 }, { type: 'healBonus', value: 25 }] },
+    masterySkill2: { name: '万能の才', description: 'ドロップ+20%、コイン+20%', type: 'passive', effects: [{ type: 'dropBonus', value: 20 }, { type: 'coinBonus', value: 20 }] },
+  },
 };
 
 export type JobType = keyof typeof jobs;

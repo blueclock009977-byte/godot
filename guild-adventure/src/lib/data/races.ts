@@ -221,6 +221,82 @@ export const races: Record<string, RaceData> = {
     },
     masterySkill2: { name: '地獄の契約', description: '与ダメ+30%、被ダメ+15%', type: 'passive', effects: [{ type: 'damageBonus', value: 30 }, { type: 'damageReduction', value: -15 }] },
   },
+
+  // ============================================
+  // 両刀種族（物理+魔法ハイブリッド）
+  // ============================================
+
+  genasi: {
+    id: 'genasi',
+    name: 'ジェナシ',
+    description: '元素の化身。ATKとMAG両方に補正があり、属性攻撃が得意。魔法剣士や戦闘魔導士と相性◎',
+    baseStats: { maxHp: 90, maxMp: 60, atk: 10, def: 8, agi: 12, mag: 12 },
+    passives: [
+      { name: '元素親和', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 15 }] },
+      { name: '属性強化', description: '属性攻撃のダメージ+20%', effects: [{ type: 'damageBonus', value: 20 }] },
+      { name: '精霊の恩恵', description: '毎ターンMP回復', effects: [{ type: 'mpRegen', value: 4 }] },
+      { name: '悪魔耐性', description: '悪魔系からの被ダメージ軽減', effects: [{ type: 'speciesResist_demon', value: 25 }] },
+    ],
+    skills: [
+      { id: 'elemental_strike', name: 'エレメンタルストライク', description: '元素の力を込めた一撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12, element: 'fire' },
+    ],
+    masterySkill: { name: '元素融合', description: '物理+魔法の両方が+25%', type: 'passive', effects: [{ type: 'physicalBonus', value: 25 }, { type: 'magicBonus', value: 25 }] },
+    masterySkill2: { name: '精霊王の加護', description: '味方全体のMAG+15%', type: 'passive', effects: [{ type: 'allyMagBonus', value: 15 }] },
+  },
+
+  aasimar: {
+    id: 'aasimar',
+    name: 'アアシマール',
+    description: '天使の血を引く者。物理・魔法・回復すべてに適性があり、パーティの要になれる万能種族。',
+    baseStats: { maxHp: 85, maxMp: 70, atk: 8, def: 9, agi: 10, mag: 14 },
+    passives: [
+      { name: '聖なる血統', description: '物理・魔法・回復すべてが上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 10 }, { type: 'healBonus', value: 15 }] },
+      { name: '神の加護', description: '被ダメージを軽減', effects: [{ type: 'damageReduction', value: 10 }] },
+      { name: '浄化の光', description: '状態異常耐性上昇', effects: [{ type: 'statusResist', value: 40 }] },
+      { name: '不死狩り', description: '不死系への与ダメージ上昇', effects: [{ type: 'speciesKiller_undead', value: 40 }] },
+    ],
+    skills: [
+      { id: 'divine_judgment', name: '聖なる裁き', description: '聖なる光で敵を裁く', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 14 },
+    ],
+    masterySkill: { name: '天使の翼', description: '味方全員の被ダメ-15%', type: 'passive', effects: [{ type: 'allyDefense', value: 15 }] },
+    masterySkill2: { name: '奇跡の祈り', description: '味方全体HP+10/ターン', type: 'passive', effects: [{ type: 'allyHpRegen', value: 10 }] },
+  },
+
+  tiefling: {
+    id: 'tiefling',
+    name: 'ティーフリング',
+    description: '悪魔の血を引く者。闘魔法に長け、デバフを得意とする攻撃的な両刀使い。',
+    baseStats: { maxHp: 85, maxMp: 65, atk: 11, def: 7, agi: 11, mag: 13 },
+    passives: [
+      { name: '闘魔法', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 10 }, { type: 'magicBonus', value: 15 }] },
+      { name: '呪いの血', description: 'デバフ成功率上昇', effects: [{ type: 'debuffBonus', value: 25 }] },
+      { name: '生命奪取', description: '与ダメの一部をHP回復', effects: [{ type: 'hpSteal', value: 15 }] },
+      { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 30 }] },
+    ],
+    skills: [
+      { id: 'hellflame', name: '地獄の炎', description: '地獄の業火で焼き尽くす', type: 'magic', target: 'all', multiplier: 1.2, mpCost: 18, element: 'fire' },
+    ],
+    masterySkill: { name: '悪魔の契約', description: '与ダメ+40%、被ダメ+20%', type: 'passive', effects: [{ type: 'damageBonus', value: 40 }, { type: 'damageReduction', value: -20 }] },
+    masterySkill2: { name: '呪縛の連鎖', description: 'デバフ時追撃+デバフ延長+1', type: 'passive', effects: [{ type: 'debuffFollowUp', value: 40 }, { type: 'debuffDuration', value: 1 }] },
+  },
+
+  dhampir: {
+    id: 'dhampir',
+    name: 'ダンピール',
+    description: '半吸血鬼。HP吸収に特化し、攻撃しながら回復できる自己完結型の両刀使い。',
+    baseStats: { maxHp: 100, maxMp: 45, atk: 13, def: 9, agi: 13, mag: 11 },
+    passives: [
+      { name: '吸血衝動', description: '与ダメージの一部をHP回復', effects: [{ type: 'hpSteal', value: 25 }] },
+      { name: '夜の眷属', description: '物理と魔法の威力が上昇', effects: [{ type: 'physicalBonus', value: 15 }, { type: 'magicBonus', value: 10 }] },
+      { name: '夜目', description: 'クリティカル率上昇', effects: [{ type: 'critBonus', value: 15 }] },
+      { name: '不死耐性', description: '不死系からの被ダメージ軽減', effects: [{ type: 'speciesResist_undead', value: 30 }] },
+    ],
+    skills: [
+      { id: 'blood_fang', name: '血の牙', description: '敵のHPを吸収する', type: 'attack', target: 'single', multiplier: 1.5, mpCost: 10 },
+    ],
+    masterySkill: { name: '真祖の血', description: 'HP吸収+30%、物理+20%', type: 'passive', effects: [{ type: 'hpSteal', value: 30 }, { type: 'physicalBonus', value: 20 }] },
+    masterySkill2: { name: '不死の呪い', description: 'HP0で50%の確率で耐える', type: 'passive', effects: [{ type: 'deathResist', value: 50 }] },
+  },
 };
 
 export type RaceType = keyof typeof races;

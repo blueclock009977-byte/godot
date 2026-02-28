@@ -4,11 +4,13 @@
 
 export type RaceType = 
   | 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardman' | 'fairy' | 'undead'
-  | 'goblin' | 'dragonewt' | 'angel' | 'demon';
+  | 'goblin' | 'dragonewt' | 'angel' | 'demon'
+  | 'genasi' | 'aasimar' | 'tiefling' | 'dhampir';  // 両刀種族
 
 export type JobType = 
   | 'warrior' | 'mage' | 'priest' | 'thief' | 'knight' | 'hunter' | 'ninja' | 'sage'
-  | 'berserker' | 'paladin' | 'necromancer' | 'monk' | 'ranger' | 'samurai' | 'witch' | 'bard';
+  | 'berserker' | 'paladin' | 'necromancer' | 'monk' | 'ranger' | 'samurai' | 'witch' | 'bard'
+  | 'spellblade' | 'battlemage' | 'runesmith' | 'redmage';  // 両刀職業
 
 export type TraitType = 'brave' | 'cautious' | 'lucky' | 'genius' | 'stubborn';
 export type EnvironmentType = 'grassland' | 'forest' | 'sea' | 'mountain' | 'city';
@@ -295,7 +297,10 @@ export interface Monster {
   skills?: SkillData[];
   dropRate?: number;
   species: SpeciesType;           // 系統
-  element?: ElementType;          // 属性（省略時はnone）
+  element?: ElementType;
+  elementModifier?: Partial<Record<ElementType, number>>;  // 属性耐性/弱点（正=耐性%, 負=弱点%）
+  physicalResist?: number;  // 物理ダメージ耐性%
+  magicResist?: number;     // 魔法ダメージ耐性%
   speciesKiller?: { species: SpeciesType; multiplier: number }[];  // 系統特攻
   speciesResist?: { species: SpeciesType; multiplier: number }[];  // 系統耐性
 }
@@ -346,6 +351,9 @@ export interface BattleUnit {
   // モンスター用
   species?: SpeciesType;
   element?: ElementType;
+  elementModifier?: Partial<Record<ElementType, number>>;  // 属性耐性/弱点
+  physicalResist?: number;  // 物理ダメージ耐性%
+  magicResist?: number;     // 魔法ダメージ耐性%
   speciesKiller?: { species: SpeciesType; multiplier: number }[];
   speciesResist?: { species: SpeciesType; multiplier: number }[];
 }
