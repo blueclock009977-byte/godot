@@ -166,7 +166,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     if (!username || !room || isReady) return;
     const playerCount = room.maxPlayers as 2 | 3;
     const savedChars = getLastMultiParty(playerCount);
-    if (!savedChars) return;
+    if (!savedChars || savedChars.length === 0) return;
     
     // 保存されたキャラIDから現在のキャラを取得
     const newSelected: { character: any; position: 'front' | 'back' }[] = [];
@@ -176,6 +176,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         newSelected.push({ character: char, position: saved.position });
       }
     }
+    
+    // キャラが1人も見つからなかった場合は何もしない
+    if (newSelected.length === 0) return;
     
     setSelectedChars(newSelected);
     await updateRoomCharacters(code, username, newSelected);
@@ -195,6 +198,13 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     const newReady = !isReady;
     setIsReady(newReady);
     await updateRoomReady(code, username, newReady);
+    
+    // 準備完了時に編成を保存（次回の「前の編成を使う」用）
+    if (newReady && room) {
+      const playerCount = room.maxPlayers as 2 | 3;
+      const chars = selectedChars.map(c => ({ charId: c.character.id, position: c.position }));
+      await saveMultiParty(playerCount, chars);
+    }
     
     // 準備完了で全員揃ったら自動出撃
     if (newReady && room) {
