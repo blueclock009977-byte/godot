@@ -348,6 +348,10 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         dropClaimed={dropClaimed}
         logs={room.battleResult.logs || []}
         coinReward={room.battleResult.victory ? dungeonData?.coinReward : undefined}
+        players={Object.keys(room.players)}
+        playerDrops={room.playerDrops}
+        playerEquipmentDrops={room.playerEquipmentDrops}
+        myUsername={username || undefined}
       />
     );
   }

@@ -14,6 +14,11 @@ interface BattleResultViewProps {
   logs: BattleLog[];
   coinReward?: number;
   onGoHome: () => void;
+  // 全プレイヤーのドロップ情報
+  players?: string[];
+  playerDrops?: Record<string, string | undefined>;
+  playerEquipmentDrops?: Record<string, string | undefined>;
+  myUsername?: string;
 }
 
 export default function BattleResultView({
@@ -25,6 +30,10 @@ export default function BattleResultView({
   logs,
   coinReward,
   onGoHome,
+  players,
+  playerDrops,
+  playerEquipmentDrops,
+  myUsername,
 }: BattleResultViewProps) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -54,6 +63,35 @@ export default function BattleResultView({
           {victory && !myDrop && !myEquipment && dropClaimed && (
             <div className="text-slate-400 mb-4">ドロップなし...</div>
           )}
+          
+          {/* 他のプレイヤーのドロップ */}
+          {victory && players && (playerDrops || playerEquipmentDrops) && (
+            <div className="mt-4 mb-4 p-3 bg-slate-700 rounded-lg text-left">
+              <div className="text-sm text-slate-400 mb-2">👥 パーティのドロップ</div>
+              {players.map(player => {
+                const isMe = player === myUsername;
+                const item = playerDrops?.[player];
+                const equip = playerEquipmentDrops?.[player];
+                return (
+                  <div key={player} className="text-sm py-1">
+                    <span className={isMe ? 'text-amber-400' : 'text-slate-300'}>
+                      {player}{isMe ? '(自分)' : ''}:
+                    </span>
+                    {item && (
+                      <span className="text-amber-400 ml-2">📜{getItemById(item)?.name}</span>
+                    )}
+                    {equip && (
+                      <span className="text-yellow-300 ml-2">⚔️{getEquipmentById(equip)?.name}</span>
+                    )}
+                    {!item && !equip && (
+                      <span className="text-slate-500 ml-2">-</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
           <button
             onClick={onGoHome}
             className="inline-block bg-amber-600 hover:bg-amber-500 px-6 py-2 rounded-lg font-semibold"
