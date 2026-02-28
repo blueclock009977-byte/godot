@@ -15,15 +15,18 @@ import {
   removeFriend,
   getMultipleFriendFullStatus,
   updateUserStatus,
+  getRoom,
   FriendRequest,
   FriendFullStatus,
+  MultiRoom,
 } from '@/lib/firebase';
 import { getStatusDisplay } from '@/lib/utils/status';
 
 export default function FriendsPage() {
-  const { username } = useGameStore();
+  const { username, currentMultiRoom } = useGameStore();
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
+  const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);  // 自分が参加中のルーム
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchName, setSearchName] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -47,10 +50,25 @@ export default function FriendsPage() {
       setFriendStatuses(statuses);
     }
     
+    // 自分が参加中のマルチルーム情報を取得
+    if (currentMultiRoom) {
+      const room = await getRoom(currentMultiRoom);
+      setMyMultiRoom(room);
+    } else {
+      setMyMultiRoom(null);
+    }
+    
     // 自分のステータスを更新
-    updateUserStatus(username, 'lobby');
+    if (currentMultiRoom) {
+      const room = await getRoom(currentMultiRoom);
+      if (room) {
+        updateUserStatus(username, 'multi', { roomCode: currentMultiRoom, dungeonId: room.dungeonId, startTime: room.startTime });
+      }
+    } else {
+      updateUserStatus(username, 'lobby');
+    }
     setIsLoading(false);
-  }, [username]);
+  }, [username, currentMultiRoom]);
 
   // 10秒ごとにポーリング
   usePolling(loadData, 10000, !!username);
@@ -165,7 +183,19 @@ export default function FriendsPage() {
           ) : (
             <div className="space-y-2">
               {friends.map((friend) => {
-                const status = getStatusDisplay(friendStatuses[friend]);
+                // 同じマルチルームにいるフレンドはルーム情報から直接ステータスを生成
+                const isInMyRoom = myMultiRoom && myMultiRoom.players && myMultiRoom.players[friend];
+                let status;
+                if (isInMyRoom) {
+                  // 自分と同じルームにいる → ルーム情報から直接ステータスを生成
+                  status = getStatusDisplay({
+                    ...friendStatuses[friend],
+                    multiRoom: myMultiRoom,
+                    status: { activity: 'multi', lastSeen: Date.now(), roomCode: currentMultiRoom || undefined, dungeonId: myMultiRoom.dungeonId, startTime: myMultiRoom.startTime },
+                  });
+                } else {
+                  status = getStatusDisplay(friendStatuses[friend]);
+                }
                 return (
                   <div key={friend} className="flex items-center justify-between bg-slate-700 rounded-lg p-3">
                     <div>
