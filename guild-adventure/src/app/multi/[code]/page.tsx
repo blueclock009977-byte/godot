@@ -247,6 +247,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         const result = await claimMultiDrop(code, username);
         
         // success=false は既に処理済み（別端末やリロードで再実行された場合）
+        // ただしコイン表示用に計算は行う
         if (!result.success) {
           // 既に処理済みでもルームからドロップ情報を取得して表示
           // 複数対応優先、後方互換で単一も
@@ -257,6 +258,16 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           }
           if (equips) {
             setMyEquipment(equips);
+          }
+          // コイン報酬も表示（付与は済んでいるはずだが表示用）
+          if (room.battleResult?.victory) {
+            const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+            if (baseCoinReward > 0) {
+              const { applyCoinBonus } = require('@/lib/drop/dropBonus');
+              const myChars = (room.players[username]?.characters || []).map((rc: any) => rc.character);
+              const coinReward = applyCoinBonus(baseCoinReward, myChars);
+              setMyCoinReward(coinReward);
+            }
           }
           await clearMultiAdventure(username);
           setCurrentMultiRoom(null);
