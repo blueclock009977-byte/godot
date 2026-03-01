@@ -89,7 +89,7 @@ interface RestoreContext {
 }
 
 async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean> {
-  const { username, addItem, addHistory, syncToServer, setCurrentMultiRoom } = ctx;
+  const { username, addItem, addCoins, addHistory, syncToServer, setCurrentMultiRoom } = ctx;
   
   const multiAdventure = await getMultiAdventure(username);
   
@@ -138,12 +138,25 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
     await syncToServer();
   }
   
+  // コインを獲得（勝利時のみ）
+  let coinReward = 0;
+  if (multiAdventure.victory) {
+    const { dungeons } = require('@/lib/data/dungeons');
+    const dungeonData = dungeons[multiAdventure.dungeonId];
+    if (dungeonData?.coinReward) {
+      coinReward = dungeonData.coinReward;
+      addCoins(coinReward);
+      await syncToServer();
+    }
+  }
+  
   // 履歴に追加
   await addHistory({
     type: 'multi',
     dungeonId: multiAdventure.dungeonId,
     victory: multiAdventure.victory,
     droppedItemId,
+    coinReward,
     logs: multiAdventure.logs,
     roomCode: multiAdventure.roomCode,
     players: multiAdventure.players,
