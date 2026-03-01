@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
-import { runChallengeBattle, ChallengeResult } from '@/lib/battle/challengeEngine';
+import { runChallengeBattle, ChallengeResult } from '@/lib/battle/engine';
 import { Party, Character } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
@@ -43,6 +43,7 @@ export default function ChallengePage() {
   const [result, setResult] = useState<ChallengeResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [showPartyEdit, setShowPartyEdit] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
   const [earnedItems, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
   
   // 自動ログイン
@@ -190,6 +191,17 @@ export default function ChallengePage() {
     await saveParty(username, newParty);
   };
   
+  // キャラの位置を切り替え
+  const switchPosition = async (charId: string, newPosition: 'front' | 'back') => {
+    if (!username) return;
+    
+    const newParty = challengeParty.map(s => 
+      s.charId === charId ? { ...s, position: newPosition } : s
+    );
+    
+    await saveParty(username, newParty);
+  };
+  
   if (isLoading || !username) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
@@ -216,7 +228,7 @@ export default function ChallengePage() {
             </p>
           </div>
           
-          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-6">
+          <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-4">
             <h2 className="font-semibold mb-3">獲得報酬</h2>
             <div className="space-y-2">
               <p>💰 コイン: {result.earnedCoins}</p>
@@ -225,8 +237,28 @@ export default function ChallengePage() {
             </div>
           </div>
           
+          {/* 詳細ログ */}
           <button
-            onClick={() => setResult(null)}
+            onClick={() => setShowLogs(!showLogs)}
+            className="w-full bg-slate-700 hover:bg-slate-600 rounded-lg py-2 mb-4 text-sm"
+          >
+            📋 {showLogs ? 'ログを閉じる' : '詳細ログを見る'}
+          </button>
+          
+          {showLogs && (
+            <div className="bg-slate-900 rounded-lg p-4 border border-slate-700 mb-4 max-h-96 overflow-y-auto">
+              <div className="text-xs font-mono text-slate-300 space-y-1">
+                {result.logs.map((log, i) => (
+                  <div key={i} className="whitespace-pre-wrap">
+                    {log.message}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <button
+            onClick={() => { setResult(null); setShowLogs(false); }}
             className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-3 font-semibold"
           >
             🏠 戻る
@@ -272,18 +304,37 @@ export default function ChallengePage() {
           </div>
           
           {partyCount > 0 ? (
-            <div className="grid grid-cols-3 gap-2 mb-2">
-              {partyChars.map(({ char, position }) => (
-                <div 
-                  key={char.id}
-                  className={`text-center p-2 rounded text-xs ${
-                    position === 'front' ? 'bg-red-900/50' : 'bg-blue-900/50'
-                  }`}
-                >
-                  <p className="font-semibold truncate">{char.name}</p>
-                  <p className="text-slate-400">{races[char.race].name}</p>
+            <div className="space-y-2">
+              {/* 前衛 */}
+              <div>
+                <p className="text-xs text-red-400 mb-1">🗡️ 前衛</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {partyChars.filter(p => p.position === 'front').map(({ char }) => (
+                    <div key={char.id} className="text-center p-2 rounded text-xs bg-red-900/50 border border-red-800">
+                      <p className="font-semibold truncate">{char.name}</p>
+                      <p className="text-slate-400">{races[char.race].name}</p>
+                    </div>
+                  ))}
+                  {partyChars.filter(p => p.position === 'front').length === 0 && (
+                    <p className="text-slate-500 text-xs col-span-3">なし</p>
+                  )}
                 </div>
-              ))}
+              </div>
+              {/* 後衛 */}
+              <div>
+                <p className="text-xs text-blue-400 mb-1">🛡️ 後衛</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {partyChars.filter(p => p.position === 'back').map(({ char }) => (
+                    <div key={char.id} className="text-center p-2 rounded text-xs bg-blue-900/50 border border-blue-800">
+                      <p className="font-semibold truncate">{char.name}</p>
+                      <p className="text-slate-400">{races[char.race].name}</p>
+                    </div>
+                  ))}
+                  {partyChars.filter(p => p.position === 'back').length === 0 && (
+                    <p className="text-slate-500 text-xs col-span-3">なし</p>
+                  )}
+                </div>
+              </div>
             </div>
           ) : (
             <p className="text-slate-400 text-sm">キャラを選択してください</p>
@@ -292,20 +343,50 @@ export default function ChallengePage() {
           {/* 編成モード */}
           {showPartyEdit && (
             <div className="mt-4 border-t border-slate-600 pt-4">
-              <p className="text-sm text-slate-400 mb-2">タップで追加/削除（前衛/後衛は交互）</p>
+              <p className="text-sm text-slate-400 mb-2">
+                タップで追加/削除、編成済みは再タップで前衛↔後衛切替
+              </p>
               <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
                 {characters.map(char => {
                   const inParty = challengeParty.find(s => s.charId === char.id);
                   const frontCount = challengeParty.filter(s => s.position === 'front').length;
-                  const nextPosition = frontCount < 3 ? 'front' : 'back';
+                  const backCount = challengeParty.filter(s => s.position === 'back').length;
+                  
+                  const handleClick = () => {
+                    if (inParty) {
+                      // 編成済み：位置切替または削除
+                      const currentPos = inParty.position;
+                      const canSwitchToFront = currentPos === 'back' && frontCount < 3;
+                      const canSwitchToBack = currentPos === 'front' && backCount < 3;
+                      
+                      if (canSwitchToFront || canSwitchToBack) {
+                        // 位置切替
+                        const newPos = currentPos === 'front' ? 'back' : 'front';
+                        switchPosition(char.id, newPos);
+                      } else {
+                        // 削除
+                        toggleCharInParty(char.id, currentPos);
+                      }
+                    } else {
+                      // 未編成：追加
+                      if (challengeParty.length >= 6) {
+                        alert('パーティは最大6人までです');
+                        return;
+                      }
+                      const nextPosition = frontCount < 3 ? 'front' : 'back';
+                      toggleCharInParty(char.id, nextPosition);
+                    }
+                  };
                   
                   return (
                     <button
                       key={char.id}
-                      onClick={() => toggleCharInParty(char.id, inParty?.position || nextPosition)}
+                      onClick={handleClick}
                       className={`p-2 rounded text-left text-sm ${
                         inParty 
-                          ? 'bg-amber-600 hover:bg-amber-500' 
+                          ? inParty.position === 'front'
+                            ? 'bg-red-700 hover:bg-red-600 border border-red-500'
+                            : 'bg-blue-700 hover:bg-blue-600 border border-blue-500'
                           : 'bg-slate-700 hover:bg-slate-600'
                       }`}
                     >
@@ -314,8 +395,10 @@ export default function ChallengePage() {
                         {races[char.race].name} {jobs[char.job].name}
                       </p>
                       {inParty && (
-                        <p className="text-xs text-amber-200">
-                          {inParty.position === 'front' ? '前衛' : '後衛'}
+                        <p className={`text-xs font-bold ${
+                          inParty.position === 'front' ? 'text-red-200' : 'text-blue-200'
+                        }`}>
+                          {inParty.position === 'front' ? '🗡️ 前衛' : '🛡️ 後衛'}
                         </p>
                       )}
                     </button>

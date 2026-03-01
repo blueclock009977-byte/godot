@@ -1366,3 +1366,209 @@ export function rollDrop(dungeon: DungeonType, characters: Character[] = []): st
   const drops = rollDrops(dungeon, characters);
   return drops[0];
 }
+
+// ============================================
+// チャレンジダンジョン用バトル
+// ============================================
+
+import { generateChallengeMonsters, getFinalBoss, getFloorInfo } from '../data/challengeMonsters';
+
+export interface ChallengeResult {
+  reachedFloor: number;       // 最終到達階層
+  defeatedAtFloor: number;    // 敗北した階層（100クリアなら0）
+  victory: boolean;           // 100Fクリアしたか
+  logs: BattleLog[];          // 戦闘ログ
+  earnedCoins: number;        // 獲得コイン
+  earnedBooks: number;        // 獲得した書の数
+  earnedEquipments: number;   // 獲得した装備の数
+}
+
+// チャレンジ用の遭遇処理（敵を直接受け取る）
+function processChallengEncounter(
+  playerUnits: ExtendedBattleUnit[],
+  enemies: Monster[],
+  floor: number
+): { logs: string[]; victory: boolean } {
+  const allLogs: string[] = [];
+  const floorInfo = getFloorInfo(floor);
+  
+  // 敵ユニットを作成
+  const enemyUnits: ExtendedBattleUnit[] = enemies.map(m => monsterToUnit(m));
+  
+  const enemyNames = enemies.map(e => e.name).join('、');
+  allLogs.push(`\n【${floor}F: ${floorInfo.conceptName}】`);
+  if (floor === 100) {
+    allLogs.push(`🔴BOSS: ${enemyNames}が現れた！`);
+  } else if (floor % 10 === 0) {
+    allLogs.push(`⚔️ フロアボス: ${enemyNames}が現れた！`);
+  } else {
+    allLogs.push(`${enemyNames}が現れた！`);
+  }
+  
+  // 戦闘開始時: intimidate適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.intimidate > 0) {
+      for (const enemy of enemyUnits) {
+        const reduction = applyPercent(enemy.stats.atk, unit.passiveEffects.intimidate);
+        enemy.stats.atk = Math.max(1, enemy.stats.atk - reduction);
+      }
+    }
+  }
+  
+  // 戦闘開始時: allyAtkBonus適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.allyAtkBonus > 0) {
+      for (const ally of playerUnits) {
+        if (ally.id !== unit.id && ally.stats.hp > 0) {
+          const bonus = applyPercent(ally.stats.atk, unit.passiveEffects.allyAtkBonus);
+          ally.stats.atk += bonus;
+        }
+      }
+    }
+  }
+  
+  // 戦闘開始時: allyDefense適用
+  for (const unit of playerUnits) {
+    if (unit.stats.hp > 0 && unit.passiveEffects.allyDefense > 0) {
+      for (const ally of playerUnits) {
+        if (ally.stats.hp > 0) {
+          ally.passiveEffects.allyDefense += unit.passiveEffects.allyDefense;
+        }
+      }
+    }
+  }
+  
+  // 戦闘ループ（最大30ターン）
+  for (let turn = 1; turn <= 30; turn++) {
+    const result = processTurn(playerUnits, enemyUnits, turn);
+    allLogs.push(...result.logs);
+    
+    if (result.playerWin !== null) {
+      if (result.playerWin) {
+        allLogs.push(`${floor}Fクリア！`);
+      } else {
+        allLogs.push(`${floor}Fで全滅...`);
+      }
+      return { logs: allLogs, victory: result.playerWin };
+    }
+  }
+  
+  allLogs.push(`${floor}Fで時間切れ...`);
+  return { logs: allLogs, victory: false };
+}
+
+// メイン：チャレンジバトル実行
+export function runChallengeBattle(party: Party): ChallengeResult {
+  const allLogs: BattleLog[] = [];
+  
+  // プレイヤーユニットを作成
+  const playerUnits: ExtendedBattleUnit[] = [];
+  (party.front || []).forEach((char) => {
+    if (char) playerUnits.push(characterToUnit(char, 'front'));
+  });
+  (party.back || []).forEach((char) => {
+    if (char) playerUnits.push(characterToUnit(char, 'back'));
+  });
+  
+  if (playerUnits.length === 0) {
+    return {
+      reachedFloor: 0,
+      defeatedAtFloor: 0,
+      victory: false,
+      logs: [{ turn: 0, actions: [], message: 'パーティがいません' }],
+      earnedCoins: 0,
+      earnedBooks: 0,
+      earnedEquipments: 0,
+    };
+  }
+  
+  // パッシブ効果の適用（前衛ボーナス等）
+  const frontCount = playerUnits.filter(u => u.position === 'front').length;
+  if (frontCount >= 3) {
+    for (const unit of playerUnits) {
+      if (unit.passiveEffects.frontlineBonus > 0) {
+        const bonus = Math.floor(unit.stats.atk * unit.passiveEffects.frontlineBonus / 100);
+        unit.stats.atk += bonus;
+      }
+    }
+  }
+
+  // allyMagBonus（味方全体のMAG+%）
+  const totalAllyMagBonus = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMagBonus, 0);
+  if (totalAllyMagBonus > 0) {
+    for (const unit of playerUnits) {
+      const bonus = Math.floor(unit.stats.mag * totalAllyMagBonus / 100);
+      unit.stats.mag += bonus;
+    }
+  }
+
+  // allyMpReduction（味方全体のMP消費軽減）
+  const totalAllyMpReduction = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMpReduction, 0);
+  if (totalAllyMpReduction > 0) {
+    for (const unit of playerUnits) {
+      unit.passiveEffects.mpReduction += totalAllyMpReduction;
+    }
+  }
+  
+  let lastClearedFloor = 0;
+  
+  // 100階層を順番に戦う
+  for (let floor = 1; floor <= 100; floor++) {
+    // 各フロア開始時にHP/MP全回復（チャレンジダンジョンルール）
+    for (const unit of playerUnits) {
+      unit.stats.hp = unit.stats.maxHp;
+      unit.stats.mp = unit.stats.maxMp;
+      unit.buffs = [];  // バフリセット
+      unit.attackStackCount = 0;  // スタックリセット
+      unit.autoReviveUsed = false;  // 自動蘇生リセット
+      unit.surviveLethalUsed = false;  // 致死耐え リセット
+      unit.degradation = 0;  // 劣化リセット
+    }
+    
+    // 敵を生成
+    const enemies = floor === 100 
+      ? [getFinalBoss()] 
+      : generateChallengeMonsters(floor);
+    
+    const { logs, victory } = processChallengEncounter(playerUnits, enemies, floor);
+    
+    allLogs.push({
+      turn: floor,
+      actions: [],
+      message: logs.join('\n'),
+    });
+    
+    if (victory) {
+      lastClearedFloor = floor;
+    } else {
+      // 敗北
+      const clearedFloors = lastClearedFloor;
+      return {
+        reachedFloor: clearedFloors,
+        defeatedAtFloor: floor,
+        victory: false,
+        logs: allLogs,
+        earnedCoins: clearedFloors * 3,
+        earnedBooks: Math.floor(clearedFloors / 5),
+        earnedEquipments: Math.floor(clearedFloors / 20),
+      };
+    }
+  }
+  
+  // 100Fクリア！
+  allLogs.push({
+    turn: 101,
+    actions: [],
+    message: '\n🎉🎉🎉 チャレンジダンジョン完全制覇！ 🎉🎉🎉',
+  });
+  
+  return {
+    reachedFloor: 100,
+    defeatedAtFloor: 0,
+    victory: true,
+    logs: allLogs,
+    earnedCoins: 300,
+    earnedBooks: 20,
+    earnedEquipments: 5,
+  };
+}
