@@ -559,11 +559,11 @@ export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
     } catch (e) {}
   }
   
-  // 秘宝ボーナスを加算（全ステ+N）
+  // 秘宝ボーナスを加算（HP+50, MP+20, 他+10 per 秘宝）
   const treasureBonus = (char.raceTreasureBonus || 0) + (char.jobTreasureBonus || 0);
   if (treasureBonus > 0) {
-    total.maxHp += treasureBonus;
-    total.maxMp += treasureBonus;
+    total.maxHp += treasureBonus * 5;  // HP+50 (10*5)
+    total.maxMp += treasureBonus * 2;  // MP+20 (10*2)
     total.atk += treasureBonus;
     total.def += treasureBonus;
     total.agi += treasureBonus;
