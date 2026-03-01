@@ -341,11 +341,11 @@ function GameScreen() {
             </div>
           ) : (
             <Link href="/multi" className="block">
-              <div className="bg-purple-600 hover:bg-purple-500 rounded-lg p-4 border border-purple-500 transition-colors relative">
+              <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-purple-500 transition-colors relative">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">👥 マルチ冒険</h2>
-                    <p className="text-purple-200 text-sm">
+                    <p className="text-slate-400 text-sm">
                       {publicRoomCount > 0 ? (
                         <span className="text-green-300">🌐 公開ルーム {publicRoomCount}件あり！</span>
                       ) : (
@@ -353,7 +353,7 @@ function GameScreen() {
                       )}
                     </p>
                   </div>
-                  <span className="text-white">→</span>
+                  <span className="text-purple-400">→</span>
                 </div>
                 {invitations.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center font-bold">
@@ -367,13 +367,13 @@ function GameScreen() {
           {/* ソロ冒険 */}
           {partyCount > 0 && !currentAdventure ? (
             <Link href="/dungeon" className="block">
-              <div className="bg-amber-600 hover:bg-amber-500 border-amber-500 rounded-lg p-4 border transition-colors">
+              <div className="bg-slate-700 hover:bg-slate-600 border-amber-500 rounded-lg p-4 border transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-semibold">🗺️ ソロ冒険</h2>
-                    <p className="text-slate-200 text-sm">（6キャラまで編成可能）</p>
+                    <p className="text-slate-400 text-sm">（6キャラまで編成可能）</p>
                   </div>
-                  <span className="text-white">→</span>
+                  <span className="text-amber-400">→</span>
                 </div>
               </div>
             </Link>
@@ -393,11 +393,11 @@ function GameScreen() {
           
           {/* チャレンジダンジョン */}
           <Link href="/challenge" className="block">
-            <div className="bg-orange-600 hover:bg-orange-500 transition-colors rounded-lg p-4 border border-orange-500">
+            <div className="bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg p-4 border border-orange-500">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">⚔️ チャレンジダンジョン</h2>
-                  <p className="text-orange-200 text-sm">
+                  <p className="text-slate-400 text-sm">
                     {canChallenge() ? (
                       <span className="text-green-300">🟢 出撃可能！</span>
                     ) : (
@@ -406,7 +406,7 @@ function GameScreen() {
                     {challengeProgress && ` | 最高: ${challengeProgress.highestFloor}F`}
                   </p>
                 </div>
-                <span className="text-white">→</span>
+                <span className="text-orange-400">→</span>
               </div>
             </div>
           </Link>
