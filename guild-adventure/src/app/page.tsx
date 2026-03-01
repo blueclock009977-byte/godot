@@ -427,6 +427,19 @@ function GameScreen() {
               </div>
             </div>
           </Link>
+          
+          {/* ダンジョン一覧 */}
+          <Link href="/dungeons" className="block">
+            <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">🗺️ ダンジョン一覧</h2>
+                  <p className="text-slate-400 text-sm">モンスター情報・攻略ヒント</p>
+                </div>
+                <span className="text-slate-400">→</span>
+              </div>
+            </div>
+          </Link>
         </div>
         
         

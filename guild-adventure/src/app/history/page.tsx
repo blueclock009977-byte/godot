@@ -5,7 +5,6 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
-import { DungeonList } from '@/components/DungeonList';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
@@ -161,15 +160,6 @@ export default function HistoryPage() {
             </div>
           </div>
         )}
-        
-        {/* ダンジョン一覧セクション */}
-        <div className="mt-8">
-          <h2 className="text-lg font-bold mb-4">🗺️ ダンジョン一覧</h2>
-          <p className="text-sm text-slate-400 mb-4">
-            各ダンジョンの「詳細」をタップして、出現モンスターの情報を確認できます。
-          </p>
-          <DungeonList />
-        </div>
     </PageLayout>
   );
 }
