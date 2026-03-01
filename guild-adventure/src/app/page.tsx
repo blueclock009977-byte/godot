@@ -470,13 +470,13 @@ function GameScreen() {
           
           {/* ショップ */}
           <Link href="/shop" className="block">
-            <div className="bg-emerald-700 hover:bg-emerald-600 transition-colors rounded-lg p-4 border border-emerald-600">
+            <div className="bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg p-4 border border-emerald-600">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold">🛒 ショップ</h2>
-                  <p className="text-emerald-200 text-sm">血統書・指南書を購入</p>
+                  <p className="text-slate-400 text-sm">血統書・指南書を購入</p>
                 </div>
-                <span className="text-emerald-300">100🪙</span>
+                <span className="text-emerald-400">100🪙</span>
               </div>
             </div>
           </Link>
