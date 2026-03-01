@@ -1,77 +1,49 @@
 {
-  "taskId": "challenge-dungeon-2026-03-01",
-  "goal": "チャレンジダンジョン機能の完全実装",
+  "taskId": "challenge-dungeon-review-2026-03-01",
+  "goal": "チャレンジダンジョン機能の仕様書比較→不具合/仕様漏れ修正→リファクタリング→共通処理統合",
   "completionCriteria": [
-    "ホーム画面にチャレンジダンジョンボタンが表示される ✅",
-    "/challenge ページが動作する ✅",
-    "100階層のバトル計算が即時で行われる ✅",
-    "報酬（コイン、書、装備）が正しく付与される ✅",
-    "8時間クールダウンが機能する ✅",
-    "ランキングが表示される ✅",
-    "挑戦履歴が保存・表示される ✅",
-    "専用パーティ編成が機能する ✅",
-    "TypeScriptエラーがない ✅"
+    "仕様書の全項目が実装されている",
+    "不具合がない",
+    "共通処理が統合されている",
+    "TypeScriptエラーがない",
+    "REPORT.mdに変更ログがある"
   ],
-  "currentPhase": "final",
-  "completedAt": "2026-03-01T16:50:00+09:00",
+  "judgmentCriteria": [
+    "既存機能を壊さない",
+    "DRY原則（重複コード削除）",
+    "可読性向上",
+    "変更量は最小限"
+  ],
+  "constraints": [
+    "既存バトルロジック(engine.ts)を使用",
+    "1回のcronで1タスクのみ"
+  ],
+  "currentPhase": 2,
+  "phaseAttempt": 1,
+  "maxAttempts": 20,
+  "startedAt": "2026-03-01T16:57:00+09:00",
+  "discordChannel": "channel:1471429991005950013",
+  "assumptions": [],
   "log": [
     {
       "phase": 1,
-      "action": "プロジェクト構造調査",
-      "result": "battle/engine.ts, data/monsters.ts の構造を確認"
-    },
-    {
-      "phase": 2,
-      "action": "チャレンジ用敵データ定義",
-      "result": "src/lib/data/challengeMonsters.ts 作成（10コンセプト、ステ倍率対応）"
-    },
-    {
-      "phase": 3,
-      "action": "Firebase API追加",
-      "result": "firebase.ts にチャレンジ関連API追加（progress, party, history, ranking）"
-    },
-    {
-      "phase": 4,
-      "action": "challengeStore作成",
-      "result": "src/store/challengeStore.ts 作成（専用状態管理）"
-    },
-    {
-      "phase": 5,
-      "action": "チャレンジバトルロジック",
-      "result": "src/lib/battle/challengeEngine.ts 作成（100階層即時計算）"
-    },
-    {
-      "phase": 6,
-      "action": "ホーム画面ボタン追加",
-      "result": "page.tsx にチャレンジダンジョンボタン追加"
-    },
-    {
-      "phase": 7,
-      "action": "/challenge ページ作成",
-      "result": "src/app/challenge/page.tsx 作成（メイン画面）"
-    },
-    {
-      "phase": 8,
-      "action": "ランキング・履歴画面",
-      "result": "ranking/page.tsx, history/page.tsx 作成"
-    },
-    {
-      "phase": 9,
-      "action": "テスト・レビュー・修正",
-      "result": "TypeScriptエラー4件修正（ElementType拡張、引数修正、インポート修正）"
+      "attempt": 1,
+      "action": "仕様書vs実装 詳細比較",
+      "reasoning": "不具合/仕様漏れを発見するため",
+      "result": "仕様は全て実装済み。リファクタリング候補を発見",
+      "next": "Phase2でリファクタリング開始"
     }
   ],
-  "filesCreated": [
-    "src/lib/data/challengeMonsters.ts",
-    "src/lib/battle/challengeEngine.ts",
-    "src/store/challengeStore.ts",
-    "src/app/challenge/page.tsx",
-    "src/app/challenge/ranking/page.tsx",
-    "src/app/challenge/history/page.tsx"
+  "findings": [
+    "formatDate関数がhistory/page.tsxにローカル定義 → 共通化すべき",
+    "autoLogin処理が複数ページで重複",
+    "結果画面に獲得した書/装備の具体名が表示されていない"
   ],
-  "filesModified": [
-    "src/lib/firebase.ts",
-    "src/lib/types.ts",
-    "src/app/page.tsx"
+  "completed": [
+    "v1.1.1: バトルロジックを既存engine.tsに統合",
+    "v1.1.1: 前衛/後衛UI改善",
+    "v1.1.1: 詳細ログ表示追加",
+    "v1.1.2: 再生型モンスター処理追加",
+    "仕様書全項目の実装確認完了"
   ]
 }

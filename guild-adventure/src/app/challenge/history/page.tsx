@@ -4,16 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
-
-// 日時フォーマット
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${month}/${day} ${hours}:${minutes}`;
-}
+import { formatDate } from '@/lib/utils/format';
 
 export default function ChallengeHistoryPage() {
   const { username, autoLogin } = useGameStore();
