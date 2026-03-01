@@ -14,6 +14,7 @@ import {
 } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
+import { applyCoinBonus } from '@/lib/drop/dropBonus';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { 
@@ -784,11 +785,16 @@ export const useGameStore = create<GameStore>()(
           } else if (result.equipmentId) {
             equipmentsToAdd[result.equipmentId] = (equipmentsToAdd[result.equipmentId] || 0) + 1;
           }
-          // コイン集計（勝利時のみ）
+          // コイン集計（勝利時のみ）- ボーナス適用
           if (result.victory) {
             const dungeon = dungeons[result.dungeonId as keyof typeof dungeons];
             if (dungeon?.coinReward) {
-              coinsToAdd += dungeon.coinReward;
+              // ルームから取得したキャラクター情報でコインボーナスを計算
+              const myChars = result.myCharacters || [];
+              const coinReward = myChars.length > 0 
+                ? applyCoinBonus(dungeon.coinReward, myChars)
+                : dungeon.coinReward;
+              coinsToAdd += coinReward;
             }
           }
         }

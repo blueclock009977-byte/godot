@@ -1226,6 +1226,7 @@ export interface PendingResult {
   playerEquipmentDrops?: Record<string, string | undefined>;  // 後方互換
   playerDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
   playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
+  myCharacters?: any[];  // コインボーナス計算用
 }
 
 // 未受取リストに追加
@@ -1296,6 +1297,9 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
       const itemId = itemIds?.[0] || room.playerDrops?.[username];
       const equipmentId = equipmentIds?.[0] || room.playerEquipmentDrops?.[username];
       
+      // プレイヤーのキャラクター情報を取得（コインボーナス計算用）
+      const myCharacters = room.players?.[username]?.characters || [];
+      
       results.push({
         roomCode: code,
         dungeonId: room.dungeonId,
@@ -1311,6 +1315,7 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
         playerEquipmentDrops: room.playerEquipmentDrops,
         playerDropsMulti: room.playerDropsMulti,
         playerEquipmentDropsMulti: room.playerEquipmentDropsMulti,
+        myCharacters,  // コインボーナス計算用
       });
       
       // playerClaimedをtrueに更新
