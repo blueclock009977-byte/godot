@@ -1,0 +1,77 @@
+{
+  "taskId": "challenge-dungeon-2026-03-01",
+  "goal": "チャレンジダンジョン機能の完全実装",
+  "completionCriteria": [
+    "ホーム画面にチャレンジダンジョンボタンが表示される ✅",
+    "/challenge ページが動作する ✅",
+    "100階層のバトル計算が即時で行われる ✅",
+    "報酬（コイン、書、装備）が正しく付与される ✅",
+    "8時間クールダウンが機能する ✅",
+    "ランキングが表示される ✅",
+    "挑戦履歴が保存・表示される ✅",
+    "専用パーティ編成が機能する ✅",
+    "TypeScriptエラーがない ✅"
+  ],
+  "currentPhase": "final",
+  "completedAt": "2026-03-01T16:50:00+09:00",
+  "log": [
+    {
+      "phase": 1,
+      "action": "プロジェクト構造調査",
+      "result": "battle/engine.ts, data/monsters.ts の構造を確認"
+    },
+    {
+      "phase": 2,
+      "action": "チャレンジ用敵データ定義",
+      "result": "src/lib/data/challengeMonsters.ts 作成（10コンセプト、ステ倍率対応）"
+    },
+    {
+      "phase": 3,
+      "action": "Firebase API追加",
+      "result": "firebase.ts にチャレンジ関連API追加（progress, party, history, ranking）"
+    },
+    {
+      "phase": 4,
+      "action": "challengeStore作成",
+      "result": "src/store/challengeStore.ts 作成（専用状態管理）"
+    },
+    {
+      "phase": 5,
+      "action": "チャレンジバトルロジック",
+      "result": "src/lib/battle/challengeEngine.ts 作成（100階層即時計算）"
+    },
+    {
+      "phase": 6,
+      "action": "ホーム画面ボタン追加",
+      "result": "page.tsx にチャレンジダンジョンボタン追加"
+    },
+    {
+      "phase": 7,
+      "action": "/challenge ページ作成",
+      "result": "src/app/challenge/page.tsx 作成（メイン画面）"
+    },
+    {
+      "phase": 8,
+      "action": "ランキング・履歴画面",
+      "result": "ranking/page.tsx, history/page.tsx 作成"
+    },
+    {
+      "phase": 9,
+      "action": "テスト・レビュー・修正",
+      "result": "TypeScriptエラー4件修正（ElementType拡張、引数修正、インポート修正）"
+    }
+  ],
+  "filesCreated": [
+    "src/lib/data/challengeMonsters.ts",
+    "src/lib/battle/challengeEngine.ts",
+    "src/store/challengeStore.ts",
+    "src/app/challenge/page.tsx",
+    "src/app/challenge/ranking/page.tsx",
+    "src/app/challenge/history/page.tsx"
+  ],
+  "filesModified": [
+    "src/lib/firebase.ts",
+    "src/lib/types.ts",
+    "src/app/page.tsx"
+  ]
+}

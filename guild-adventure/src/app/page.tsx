@@ -12,6 +12,20 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useChallengeStore } from '@/store/challengeStore';
+
+// クールダウン時間をフォーマット
+function formatCooldown(ms: number): string {
+  if (ms <= 0) return '0:00';
+  const totalSeconds = Math.ceil(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
 
 function LoginScreen() {
   const { login, autoLogin, isLoading } = useGameStore();
@@ -118,9 +132,11 @@ function LoginScreen() {
 function GameScreen() {
   const router = useRouter();
   const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, equipments, coins } = useGameStore();
+  const { progress: challengeProgress, loadData: loadChallengeData, canChallenge, getRemainingCooldown } = useChallengeStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
+  const [challengeCooldown, setChallengeCooldown] = useState(0);
   
   // ユーザーアクティビティ検知
   const { isActive } = useUserActivity();
@@ -155,6 +171,23 @@ function GameScreen() {
     }
   }, []);
   usePolling(loadPublicRooms, 10000);
+  
+  // チャレンジダンジョンデータをロード
+  useEffect(() => {
+    if (username) {
+      loadChallengeData(username);
+    }
+  }, [username, loadChallengeData]);
+  
+  // チャレンジクールダウンを更新（1秒ごと）
+  useEffect(() => {
+    const updateCooldown = () => {
+      setChallengeCooldown(getRemainingCooldown());
+    };
+    updateCooldown();
+    const interval = setInterval(updateCooldown, 1000);
+    return () => clearInterval(interval);
+  }, [getRemainingCooldown, challengeProgress]);
   
   // ソロ冒険中の情報を計算
   const soloAdventureInfo = currentAdventure ? (() => {
@@ -358,12 +391,32 @@ function GameScreen() {
             </div>
           )}
           
+          {/* チャレンジダンジョン */}
+          <Link href="/challenge" className="block">
+            <div className="bg-orange-600 hover:bg-orange-500 transition-colors rounded-lg p-4 border border-orange-500">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">⚔️ チャレンジダンジョン</h2>
+                  <p className="text-orange-200 text-sm">
+                    {canChallenge() ? (
+                      <span className="text-green-300">🟢 出撃可能！</span>
+                    ) : (
+                      <span>⏰ あと {formatCooldown(challengeCooldown)}</span>
+                    )}
+                    {challengeProgress && ` | 最高: ${challengeProgress.highestFloor}F`}
+                  </p>
+                </div>
+                <span className="text-white">→</span>
+              </div>
+            </div>
+          </Link>
+          
           {/* キャラ作成 */}
           <Link href="/create" className="block">
             <div className="bg-slate-700 hover:bg-slate-600 transition-colors rounded-lg p-4 border border-slate-600">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold">⚔️ キャラ作成</h2>
+                  <h2 className="text-xl font-semibold">👤 キャラ作成</h2>
                   <p className="text-slate-400 text-sm">新しい冒険者を雇う</p>
                 </div>
                 <span className="text-slate-400">→</span>

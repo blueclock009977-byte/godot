@@ -1333,3 +1333,151 @@ export async function claimAllPendingMultiResults(username: string): Promise<Pen
     return [];
   }
 }
+
+// ============================================
+// チャレンジダンジョン関連
+// ============================================
+
+export interface ChallengeProgress {
+  highestFloor: number;         // 最高到達階層
+  lastAttemptTime: number;      // 最終挑戦時刻
+  totalAttempts: number;        // 総挑戦回数
+}
+
+export interface ChallengeHistoryEntry {
+  id: string;
+  attemptedAt: number;          // 挑戦日時
+  reachedFloor: number;         // 到達階層
+  defeatedAtFloor: number;      // 敗北階層（100クリアなら0）
+  earnedCoins: number;          // 獲得コイン
+  earnedBooks: number;          // 獲得した書の数
+  earnedEquipments: number;     // 獲得した装備の数
+}
+
+export interface ChallengeRankingEntry {
+  username: string;
+  highestFloor: number;
+  achievedAt: number;
+}
+
+export interface ChallengePartySlot {
+  charId: string;
+  position: 'front' | 'back';
+}
+
+// ユーザーの進捗を取得
+export async function getChallengeProgress(username: string): Promise<ChallengeProgress | null> {
+  return firebaseGet<ChallengeProgress>(`guild-adventure/users/${username}/challengeProgress`);
+}
+
+// 進捗を保存
+export async function saveChallengeProgress(username: string, progress: ChallengeProgress): Promise<boolean> {
+  return firebaseSet(`guild-adventure/users/${username}/challengeProgress`, progress);
+}
+
+// チャレンジ用パーティを取得
+export async function getChallengeParty(username: string): Promise<ChallengePartySlot[] | null> {
+  return firebaseGet<ChallengePartySlot[]>(`guild-adventure/users/${username}/challengeParty`);
+}
+
+// チャレンジ用パーティを保存
+export async function saveChallengeParty(username: string, party: ChallengePartySlot[]): Promise<boolean> {
+  return firebaseSet(`guild-adventure/users/${username}/challengeParty`, party);
+}
+
+// 挑戦履歴を取得（最新10件）
+export async function getChallengeHistory(username: string): Promise<ChallengeHistoryEntry[]> {
+  const data = await firebaseGet<Record<string, ChallengeHistoryEntry>>(`guild-adventure/users/${username}/challengeHistory`);
+  if (!data || typeof data !== 'object') return [];
+  
+  // オブジェクトから配列に変換してソート
+  return Object.values(data)
+    .sort((a, b) => (b.attemptedAt || 0) - (a.attemptedAt || 0))
+    .slice(0, 10);
+}
+
+// 挑戦履歴を追加（POSTで個別追加、10件制限）
+export async function addChallengeHistory(username: string, entry: Omit<ChallengeHistoryEntry, 'id'>): Promise<boolean> {
+  try {
+    const historyEntry: ChallengeHistoryEntry = {
+      ...entry,
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    
+    // POSTで追加
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/challengeHistory.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(historyEntry),
+    });
+    
+    if (!res.ok) return false;
+    
+    // 古いエントリを削除（10件制限）
+    await cleanupChallengeHistory(username, 10);
+    
+    return true;
+  } catch (e) {
+    console.error('Failed to add challenge history:', e);
+    return false;
+  }
+}
+
+// 古い挑戦履歴を削除
+async function cleanupChallengeHistory(username: string, limit: number): Promise<void> {
+  try {
+    const data = await firebaseGet<Record<string, ChallengeHistoryEntry>>(`guild-adventure/users/${username}/challengeHistory`);
+    if (!data || typeof data !== 'object') return;
+    
+    const entries = Object.entries(data)
+      .map(([key, value]) => ({ key, ...value }))
+      .sort((a, b) => (b.attemptedAt || 0) - (a.attemptedAt || 0));
+    
+    const toDelete = entries.slice(limit);
+    for (const entry of toDelete) {
+      await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/challengeHistory/${entry.key}.json`, {
+        method: 'DELETE',
+      });
+    }
+  } catch (e) {
+    console.error('Failed to cleanup challenge history:', e);
+  }
+}
+
+// ランキングを取得（上位100名）
+export async function getChallengeRanking(): Promise<ChallengeRankingEntry[]> {
+  const data = await firebaseGet<Record<string, ChallengeRankingEntry>>('guild-adventure/challengeRanking');
+  if (!data || typeof data !== 'object') return [];
+  
+  return Object.values(data)
+    .sort((a, b) => {
+      // 階層で降順、同階層なら達成日時で昇順（先着優先）
+      if (b.highestFloor !== a.highestFloor) {
+        return b.highestFloor - a.highestFloor;
+      }
+      return (a.achievedAt || 0) - (b.achievedAt || 0);
+    })
+    .slice(0, 100);
+}
+
+// ランキングを更新（最高記録更新時のみ）
+export async function updateChallengeRanking(username: string, floor: number): Promise<boolean> {
+  try {
+    // 現在の記録を取得
+    const current = await firebaseGet<ChallengeRankingEntry>(`guild-adventure/challengeRanking/${username}`);
+    
+    // 新記録の場合のみ更新
+    if (!current || floor > current.highestFloor) {
+      return firebaseSet(`guild-adventure/challengeRanking/${username}`, {
+        username,
+        highestFloor: floor,
+        achievedAt: Date.now(),
+      });
+    }
+    
+    return true;  // 更新不要だが成功扱い
+  } catch (e) {
+    console.error('Failed to update challenge ranking:', e);
+    return false;
+  }
+}

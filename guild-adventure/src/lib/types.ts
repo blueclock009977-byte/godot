@@ -21,7 +21,7 @@ export type Position = 'front' | 'back';
 export type SpeciesType = 'humanoid' | 'beast' | 'undead' | 'demon' | 'dragon';
 
 // 属性
-export type ElementType = 'none' | 'fire' | 'water' | 'wind' | 'earth';
+export type ElementType = 'none' | 'fire' | 'water' | 'wind' | 'earth' | 'light' | 'dark' | 'ice';
 
 // 属性相性（1.3倍ダメージ）
 export const ELEMENT_ADVANTAGE: Record<ElementType, ElementType | null> = {
@@ -30,6 +30,9 @@ export const ELEMENT_ADVANTAGE: Record<ElementType, ElementType | null> = {
   water: 'fire',   // 水 → 火に強い
   wind: 'earth',   // 風 → 地に強い
   earth: 'water',  // 地 → 水に強い
+  light: 'dark',   // 光 → 闇に強い
+  dark: 'light',   // 闇 → 光に強い
+  ice: 'fire',     // 氷 → 火に弱い（逆相性）
 };
 
 export const ELEMENT_MULTIPLIER = 1.3;
