@@ -54,6 +54,9 @@ export function DungeonList({
               <span className="text-green-400">
                 🎒 {getEquipmentDropRate(dungeon.durationSeconds, dungeon.id).toFixed(1)}%
               </span>
+              <span className="text-amber-300">
+                🪙 {dungeon.coinReward}
+              </span>
             </div>
             
             <div className="flex gap-2">
