@@ -296,13 +296,13 @@ export function getEquipmentById(id: string): Equipment | undefined {
 // ダンジョン時間に応じたドロップ率（%）
 // ※基本4回抽選のため、確率は1/4に設定（期待値は同じ）
 // 1時間 = 5%、それ以下は比例
-// 海以降は+1%ずつボーナス
+// 海は5%、それ以降+1%ずつ、神殿は10%
 const dungeonEquipmentBonus: Record<string, number> = {
-  sea: 1,
-  desert: 2,
-  volcano: 3,
-  snowfield: 4,
-  temple: 5,
+  sea: 0,      // 5%
+  desert: 1,   // 6%
+  volcano: 2,  // 7%
+  snowfield: 3,// 8%
+  temple: 5,   // 10%
 };
 
 export function getEquipmentDropRate(durationSeconds: number, dungeonId?: string): number {

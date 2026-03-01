@@ -188,7 +188,9 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   }
   
   const elapsed = Date.now() - adventure.startTime;
-  const duration = dungeonData.durationSeconds * 1000;
+  // 時間短縮ボーナス適用後の時間を使用（後方互換で元の時間もフォールバック）
+  const durationSeconds = adventure.actualDurationSeconds || dungeonData.durationSeconds;
+  const duration = durationSeconds * 1000;
   
   // 探索時間が終了している場合
   if (elapsed >= duration && !adventure.claimed) {
@@ -1127,7 +1129,7 @@ export const useGameStore = create<GameStore>()(
         battleResult.droppedEquipmentIds = droppedEquipmentIds;
         
         // サーバーに探索開始を記録（バトル結果+ドロップ含む）
-        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemIds, droppedEquipmentIds);
+        const result = await startAdventureOnServer(username, dungeon, party, battleResult, droppedItemIds, droppedEquipmentIds, actualDurationSeconds);
         if (!result.success) {
           if (result.existingAdventure) {
             return { success: false, error: '別の端末で探索中です。そちらを完了してください。' };
@@ -1208,7 +1210,9 @@ export const useGameStore = create<GameStore>()(
           
           const { dungeons } = require('@/lib/data/dungeons');
           const dungeonData = dungeons[adventure.dungeon];
-          const duration = dungeonData?.durationSeconds * 1000 || 0;
+          // 時間短縮ボーナス適用後の時間を使用（後方互換で元の時間もフォールバック）
+          const durationSeconds = adventure.actualDurationSeconds || dungeonData?.durationSeconds || 0;
+          const duration = durationSeconds * 1000;
           const elapsed = Date.now() - adventure.startTime;
           
           // 復元（バトル結果も含む）

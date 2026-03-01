@@ -596,6 +596,7 @@ export interface ServerAdventure {
   droppedItemIds?: string[];    // 複数ドロップ対応
   droppedEquipmentIds?: string[]; // 複数装備ドロップ対応
   claimed: boolean;         // 受け取り済みフラグ
+  actualDurationSeconds?: number; // 時間短縮ボーナス適用後の実際の探索時間
 }
 
 // 探索開始（バトル計算+ドロップ抽選済みの結果を保存）
@@ -605,7 +606,8 @@ export async function startAdventureOnServer(
   party: any,
   battleResult: any,
   droppedItemIds?: string[],
-  droppedEquipmentIds?: string[]
+  droppedEquipmentIds?: string[],
+  actualDurationSeconds?: number
 ): Promise<{ success: boolean; existingAdventure?: ServerAdventure }> {
   try {
     // 現在の探索状態を確認
@@ -631,6 +633,7 @@ export async function startAdventureOnServer(
       droppedItemIds,
       droppedEquipmentIds,
       claimed: false,
+      actualDurationSeconds,
     };
     
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/currentAdventure.json`, {

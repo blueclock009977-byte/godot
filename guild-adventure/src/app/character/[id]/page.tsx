@@ -267,226 +267,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        {/* ステータス（総合） */}
-        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
-          <StatsDisplay stats={calculateTotalStats(character)} title="総合ステータス" />
-          <div className="text-xs text-slate-500 mt-2">
-            ※ 基本ステータス + Lvボーナス + 装備ボーナス
-          </div>
-        </div>
-        
-        {/* 総合ボーナス */}
-        {(() => {
-          const bonuses = calculateCharacterBonuses(character);
-          const hasCombatBonuses = bonuses.physicalBonus > 0 || bonuses.magicBonus > 0 || 
-            bonuses.critBonus > 0 || bonuses.critDamage > 0 || bonuses.evasionBonus > 0 ||
-            bonuses.damageReduction > 0 || bonuses.healBonus > 0 || bonuses.hpRegen > 0 ||
-            bonuses.mpRegen > 0 || bonuses.hpSteal > 0 || bonuses.firstStrikeBonus > 0 ||
-            bonuses.accuracyBonus > 0 || bonuses.bonusHits > 0;
-          const hasTreasureBonuses = bonuses.dropBonus > 0 || bonuses.coinBonus > 0 ||
-            bonuses.rareDropBonus > 0 || bonuses.explorationSpeedBonus > 0;
-          
-          if (!hasCombatBonuses && !hasTreasureBonuses) return null;
-          
-          return (
-            <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
-              <h3 className="text-sm text-slate-400 mb-3">📊 総合ボーナス</h3>
-              
-              {/* 戦闘系 */}
-              {hasCombatBonuses && (
-                <div className="mb-3">
-                  <div className="text-xs text-slate-500 mb-1">⚔️ 戦闘</div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                    {bonuses.physicalBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">物理威力</span>
-                        <span className="text-red-400">+{bonuses.physicalBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.magicBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">魔法威力</span>
-                        <span className="text-blue-400">+{bonuses.magicBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.critBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">クリ率</span>
-                        <span className="text-orange-400">+{bonuses.critBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.critDamage > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">クリダメ</span>
-                        <span className="text-orange-400">+{bonuses.critDamage}%</span>
-                      </div>
-                    )}
-                    {bonuses.evasionBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">回避率</span>
-                        <span className="text-cyan-400">+{bonuses.evasionBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.damageReduction > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">被ダメ軽減</span>
-                        <span className="text-green-400">-{bonuses.damageReduction}%</span>
-                      </div>
-                    )}
-                    {bonuses.healBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">回復量</span>
-                        <span className="text-pink-400">+{bonuses.healBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.hpRegen > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">HP再生</span>
-                        <span className="text-green-400">+{bonuses.hpRegen}/ターン</span>
-                      </div>
-                    )}
-                    {bonuses.mpRegen > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">MP再生</span>
-                        <span className="text-blue-400">+{bonuses.mpRegen}/ターン</span>
-                      </div>
-                    )}
-                    {bonuses.hpSteal > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">HP吸収</span>
-                        <span className="text-purple-400">+{bonuses.hpSteal}%</span>
-                      </div>
-                    )}
-                    {bonuses.firstStrikeBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">先制率</span>
-                        <span className="text-yellow-400">+{bonuses.firstStrikeBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.accuracyBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">命中率</span>
-                        <span className="text-slate-300">+{bonuses.accuracyBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.bonusHits > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">追加攻撃</span>
-                        <span className="text-red-400">+{bonuses.bonusHits}回</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {/* トレハン系 */}
-              {hasTreasureBonuses && (
-                <div>
-                  <div className="text-xs text-slate-500 mb-1">🔍 トレハン</div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                    {bonuses.dropBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">ドロップ率</span>
-                        <span className="text-green-400">+{bonuses.dropBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.rareDropBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">レア発見</span>
-                        <span className="text-purple-400">+{bonuses.rareDropBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.coinBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">コイン</span>
-                        <span className="text-yellow-400">+{bonuses.coinBonus}%</span>
-                      </div>
-                    )}
-                    {bonuses.explorationSpeedBonus > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">探索時間</span>
-                        <span className="text-cyan-400">-{bonuses.explorationSpeedBonus}%</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-        
-        {/* パッシブ一覧 */}
-        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
-          <h3 className="text-sm text-slate-400 mb-2">パッシブ効果</h3>
-          <div className="space-y-2">
-            {/* 種族パッシブ */}
-            {raceData.passives.map((passive, i) => (
-              <PassiveDetail key={`race-${i}`} passive={passive} label="種族" />
-            ))}
-            {/* 職業パッシブ */}
-            {jobData.passives.map((passive, i) => (
-              <PassiveDetail key={`job-${i}`} passive={passive} label="職業" />
-            ))}
-            {/* 種族マスタリー（パッシブの場合） */}
-            {character.raceMastery && raceData.masterySkill?.type === 'passive' && raceData.masterySkill.effects && (
-              <PassiveDetail 
-                passive={{ name: raceData.masterySkill.name, description: raceData.masterySkill.description, effects: raceData.masterySkill.effects }} 
-                label="★種族" 
-              />
-            )}
-            {/* 職業マスタリー（パッシブの場合） */}
-            {character.jobMastery && jobData.masterySkill?.type === 'passive' && jobData.masterySkill.effects && (
-              <PassiveDetail 
-                passive={{ name: jobData.masterySkill.name, description: jobData.masterySkill.description, effects: jobData.masterySkill.effects }} 
-                label="★職業" 
-              />
-            )}
-            {/* 種族マスタリー2（パッシブの場合） */}
-            {character.raceMastery2 && raceData.masterySkill2?.type === 'passive' && raceData.masterySkill2.effects && (
-              <PassiveDetail 
-                passive={{ name: raceData.masterySkill2.name, description: raceData.masterySkill2.description, effects: raceData.masterySkill2.effects }} 
-                label="★★種族" 
-              />
-            )}
-            {/* 職業マスタリー2（パッシブの場合） */}
-            {character.jobMastery2 && jobData.masterySkill2?.type === 'passive' && jobData.masterySkill2.effects && (
-              <PassiveDetail 
-                passive={{ name: jobData.masterySkill2.name, description: jobData.masterySkill2.description, effects: jobData.masterySkill2.effects }} 
-                label="★★職業" 
-              />
-            )}
-          </div>
-        </div>
-        
-        {/* スキル一覧 */}
-        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
-          <h3 className="text-sm text-slate-400 mb-2">スキル</h3>
-          <div className="space-y-2">
-            {/* 種族スキル */}
-            {raceData.skills?.map(skill => (
-              <SkillDetail key={skill.id} skill={skill} label="種族" />
-            ))}
-            {/* 職業スキル */}
-            {jobData.skills.map(skill => (
-              <SkillDetail key={skill.id} skill={skill} label="職業" />
-            ))}
-            {/* マスタリースキル（アクティブのみ） */}
-            {character.raceMastery && raceData.masterySkill?.type === 'active' && raceData.masterySkill.skill && (
-              <SkillDetail skill={raceData.masterySkill.skill} label="★種族" />
-            )}
-            {character.jobMastery && jobData.masterySkill?.type === 'active' && jobData.masterySkill.skill && (
-              <SkillDetail skill={jobData.masterySkill.skill} label="★職業" />
-            )}
-            {/* マスタリー2スキル（アクティブのみ） */}
-            {character.raceMastery2 && raceData.masterySkill2?.type === 'active' && raceData.masterySkill2.skill && (
-              <SkillDetail skill={raceData.masterySkill2.skill} label="★★種族" />
-            )}
-            {character.jobMastery2 && jobData.masterySkill2?.type === 'active' && jobData.masterySkill2.skill && (
-              <SkillDetail skill={jobData.masterySkill2.skill} label="★★職業" />
-            )}
-          </div>
-        </div>
-        
+
 {/* 種族マスタリー解放 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">種族マスタリー: {raceData.name}</h3>
@@ -714,6 +495,228 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         
+
+        {/* ステータス（総合） */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+          <StatsDisplay stats={calculateTotalStats(character)} title="総合ステータス" />
+          <div className="text-xs text-slate-500 mt-2">
+            ※ 基本ステータス + Lvボーナス + 装備ボーナス
+          </div>
+        </div>
+        
+        {/* 総合ボーナス */}
+        {(() => {
+          const bonuses = calculateCharacterBonuses(character);
+          const hasCombatBonuses = bonuses.physicalBonus > 0 || bonuses.magicBonus > 0 || 
+            bonuses.critBonus > 0 || bonuses.critDamage > 0 || bonuses.evasionBonus > 0 ||
+            bonuses.damageReduction > 0 || bonuses.healBonus > 0 || bonuses.hpRegen > 0 ||
+            bonuses.mpRegen > 0 || bonuses.hpSteal > 0 || bonuses.firstStrikeBonus > 0 ||
+            bonuses.accuracyBonus > 0 || bonuses.bonusHits > 0;
+          const hasTreasureBonuses = bonuses.dropBonus > 0 || bonuses.coinBonus > 0 ||
+            bonuses.rareDropBonus > 0 || bonuses.explorationSpeedBonus > 0;
+          
+          if (!hasCombatBonuses && !hasTreasureBonuses) return null;
+          
+          return (
+            <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+              <h3 className="text-sm text-slate-400 mb-3">📊 総合ボーナス</h3>
+              
+              {/* 戦闘系 */}
+              {hasCombatBonuses && (
+                <div className="mb-3">
+                  <div className="text-xs text-slate-500 mb-1">⚔️ 戦闘</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {bonuses.physicalBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">物理威力</span>
+                        <span className="text-red-400">+{bonuses.physicalBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.magicBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">魔法威力</span>
+                        <span className="text-blue-400">+{bonuses.magicBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.critBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">クリ率</span>
+                        <span className="text-orange-400">+{bonuses.critBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.critDamage > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">クリダメ</span>
+                        <span className="text-orange-400">+{bonuses.critDamage}%</span>
+                      </div>
+                    )}
+                    {bonuses.evasionBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">回避率</span>
+                        <span className="text-cyan-400">+{bonuses.evasionBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.damageReduction > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">被ダメ軽減</span>
+                        <span className="text-green-400">-{bonuses.damageReduction}%</span>
+                      </div>
+                    )}
+                    {bonuses.healBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">回復量</span>
+                        <span className="text-pink-400">+{bonuses.healBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.hpRegen > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">HP再生</span>
+                        <span className="text-green-400">+{bonuses.hpRegen}/ターン</span>
+                      </div>
+                    )}
+                    {bonuses.mpRegen > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">MP再生</span>
+                        <span className="text-blue-400">+{bonuses.mpRegen}/ターン</span>
+                      </div>
+                    )}
+                    {bonuses.hpSteal > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">HP吸収</span>
+                        <span className="text-purple-400">+{bonuses.hpSteal}%</span>
+                      </div>
+                    )}
+                    {bonuses.firstStrikeBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">先制率</span>
+                        <span className="text-yellow-400">+{bonuses.firstStrikeBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.accuracyBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">命中率</span>
+                        <span className="text-slate-300">+{bonuses.accuracyBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.bonusHits > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">追加攻撃</span>
+                        <span className="text-red-400">+{bonuses.bonusHits}回</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* トレハン系 */}
+              {hasTreasureBonuses && (
+                <div>
+                  <div className="text-xs text-slate-500 mb-1">🔍 トレハン</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                    {bonuses.dropBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">ドロップ率</span>
+                        <span className="text-green-400">+{bonuses.dropBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.rareDropBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">レア発見</span>
+                        <span className="text-purple-400">+{bonuses.rareDropBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.coinBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">コイン</span>
+                        <span className="text-yellow-400">+{bonuses.coinBonus}%</span>
+                      </div>
+                    )}
+                    {bonuses.explorationSpeedBonus > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">探索時間</span>
+                        <span className="text-cyan-400">-{bonuses.explorationSpeedBonus}%</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+        
+        {/* パッシブ一覧 */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-2">パッシブ効果</h3>
+          <div className="space-y-2">
+            {/* 種族パッシブ */}
+            {raceData.passives.map((passive, i) => (
+              <PassiveDetail key={`race-${i}`} passive={passive} label="種族" />
+            ))}
+            {/* 職業パッシブ */}
+            {jobData.passives.map((passive, i) => (
+              <PassiveDetail key={`job-${i}`} passive={passive} label="職業" />
+            ))}
+            {/* 種族マスタリー（パッシブの場合） */}
+            {character.raceMastery && raceData.masterySkill?.type === 'passive' && raceData.masterySkill.effects && (
+              <PassiveDetail 
+                passive={{ name: raceData.masterySkill.name, description: raceData.masterySkill.description, effects: raceData.masterySkill.effects }} 
+                label="★種族" 
+              />
+            )}
+            {/* 職業マスタリー（パッシブの場合） */}
+            {character.jobMastery && jobData.masterySkill?.type === 'passive' && jobData.masterySkill.effects && (
+              <PassiveDetail 
+                passive={{ name: jobData.masterySkill.name, description: jobData.masterySkill.description, effects: jobData.masterySkill.effects }} 
+                label="★職業" 
+              />
+            )}
+            {/* 種族マスタリー2（パッシブの場合） */}
+            {character.raceMastery2 && raceData.masterySkill2?.type === 'passive' && raceData.masterySkill2.effects && (
+              <PassiveDetail 
+                passive={{ name: raceData.masterySkill2.name, description: raceData.masterySkill2.description, effects: raceData.masterySkill2.effects }} 
+                label="★★種族" 
+              />
+            )}
+            {/* 職業マスタリー2（パッシブの場合） */}
+            {character.jobMastery2 && jobData.masterySkill2?.type === 'passive' && jobData.masterySkill2.effects && (
+              <PassiveDetail 
+                passive={{ name: jobData.masterySkill2.name, description: jobData.masterySkill2.description, effects: jobData.masterySkill2.effects }} 
+                label="★★職業" 
+              />
+            )}
+          </div>
+        </div>
+        
+        {/* スキル一覧 */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-2">スキル</h3>
+          <div className="space-y-2">
+            {/* 種族スキル */}
+            {raceData.skills?.map(skill => (
+              <SkillDetail key={skill.id} skill={skill} label="種族" />
+            ))}
+            {/* 職業スキル */}
+            {jobData.skills.map(skill => (
+              <SkillDetail key={skill.id} skill={skill} label="職業" />
+            ))}
+            {/* マスタリースキル（アクティブのみ） */}
+            {character.raceMastery && raceData.masterySkill?.type === 'active' && raceData.masterySkill.skill && (
+              <SkillDetail skill={raceData.masterySkill.skill} label="★種族" />
+            )}
+            {character.jobMastery && jobData.masterySkill?.type === 'active' && jobData.masterySkill.skill && (
+              <SkillDetail skill={jobData.masterySkill.skill} label="★職業" />
+            )}
+            {/* マスタリー2スキル（アクティブのみ） */}
+            {character.raceMastery2 && raceData.masterySkill2?.type === 'active' && raceData.masterySkill2.skill && (
+              <SkillDetail skill={raceData.masterySkill2.skill} label="★★種族" />
+            )}
+            {character.jobMastery2 && jobData.masterySkill2?.type === 'active' && jobData.masterySkill2.skill && (
+              <SkillDetail skill={jobData.masterySkill2.skill} label="★★職業" />
+            )}
+          </div>
+        </div>
+        
+
         {/* 削除ボタン */}
         <button
           onClick={handleDelete}
