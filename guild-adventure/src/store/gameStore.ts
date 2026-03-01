@@ -799,12 +799,15 @@ export const useGameStore = create<GameStore>()(
         
         // 履歴を追加
         for (const result of results) {
+          const dungeon = dungeons[result.dungeonId as keyof typeof dungeons];
+          const coinReward = result.victory && dungeon?.coinReward ? dungeon.coinReward : 0;
           await get().addHistory({
             type: 'multi',
             dungeonId: result.dungeonId,
             victory: result.victory,
             droppedItemId: result.itemId,
             droppedEquipmentId: result.equipmentId,
+            coinReward,
             logs: result.logs,
             roomCode: result.roomCode,
             players: result.players,
