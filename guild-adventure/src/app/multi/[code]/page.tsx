@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePolling } from '@/hooks/usePolling';
 import { useGameStore } from '@/store/gameStore';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { 
   getRoom, 
   updateRoomCharacters, 
@@ -34,7 +35,7 @@ import { useBattleProgress } from '@/hooks/useBattleProgress';
 export default function MultiRoomPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
   const router = useRouter();
-  const { username, characters, addItem, addEquipment, addCoins, syncToServer, isLoading, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
+  const { username, characters, addItem, addEquipment, addCoins, syncToServer, isLoading, isLoggedIn, autoLogin, addHistory, setCurrentMultiRoom, saveMultiParty, getLastMultiParty } = useGameStore();
   
   const [room, setRoom] = useState<MultiRoom | null>(null);
   const [roomDeleted, setRoomDeleted] = useState(false);
@@ -398,12 +399,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     );
   }
   
-  if (!room || isLoading) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
-        <div>読み込み中...</div>
-      </main>
-    );
+  if (!room || isLoading || !isLoggedIn) {
+    return <LoadingScreen />;
   }
   
   const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];

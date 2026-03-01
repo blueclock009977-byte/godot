@@ -4,24 +4,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { formatDate } from '@/lib/utils/format';
 
 export default function ChallengeHistoryPage() {
-  const { username, autoLogin } = useGameStore();
+  const { username, isLoggedIn, isLoading: storeLoading } = useGameStore();
   const { history, loadData } = useChallengeStore();
-  const [isLoading, setIsLoading] = useState(true);
-  
-  useEffect(() => {
-    if (!username) {
-      autoLogin();
-    }
-  }, [username, autoLogin]);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   
   useEffect(() => {
     if (username) {
-      loadData(username).then(() => setIsLoading(false));
+      loadData(username).then(() => setIsDataLoaded(true));
     }
   }, [username, loadData]);
+  
+  // ローディング中またはログイン前またはデータ未ロード
+  if (!isLoggedIn || storeLoading || !isDataLoaded) {
+    return <LoadingScreen />;
+  }
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -31,9 +31,7 @@ export default function ChallengeHistoryPage() {
           <h1 className="text-2xl font-bold">📜 挑戦履歴</h1>
         </div>
         
-        {isLoading ? (
-          <p className="text-center text-slate-400">読み込み中...</p>
-        ) : history.length === 0 ? (
+        {history.length === 0 ? (
           <p className="text-center text-slate-400">まだ挑戦履歴がありません</p>
         ) : (
           <div className="space-y-3">

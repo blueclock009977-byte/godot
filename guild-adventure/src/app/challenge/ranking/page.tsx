@@ -4,21 +4,21 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function ChallengeRankingPage() {
-  const { username, autoLogin } = useGameStore();
+  const { username, isLoggedIn, isLoading: storeLoading } = useGameStore();
   const { ranking, loadRanking, progress } = useChallengeStore();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   
   useEffect(() => {
-    if (!username) {
-      autoLogin();
-    }
-  }, [username, autoLogin]);
-  
-  useEffect(() => {
-    loadRanking().then(() => setIsLoading(false));
+    loadRanking().then(() => setIsDataLoaded(true));
   }, [loadRanking]);
+  
+  // ローディング中またはログイン前またはデータ未ロード
+  if (!isLoggedIn || storeLoading || !isDataLoaded) {
+    return <LoadingScreen />;
+  }
   
   // 自分の順位を計算
   const myRank = ranking.findIndex(r => r.username === username) + 1;
@@ -45,9 +45,7 @@ export default function ChallengeRankingPage() {
         )}
         
         {/* ランキング一覧 */}
-        {isLoading ? (
-          <p className="text-center text-slate-400">読み込み中...</p>
-        ) : ranking.length === 0 ? (
+        {ranking.length === 0 ? (
           <p className="text-center text-slate-400">まだ記録がありません</p>
         ) : (
           <div className="space-y-2">
