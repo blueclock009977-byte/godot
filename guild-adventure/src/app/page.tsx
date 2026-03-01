@@ -137,12 +137,38 @@ function GameScreen() {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [publicRoomCount, setPublicRoomCount] = useState(0);
   const [challengeCooldown, setChallengeCooldown] = useState(0);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   
   // ユーザーアクティビティ検知
   const { isActive } = useUserActivity();
   
-  // 通知をポーリング + ステータス更新
+  // 初回データロード（通知 + チャレンジ）
+  useEffect(() => {
+    if (!username) return;
+    
+    const loadInitialData = async () => {
+      try {
+        const [invites, requests, rooms] = await Promise.all([
+          getInvitations(username),
+          getFriendRequests(username),
+          getPublicRooms(),
+        ]);
+        setInvitations(invites);
+        setFriendRequests(requests);
+        setPublicRoomCount(rooms.length);
+        await loadChallengeData(username);
+        setIsDataLoaded(true);
+      } catch (e) {
+        console.error('Failed to load initial data:', e);
+        setIsDataLoaded(true); // エラーでも表示
+      }
+    };
+    loadInitialData();
+  }, [username, loadChallengeData]);
+  
+  // 通知をポーリング + ステータス更新（初回ロード後）
   const loadNotifications = useCallback(async () => {
+    if (!isDataLoaded) return;
     try {
       const [invites, requests] = await Promise.all([
         getInvitations(username!),
@@ -150,7 +176,7 @@ function GameScreen() {
       ]);
       setInvitations(invites);
       setFriendRequests(requests);
-      // アクティブな場合のみlastSeenを更新（1分操作なしでオフライン扱い）
+      // アクティブな場合のみlastSeenを更新
       if (isActive()) {
         const { updateLastSeen } = await import('@/lib/firebase');
         updateLastSeen(username!);
@@ -158,26 +184,20 @@ function GameScreen() {
     } catch (e) {
       console.error('Failed to load notifications:', e);
     }
-  }, [username, isActive]);
-  usePolling(loadNotifications, 10000, !!username);
+  }, [username, isActive, isDataLoaded]);
+  usePolling(loadNotifications, 10000, !!username && isDataLoaded);
   
-  // 公開ルーム数を取得
+  // 公開ルーム数を取得（初回ロード後）
   const loadPublicRooms = useCallback(async () => {
+    if (!isDataLoaded) return;
     try {
       const rooms = await getPublicRooms();
       setPublicRoomCount(rooms.length);
     } catch (e) {
       console.error('Failed to load public rooms:', e);
     }
-  }, []);
-  usePolling(loadPublicRooms, 10000);
-  
-  // チャレンジダンジョンデータをロード
-  useEffect(() => {
-    if (username) {
-      loadChallengeData(username);
-    }
-  }, [username, loadChallengeData]);
+  }, [isDataLoaded]);
+  usePolling(loadPublicRooms, 10000, isDataLoaded);
   
   // チャレンジクールダウンを更新（1秒ごと）
   useEffect(() => {
@@ -242,6 +262,11 @@ function GameScreen() {
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const itemCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
   const totalNotifications = invitations.length + friendRequests.length;
+  
+  // データロード完了まで待機
+  if (!isDataLoaded) {
+    return <LoadingScreen />;
+  }
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
