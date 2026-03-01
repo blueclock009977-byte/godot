@@ -42,8 +42,8 @@ export default function ChallengePage() {
   const [cooldown, setCooldown] = useState(0);
   const [result, setResult] = useState<ChallengeResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
-  const [showPartyEdit, setShowPartyEdit] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [earnedItems, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
   
   // 自動ログイン
@@ -202,6 +202,28 @@ export default function ChallengePage() {
     await saveParty(username, newParty);
   };
   
+  // パーティに追加（通常のパーティ編成と同じUI用）
+  const handleAddToParty = async (position: 'front' | 'back') => {
+    if (!username || !selectedChar) return;
+    
+    if (challengeParty.length >= 6) {
+      alert('パーティは最大6人までです');
+      return;
+    }
+    
+    const newParty = [...challengeParty, { charId: selectedChar, position }];
+    await saveParty(username, newParty);
+    setSelectedChar(null);
+  };
+  
+  // パーティから外す（通常のパーティ編成と同じUI用）
+  const handleRemoveFromParty = async (charId: string) => {
+    if (!username) return;
+    
+    const newParty = challengeParty.filter(s => s.charId !== charId);
+    await saveParty(username, newParty);
+  };
+  
   if (isLoading || !username) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
@@ -291,122 +313,138 @@ export default function ChallengePage() {
           </ul>
         </div>
         
-        {/* パーティ編成 */}
+        {/* パーティ編成（通常と同じUI） */}
         <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="font-semibold">🛡️ パーティ ({partyCount}/6)</h2>
-            <button
-              onClick={() => setShowPartyEdit(!showPartyEdit)}
-              className="text-sm bg-slate-600 hover:bg-slate-500 px-3 py-1 rounded"
-            >
-              {showPartyEdit ? '閉じる' : '📝 編成'}
-            </button>
+          <h2 className="font-semibold mb-3">🛡️ パーティ編成 ({partyCount}/6)</h2>
+          
+          {/* 説明 */}
+          <div className="mb-3 p-2 bg-slate-700/50 rounded text-xs text-slate-400">
+            <p>前衛: 火力+20%, 被ダメ+20% ／ 後衛: 火力-20%, 被ダメ-20%</p>
           </div>
           
-          {partyCount > 0 ? (
-            <div className="space-y-2">
-              {/* 前衛 */}
-              <div>
-                <p className="text-xs text-red-400 mb-1">🗡️ 前衛</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {partyChars.filter(p => p.position === 'front').map(({ char }) => (
-                    <div key={char.id} className="text-center p-2 rounded text-xs bg-red-900/50 border border-red-800">
-                      <p className="font-semibold truncate">{char.name}</p>
-                      <p className="text-slate-400">{races[char.race].name}</p>
-                    </div>
-                  ))}
-                  {partyChars.filter(p => p.position === 'front').length === 0 && (
-                    <p className="text-slate-500 text-xs col-span-3">なし</p>
-                  )}
-                </div>
-              </div>
-              {/* 後衛 */}
-              <div>
-                <p className="text-xs text-blue-400 mb-1">🛡️ 後衛</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {partyChars.filter(p => p.position === 'back').map(({ char }) => (
-                    <div key={char.id} className="text-center p-2 rounded text-xs bg-blue-900/50 border border-blue-800">
-                      <p className="font-semibold truncate">{char.name}</p>
-                      <p className="text-slate-400">{races[char.race].name}</p>
-                    </div>
-                  ))}
-                  {partyChars.filter(p => p.position === 'back').length === 0 && (
-                    <p className="text-slate-500 text-xs col-span-3">なし</p>
-                  )}
-                </div>
-              </div>
+          {/* 前衛 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm text-red-400 font-semibold">⚔️ 前衛 ({partyChars.filter(p => p.position === 'front').length}人)</h3>
+              {selectedChar && (
+                <button
+                  onClick={() => handleAddToParty('front')}
+                  className="text-xs bg-red-600 hover:bg-red-500 px-3 py-1 rounded"
+                >
+                  + 前衛に追加
+                </button>
+              )}
             </div>
-          ) : (
-            <p className="text-slate-400 text-sm">キャラを選択してください</p>
+            {partyChars.filter(p => p.position === 'front').length === 0 ? (
+              <div className="text-slate-500 text-xs p-3 border-2 border-dashed border-slate-600 rounded-lg text-center">
+                前衛がいません
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {partyChars.filter(p => p.position === 'front').map(({ char }) => (
+                  <button
+                    key={char.id}
+                    onClick={() => handleRemoveFromParty(char.id)}
+                    className="p-2 rounded text-left text-sm bg-red-900/50 border border-red-700 hover:bg-red-800/50"
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold truncate">{char.name}</span>
+                      <span className="text-xs bg-red-600 px-1 rounded">前</span>
+                    </div>
+                    <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
+                    <div className="flex gap-2 mt-1 text-xs">
+                      <span className="text-red-400">HP{char.stats.maxHp}</span>
+                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* 後衛 */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm text-blue-400 font-semibold">🛡️ 後衛 ({partyChars.filter(p => p.position === 'back').length}人)</h3>
+              {selectedChar && (
+                <button
+                  onClick={() => handleAddToParty('back')}
+                  className="text-xs bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded"
+                >
+                  + 後衛に追加
+                </button>
+              )}
+            </div>
+            {partyChars.filter(p => p.position === 'back').length === 0 ? (
+              <div className="text-slate-500 text-xs p-3 border-2 border-dashed border-slate-600 rounded-lg text-center">
+                後衛がいません
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {partyChars.filter(p => p.position === 'back').map(({ char }) => (
+                  <button
+                    key={char.id}
+                    onClick={() => handleRemoveFromParty(char.id)}
+                    className="p-2 rounded text-left text-sm bg-blue-900/50 border border-blue-700 hover:bg-blue-800/50"
+                  >
+                    <div className="flex justify-between items-start">
+                      <span className="font-semibold truncate">{char.name}</span>
+                      <span className="text-xs bg-blue-600 px-1 rounded">後</span>
+                    </div>
+                    <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
+                    <div className="flex gap-2 mt-1 text-xs">
+                      <span className="text-red-400">HP{char.stats.maxHp}</span>
+                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* 選択中の表示 */}
+          {selectedChar && (
+            <div className="mb-3 p-2 bg-amber-900/50 rounded-lg border border-amber-700 text-center text-sm">
+              <span className="text-amber-400">「前衛に追加」か「後衛に追加」をタップ</span>
+            </div>
           )}
           
-          {/* 編成モード */}
-          {showPartyEdit && (
-            <div className="mt-4 border-t border-slate-600 pt-4">
-              <p className="text-sm text-slate-400 mb-2">
-                タップで追加/削除、編成済みは再タップで前衛↔後衛切替
-              </p>
-              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
-                {characters.map(char => {
-                  const inParty = challengeParty.find(s => s.charId === char.id);
-                  const frontCount = challengeParty.filter(s => s.position === 'front').length;
-                  const backCount = challengeParty.filter(s => s.position === 'back').length;
-                  
-                  const handleClick = () => {
-                    if (inParty) {
-                      // 編成済み：位置切替または削除
-                      const currentPos = inParty.position;
-                      const canSwitchToFront = currentPos === 'back' && frontCount < 3;
-                      const canSwitchToBack = currentPos === 'front' && backCount < 3;
-                      
-                      if (canSwitchToFront || canSwitchToBack) {
-                        // 位置切替
-                        const newPos = currentPos === 'front' ? 'back' : 'front';
-                        switchPosition(char.id, newPos);
-                      } else {
-                        // 削除
-                        toggleCharInParty(char.id, currentPos);
-                      }
-                    } else {
-                      // 未編成：追加
-                      if (challengeParty.length >= 6) {
-                        alert('パーティは最大6人までです');
-                        return;
-                      }
-                      const nextPosition = frontCount < 3 ? 'front' : 'back';
-                      toggleCharInParty(char.id, nextPosition);
-                    }
-                  };
-                  
-                  return (
-                    <button
-                      key={char.id}
-                      onClick={handleClick}
-                      className={`p-2 rounded text-left text-sm ${
-                        inParty 
-                          ? inParty.position === 'front'
-                            ? 'bg-red-700 hover:bg-red-600 border border-red-500'
-                            : 'bg-blue-700 hover:bg-blue-600 border border-blue-500'
-                          : 'bg-slate-700 hover:bg-slate-600'
-                      }`}
-                    >
-                      <p className="font-semibold truncate">{char.name}</p>
-                      <p className="text-xs text-slate-300">
-                        {races[char.race].name} {jobs[char.job].name}
-                      </p>
-                      {inParty && (
-                        <p className={`text-xs font-bold ${
-                          inParty.position === 'front' ? 'text-red-200' : 'text-blue-200'
-                        }`}>
-                          {inParty.position === 'front' ? '🗡️ 前衛' : '🛡️ 後衛'}
-                        </p>
-                      )}
-                    </button>
-                  );
-                })}
+          {/* 待機キャラ */}
+          <div>
+            <h3 className="text-sm text-slate-400 mb-2">
+              待機中 ({characters.filter(c => !challengeParty.find(s => s.charId === c.id)).length}人)
+            </h3>
+            {characters.filter(c => !challengeParty.find(s => s.charId === c.id)).length === 0 ? (
+              characters.length === 0 ? (
+                <Link href="/create" className="block text-center text-sm text-amber-400 hover:underline">
+                  キャラを作成する →
+                </Link>
+              ) : (
+                <p className="text-slate-500 text-xs text-center">全員パーティにいます</p>
+              )
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                {characters.filter(c => !challengeParty.find(s => s.charId === c.id)).map(char => (
+                  <button
+                    key={char.id}
+                    onClick={() => setSelectedChar(selectedChar === char.id ? null : char.id)}
+                    className={`p-2 rounded text-left text-sm transition-colors ${
+                      selectedChar === char.id
+                        ? 'bg-amber-600 border border-amber-500'
+                        : 'bg-slate-700 border border-slate-600 hover:bg-slate-600'
+                    }`}
+                  >
+                    <p className="font-semibold truncate">{char.name}</p>
+                    <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
+                    <div className="flex gap-2 mt-1 text-xs">
+                      <span className="text-red-400">HP{char.stats.maxHp}</span>
+                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         
         {/* 挑戦ボタン */}
