@@ -134,7 +134,7 @@ function calculatePlayerEquipmentDrops(
   
   // 各プレイヤーごとに個別抽選（ボーナスは全員分で計算）
   Object.entries(players).forEach(([playerName, _]) => {
-    const equipments = rollEquipmentDrops(durationSeconds, allCharsWithOwner);
+    const equipments = rollEquipmentDrops(durationSeconds, allCharsWithOwner, dungeonId);
     playerEquipmentDrops[playerName] = equipments.length > 0 ? equipments.map((e: any) => e.id) : undefined;
   });
   

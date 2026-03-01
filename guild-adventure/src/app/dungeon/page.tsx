@@ -137,7 +137,7 @@ export default function DungeonPage() {
                   📜 書: {getDropRate(dungeon.id)}% ×4
                 </span>
                 <span className="text-green-400">
-                  🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}% ×4
+                  🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds, dungeon.id).toFixed(1)}% ×4
                 </span>
               </div>
               

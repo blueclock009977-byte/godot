@@ -156,7 +156,7 @@ export function DungeonDetailModal({
             <div>推奨人数: {dungeon.recommendedPlayers}人</div>
             <div>遭遇回数: {dungeon.encounterCount}回</div>
             <div className="text-amber-400">📜 書: {getDropRate(dungeon.id)}% ×4</div>
-            <div className="text-green-400">🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}% ×4</div>
+            <div className="text-green-400">🎒 装備: {getEquipmentDropRate(dungeon.durationSeconds, dungeon.id).toFixed(1)}% ×4</div>
             <div className="text-amber-400 col-span-2">🪙 勝利報酬: {dungeon.coinReward}コイン</div>
           </div>
         </div>

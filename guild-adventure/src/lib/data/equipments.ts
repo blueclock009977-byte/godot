@@ -296,16 +296,27 @@ export function getEquipmentById(id: string): Equipment | undefined {
 // ダンジョン時間に応じたドロップ率（%）
 // ※基本4回抽選のため、確率は1/4に設定（期待値は同じ）
 // 1時間 = 5%、それ以下は比例
-export function getEquipmentDropRate(durationSeconds: number): number {
-  const rate = (durationSeconds / 3600) * 5; // 20 / 4 = 5
-  return Math.max(0.025, Math.min(5, rate)); // 0.025%〜5%
+// 海以降は+1%ずつボーナス
+const dungeonEquipmentBonus: Record<string, number> = {
+  sea: 1,
+  desert: 2,
+  volcano: 3,
+  snowfield: 4,
+  temple: 5,
+};
+
+export function getEquipmentDropRate(durationSeconds: number, dungeonId?: string): number {
+  const baseRate = (durationSeconds / 3600) * 5; // 20 / 4 = 5
+  const bonus = dungeonId ? (dungeonEquipmentBonus[dungeonId] || 0) : 0;
+  const rate = baseRate + bonus;
+  return Math.max(0.025, rate); // 0.025%〜
 }
 
 import { applyDropBonus, getDropRollCount, calculateRareDropBonus } from '../drop/dropBonus';
 
 // 複数装備ドロップ対応（成功した数だけドロップ）
-export function rollEquipmentDrops(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment[] {
-  const baseRate = getEquipmentDropRate(durationSeconds);
+export function rollEquipmentDrops(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = [], dungeonId?: string): Equipment[] {
+  const baseRate = getEquipmentDropRate(durationSeconds, dungeonId);
   const dropRate = applyDropBonus(baseRate, characters);
   const rolls = getDropRollCount(characters);
   const rareBonus = calculateRareDropBonus(characters);
@@ -324,7 +335,7 @@ export function rollEquipmentDrops(durationSeconds: number, characters: { race?:
 }
 
 // 後方互換（1つだけ返す）
-export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = []): Equipment | null {
-  const drops = rollEquipmentDrops(durationSeconds, characters);
+export function rollEquipmentDrop(durationSeconds: number, characters: { race?: string; job?: string; equipmentId?: string; lv3Skill?: string; lv5Skill?: string }[] = [], dungeonId?: string): Equipment | null {
+  const drops = rollEquipmentDrops(durationSeconds, characters, dungeonId);
   return drops[0] || null;
 }

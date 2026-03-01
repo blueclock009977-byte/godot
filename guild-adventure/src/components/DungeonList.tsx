@@ -52,7 +52,7 @@ export function DungeonList({
                 📜 {getDropRate(dungeon.id)}%
               </span>
               <span className="text-green-400">
-                🎒 {getEquipmentDropRate(dungeon.durationSeconds).toFixed(1)}%
+                🎒 {getEquipmentDropRate(dungeon.durationSeconds, dungeon.id).toFixed(1)}%
               </span>
             </div>
             
