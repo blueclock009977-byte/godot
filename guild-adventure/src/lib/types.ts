@@ -298,6 +298,8 @@ export interface Character {
   lv3Skill?: string;       // Lv3で獲得したスキルID
   lv5Skill?: string;       // Lv5で獲得したスキルID
   equipmentId?: string;    // 装備中のアイテムID
+  raceTreasureBonus?: number;  // 種族秘宝による全ステボーナス
+  jobTreasureBonus?: number;   // 職業秘宝による全ステボーナス
 }
 
 // ============================================

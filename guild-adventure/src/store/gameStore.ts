@@ -406,6 +406,9 @@ interface GameStore {
   unlockJobMastery2: (characterId: string) => Promise<boolean>;
   levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }>;
   
+  // 秘宝使用
+  useTreasure: (characterId: string, treasureId: string) => Promise<{ success: boolean; error?: string }>;
+  
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
   
@@ -932,7 +935,55 @@ export const useGameStore = create<GameStore>()(
         return unlockMastery2(get, set, characterId, 'job');
       },
       
-      
+      // 秘宝使用（対象種族/職業のキャラに全ステ+10）
+      useTreasure: async (characterId: string, treasureId: string): Promise<{ success: boolean; error?: string }> => {
+        const { characters, inventory, syncToServer } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return { success: false, error: 'キャラクターが見つかりません' };
+        
+        // 秘宝を所持しているか
+        if ((inventory[treasureId] || 0) < 1) {
+          return { success: false, error: '秘宝を持っていません' };
+        }
+        
+        // 秘宝の対象を確認
+        const { getTreasureTarget, getItemById } = require('@/lib/data/items');
+        const target = getTreasureTarget(treasureId);
+        if (!target) return { success: false, error: '無効なアイテムです' };
+        
+        // 対象が一致するか
+        if (target.type === 'race' && character.race !== target.id) {
+          const item = getItemById(treasureId);
+          return { success: false, error: `この秘宝は${item?.name?.replace('の秘宝', '')}専用です` };
+        }
+        if (target.type === 'job' && character.job !== target.id) {
+          const item = getItemById(treasureId);
+          return { success: false, error: `この秘宝は${item?.name?.replace('の秘宝', '')}専用です` };
+        }
+        
+        // 既に使用済みか
+        const bonusKey = target.type === 'race' ? 'raceTreasureBonus' : 'jobTreasureBonus';
+        if (character[bonusKey]) {
+          return { success: false, error: 'この種類の秘宝は既に使用済みです' };
+        }
+        
+        // 秘宝を消費してボーナスを付与
+        const TREASURE_BONUS = 10; // 全ステ+10
+        set((state) => ({
+          inventory: {
+            ...state.inventory,
+            [treasureId]: (state.inventory[treasureId] || 0) - 1,
+          },
+          characters: state.characters.map(c =>
+            c.id === characterId
+              ? { ...c, [bonusKey]: TREASURE_BONUS }
+              : c
+          ),
+        }));
+        
+        await syncToServer();
+        return { success: true };
+      },
       
       // キャラクターレベルアップ
       levelUpCharacter: async (characterId: string): Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }> => {

@@ -503,6 +503,8 @@ interface CharacterForStats {
 interface CharacterForTotalStats extends CharacterForStats {
   lv3Skill?: string;
   lv5Skill?: string;
+  raceTreasureBonus?: number;  // 種族秘宝ボーナス
+  jobTreasureBonus?: number;   // 職業秘宝ボーナス
 }
 
 export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
@@ -555,6 +557,17 @@ export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
         applyStatModifiers(total, equipment.statModifiers);
       }
     } catch (e) {}
+  }
+  
+  // 秘宝ボーナスを加算（全ステ+N）
+  const treasureBonus = (char.raceTreasureBonus || 0) + (char.jobTreasureBonus || 0);
+  if (treasureBonus > 0) {
+    total.maxHp += treasureBonus;
+    total.maxMp += treasureBonus;
+    total.atk += treasureBonus;
+    total.def += treasureBonus;
+    total.agi += treasureBonus;
+    total.mag += treasureBonus;
   }
   
   // hp/mpはmaxHpに連動させる（表示用）
