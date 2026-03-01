@@ -317,12 +317,8 @@ export function generateChallengeMonsters(floor: number): Monster[] {
       physicalResist: base.physicalResist,
       magicResist: base.magicResist,
       skills: base.skills,
+      regenPerTurn: base.regenPerTurn,  // 再生型用
     };
-    
-    // 再生型の場合は特殊フラグを付ける（バトルエンジンで処理）
-    if (base.regenPerTurn) {
-      (monster as any).regenPerTurn = base.regenPerTurn;
-    }
     
     result.push(monster);
   }

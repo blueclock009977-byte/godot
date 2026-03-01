@@ -249,6 +249,7 @@ interface ExtendedBattleUnit extends BattleUnit {
   nextCritGuaranteed: boolean;  // 次の攻撃クリ確定
   firstAttackDone: boolean;     // 最初の攻撃済み
   wasFirstStrike: boolean;      // 先制成功フラグ
+  regenPerTurn?: number;        // 毎ターンHP回復率%（再生型モンスター用）
 }
 
 function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedBattleUnit {
@@ -355,6 +356,7 @@ function monsterToUnit(monster: Monster): ExtendedBattleUnit {
     nextCritGuaranteed: false,
     firstAttackDone: false,
     wasFirstStrike: false,
+    regenPerTurn: monster.regenPerTurn,  // 再生型用
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
@@ -1139,6 +1141,19 @@ function processTurn(
         deadAlly.stats.hp = Math.floor(deadAlly.stats.maxHp * 0.3);
         unit.autoReviveUsed = true;
         logs.push(`${unit.name}の奇跡の力で${deadAlly.name}が蘇生！`);
+      }
+    }
+  }
+  
+  // 再生型モンスターのHP回復（ターン終了時）
+  for (const unit of enemyUnits) {
+    if (unit.stats.hp > 0 && unit.regenPerTurn && unit.regenPerTurn > 0) {
+      const regenAmount = Math.floor(unit.stats.maxHp * unit.regenPerTurn / 100);
+      const oldHp = unit.stats.hp;
+      unit.stats.hp = Math.min(unit.stats.maxHp, unit.stats.hp + regenAmount);
+      const actualRegen = unit.stats.hp - oldHp;
+      if (actualRegen > 0) {
+        logs.push(`${unit.name}は再生しHP${actualRegen}回復！`);
       }
     }
   }

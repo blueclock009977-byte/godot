@@ -326,6 +326,7 @@ export interface Monster {
   magicResist?: number;     // 魔法ダメージ耐性%
   speciesKiller?: { species: SpeciesType; multiplier: number }[];  // 系統特攻
   speciesResist?: { species: SpeciesType; multiplier: number }[];  // 系統耐性
+  regenPerTurn?: number;    // 毎ターンHP回復率%（再生型用）
 }
 
 export interface MonsterSpawn {
