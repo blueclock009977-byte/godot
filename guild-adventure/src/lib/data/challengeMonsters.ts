@@ -54,10 +54,34 @@ export function getConceptForFloor(floor: number): ChallengeConceptType {
 }
 
 // 階層からステータス倍率を取得
+// 難易度カーブ: 3F=草原, 10F=森, 25F=洞窟, 40F=海, 80F=神殿
 export function getStatMultiplierForFloor(floor: number): number {
-  const tier = Math.floor((floor - 1) / 10);  // 0-9 → tier 0, 10-19 → tier 1, ...
-  const multipliers = [1.0, 1.5, 2.2, 3.0, 3.8, 4.6, 5.4, 6.2, 7.5, 9.0];
-  return multipliers[Math.min(tier, 9)];
+  // 1-3F: 草原レベル (×0.4〜0.6)
+  if (floor <= 3) {
+    return 0.4 + (floor - 1) * 0.1;  // 0.4, 0.5, 0.6
+  }
+  // 4-10F: 森レベル (×0.8〜2.0)
+  if (floor <= 10) {
+    return 0.6 + (floor - 3) * 0.2;  // 0.8〜2.0
+  }
+  // 11-25F: 洞窟レベル (×2.2〜4.0)
+  if (floor <= 25) {
+    return 2.0 + (floor - 10) * 0.133;  // 2.2〜4.0
+  }
+  // 26-40F: 海レベル (×4.2〜6.0)
+  if (floor <= 40) {
+    return 4.0 + (floor - 25) * 0.133;  // 4.2〜6.0
+  }
+  // 41-60F: 砂漠〜火山レベル (×6.2〜10.0)
+  if (floor <= 60) {
+    return 6.0 + (floor - 40) * 0.2;  // 6.2〜10.0
+  }
+  // 61-80F: 雪原〜神殿レベル (×10.4〜18.0)
+  if (floor <= 80) {
+    return 10.0 + (floor - 60) * 0.4;  // 10.4〜18.0
+  }
+  // 81-100F: 限界突破 (×18.8〜35.0)
+  return 18.0 + (floor - 80) * 0.85;  // 18.85〜35.0
 }
 
 // コンセプト別基本モンスターデータ（1-10F基準）
@@ -73,76 +97,81 @@ interface BaseMonsterData {
 }
 
 // バランス型（2体）- 標準的な敵
+// 基準: 1F(×0.4)で草原スライムレベル(HP20,ATK3)
 const balancedMonsters: BaseMonsterData[] = [
   {
     name: 'ガーディアン',
     species: 'humanoid',
-    stats: { hp: 60, maxHp: 60, mp: 0, maxMp: 0, atk: 12, def: 8, agi: 10, mag: 0 },
+    stats: { hp: 50, maxHp: 50, mp: 0, maxMp: 0, atk: 8, def: 5, agi: 6, mag: 0 },
   },
   {
     name: 'ウォーリア',
     species: 'humanoid',
-    stats: { hp: 55, maxHp: 55, mp: 0, maxMp: 0, atk: 14, def: 6, agi: 12, mag: 0 },
+    stats: { hp: 55, maxHp: 55, mp: 0, maxMp: 0, atk: 7, def: 4, agi: 8, mag: 0 },
   },
 ];
 
 // 物理耐性（1体）- 物理50%軽減
+// 基準: 2F(×0.5)で草原レベル、耐性で難易度UP
 const physResistMonsters: BaseMonsterData[] = [
   {
     name: 'アイアンゴーレム',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 100, maxHp: 100, mp: 0, maxMp: 0, atk: 15, def: 20, agi: 5, mag: 0 },
+    stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 6, def: 15, agi: 3, mag: 0 },
     physicalResist: 50,
   },
 ];
 
 // 魔法耐性（1体）- 魔法50%軽減
+// 基準: 3F(×0.6)で草原ボスレベル、耐性で難易度UP
 const magResistMonsters: BaseMonsterData[] = [
   {
     name: 'スペルイーター',
     species: 'demon',
     element: 'dark',
-    stats: { hp: 80, maxHp: 80, mp: 50, maxMp: 50, atk: 10, def: 8, agi: 12, mag: 20 },
+    stats: { hp: 70, maxHp: 70, mp: 30, maxMp: 30, atk: 5, def: 6, agi: 8, mag: 10 },
     magicResist: 50,
   },
 ];
 
 // 高AGI・回避（3体）- 素早い
+// 基準: 4F(×0.8)で森レベル、高AGIで回避
 const highAgiMonsters: BaseMonsterData[] = [
   {
     name: 'シャドウ',
     species: 'undead',
     element: 'dark',
-    stats: { hp: 35, maxHp: 35, mp: 0, maxMp: 0, atk: 10, def: 3, agi: 30, mag: 0 },
+    stats: { hp: 30, maxHp: 30, mp: 0, maxMp: 0, atk: 6, def: 2, agi: 25, mag: 0 },
   },
   {
     name: 'ウィンドスプライト',
     species: 'beast',
     element: 'wind',
-    stats: { hp: 30, maxHp: 30, mp: 20, maxMp: 20, atk: 8, def: 2, agi: 35, mag: 12 },
+    stats: { hp: 25, maxHp: 25, mp: 15, maxMp: 15, atk: 5, def: 2, agi: 30, mag: 8 },
   },
   {
     name: 'ファントム',
     species: 'undead',
     element: 'dark',
-    stats: { hp: 32, maxHp: 32, mp: 0, maxMp: 0, atk: 9, def: 2, agi: 32, mag: 0 },
+    stats: { hp: 28, maxHp: 28, mp: 0, maxMp: 0, atk: 5, def: 2, agi: 28, mag: 0 },
   },
 ];
 
 // 高火力（2体）- 高ATK
+// 基準: 5F(×1.0)で森レベル、高ATKで圧力
 const highAtkMonsters: BaseMonsterData[] = [
   {
     name: 'バーサーカー',
     species: 'humanoid',
     element: 'fire',
-    stats: { hp: 50, maxHp: 50, mp: 0, maxMp: 0, atk: 25, def: 5, agi: 15, mag: 0 },
+    stats: { hp: 40, maxHp: 40, mp: 0, maxMp: 0, atk: 14, def: 3, agi: 10, mag: 0 },
   },
   {
     name: 'フレイムドラゴン',
     species: 'dragon',
     element: 'fire',
-    stats: { hp: 55, maxHp: 55, mp: 30, maxMp: 30, atk: 22, def: 8, agi: 12, mag: 18 },
+    stats: { hp: 45, maxHp: 45, mp: 20, maxMp: 20, atk: 12, def: 5, agi: 8, mag: 10 },
   },
 ];
 
@@ -205,51 +234,55 @@ const debuffMonsters: BaseMonsterData[] = [
 ];
 
 // 再生型（1体）- 毎ターンHP回復
+// 基準: 7F(×1.4)で森レベル、再生で持久戦
 const regenMonsters: BaseMonsterData[] = [
   {
     name: 'トロール',
     species: 'humanoid',
-    stats: { hp: 120, maxHp: 120, mp: 0, maxMp: 0, atk: 16, def: 10, agi: 6, mag: 0 },
+    stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 8, def: 6, agi: 4, mag: 0 },
     regenPerTurn: 10,  // 毎ターン最大HPの10%回復
   },
 ];
 
 // 複合耐性（2体）- 物理+魔法両方軽減
+// 基準: 8F(×1.6)で森〜洞窟レベル、両耐性で難敵
 const mixedResistMonsters: BaseMonsterData[] = [
   {
     name: 'エンシェントガーディアン',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 90, maxHp: 90, mp: 20, maxMp: 20, atk: 14, def: 15, agi: 8, mag: 10 },
+    stats: { hp: 60, maxHp: 60, mp: 15, maxMp: 15, atk: 7, def: 10, agi: 5, mag: 6 },
     physicalResist: 30,
     magicResist: 30,
   },
   {
     name: 'ルーンナイト',
     species: 'humanoid',
-    stats: { hp: 85, maxHp: 85, mp: 30, maxMp: 30, atk: 12, def: 12, agi: 10, mag: 12 },
+    stats: { hp: 55, maxHp: 55, mp: 20, maxMp: 20, atk: 6, def: 8, agi: 6, mag: 7 },
     physicalResist: 25,
     magicResist: 25,
   },
 ];
 
 // 高HP壁（1体）- 超耐久、低火力
+// 基準: 9F(×1.8)で洞窟手前、高HPで持久戦
 const hpWallMonsters: BaseMonsterData[] = [
   {
     name: 'コロッサス',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 250, maxHp: 250, mp: 0, maxMp: 0, atk: 8, def: 25, agi: 3, mag: 0 },
+    stats: { hp: 150, maxHp: 150, mp: 0, maxMp: 0, atk: 5, def: 15, agi: 2, mag: 0 },
     physicalResist: 20,
   },
 ];
 
 // ボス（1体）- 複合能力、高ステ
+// 基準: 10F(×2.0)で森ボス相当(HP300,ATK18)
 const bossMonsters: BaseMonsterData[] = [
   {
     name: 'フロアガーディアン',
     species: 'demon',
-    stats: { hp: 150, maxHp: 150, mp: 50, maxMp: 50, atk: 20, def: 15, agi: 15, mag: 15 },
+    stats: { hp: 150, maxHp: 150, mp: 30, maxMp: 30, atk: 9, def: 12, agi: 5, mag: 9 },
     physicalResist: 15,
     magicResist: 15,
     skills: [{
@@ -259,7 +292,7 @@ const bossMonsters: BaseMonsterData[] = [
       type: 'attack',
       target: 'all',
       multiplier: 0.8,
-      mpCost: 20,
+      mpCost: 15,
     }],
   },
 ];
