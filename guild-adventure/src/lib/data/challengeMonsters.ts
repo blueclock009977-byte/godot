@@ -100,9 +100,10 @@ interface BaseMonsterData {
 // 基準: 1F(×0.4)で草原スライムレベル(HP20,ATK3)
 const balancedMonsters: BaseMonsterData[] = [
   {
-    name: 'ガーディアン',
+    name: '聖騎士',
     species: 'humanoid',
-    stats: { hp: 50, maxHp: 50, mp: 0, maxMp: 0, atk: 8, def: 5, agi: 6, mag: 0 },
+    element: 'light',
+    stats: { hp: 50, maxHp: 50, mp: 10, maxMp: 10, atk: 8, def: 5, agi: 6, mag: 3 },
   },
   {
     name: 'ウォーリア',

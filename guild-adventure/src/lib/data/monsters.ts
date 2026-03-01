@@ -373,8 +373,8 @@ export const templeMonsters: Monster[] = [
     id: 'fallen_angel',
     name: '堕天使',
     species: 'demon',
-    element: 'wind',
-    elementModifier: { wind: 40, earth: -30 },
+    element: 'light',
+    elementModifier: { light: 40, dark: -30 },
     magicResist: 25,  // 天使の加護
     stats: { hp: 400, maxHp: 400, mp: 80, maxMp: 80, atk: 50, def: 35, agi: 40, mag: 55 },
   },
@@ -391,6 +391,8 @@ export const templeMonsters: Monster[] = [
     id: 'lich',
     name: 'リッチ',
     species: 'undead',
+    element: 'dark',
+    elementModifier: { dark: 40, light: -30 },
     magicResist: 40,  // 魔法使いなので魔法耐性高
     physicalResist: -20,  // 骨なので物理に弱い
     stats: { hp: 350, maxHp: 350, mp: 100, maxMp: 100, atk: 35, def: 30, agi: 20, mag: 70 },
