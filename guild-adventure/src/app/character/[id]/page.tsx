@@ -16,6 +16,7 @@ import { getLvSkill } from '@/lib/data/lvSkills';
 import { getLvBonus } from '@/lib/data/lvStatBonuses';
 import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
 import { calculateCharacterBonuses, calculateTotalStats } from '@/lib/character/bonuses';
+import { getItemById, raceTreasures, jobTreasures } from '@/lib/data/items';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -33,6 +34,8 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     equipments,
     equipItem,
     unequipItem,
+    useTreasure,
+    inventory,
   } = useGameStore();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -404,6 +407,104 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
               )}
             </>
           )}
+        </div>
+
+        {/* 秘宝セクション */}
+        <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-3">💎 秘宝（レア）</h3>
+          
+          {/* 使用済み秘宝の表示 */}
+          <div className="mb-3 space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-slate-400">種族秘宝:</span>
+              {character.raceTreasureBonus ? (
+                <span className="text-purple-400">✓ 全ステ+{character.raceTreasureBonus}</span>
+              ) : (
+                <span className="text-slate-500">未使用</span>
+              )}
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">職業秘宝:</span>
+              {character.jobTreasureBonus ? (
+                <span className="text-purple-400">✓ 全ステ+{character.jobTreasureBonus}</span>
+              ) : (
+                <span className="text-slate-500">未使用</span>
+              )}
+            </div>
+          </div>
+          
+          {/* 使用可能な秘宝 */}
+          {(() => {
+            const raceTreasureId = `treasure_${character.race}`;
+            const jobTreasureId = `treasure_${character.job}`;
+            const hasRaceTreasure = (inventory[raceTreasureId] || 0) > 0;
+            const hasJobTreasure = (inventory[jobTreasureId] || 0) > 0;
+            const canUseRace = hasRaceTreasure && !character.raceTreasureBonus;
+            const canUseJob = hasJobTreasure && !character.jobTreasureBonus;
+            
+            if (!canUseRace && !canUseJob) {
+              return (
+                <p className="text-xs text-slate-500">
+                  {character.raceTreasureBonus && character.jobTreasureBonus
+                    ? '両方の秘宝を使用済みです'
+                    : '使用可能な秘宝がありません（探索でレアドロップ）'}
+                </p>
+              );
+            }
+            
+            return (
+              <div className="space-y-2">
+                {canUseRace && (
+                  <div className="flex justify-between items-center bg-purple-900/30 rounded p-2 border border-purple-700">
+                    <div>
+                      <span className="text-purple-300">{getItemById(raceTreasureId)?.name}</span>
+                      <span className="text-xs text-slate-400 ml-2">x{inventory[raceTreasureId]}</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setIsLoading(true);
+                        const result = await useTreasure(character.id, raceTreasureId);
+                        setIsLoading(false);
+                        if (result.success) {
+                          alert('秘宝を使用しました！全ステータス+10！');
+                        } else {
+                          alert(result.error || '使用できませんでした');
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
+                    >
+                      使用
+                    </button>
+                  </div>
+                )}
+                {canUseJob && (
+                  <div className="flex justify-between items-center bg-purple-900/30 rounded p-2 border border-purple-700">
+                    <div>
+                      <span className="text-purple-300">{getItemById(jobTreasureId)?.name}</span>
+                      <span className="text-xs text-slate-400 ml-2">x{inventory[jobTreasureId]}</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setIsLoading(true);
+                        const result = await useTreasure(character.id, jobTreasureId);
+                        setIsLoading(false);
+                        if (result.success) {
+                          alert('秘宝を使用しました！全ステータス+10！');
+                        } else {
+                          alert(result.error || '使用できませんでした');
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="bg-purple-600 hover:bg-purple-500 px-3 py-1 rounded text-sm"
+                    >
+                      使用
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* 装備セクション */}
