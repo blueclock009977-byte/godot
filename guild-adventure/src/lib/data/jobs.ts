@@ -48,7 +48,7 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'heal', name: 'ヒール', description: '味方一人のHPを回復', type: 'heal', target: 'ally', multiplier: 1.5, mpCost: 12 },
       { id: 'group_heal', name: 'ヒールオール', description: '味方全体のHPを回復', type: 'heal', target: 'allAllies', multiplier: 0.8, mpCost: 25 },
-      { id: 'holy_light', name: 'ホーリーライト', description: '聖なる光で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 14 },
+      { id: 'holy_light', name: 'ホーリーライト', description: '聖なる光で敵を攻撃', type: 'magic', target: 'single', multiplier: 1.4, mpCost: 14, element: 'light' },
     ],
     masterySkill: { name: '聖域', description: '味方全体の被ダメージ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
     masterySkill2: { name: '神の奇跡', description: 'レアドロップ率+30%', type: 'passive', effects: [{ type: 'rareDropBonus', value: 30 }] },
@@ -136,7 +136,7 @@ export const jobs: Record<string, JobData> = {
       { name: '鑑定眼', description: 'レア装備発見率+20%', effects: [{ type: 'rareDropBonus', value: 20 }] },
     ],
     skills: [
-      { id: 'sage_fire', name: '賢者の炎', description: '単体に炎魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 12, element: 'fire' },
+      { id: 'sage_ice', name: '賢者の氷', description: '単体に氷魔法', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 12, element: 'water' },
       { id: 'sage_heal', name: '癒しの光', description: '味方一人を回復', type: 'heal', target: 'ally', multiplier: 1.3, mpCost: 14 },
       { id: 'meteor', name: 'メテオ', description: '全体に超高威力魔法', type: 'magic', target: 'all', multiplier: 2.0, mpCost: 40, element: 'fire' },
     ],
@@ -188,9 +188,9 @@ export const jobs: Record<string, JobData> = {
       { name: '腐食の呪い', description: '与える劣化+2%', effects: [{ type: 'degradationBonus', value: 2 }] },
     ],
     skills: [
-      { id: 'dark_bolt', name: 'ダークボルト', description: '闇の魔法で攻撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12 },
+      { id: 'dark_bolt', name: 'ダークボルト', description: '闇の魔法で攻撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12, element: 'dark' },
       { id: 'soul_drain', name: '吸魂', description: 'HPを吸収する魔法', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 15 },
-      { id: 'death_wave', name: '死の波動', description: '全体に闇魔法', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 28 },
+      { id: 'death_wave', name: '死の波動', description: '全体に闇魔法', type: 'magic', target: 'all', multiplier: 1.4, mpCost: 28, element: 'dark' },
     ],
     masterySkill: { name: '魂吸収', description: '敵を倒すとMP15回復', type: 'passive', effects: [{ type: 'mpOnKill', value: 15 }] },
     masterySkill2: { name: '死霊の宴', description: '敵を倒すとHP15回復', type: 'passive', effects: [{ type: 'hpOnKill', value: 15 }] },
@@ -206,7 +206,7 @@ export const jobs: Record<string, JobData> = {
     ],
     skills: [
       { id: 'hundred_fists', name: '百裂拳', description: '連続攻撃', type: 'attack', target: 'single', multiplier: 1.8, mpCost: 12 },
-      { id: 'chi_blast', name: '気功波', description: '全体に気を放つ', type: 'magic', target: 'all', multiplier: 1.0, mpCost: 18 },
+      { id: 'chi_blast', name: '気功波', description: '全体に気を放つ', type: 'magic', target: 'all', multiplier: 1.0, mpCost: 18, element: 'wind' },
       { id: 'inner_peace', name: '精神統一', description: '自身のHP回復', type: 'heal', target: 'self', multiplier: 1.5, mpCost: 15 },
     ],
     masterySkill: { name: '無我の境地', description: '全攻撃を50%で反撃', type: 'passive', effects: [{ type: 'counterRate', value: 50 }] },
@@ -354,7 +354,7 @@ export const jobs: Record<string, JobData> = {
     skills: [
       { id: 'rune_blade', name: 'ルーンブレード', description: 'ルーンの力で斬る（ATK+MAG参照）', type: 'hybrid', target: 'single', multiplier: 1.7, mpCost: 11 },
       { id: 'protect_rune', name: '守護のルーン', description: '味方全体の防御上昇', type: 'buff', target: 'allAllies', multiplier: 0, mpCost: 18, effect: { type: 'defUp', value: 25, duration: 3 } },
-      { id: 'explosion_rune', name: '爆裂のルーン', description: '全体に爆発ダメージ（ATK+MAG参照）', type: 'hybrid', target: 'all', multiplier: 1.3, mpCost: 20, element: 'fire' },
+      { id: 'earth_rune', name: '大地のルーン', description: '全体に大地の力（ATK+MAG参照）', type: 'hybrid', target: 'all', multiplier: 1.3, mpCost: 20, element: 'earth' },
     ],
     masterySkill: { name: '大紋章', description: '味方全体の被ダメ-20%', type: 'passive', effects: [{ type: 'allyDefense', value: 20 }] },
     masterySkill2: { name: '符の極意', description: '物理+魔法+20%、探索-10%', type: 'passive', effects: [{ type: 'physicalBonus', value: 20 }, { type: 'magicBonus', value: 20 }, { type: 'explorationSpeedBonus', value: 10 }] },

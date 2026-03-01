@@ -138,7 +138,7 @@ export const races: Record<string, RaceData> = {
       { name: '不死耐性', description: '不死系からの被ダメージ軽減', effects: [{ type: 'speciesResist_undead', value: 50 }] },
     ],
     skills: [
-      { id: 'life_drain', name: '生命吸収', description: 'ダメージを与えHP吸収', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 14 },
+      { id: 'life_drain', name: '生命吸収', description: 'ダメージを与えHP吸収', type: 'magic', target: 'single', multiplier: 1.2, mpCost: 14, element: 'dark' },
     ],
     masterySkill: { name: '死の抱擁', description: '与ダメージの30%HP吸収', type: 'passive', effects: [{ type: 'hpSteal', value: 30 }] },
     masterySkill2: { name: '死者の執念', description: 'HP0で50%の確率で耐える', type: 'passive', effects: [{ type: 'deathResist', value: 50 }] },
@@ -221,7 +221,7 @@ export const races: Record<string, RaceData> = {
       name: '魂の契約',
       description: 'HP消費で超高威力魔法',
       type: 'active',
-      skill: { id: 'soul_pact', name: '魂の契約', description: 'HP20%消費、超高威力魔法', type: 'magic', target: 'single', multiplier: 4.0, mpCost: 30 },
+      skill: { id: 'soul_pact', name: '魂の契約', description: 'HP20%消費、超高威力魔法', type: 'magic', target: 'single', multiplier: 4.0, mpCost: 30, element: 'dark' },
     },
     masterySkill2: { name: '地獄の契約', description: '与ダメ+30%、被ダメ+15%', type: 'passive', effects: [{ type: 'damageBonus', value: 30 }, { type: 'damageReduction', value: -15 }] },
   },
@@ -243,7 +243,7 @@ export const races: Record<string, RaceData> = {
       { name: '悪魔耐性', description: '悪魔系からの被ダメージ軽減', effects: [{ type: 'speciesResist_demon', value: 25 }] },
     ],
     skills: [
-      { id: 'elemental_strike', name: 'エレメンタルストライク', description: '元素の力を込めた一撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12, element: 'fire' },
+      { id: 'elemental_strike', name: 'エレメンタルストライク', description: '元素の力を込めた一撃', type: 'magic', target: 'single', multiplier: 1.6, mpCost: 12, element: 'earth' },
     ],
     masterySkill: { name: '元素融合', description: '物理+魔法の両方が+25%', type: 'passive', effects: [{ type: 'physicalBonus', value: 25 }, { type: 'magicBonus', value: 25 }] },
     masterySkill2: { name: '精霊王の加護', description: '味方全体のMAG+15%', type: 'passive', effects: [{ type: 'allyMagBonus', value: 15 }] },
@@ -262,7 +262,7 @@ export const races: Record<string, RaceData> = {
       { name: '不死狩り', description: '不死系への与ダメージ上昇', effects: [{ type: 'speciesKiller_undead', value: 40 }] },
     ],
     skills: [
-      { id: 'divine_judgment', name: '聖なる裁き', description: '聖なる光で敵を裁く', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 14 },
+      { id: 'divine_judgment', name: '聖なる裁き', description: '聖なる光で敵を裁く', type: 'magic', target: 'single', multiplier: 1.5, mpCost: 14, element: 'light' },
     ],
     masterySkill: { name: '天使の翼', description: '味方全員の被ダメ-15%', type: 'passive', effects: [{ type: 'allyDefense', value: 15 }] },
     masterySkill2: { name: '奇跡の祈り', description: '味方全体HP+10/ターン', type: 'passive', effects: [{ type: 'allyHpRegen', value: 10 }] },
@@ -281,7 +281,7 @@ export const races: Record<string, RaceData> = {
       { name: '人型狩り', description: '人型系への与ダメージ上昇', effects: [{ type: 'speciesKiller_humanoid', value: 30 }] },
     ],
     skills: [
-      { id: 'hellflame', name: '地獄の炎', description: '地獄の業火で焼き尽くす', type: 'magic', target: 'all', multiplier: 1.2, mpCost: 18, element: 'fire' },
+      { id: 'hellflame', name: '地獄の業火', description: '地獄の闇で焼き尽くす', type: 'magic', target: 'all', multiplier: 1.2, mpCost: 18, element: 'dark' },
     ],
     masterySkill: { name: '悪魔の契約', description: '与ダメ+40%、被ダメ+20%', type: 'passive', effects: [{ type: 'damageBonus', value: 40 }, { type: 'damageReduction', value: -20 }] },
     masterySkill2: { name: '呪縛の連鎖', description: 'デバフ時追撃+デバフ延長+1', type: 'passive', effects: [{ type: 'debuffFollowUp', value: 40 }, { type: 'debuffDuration', value: 1 }] },
