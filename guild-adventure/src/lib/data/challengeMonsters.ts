@@ -89,6 +89,7 @@ interface BaseMonsterData {
   name: string;
   species: 'beast' | 'humanoid' | 'undead' | 'demon' | 'dragon';
   element?: string;
+  elementModifier?: Partial<Record<string, number>>;  // 属性耐性/弱点
   stats: Stats;
   physicalResist?: number;
   magicResist?: number;
@@ -103,6 +104,7 @@ const balancedMonsters: BaseMonsterData[] = [
     name: '聖騎士',
     species: 'humanoid',
     element: 'light',
+    elementModifier: { light: 30, dark: -30 },
     stats: { hp: 50, maxHp: 50, mp: 10, maxMp: 10, atk: 8, def: 5, agi: 6, mag: 3 },
   },
   {
@@ -119,6 +121,7 @@ const physResistMonsters: BaseMonsterData[] = [
     name: 'アイアンゴーレム',
     species: 'beast',
     element: 'earth',
+    elementModifier: { earth: 30, wind: -30 },
     stats: { hp: 80, maxHp: 80, mp: 20, maxMp: 20, atk: 6, def: 15, agi: 3, mag: 5 },
     physicalResist: 50,
     skills: [{
@@ -141,6 +144,7 @@ const magResistMonsters: BaseMonsterData[] = [
     name: 'スペルイーター',
     species: 'demon',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 70, maxHp: 70, mp: 40, maxMp: 40, atk: 5, def: 6, agi: 8, mag: 12 },
     magicResist: 50,
     skills: [{
@@ -163,6 +167,7 @@ const highAgiMonsters: BaseMonsterData[] = [
     name: 'シャドウ',
     species: 'undead',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 30, maxHp: 30, mp: 15, maxMp: 15, atk: 6, def: 2, agi: 25, mag: 5 },
     skills: [{
       id: 'shadow_strike',
@@ -179,6 +184,7 @@ const highAgiMonsters: BaseMonsterData[] = [
     name: 'ウィンドスプライト',
     species: 'beast',
     element: 'wind',
+    elementModifier: { wind: 30, fire: -30 },
     stats: { hp: 25, maxHp: 25, mp: 20, maxMp: 20, atk: 5, def: 2, agi: 30, mag: 10 },
     skills: [{
       id: 'gust',
@@ -195,6 +201,7 @@ const highAgiMonsters: BaseMonsterData[] = [
     name: 'ファントム',
     species: 'undead',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 28, maxHp: 28, mp: 10, maxMp: 10, atk: 5, def: 2, agi: 28, mag: 3 },
     skills: [{
       id: 'life_drain',
@@ -216,6 +223,7 @@ const highAtkMonsters: BaseMonsterData[] = [
     name: 'バーサーカー',
     species: 'humanoid',
     element: 'fire',
+    elementModifier: { fire: 30, water: -30 },
     stats: { hp: 40, maxHp: 40, mp: 15, maxMp: 15, atk: 14, def: 3, agi: 10, mag: 5 },
     skills: [{
       id: 'rage_strike',
@@ -231,6 +239,7 @@ const highAtkMonsters: BaseMonsterData[] = [
     name: 'フレイムドラゴン',
     species: 'dragon',
     element: 'fire',
+    elementModifier: { fire: 30, water: -30 },
     stats: { hp: 45, maxHp: 45, mp: 25, maxMp: 25, atk: 12, def: 5, agi: 8, mag: 12 },
     skills: [{
       id: 'fire_breath',
@@ -251,6 +260,7 @@ const debuffMonsters: BaseMonsterData[] = [
     name: 'ポイズンスライム',
     species: 'beast',
     element: 'water',
+    elementModifier: { water: 30, earth: -30 },
     stats: { hp: 25, maxHp: 25, mp: 20, maxMp: 20, atk: 6, def: 3, agi: 8, mag: 10 },
     skills: [{
       id: 'poison_touch',
@@ -267,6 +277,7 @@ const debuffMonsters: BaseMonsterData[] = [
     name: 'カースウィッチ',
     species: 'humanoid',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 28, maxHp: 28, mp: 30, maxMp: 30, atk: 5, def: 4, agi: 10, mag: 15 },
     skills: [{
       id: 'curse',
@@ -283,6 +294,7 @@ const debuffMonsters: BaseMonsterData[] = [
     name: 'フロストスピリット',
     species: 'beast',
     element: 'ice',
+    elementModifier: { ice: 30, fire: -30, water: 20 },
     stats: { hp: 26, maxHp: 26, mp: 25, maxMp: 25, atk: 7, def: 3, agi: 12, mag: 12 },
     skills: [{
       id: 'freeze',
@@ -299,6 +311,7 @@ const debuffMonsters: BaseMonsterData[] = [
     name: 'ダークインプ',
     species: 'demon',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 24, maxHp: 24, mp: 25, maxMp: 25, atk: 8, def: 2, agi: 14, mag: 12 },
     skills: [{
       id: 'dark_fire',
@@ -341,6 +354,7 @@ const mixedResistMonsters: BaseMonsterData[] = [
     name: 'エンシェントガーディアン',
     species: 'beast',
     element: 'earth',
+    elementModifier: { earth: 30, wind: -30 },
     stats: { hp: 60, maxHp: 60, mp: 25, maxMp: 25, atk: 7, def: 10, agi: 5, mag: 8 },
     physicalResist: 30,
     magicResist: 30,
@@ -380,6 +394,7 @@ const hpWallMonsters: BaseMonsterData[] = [
     name: 'コロッサス',
     species: 'beast',
     element: 'earth',
+    elementModifier: { earth: 30, wind: -30 },
     stats: { hp: 150, maxHp: 150, mp: 20, maxMp: 20, atk: 5, def: 15, agi: 2, mag: 3 },
     physicalResist: 20,
     skills: [{
@@ -402,6 +417,7 @@ const bossMonsters: BaseMonsterData[] = [
     name: 'フロアガーディアン',
     species: 'demon',
     element: 'dark',
+    elementModifier: { dark: 30, light: -30 },
     stats: { hp: 150, maxHp: 150, mp: 50, maxMp: 50, atk: 9, def: 12, agi: 5, mag: 12 },
     physicalResist: 15,
     magicResist: 15,
@@ -488,6 +504,7 @@ export function generateChallengeMonsters(floor: number): Monster[] {
       name,
       species: base.species,
       element: base.element as any,
+      elementModifier: base.elementModifier as any,
       stats: scaledStats,
       physicalResist: base.physicalResist,
       magicResist: base.magicResist,
