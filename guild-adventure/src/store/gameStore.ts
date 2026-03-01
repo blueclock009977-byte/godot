@@ -478,8 +478,8 @@ export const useGameStore = create<GameStore>()(
                 lastMulti3Party: userData.lastMulti3Party || null,
                 lastRoomSettings: userData.lastRoomSettings || null,
                 lastSoloDungeonId: (userData.lastSoloDungeonId as DungeonType) || null,
-                isLoading: false,
                 _dataLoaded: true,
+                // isLoadingはまだtrue - 復元処理が終わるまで待つ
               });
               setStoredUsername(username);
               
@@ -495,6 +495,8 @@ export const useGameStore = create<GameStore>()(
                 }
               }
               
+              // 全ての復元が完了してからisLoading=false
+              set({ isLoading: false });
               return { success: true, isNew: false };
             }
           } else {
@@ -670,8 +672,8 @@ export const useGameStore = create<GameStore>()(
               lastMulti3Party: userData.lastMulti3Party || null,
               lastRoomSettings: userData.lastRoomSettings || null,
               lastSoloDungeonId: (userData.lastSoloDungeonId as DungeonType) || null,
-              isLoading: false,
               _dataLoaded: true,
+              // isLoadingはまだtrue - 全ての復元処理が終わるまで待つ
             });
             // 既存の探索を復元
             await get().restoreAdventure();
@@ -724,7 +726,8 @@ export const useGameStore = create<GameStore>()(
               }
             }
             
-            set({ _dataLoaded: true });
+            // 全ての復元処理が完了してからisLoading=false
+            set({ isLoading: false });
             return true;
           }
         } catch (e) {
