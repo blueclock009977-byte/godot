@@ -106,7 +106,17 @@ export interface UserData {
 
 // ユーザーデータを取得
 export async function getUserData(username: string): Promise<UserData | null> {
-  return firebaseGet<UserData>(`guild-adventure/users/${username}`);
+  const data = await firebaseGet<UserData>(`guild-adventure/users/${username}`);
+  if (!data) return null;
+  
+  // history がオブジェクト形式（POST で追加された場合）なら配列に変換
+  if (data.history && typeof data.history === 'object' && !Array.isArray(data.history)) {
+    const historyObj = data.history as unknown as Record<string, AdventureHistory>;
+    data.history = Object.values(historyObj)
+      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+  }
+  
+  return data;
 }
 
 // ユーザーデータを保存
@@ -118,25 +128,48 @@ export async function saveUserData(username: string, data: Partial<UserData>): P
   );
 }
 
-// 履歴を追加（最大20件）
+// 履歴を追加（最大20件）- POST で個別追加してrace condition回避
 export async function addAdventureHistory(username: string, history: AdventureHistory): Promise<boolean> {
   try {
-    // 現在の履歴を取得
-    const userData = await getUserData(username);
-    const currentHistory = userData?.history || [];
-    
-    // 新しい履歴を先頭に追加し、20件に制限
-    const newHistory = [history, ...currentHistory].slice(0, 20);
-    
+    // POST で新しいエントリを追加（Firebase が自動でユニークキーを生成）
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/history.json`, {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newHistory),
+      body: JSON.stringify(history),
     });
-    return res.ok;
+    
+    if (!res.ok) return false;
+    
+    // 古いエントリを削除（20件制限）
+    await cleanupOldHistory(username, 20);
+    
+    return true;
   } catch (e) {
     console.error('Failed to add history:', e);
     return false;
+  }
+}
+
+// 古い履歴を削除（制限数を超えた分）
+async function cleanupOldHistory(username: string, limit: number): Promise<void> {
+  try {
+    const historyData = await firebaseGet<Record<string, AdventureHistory>>(`guild-adventure/users/${username}/history`);
+    if (!historyData || typeof historyData !== 'object') return;
+    
+    // completedAt でソートして古いものを特定
+    const entries = Object.entries(historyData)
+      .map(([key, value]) => ({ key, ...value }))
+      .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+    
+    // 制限を超えた分を削除
+    const toDelete = entries.slice(limit);
+    for (const entry of toDelete) {
+      await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/history/${entry.key}.json`, {
+        method: 'DELETE',
+      });
+    }
+  } catch (e) {
+    console.error('Failed to cleanup old history:', e);
   }
 }
 
