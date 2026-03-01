@@ -4,12 +4,18 @@ import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { raceTickets, jobBooks, ItemData } from '@/lib/data/items';
 
 const SHOP_PRICE = 200; // 購入価格
 
 export default function ShopPage() {
-  const { coins, addCoins, addItem, syncToServer, inventory } = useGameStore();
+  const { coins, addCoins, addItem, syncToServer, inventory, isLoggedIn, isLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState<'race' | 'job'>('race');
   

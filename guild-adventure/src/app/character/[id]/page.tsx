@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { SkillDetail, PassiveDetail, formatEffect } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { races } from '@/lib/data/races';
@@ -36,9 +37,16 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     unequipItem,
     useTreasure,
     inventory,
+    isLoggedIn,
+    isLoading: storeLoading,
   } = useGameStore();
   
   const [isLoading, setIsLoading] = useState(false);
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || storeLoading) {
+    return <LoadingScreen />;
+  }
   
   const character = characters.find(c => c.id === id);
   

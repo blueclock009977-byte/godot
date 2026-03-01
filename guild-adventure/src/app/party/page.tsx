@@ -8,6 +8,7 @@ import { jobs } from '@/lib/data/jobs';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { getPartyTreasureHuntBonuses, hasTreasureHuntBonuses } from '@/lib/drop/dropBonus';
 
 function CharacterCard({ 
@@ -57,8 +58,13 @@ function CharacterCard({
 }
 
 export default function PartyPage() {
-  const { characters, party, addToParty, removeFromParty } = useGameStore();
+  const { characters, party, addToParty, removeFromParty, isLoggedIn, isLoading } = useGameStore();
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   // パーティメンバー
   const frontMembers = (party.front || []).filter(Boolean) as Character[];

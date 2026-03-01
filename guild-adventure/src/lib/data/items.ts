@@ -1,6 +1,13 @@
 // アイテム定義
 import { pickRandom, findById } from '../utils';
 
+// 秘宝のボーナス定数（Single Source of Truth）
+export const TREASURE_BONUS = {
+  HP: 50,    // HP+50
+  MP: 20,    // MP+20
+  OTHER: 10, // ATK/DEF/AGI/MAG +10
+};
+
 export type ItemRarity = 'normal' | 'rare';
 
 export interface ItemData {

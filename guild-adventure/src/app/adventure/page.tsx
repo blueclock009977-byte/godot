@@ -10,11 +10,17 @@ import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
 import { formatDuration } from '@/lib/utils';
 import { BattleResult } from '@/lib/types';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, syncToServer, addHistory } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, syncToServer, addHistory, isLoggedIn, isLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);

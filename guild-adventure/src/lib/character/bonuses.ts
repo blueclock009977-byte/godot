@@ -9,6 +9,7 @@ import { races } from '../data/races';
 import { jobs } from '../data/jobs';
 import { EffectType, Effect, Stats } from '../types';
 import { getLvBonus } from '../data/lvStatBonuses';
+import { TREASURE_BONUS } from '../data/items';
 
 // ============================================
 // 型定義
@@ -559,15 +560,15 @@ export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
     } catch (e) {}
   }
   
-  // 秘宝ボーナスを加算（HP+50, MP+20, 他+10 per 秘宝）
-  const treasureBonus = (char.raceTreasureBonus || 0) + (char.jobTreasureBonus || 0);
-  if (treasureBonus > 0) {
-    total.maxHp += treasureBonus * 5;  // HP+50 (10*5)
-    total.maxMp += treasureBonus * 2;  // MP+20 (10*2)
-    total.atk += treasureBonus;
-    total.def += treasureBonus;
-    total.agi += treasureBonus;
-    total.mag += treasureBonus;
+  // 秘宝ボーナスを加算（定数はitems.ts TREASURE_BONUSで一元管理）
+  const treasureCount = ((char.raceTreasureBonus || 0) > 0 ? 1 : 0) + ((char.jobTreasureBonus || 0) > 0 ? 1 : 0);
+  if (treasureCount > 0) {
+    total.maxHp += TREASURE_BONUS.HP * treasureCount;
+    total.maxMp += TREASURE_BONUS.MP * treasureCount;
+    total.atk += TREASURE_BONUS.OTHER * treasureCount;
+    total.def += TREASURE_BONUS.OTHER * treasureCount;
+    total.agi += TREASURE_BONUS.OTHER * treasureCount;
+    total.mag += TREASURE_BONUS.OTHER * treasureCount;
   }
   
   // hp/mpはmaxHpに連動させる（表示用）

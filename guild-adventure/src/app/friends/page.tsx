@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import {
   getFriends,
   getFriendRequests,
@@ -23,7 +24,12 @@ import {
 import { getStatusDisplay, getStatusDisplays } from '@/lib/utils/status';
 
 export default function FriendsPage() {
-  const { username, currentMultiRoom } = useGameStore();
+  const { username, currentMultiRoom, isLoggedIn, isLoading: storeLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || storeLoading) {
+    return <LoadingScreen />;
+  }
   const { isActive } = useUserActivity();
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});

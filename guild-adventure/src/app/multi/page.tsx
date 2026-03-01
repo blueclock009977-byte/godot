@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { usePolling } from '@/hooks/usePolling';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { DungeonDetailModal } from '@/components/DungeonDetailModal';
 import { 
   createRoom, 
@@ -24,7 +25,12 @@ import { formatDuration } from '@/lib/utils';
 
 export default function MultiPage() {
   const router = useRouter();
-  const { username, lastRoomSettings, saveRoomSettings } = useGameStore();
+  const { username, lastRoomSettings, saveRoomSettings, isLoggedIn, isLoading: storeLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || storeLoading) {
+    return <LoadingScreen />;
+  }
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [roomCode, setRoomCode] = useState('');
   const [selectedDungeon, setSelectedDungeon] = useState<DungeonType>('grassland');

@@ -38,7 +38,7 @@ import {
   getUserStatus,
   getRoom,
 } from '@/lib/firebase';
-import { initialInventory } from '@/lib/data/items';
+import { initialInventory, TREASURE_BONUS } from '@/lib/data/items';
 import { runBattle, rollDrop } from '@/lib/battle/engine';
 
 // ============================================
@@ -967,8 +967,7 @@ export const useGameStore = create<GameStore>()(
           return { success: false, error: 'この種類の秘宝は既に使用済みです' };
         }
         
-        // 秘宝を消費してボーナスを付与
-        const TREASURE_BONUS = 10; // 全ステ+10
+        // 秘宝を消費してボーナスを付与（TREASURE_BONUS.OTHERをベース値として保存）
         set((state) => ({
           inventory: {
             ...state.inventory,
@@ -976,7 +975,7 @@ export const useGameStore = create<GameStore>()(
           },
           characters: state.characters.map(c =>
             c.id === characterId
-              ? { ...c, [bonusKey]: TREASURE_BONUS }
+              ? { ...c, [bonusKey]: TREASURE_BONUS.OTHER }
               : c
           ),
         }));

@@ -6,7 +6,8 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
-import { getItemById } from '@/lib/data/items';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { getItemById, isTreasure } from '@/lib/data/items';
 import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
 
 const SELL_PRICE = 20; // チケット・書の売却価格
@@ -14,7 +15,12 @@ const EQUIPMENT_SELL_PRICE = 30; // 通常装備の売却価格
 
 export default function ItemsPage() {
   const router = useRouter();
-  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer } = useGameStore();
+  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer, isLoggedIn, isLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   const [message, setMessage] = useState('');
   
   // 売却可能なアイテム（種族チケット・職業の書）
@@ -148,12 +154,30 @@ export default function ItemsPage() {
           </div>
         )}
         
+        {/* 秘宝（金色表示） */}
+        {otherItems.filter(({ itemId }) => isTreasure(itemId)).length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-sm text-yellow-400 mb-2">🌟 秘宝（売却不可）</h2>
+            <div className="space-y-2">
+              {otherItems.filter(({ itemId }) => isTreasure(itemId)).map(({ itemId, count, item }) => (
+                <div key={itemId} className="bg-yellow-900/30 rounded-lg p-3 border border-yellow-700 flex items-center justify-between">
+                  <div>
+                    <span className="font-semibold text-yellow-300">{item?.name}</span>
+                    <span className="text-slate-400 ml-2">x{count}</span>
+                  </div>
+                  <span className="text-yellow-500 text-sm">売却不可</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* その他のアイテム */}
-        {otherItems.length > 0 && (
+        {otherItems.filter(({ itemId }) => !isTreasure(itemId)).length > 0 && (
           <div className="mb-6">
             <h2 className="text-sm text-slate-400 mb-2">その他のアイテム</h2>
             <div className="space-y-2">
-              {otherItems.map(({ itemId, count, item }) => (
+              {otherItems.filter(({ itemId }) => !isTreasure(itemId)).map(({ itemId, count, item }) => (
                 <div key={itemId} className="bg-slate-700 rounded-lg p-3 flex items-center justify-between">
                   <div>
                     <span className="font-semibold">{item?.name}</span>

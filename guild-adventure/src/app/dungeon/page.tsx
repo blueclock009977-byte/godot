@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { DungeonDetailModal } from '@/components/DungeonDetailModal';
 import { DifficultyStars } from '@/components/DifficultyStars';
 import { DungeonType, DungeonData } from '@/lib/types';
@@ -15,7 +16,12 @@ import { formatDuration } from '@/lib/utils';
 
 export default function DungeonPage() {
   const router = useRouter();
-  const { party, currentAdventure, startAdventure, lastSoloDungeonId } = useGameStore();
+  const { party, currentAdventure, startAdventure, lastSoloDungeonId, isLoggedIn, isLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const canStart = partyCount > 0 && partyCount <= 6 && !currentAdventure;

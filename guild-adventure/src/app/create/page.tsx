@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { SkillDetail, PassiveDetail, formatEffect, formatEffects } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
@@ -18,7 +19,12 @@ import { getLvBonus } from '@/lib/data/lvStatBonuses';
 
 export default function CreatePage() {
   const router = useRouter();
-  const { createCharacter, useItem, getItemCount, syncToServer } = useGameStore();
+  const { createCharacter, useItem, getItemCount, syncToServer, isLoggedIn, isLoading } = useGameStore();
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   const [name, setName] = useState('');
   const [race, setRace] = useState<RaceType>('human');

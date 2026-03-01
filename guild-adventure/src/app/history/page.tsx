@@ -5,6 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
@@ -93,8 +94,13 @@ function HistoryCard({
 }
 
 export default function HistoryPage() {
-  const { history } = useGameStore();
+  const { history, isLoggedIn, isLoading } = useGameStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   const selectedHistory = history.find(h => h.id === selectedId);
   

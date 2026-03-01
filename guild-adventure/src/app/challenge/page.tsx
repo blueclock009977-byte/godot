@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { runChallengeBattle, ChallengeResult } from '@/lib/battle/engine';
 import { Party, Character } from '@/lib/types';
 import { races } from '@/lib/data/races';
@@ -27,7 +28,7 @@ function formatCooldown(ms: number): string {
 
 export default function ChallengePage() {
   const router = useRouter();
-  const { username, characters, addItem, addEquipment, addCoins, syncToServer, autoLogin } = useGameStore();
+  const { username, characters, addItem, addEquipment, addCoins, syncToServer, autoLogin, isLoggedIn, isLoading: storeLoading } = useGameStore();
   const { 
     progress, 
     party: challengeParty, 
@@ -39,6 +40,11 @@ export default function ChallengePage() {
   } = useChallengeStore();
   
   const [isLoading, setIsLoading] = useState(true);
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || storeLoading) {
+    return <LoadingScreen />;
+  }
   const [cooldown, setCooldown] = useState(0);
   const [result, setResult] = useState<ChallengeResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
