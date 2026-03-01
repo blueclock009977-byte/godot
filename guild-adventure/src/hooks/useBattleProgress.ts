@@ -40,9 +40,10 @@ export function useBattleProgress({
     battleResultRef.current = battleResult;
 
     // 冒険開始ログを即座に表示
-    const startLog = (battleResult as any).startLog;
+    const startLog = (battleResult as BattleResult & { startLog?: string }).startLog;
     if (startLog) {
       const startLogLines = startLog.split('\n').filter((l: string) => l.trim());
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 初回マウント時のログ初期化のため正当
       setDisplayedLogs(startLogLines);
     }
   }, [roomStatus, battleResult]);

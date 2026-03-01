@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDuration } from '@/lib/utils';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
@@ -21,6 +21,7 @@ export default function BattleProgressView({
   displayedLogs,
 }: BattleProgressViewProps) {
   const logContainerRef = useRef<HTMLDivElement>(null);
+  const [remainingSec, setRemainingSec] = useState(0);
   
   // ログが追加されたら自動スクロール
   useEffect(() => {
@@ -29,9 +30,18 @@ export default function BattleProgressView({
     }
   }, [displayedLogs]);
   
-  const totalTime = durationSeconds;
-  const remainingMs = Math.max(0, startTime + (totalTime * 1000) - Date.now());
-  const remainingSec = Math.ceil(remainingMs / 1000);
+  // 残り時間の更新（Date.now()をレンダー外で管理）
+  useEffect(() => {
+    const updateRemaining = () => {
+      const totalTime = durationSeconds;
+      const remainingMs = Math.max(0, startTime + (totalTime * 1000) - Date.now());
+      setRemainingSec(Math.ceil(remainingMs / 1000));
+    };
+    
+    updateRemaining(); // 初回実行
+    const interval = setInterval(updateRemaining, 1000);
+    return () => clearInterval(interval);
+  }, [durationSeconds, startTime]);
   
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">

@@ -6,7 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { SkillDetail, PassiveDetail, formatEffect, formatEffects } from '@/components/SkillDisplay';
+import { SkillDetail, PassiveDetail, formatEffects } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
 import { races, raceList } from '@/lib/data/races';
@@ -19,7 +19,7 @@ import { getLvBonus } from '@/lib/data/lvStatBonuses';
 
 export default function CreatePage() {
   const router = useRouter();
-  const { createCharacter, useItem, getItemCount, syncToServer, isLoggedIn, isLoading } = useGameStore();
+  const { createCharacter, consumeItem, getItemCount, syncToServer, isLoggedIn, isLoading } = useGameStore();
   
   // 全てのHooksを条件分岐の前に配置
   const [name, setName] = useState('');
@@ -86,13 +86,13 @@ export default function CreatePage() {
     }
     
     if (requiredRaceItem) {
-      if (!useItem(requiredRaceItem)) {
+      if (!consumeItem(requiredRaceItem)) {
         alert('必要なアイテムがありません');
         return;
       }
     }
     if (requiredJobItem) {
-      if (!useItem(requiredJobItem)) {
+      if (!consumeItem(requiredJobItem)) {
         alert('必要なアイテムがありません');
         return;
       }

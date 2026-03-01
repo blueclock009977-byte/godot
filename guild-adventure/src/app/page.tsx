@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { usePolling } from '@/hooks/usePolling';
 import { useUserActivity } from '@/hooks/useUserActivity';
 import { useGameStore } from '@/store/gameStore';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
+import { dungeons } from '@/lib/data/dungeons';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
@@ -36,7 +36,7 @@ function LoginScreen() {
   
   useEffect(() => {
     const tryAutoLogin = async () => {
-      const success = await autoLogin();
+      await autoLogin();
       setIsAutoLogging(false);
     };
     tryAutoLogin();
@@ -130,7 +130,6 @@ function LoginScreen() {
 }
 
 function GameScreen() {
-  const router = useRouter();
   const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, equipments, coins } = useGameStore();
   const { progress: challengeProgress, loadData: loadChallengeData, canChallenge, getRemainingCooldown } = useChallengeStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
@@ -211,7 +210,6 @@ function GameScreen() {
   
   // ソロ冒険中の情報を計算
   const soloAdventureInfo = currentAdventure ? (() => {
-    const { dungeons } = require('@/lib/data/dungeons');
     const dungeonData = dungeons[currentAdventure.dungeon];
     const elapsed = (Date.now() - currentAdventure.startTime) / 1000;
     const remaining = Math.max(0, (currentAdventure.duration / 1000) - elapsed);
@@ -261,7 +259,6 @@ function GameScreen() {
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const itemCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
-  const totalNotifications = invitations.length + friendRequests.length;
   
   // データロード完了まで待機
   if (!isDataLoaded) {
@@ -574,7 +571,7 @@ function GameScreen() {
           ) : (
             <div className="space-y-1 text-sm">
               {Object.entries(inventory)
-                .filter(([_, count]) => count > 0)
+                .filter(([, count]) => count > 0)
                 .map(([itemId, count]) => {
                   const item = getItemById(itemId);
                   if (!item) return null;
@@ -600,7 +597,7 @@ function GameScreen() {
           ) : (
             <div className="space-y-1 text-sm">
               {Object.entries(equipments)
-                .filter(([_, count]) => count > 0)
+                .filter(([, count]) => count > 0)
                 .map(([eqId, count]) => {
                   const eq = getEquipmentById(eqId);
                   if (!eq) return null;
@@ -633,6 +630,7 @@ export default function Home() {
   
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR/CSRハイドレーション同期のための標準パターン
     setMounted(true);
   }, []);
   

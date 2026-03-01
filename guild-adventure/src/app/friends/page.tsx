@@ -21,7 +21,7 @@ import {
   FriendFullStatus,
   MultiRoom,
 } from '@/lib/firebase';
-import { getStatusDisplay, getStatusDisplays } from '@/lib/utils/status';
+import { getStatusDisplays } from '@/lib/utils/status';
 
 export default function FriendsPage() {
   const { username, currentMultiRoom, isLoggedIn, isLoading: storeLoading } = useGameStore();

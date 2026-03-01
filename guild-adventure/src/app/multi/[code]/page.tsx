@@ -10,7 +10,6 @@ import {
   getRoom, 
   updateRoomCharacters, 
   updateRoomReady, 
-  updateRoomStatus,
   leaveRoom,
   deleteRoom,
   claimMultiDrop,
@@ -24,7 +23,7 @@ import {
   FriendFullStatus,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
-import { BattleResult } from '@/lib/types';
+import { applyCoinBonus } from '@/lib/drop/dropBonus';
 import InviteModal from '@/components/multi/InviteModal';
 import BattleResultView from '@/components/multi/BattleResultView';
 import BattleProgressView from '@/components/multi/BattleProgressView';
@@ -42,7 +41,6 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [hadRoomOnce, setHadRoomOnce] = useState(false);
   const [selectedChars, setSelectedChars] = useState<RoomCharacter[]>([]);
   const [isReady, setIsReady] = useState(false);
-  const [error, setError] = useState('');
   const [myDrop, setMyDrop] = useState<string[] | null>(null);
   const [myEquipment, setMyEquipment] = useState<string[] | null>(null);
   const [myCoinReward, setMyCoinReward] = useState<number>(0);
@@ -170,7 +168,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     if (!savedChars || savedChars.length === 0) return;
     
     // 保存されたキャラIDから現在のキャラを取得
-    const newSelected: { character: any; position: 'front' | 'back' }[] = [];
+    const newSelected: RoomCharacter[] = [];
     for (const saved of savedChars) {
       const char = characters.find(c => c.id === saved.charId);
       if (char && newSelected.length < maxCharsPerPlayer) {
@@ -274,8 +272,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           if (room.battleResult?.victory) {
             const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
             if (baseCoinReward > 0) {
-              const { applyCoinBonus } = require('@/lib/drop/dropBonus');
-              const myChars = (room.players[username]?.characters || []).map((rc: any) => rc.character);
+              const myChars = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
               const coinReward = applyCoinBonus(baseCoinReward, myChars);
               setMyCoinReward(coinReward);
             }
@@ -314,10 +311,9 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         await clearMultiAdventure(username);
         
         // 勝利時はコインを付与（自分のキャラのボーナス適用）
-        if (room.battleResult.victory) {
+        if (room.battleResult?.victory) {
           const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
           if (baseCoinReward > 0) {
-            const { applyCoinBonus } = require('@/lib/drop/dropBonus');
             const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
             const coinReward = applyCoinBonus(baseCoinReward, myChars);
             addCoins(coinReward);
@@ -328,18 +324,17 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
 
         // 履歴を追加（初回のみ）- 全プレイヤーのドロップ情報も含める
         const baseCoinRewardForHistory = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
-        const { applyCoinBonus: applyCoinBonusForHistory } = require('@/lib/drop/dropBonus');
-        const myCharsForHistory = (room.players[username]?.characters || []).map((rc: any) => rc.character);
-        const coinRewardForHistory = room.battleResult.victory ? applyCoinBonusForHistory(baseCoinRewardForHistory, myCharsForHistory) : 0;
+        const myCharsForHistory = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
+        const coinRewardForHistory = room.battleResult?.victory ? applyCoinBonus(baseCoinRewardForHistory, myCharsForHistory) : 0;
         
         addHistory({
           type: 'multi',
           dungeonId: room.dungeonId,
-          victory: room.battleResult.victory,
+          victory: room.battleResult?.victory ?? false,
           droppedItemId: result.itemId,
           droppedEquipmentId: result.equipmentId,
           coinReward: coinRewardForHistory,
-          logs: room.battleResult.logs || [],
+          logs: room.battleResult?.logs || [],
           roomCode: code,
           players: Object.keys(room.players),
           playerDrops: room.playerDrops,

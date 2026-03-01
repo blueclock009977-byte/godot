@@ -9,6 +9,8 @@ import { races } from '../data/races';
 import { jobs } from '../data/jobs';
 import { EffectType, Effect, Stats } from '../types';
 import { getLvBonus } from '../data/lvStatBonuses';
+import { getLvSkill } from '../data/lvSkills';
+import { getEquipmentById } from '../data/equipments';
 import { TREASURE_BONUS } from '../data/items';
 
 // ============================================
@@ -278,27 +280,17 @@ export function calculateCharacterBonuses(char: CharacterInput): CharacterBonuse
   // 3. Lvスキル
   for (const skillId of [char.lv3Skill, char.lv5Skill]) {
     if (!skillId) continue;
-    try {
-      const { getLvSkill } = require('../data/lvSkills');
-      const skill = getLvSkill(skillId);
-      if (skill?.effects) {
-        applyEffects(bonuses, skill.effects);
-      }
-    } catch (e) {
-      // スキルデータ読み込み失敗は無視
+    const skill = getLvSkill(skillId);
+    if (skill?.effects) {
+      applyEffects(bonuses, skill.effects);
     }
   }
   
   // 4. 装備
   if (char.equipmentId) {
-    try {
-      const { getEquipmentById } = require('../data/equipments');
-      const equipment = getEquipmentById(char.equipmentId);
-      if (equipment?.effects) {
-        applyEffects(bonuses, equipment.effects);
-      }
-    } catch (e) {
-      // 装備データ読み込み失敗は無視
+    const equipment = getEquipmentById(char.equipmentId);
+    if (equipment?.effects) {
+      applyEffects(bonuses, equipment.effects);
     }
   }
   
@@ -409,36 +401,30 @@ export function calculatePartyTreasureHuntBonuses(
     // Lvスキル
     for (const skillId of [char.lv3Skill, char.lv5Skill]) {
       if (!skillId) continue;
-      try {
-        const { getLvSkill } = require('../data/lvSkills');
-        const skill = getLvSkill(skillId);
-        if (skill?.effects) {
-          const sourceId = `${ownerPrefix}lvskill_${skillId}`;
-          if (!appliedSources.has(sourceId)) {
-            appliedSources.set(sourceId, new Map());
-          }
-          for (const effect of skill.effects) {
-            appliedSources.get(sourceId)!.set(effect.type, effect.value);
-          }
+      const skill = getLvSkill(skillId);
+      if (skill?.effects) {
+        const sourceId = `${ownerPrefix}lvskill_${skillId}`;
+        if (!appliedSources.has(sourceId)) {
+          appliedSources.set(sourceId, new Map());
         }
-      } catch (e) {}
+        for (const effect of skill.effects) {
+          appliedSources.get(sourceId)!.set(effect.type, effect.value);
+        }
+      }
     }
     
     // 装備
     if (char.equipmentId) {
-      try {
-        const { getEquipmentById } = require('../data/equipments');
-        const equipment = getEquipmentById(char.equipmentId);
-        if (equipment?.effects) {
-          const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
-          if (!appliedSources.has(sourceId)) {
-            appliedSources.set(sourceId, new Map());
-          }
-          for (const effect of equipment.effects) {
-            appliedSources.get(sourceId)!.set(effect.type, effect.value);
-          }
+      const equipment = getEquipmentById(char.equipmentId);
+      if (equipment?.effects) {
+        const sourceId = `${ownerPrefix}equipment_${char.equipmentId}`;
+        if (!appliedSources.has(sourceId)) {
+          appliedSources.set(sourceId, new Map());
         }
-      } catch (e) {}
+        for (const effect of equipment.effects) {
+          appliedSources.get(sourceId)!.set(effect.type, effect.value);
+        }
+      }
     }
   }
   
@@ -490,9 +476,7 @@ export function hasTreasureHuntBonuses(bonuses: PartyTreasureHuntBonuses): boole
  * キャラクターの総合ステータスを計算
  * 基本ステータス + Lvボーナス + 装備ボーナス
  */
-export interface TotalStats extends Stats {
-  // 基本statsのフィールドを継承
-}
+export type TotalStats = Stats;
 
 interface CharacterForStats {
   stats: Stats;
@@ -540,24 +524,18 @@ export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
   // Lvスキルのstatモディファイア（HP+100など）
   for (const skillId of [char.lv3Skill, char.lv5Skill]) {
     if (!skillId) continue;
-    try {
-      const { getLvSkill } = require('../data/lvSkills');
-      const skill = getLvSkill(skillId);
-      if (skill?.statModifiers) {
-        applyStatModifiers(total, skill.statModifiers);
-      }
-    } catch (e) {}
+    const skill = getLvSkill(skillId);
+    if (skill?.statModifiers) {
+      applyStatModifiers(total, skill.statModifiers);
+    }
   }
   
   // 装備ボーナスを加算
   if (char.equipmentId) {
-    try {
-      const { getEquipmentById } = require('../data/equipments');
-      const equipment = getEquipmentById(char.equipmentId);
-      if (equipment?.statModifiers) {
-        applyStatModifiers(total, equipment.statModifiers);
-      }
-    } catch (e) {}
+    const equipment = getEquipmentById(char.equipmentId);
+    if (equipment?.statModifiers) {
+      applyStatModifiers(total, equipment.statModifiers);
+    }
   }
   
   // 秘宝ボーナスを加算（定数はitems.ts TREASURE_BONUSで一元管理）

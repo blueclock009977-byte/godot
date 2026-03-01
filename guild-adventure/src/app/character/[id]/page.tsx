@@ -7,7 +7,7 @@ import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { SkillDetail, PassiveDetail, formatEffect } from '@/components/SkillDisplay';
+import { SkillDetail, PassiveDetail } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
@@ -15,9 +15,9 @@ import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { getLvSkill } from '@/lib/data/lvSkills';
 import { getLvBonus } from '@/lib/data/lvStatBonuses';
-import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
+import { getEquipmentById } from '@/lib/data/equipments';
 import { calculateCharacterBonuses, calculateTotalStats } from '@/lib/character/bonuses';
-import { getItemById, raceTreasures, jobTreasures } from '@/lib/data/items';
+import { getItemById } from '@/lib/data/items';
 
 export default function CharacterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -35,7 +35,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     equipments,
     equipItem,
     unequipItem,
-    useTreasure,
+    consumeTreasure,
     inventory,
     isLoggedIn,
     isLoading: storeLoading,
@@ -471,7 +471,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                     <button
                       onClick={async () => {
                         setIsLoading(true);
-                        const result = await useTreasure(character.id, raceTreasureId);
+                        const result = await consumeTreasure(character.id, raceTreasureId);
                         setIsLoading(false);
                         if (result.success) {
                           alert('秘宝を使用しました！全ステータス+10！');
@@ -495,7 +495,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
                     <button
                       onClick={async () => {
                         setIsLoading(true);
-                        const result = await useTreasure(character.id, jobTreasureId);
+                        const result = await consumeTreasure(character.id, jobTreasureId);
                         setIsLoading(false);
                         if (result.success) {
                           alert('秘宝を使用しました！全ステータス+10！');
@@ -553,11 +553,11 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           {/* 所持装備一覧 */}
           <div className="text-xs text-slate-400 mb-2">所持装備から選択:</div>
           <div className="max-h-48 overflow-y-auto space-y-2">
-            {Object.entries(equipments).filter(([_, count]) => count > 0).length === 0 ? (
+            {Object.entries(equipments).filter(([, count]) => count > 0).length === 0 ? (
               <div className="text-slate-500 text-sm">装備アイテムがありません</div>
             ) : (
               Object.entries(equipments)
-                .filter(([_, count]) => count > 0)
+                .filter(([, count]) => count > 0)
                 .map(([eqId, count]) => {
                   const eq = getEquipmentById(eqId);
                   if (!eq) return null;

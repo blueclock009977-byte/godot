@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
@@ -10,7 +9,6 @@ import { runChallengeBattle, ChallengeResult } from '@/lib/battle/engine';
 import { Party, Character } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
-import { getRandomItem } from '@/lib/data/items';
 import { allEquipments } from '@/lib/data/equipments';
 
 // クールダウン時間をフォーマット
@@ -27,8 +25,7 @@ function formatCooldown(ms: number): string {
 }
 
 export default function ChallengePage() {
-  const router = useRouter();
-  const { username, characters, addItem, addEquipment, addCoins, syncToServer, autoLogin, isLoggedIn, isLoading: storeLoading } = useGameStore();
+  const { username, characters, addItem, addEquipment, addCoins, syncToServer, isLoggedIn, isLoading: storeLoading } = useGameStore();
   const { 
     progress, 
     party: challengeParty, 
@@ -46,7 +43,7 @@ export default function ChallengePage() {
   const [isRunning, setIsRunning] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
-  const [earnedItems, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
+  const [, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
   
   // データロード（usernameが確定したら）
   useEffect(() => {
@@ -67,14 +64,6 @@ export default function ChallengePage() {
   if (!isLoggedIn || storeLoading || !isDataLoaded) {
     return <LoadingScreen />;
   }
-  
-  // クールダウン更新
-  useEffect(() => {
-    const update = () => setCooldown(getRemainingCooldown());
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
-  }, [getRemainingCooldown, progress]);
   
   // 現在のパーティを取得
   const getPartyCharacters = (): { char: Character; position: 'front' | 'back' }[] => {
@@ -173,39 +162,6 @@ export default function ChallengePage() {
     } finally {
       setIsRunning(false);
     }
-  };
-  
-  // キャラをパーティに追加/削除
-  const toggleCharInParty = async (charId: string, position: 'front' | 'back') => {
-    if (!username) return;
-    
-    const existing = challengeParty.find(s => s.charId === charId);
-    let newParty;
-    
-    if (existing) {
-      // 削除
-      newParty = challengeParty.filter(s => s.charId !== charId);
-    } else {
-      // 追加（最大6人）
-      if (challengeParty.length >= 6) {
-        alert('パーティは最大6人までです');
-        return;
-      }
-      newParty = [...challengeParty, { charId, position }];
-    }
-    
-    await saveParty(username, newParty);
-  };
-  
-  // キャラの位置を切り替え
-  const switchPosition = async (charId: string, newPosition: 'front' | 'back') => {
-    if (!username) return;
-    
-    const newParty = challengeParty.map(s => 
-      s.charId === charId ? { ...s, position: newPosition } : s
-    );
-    
-    await saveParty(username, newParty);
   };
   
   // パーティに追加（通常のパーティ編成と同じUI用）

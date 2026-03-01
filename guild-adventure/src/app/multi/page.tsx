@@ -20,7 +20,6 @@ import {
 } from '@/lib/firebase';
 import { dungeons, dungeonList } from '@/lib/data/dungeons';
 import { DungeonType, DungeonData } from '@/lib/types';
-import { getDropRate } from '@/lib/data/items';
 import { formatDuration } from '@/lib/utils';
 
 export default function MultiPage() {

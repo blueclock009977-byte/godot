@@ -1,21 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { getItemById, isTreasure } from '@/lib/data/items';
-import { allEquipments, getEquipmentById } from '@/lib/data/equipments';
+import { getEquipmentById } from '@/lib/data/equipments';
 
 const SELL_PRICE = 20; // チケット・書の売却価格
 const EQUIPMENT_SELL_PRICE = 30; // 通常装備の売却価格
 
 export default function ItemsPage() {
-  const router = useRouter();
-  const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer, isLoggedIn, isLoading } = useGameStore();
+  const { inventory, equipments, characters, coins, addCoins, consumeItem, removeEquipment, syncToServer, isLoggedIn, isLoading } = useGameStore();
   
   // 全てのHooksを条件分岐の前に配置
   const [message, setMessage] = useState('');
@@ -27,19 +25,19 @@ export default function ItemsPage() {
   
   // 売却可能なアイテム（種族チケット・職業の書）
   const sellableItems = Object.entries(inventory)
-    .filter(([itemId, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .map(([itemId, count]) => ({ itemId, count, item: getItemById(itemId) }))
     .filter(({ item }) => item && (item.type === 'raceTicket' || item.type === 'jobBook'));
   
   // その他のアイテム
   const otherItems = Object.entries(inventory)
-    .filter(([itemId, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .map(([itemId, count]) => ({ itemId, count, item: getItemById(itemId) }))
     .filter(({ item }) => item && item.type !== 'raceTicket' && item.type !== 'jobBook');
   
   // 売却可能な装備（通常のみ）
   const sellableEquipments = Object.entries(equipments)
-    .filter(([eqId, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .map(([eqId, count]) => {
       const eq = getEquipmentById(eqId);
       // 装備中のキャラ数を計算
@@ -51,7 +49,7 @@ export default function ItemsPage() {
   
   // レア装備（売却不可）
   const rareEquipments = Object.entries(equipments)
-    .filter(([eqId, count]) => count > 0)
+    .filter(([, count]) => count > 0)
     .map(([eqId, count]) => ({ eqId, count, eq: getEquipmentById(eqId) }))
     .filter(({ eq }) => eq && eq.rarity === 'rare');
   
@@ -59,7 +57,7 @@ export default function ItemsPage() {
     const item = getItemById(itemId);
     if (!item) return;
     
-    if (useItem(itemId, 1)) {
+    if (consumeItem(itemId, 1)) {
       addCoins(SELL_PRICE);
       await syncToServer();
       setMessage(`${item.name} を売却して ${SELL_PRICE} コイン獲得！`);
@@ -71,7 +69,7 @@ export default function ItemsPage() {
     const item = getItemById(itemId);
     if (!item) return;
     
-    if (useItem(itemId, count)) {
+    if (consumeItem(itemId, count)) {
       const totalCoins = SELL_PRICE * count;
       addCoins(totalCoins);
       await syncToServer();

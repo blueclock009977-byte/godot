@@ -91,7 +91,7 @@ export const forestBoss: Monster = {
     multiplier: 0,
     mpCost: 15,
     element: 'earth',
-    effect: { type: 'agiDown' as any, value: 50, duration: 2 },
+    effect: { type: 'agiDown' as const, value: 50, duration: 2 },
   }],
 };
 

@@ -1,4 +1,4 @@
-import { Monster, Stats } from '../types';
+import { Monster, Stats, ElementType } from '../types';
 
 // ============================================
 // チャレンジダンジョン用モンスター定義
@@ -88,8 +88,8 @@ export function getStatMultiplierForFloor(floor: number): number {
 interface BaseMonsterData {
   name: string;
   species: 'beast' | 'humanoid' | 'undead' | 'demon' | 'dragon';
-  element?: string;
-  elementModifier?: Partial<Record<string, number>>;  // 属性耐性/弱点
+  element?: ElementType;
+  elementModifier?: Partial<Record<ElementType, number>>;  // 属性耐性/弱点
   stats: Stats;
   physicalResist?: number;
   magicResist?: number;
@@ -270,7 +270,7 @@ const debuffMonsters: BaseMonsterData[] = [
       target: 'single',
       multiplier: 0.5,
       mpCost: 5,
-      effect: { type: 'poison' as any, value: 10, duration: 3 },
+      effect: { type: 'poison' as const, value: 10, duration: 3 },
     }],
   },
   {
@@ -287,7 +287,7 @@ const debuffMonsters: BaseMonsterData[] = [
       target: 'single',
       multiplier: 0,
       mpCost: 8,
-      effect: { type: 'atkDown' as any, value: 30, duration: 3 },
+      effect: { type: 'atkDown' as const, value: 30, duration: 3 },
     }],
   },
   {
@@ -304,7 +304,7 @@ const debuffMonsters: BaseMonsterData[] = [
       target: 'single',
       multiplier: 0,
       mpCost: 6,
-      effect: { type: 'agiDown' as any, value: 40, duration: 2 },
+      effect: { type: 'agiDown' as const, value: 40, duration: 2 },
     }],
   },
   {
@@ -342,7 +342,7 @@ const regenMonsters: BaseMonsterData[] = [
       multiplier: 0,
       target: 'self',
       mpCost: 10,
-      effect: { type: 'atkUp' as any, value: 30, duration: 3 },
+      effect: { type: 'atkUp' as const, value: 30, duration: 3 },
     }],
   },
 ];
@@ -366,7 +366,7 @@ const mixedResistMonsters: BaseMonsterData[] = [
       target: 'single',
       multiplier: 0,
       mpCost: 10,
-      effect: { type: 'defDown' as any, value: 25, duration: 3 },
+      effect: { type: 'defDown' as const, value: 25, duration: 3 },
     }],
   },
   {
@@ -405,7 +405,7 @@ const hpWallMonsters: BaseMonsterData[] = [
       multiplier: 0,
       target: 'self',
       mpCost: 10,
-      effect: { type: 'defUp' as any, value: 50, duration: 3 },
+      effect: { type: 'defUp' as const, value: 50, duration: 3 },
     }],
   },
 ];
@@ -449,7 +449,7 @@ const bossMonsters: BaseMonsterData[] = [
         target: 'all',
         multiplier: 0,
         mpCost: 10,
-        effect: { type: 'atkDown' as any, value: 20, duration: 2 },
+        effect: { type: 'atkDown' as const, value: 20, duration: 2 },
       },
     ],
   },
@@ -503,8 +503,8 @@ export function generateChallengeMonsters(floor: number): Monster[] {
       id: `challenge_${concept}_${floor}_${i}`,
       name,
       species: base.species,
-      element: base.element as any,
-      elementModifier: base.elementModifier as any,
+      element: base.element,
+      elementModifier: base.elementModifier,
       stats: scaledStats,
       physicalResist: base.physicalResist,
       magicResist: base.magicResist,
@@ -564,7 +564,7 @@ export function getFinalBoss(): Monster {
         target: 'all',
         multiplier: 0,
         mpCost: 30,
-        effect: { type: 'statDown' as any, value: 20, duration: 3 },
+        effect: { type: 'statDown' as const, value: 20, duration: 3 },
       },
     ],
   };

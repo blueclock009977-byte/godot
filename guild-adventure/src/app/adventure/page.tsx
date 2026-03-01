@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
 import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
+import { getEquipmentById } from '@/lib/data/equipments';
+import { applyCoinBonus } from '@/lib/drop/dropBonus';
 import { claimAdventureDrop, updateUserStatus } from '@/lib/firebase';
 import { formatDuration } from '@/lib/utils';
-import { BattleResult } from '@/lib/types';
 import { PageLayout } from '@/components/PageLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
@@ -19,6 +20,7 @@ export default function AdventurePage() {
   
   // 全てのHooksを条件分岐の前に配置
   const [progress, setProgress] = useState(0);
+  const [remainingSec, setRemainingSec] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -45,6 +47,7 @@ export default function AdventurePage() {
       `【冒険開始】${dungeon.name}`,
       `⚔️ パーティ: ${partyList}`,
     ];
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 初回マウント時の初期化のみ
     setDisplayedLogs(startLog);
   }, [currentAdventure]);
   
@@ -73,6 +76,7 @@ export default function AdventurePage() {
       
       if (elapsed >= totalTime && !isCompleteRef.current) {
         isCompleteRef.current = true;
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- 完了条件成立時の1回限りの更新
         setIsComplete(true);
         setProgress(100);
         // battleResultなしでも履歴と完了処理
@@ -97,6 +101,9 @@ export default function AdventurePage() {
       const elapsed = Date.now() - startTime;
       const newProgress = Math.min(100, (elapsed / totalTime) * 100);
       setProgress(newProgress);
+      // 残り時間も更新（Date.now()はuseEffect内のみで呼ぶ）
+      const remaining = Math.max(0, totalTime - elapsed);
+      setRemainingSec(Math.ceil(remaining / 1000));
       
       // 現在何番目のエンカウントまで表示すべきか
       const shouldShowEncounter = Math.min(
@@ -132,8 +139,8 @@ export default function AdventurePage() {
           
           // ドロップ受け取り（サーバーでclaimed=falseの場合のみ、複数対応）
           const handleDrop = async () => {
-            let droppedItemIds: string[] = [];
-            let droppedEquipmentIds: string[] = [];
+            const droppedItemIds: string[] = [];
+            const droppedEquipmentIds: string[] = [];
             let alreadyProcessed = false;
             
             try {
@@ -153,7 +160,6 @@ export default function AdventurePage() {
                   }
                   // 装備ドロップ（複数対応）
                   const equipmentIds = claimResult.equipmentIds || (claimResult.equipmentId ? [claimResult.equipmentId] : []);
-                  const { getEquipmentById } = require('@/lib/data/equipments');
                   for (const eqId of equipmentIds) {
                     droppedEquipmentIds.push(eqId);
                     const equipmentData = getEquipmentById(eqId);
@@ -181,8 +187,7 @@ export default function AdventurePage() {
             if (battleResult.victory) {
               const baseCoinReward = dungeons[currentAdventure.dungeon]?.coinReward || 0;
               if (baseCoinReward > 0) {
-                const { applyCoinBonus } = require('@/lib/drop/dropBonus');
-                const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter(Boolean);
+                const allChars = [...(currentAdventure.party.front || []), ...(currentAdventure.party.back || [])].filter((c): c is NonNullable<typeof c> => c !== null);
                 earnedCoinReward = applyCoinBonus(baseCoinReward, allChars);
                 setEarnedCoinReward(earnedCoinReward);
                 addCoins(earnedCoinReward);
@@ -233,12 +238,8 @@ export default function AdventurePage() {
   }
   
   const dungeon = dungeons[currentAdventure.dungeon];
-  // 短縮後の時間を使用（currentAdventure.durationに保存されている）
-  const actualDuration = currentAdventure.duration || (dungeon.durationSeconds * 1000);
-  const remainingMs = Math.max(0, 
-    currentAdventure.startTime + actualDuration - Date.now()
-  );
-  const remainingSec = Math.ceil(remainingMs / 1000);
+  // remainingSecはuseState + useEffect(setInterval)で管理
+  // レンダー中にDate.now()を呼ばないことでReactの純粋性を保つ
   
   const handleCancel = () => {
     if (confirm('冒険を中断しますか？')) {
@@ -325,7 +326,6 @@ export default function AdventurePage() {
             ))}
             {/* 複数装備ドロップ表示 */}
             {(currentAdventure.result.droppedEquipmentIds || (currentAdventure.result.droppedEquipmentId ? [currentAdventure.result.droppedEquipmentId] : [])).map((eqId, idx) => {
-              const { getEquipmentById } = require('@/lib/data/equipments');
               const eq = getEquipmentById(eqId);
               return (
                 <div key={`eq-${idx}`} className={`text-lg mb-2 ${eq?.rarity === 'rare' ? 'text-yellow-300' : 'text-green-400'}`}>

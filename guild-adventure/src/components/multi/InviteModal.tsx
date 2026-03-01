@@ -1,13 +1,13 @@
 'use client';
 
-import { FriendFullStatus } from '@/lib/firebase';
+import { FriendFullStatus, RoomCharacter } from '@/lib/firebase';
 import { getStatusDisplays } from '@/lib/utils/status';
 import { Modal } from '../Modal';
 
 interface Player {
   username: string;
   ready: boolean;
-  characters: any[];
+  characters: RoomCharacter[];
 }
 
 interface InviteModalProps {

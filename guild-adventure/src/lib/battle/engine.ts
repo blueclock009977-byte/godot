@@ -24,27 +24,18 @@ import {
   calculateTotalStats,
 } from '../character/bonuses';
 import { getDropRate, getRandomItem } from '../data/items';
-// getLvBonusは遅延ロード（モジュール読み込みエラー対策）
+import { getLvBonus } from '../data/lvStatBonuses';
+import { getEquipmentById } from '../data/equipments';
+import { getLvSkill } from '../data/lvSkills';
+
+// ラッパー関数（undefinedを安全に返す）
 function getLvBonusSafe(id: string): { statModifiers?: Record<string, number> } | undefined {
-  try {
-    const { getLvBonus } = require('../data/lvStatBonuses');
-    return getLvBonus(id);
-  } catch (e) {
-    console.error('[engine] getLvBonus error:', e);
-    return undefined;
-  }
+  return getLvBonus(id);
 }
 
 function getEquipmentSafe(id: string): { statModifiers?: Record<string, number>; effects?: { type: string; value: number }[] } | undefined {
-  try {
-    const { getEquipmentById } = require('../data/equipments');
-    return getEquipmentById(id);
-  } catch (e) {
-    console.error('[engine] getEquipment error:', e);
-    return undefined;
-  }
+  return getEquipmentById(id);
 }
-import { getLvSkill } from '../data/lvSkills';
 import { random, pickRandom, cloneStats, percentBonus, percentReduce, getAliveUnits, calculateActualMpCost, applyPercent, clamp } from '../utils';
 
 // ============================================
@@ -1007,7 +998,7 @@ function processTurn(
           const isHybrid = skill.type === 'hybrid';
           
           for (const t of targets) {
-            let target = t as ExtendedBattleUnit;
+            const target = t as ExtendedBattleUnit;
             if (target.stats.hp <= 0) continue;
             
             let damage: number;

@@ -2,11 +2,14 @@ import {
   getRoom, 
   updateRoomStatus,
   saveMultiAdventureForUser,
+  addPendingResult,
+  updateUserStatus,
   RoomCharacter,
 } from '@/lib/firebase';
 import { dungeons } from '@/lib/data/dungeons';
+import { rollEquipmentDrops, Equipment } from '@/lib/data/equipments';
 import { runBattle, rollDrops } from '@/lib/battle/engine';
-import { Character, Party, BattleResult } from '@/lib/types';
+import { Character, Party, BattleResult, DungeonType } from '@/lib/types';
 import {
   calculateDropBonus,
   calculateRareDropBonus,
@@ -104,7 +107,7 @@ function calculatePlayerDrops(
   
   // 各プレイヤーごとに個別抽選（ボーナスは全員分で計算）
   Object.entries(players).forEach(([playerName, _]) => {
-    const drops = rollDrops(dungeonId as any, allCharsWithOwner);
+    const drops = rollDrops(dungeonId as DungeonType, allCharsWithOwner);
     playerDrops[playerName] = drops.length > 0 ? drops : undefined;
   });
   
@@ -116,9 +119,6 @@ function calculatePlayerEquipmentDrops(
   dungeonId: string,
   players: Record<string, { characters: RoomCharacter[] }>
 ): Record<string, string[] | undefined> {
-  const { dungeons } = require('@/lib/data/dungeons');
-  const { rollEquipmentDrops } = require('@/lib/data/equipments');
-  
   const dungeonData = dungeons[dungeonId];
   const durationSeconds = dungeonData?.durationSeconds || 3600;
   
@@ -135,7 +135,7 @@ function calculatePlayerEquipmentDrops(
   // 各プレイヤーごとに個別抽選（ボーナスは全員分で計算）
   Object.entries(players).forEach(([playerName, _]) => {
     const equipments = rollEquipmentDrops(durationSeconds, allCharsWithOwner, dungeonId);
-    playerEquipmentDrops[playerName] = equipments.length > 0 ? equipments.map((e: any) => e.id) : undefined;
+    playerEquipmentDrops[playerName] = equipments.length > 0 ? equipments.map((e: Equipment) => e.id) : undefined;
   });
   
   return playerEquipmentDrops;
@@ -169,11 +169,11 @@ export async function startMultiBattle(
   const party = buildPartyFromPlayers(latestRoom.players);
   
   // バトル実行
-  const result = runBattle(party, latestRoom.dungeonId as any);
+  const result = runBattle(party, latestRoom.dungeonId as DungeonType);
   
   // 参加者ログを追加（トレハンスキル情報含む）
   const startLog = createStartLog(latestRoom.dungeonId, latestRoom.players);
-  (result as any).startLog = startLog;
+  result.startLog = startLog;
   
   // 勝利時は各プレイヤーのドロップを計算（複数対応）
   let playerDrops: Record<string, string | undefined> | undefined;
@@ -202,7 +202,6 @@ export async function startMultiBattle(
       ownerId: playerName,
     }))
   );
-  const { dungeons } = require('../data/dungeons');
   const dungeonData = dungeons[latestRoom.dungeonId];
   const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData?.durationSeconds || 3600, allCharsWithOwner);
   
@@ -211,7 +210,6 @@ export async function startMultiBattle(
   
   // 各プレイヤーにマルチ冒険結果を保存 & pendingResultsに追加 & ステータス更新
   const playerNames = Object.keys(latestRoom.players);
-  const { addPendingResult, updateUserStatus } = require('../firebase');
   for (const playerName of playerNames) {
     await saveMultiAdventureForUser(
       playerName,

@@ -1,5 +1,7 @@
 // Firebase Realtime Database REST API
 
+import type { Character, Party, BattleResult, BattleLog } from './types';
+
 const FIREBASE_URL = 'https://dicedeckrandomtcg-default-rtdb.firebaseio.com';
 
 // ============================================
@@ -72,7 +74,7 @@ export interface AdventureHistory {
   droppedEquipmentIds?: string[];  // 複数装備ドロップ対応
   coinReward?: number;  // 獲得コイン数（ボーナス適用後）
   completedAt: number;
-  logs: any[];
+  logs: BattleLog[];
   // マルチの場合
   roomCode?: string;
   players?: string[];
@@ -84,15 +86,15 @@ export interface AdventureHistory {
 
 export interface UserData {
   username: string;
-  characters: any[];
-  party: any;
+  characters: Character[];
+  party: Party;
   inventory: Record<string, number>;
   equipments?: Record<string, number>;
   history?: AdventureHistory[];
   currentAdventure?: {
     dungeon: string;
     startTime: number;
-    party: any;
+    party: Party;
   } | null;
   createdAt: number;
   lastLogin: number;
@@ -226,7 +228,7 @@ export function clearStoredUsername(): void {
 // ============================================
 
 export interface RoomCharacter {
-  character: any;
+  character: Character;
   position: 'front' | 'back';
 }
 
@@ -244,7 +246,7 @@ export interface MultiRoom {
   maxPlayers: 2 | 3;
   status: 'waiting' | 'ready' | 'battle' | 'done';
   players: Record<string, RoomPlayer>;
-  battleResult?: any;
+  battleResult?: BattleResult;
   startTime?: number;  // 冒険開始時刻
   actualDurationSeconds?: number;  // 短縮後の探索時間
   playerDrops?: Record<string, string | undefined>;  // 各プレイヤーのドロップ（後方互換）
@@ -355,7 +357,7 @@ export async function joinRoom(code: string, username: string): Promise<boolean>
 
 // キャラ選択を更新
 // キャラ選択を更新
-export async function updateRoomCharacters(code: string, username: string, characters: any[]): Promise<boolean> {
+export async function updateRoomCharacters(code: string, username: string, characters: RoomCharacter[]): Promise<boolean> {
   return firebaseSet(`guild-adventure/rooms/${code}/players/${username}/characters`, characters);
 }
 
@@ -369,7 +371,7 @@ export async function updateRoomStatus(
   code: string, 
   status: MultiRoom['status'], 
   startTime?: number,
-  battleResult?: any,
+  battleResult?: BattleResult,
   playerDrops?: Record<string, string | undefined>,
   playerEquipmentDrops?: Record<string, string | undefined>,
   actualDurationSeconds?: number,
@@ -377,7 +379,7 @@ export async function updateRoomStatus(
   playerEquipmentDropsMulti?: Record<string, string[] | undefined>
 ): Promise<boolean> {
   try {
-    const data: any = { status, updatedAt: Date.now() };
+    const data: Partial<Pick<MultiRoom, 'status' | 'startTime' | 'actualDurationSeconds' | 'battleResult' | 'playerDrops' | 'playerClaimed' | 'playerEquipmentDrops' | 'playerDropsMulti' | 'playerEquipmentDropsMulti'>> & { updatedAt: number } = { status, updatedAt: Date.now() };
     if (startTime) {
       data.startTime = startTime;
     }
@@ -420,11 +422,11 @@ export async function updateRoomStatus(
 // バトル結果を保存（ドロップ情報含む）
 export async function saveRoomBattleResult(
   code: string, 
-  result: any, 
+  result: BattleResult, 
   playerDrops?: Record<string, string | undefined>
 ): Promise<boolean> {
   try {
-    const data: Record<string, any> = { 
+    const data: Partial<Pick<MultiRoom, 'battleResult' | 'status' | 'playerDrops' | 'playerClaimed'>> & { updatedAt: number } = { 
       battleResult: result, 
       status: 'done',
       updatedAt: Date.now(),
@@ -567,7 +569,7 @@ export async function deleteOldRooms(daysOld: number = 7): Promise<number> {
     const cutoffTime = Date.now() - daysOld * 24 * 60 * 60 * 1000;
     let deletedCount = 0;
     
-    for (const [code, room] of Object.entries(rooms) as [string, any][]) {
+    for (const [code, room] of Object.entries(rooms) as [string, MultiRoom][]) {
       // status=doneで、startTimeが古いルームを削除
       if (room.status === 'done' && room.startTime && room.startTime < cutoffTime) {
         await deleteRoom(code);
@@ -589,8 +591,8 @@ export async function deleteOldRooms(daysOld: number = 7): Promise<number> {
 export interface ServerAdventure {
   dungeon: string;
   startTime: number;
-  party: any;
-  battleResult: any;        // バトル結果
+  party: Party;
+  battleResult: BattleResult;        // バトル結果
   droppedItemId?: string;   // ドロップアイテムID（後方互換）
   droppedEquipmentId?: string; // ドロップ装備ID（後方互換）
   droppedItemIds?: string[];    // 複数ドロップ対応
@@ -603,8 +605,8 @@ export interface ServerAdventure {
 export async function startAdventureOnServer(
   username: string, 
   dungeon: string, 
-  party: any,
-  battleResult: any,
+  party: Party,
+  battleResult: BattleResult,
   droppedItemIds?: string[],
   droppedEquipmentIds?: string[],
   actualDurationSeconds?: number
@@ -1122,7 +1124,7 @@ export interface MultiAdventureResult {
   droppedItemIds?: string[];  // 複数対応
   droppedEquipmentIds?: string[];  // 複数対応
   completedAt: number;
-  logs: any[];
+  logs: BattleLog[];
   players: string[];
   claimed: boolean;
 }
@@ -1134,7 +1136,7 @@ export async function saveMultiAdventureForUser(
   dungeonId: string,
   victory: boolean,
   droppedItemId: string | undefined,
-  logs: any[],
+  logs: BattleLog[],
   players: string[],
   droppedEquipmentId?: string,
   droppedItemIds?: string[],
@@ -1223,13 +1225,13 @@ export interface PendingResult {
   itemIds?: string[];  // 複数対応
   equipmentIds?: string[];  // 複数対応
   coinReward: number;
-  logs: any[];
+  logs: BattleLog[];
   players: string[];
   playerDrops?: Record<string, string | undefined>;  // 後方互換
   playerEquipmentDrops?: Record<string, string | undefined>;  // 後方互換
   playerDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
   playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
-  myCharacters?: any[];  // コインボーナス計算用
+  myCharacters?: RoomCharacter[];  // コインボーナス計算用
 }
 
 // 未受取リストに追加

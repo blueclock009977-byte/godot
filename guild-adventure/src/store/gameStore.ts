@@ -14,7 +14,11 @@ import {
 } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
-import { applyCoinBonus } from '@/lib/drop/dropBonus';
+import { dungeons } from '@/lib/data/dungeons';
+import { getTreasureTarget, getItemById } from '@/lib/data/items';
+import { rollEquipmentDrops } from '@/lib/data/equipments';
+import { applyCoinBonus, applyExplorationSpeedBonus } from '@/lib/drop/dropBonus';
+import { rollDrops } from '@/lib/battle/engine';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { 
@@ -109,7 +113,6 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
   // ルーム情報を取得して時間経過をチェック
   const room = await getRoom(multiAdventure.roomCode);
   if (room && room.startTime) {
-    const { dungeons } = require('@/lib/data/dungeons');
     const dungeonData = dungeons[multiAdventure.dungeonId];
     if (dungeonData) {
       const elapsed = Date.now() - room.startTime;
@@ -142,7 +145,6 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
   // コインを獲得（勝利時のみ）
   let coinReward = 0;
   if (multiAdventure.victory) {
-    const { dungeons } = require('@/lib/data/dungeons');
     const dungeonData = dungeons[multiAdventure.dungeonId];
     if (dungeonData?.coinReward) {
       coinReward = dungeonData.coinReward;
@@ -179,7 +181,6 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   const adventure = await getAdventureOnServer(username);
   if (!adventure) return { adventure: null };
   
-  const { dungeons } = require('@/lib/data/dungeons');
   const dungeonData = dungeons[adventure.dungeon];
   if (!dungeonData) {
     // 無効なダンジョン → クリア
@@ -194,8 +195,8 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   
   // 探索時間が終了している場合
   if (elapsed >= duration && !adventure.claimed) {
-    let droppedItemIds: string[] = [];
-    let droppedEquipmentIds: string[] = [];
+    const droppedItemIds: string[] = [];
+    const droppedEquipmentIds: string[] = [];
     let coinReward = 0;
     
     if (adventure.battleResult?.victory) {
@@ -217,8 +218,7 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
         // コインを付与（リロード時でも付与）
         const baseCoinReward = dungeonData.coinReward || 0;
         if (baseCoinReward > 0) {
-          const { applyCoinBonus } = require('@/lib/drop/dropBonus');
-          const allChars = [...(adventure.party?.front || []), ...(adventure.party?.back || [])].filter(Boolean);
+          const allChars = [...(adventure.party?.front || []), ...(adventure.party?.back || [])].filter((c): c is Character => c !== null);
           coinReward = applyCoinBonus(baseCoinReward, allChars);
           addCoins(coinReward);
         }
@@ -396,7 +396,7 @@ interface GameStore {
   // アイテム管理
   addItem: (itemId: string, count?: number) => void;
   addCoins: (amount: number) => void;
-  useItem: (itemId: string, count?: number) => boolean;
+  consumeItem: (itemId: string, count?: number) => boolean;
   getItemCount: (itemId: string) => number;
   
   // マスタリー解放
@@ -407,7 +407,7 @@ interface GameStore {
   levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }>;
   
   // 秘宝使用
-  useTreasure: (characterId: string, treasureId: string) => Promise<{ success: boolean; error?: string }>;
+  consumeTreasure: (characterId: string, treasureId: string) => Promise<{ success: boolean; error?: string }>;
   
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
@@ -798,7 +798,8 @@ export const useGameStore = create<GameStore>()(
             const dungeon = dungeons[result.dungeonId as keyof typeof dungeons];
             if (dungeon?.coinReward) {
               // ルームから取得したキャラクター情報でコインボーナスを計算
-              const myChars = result.myCharacters || [];
+              const myRoomChars = result.myCharacters || [];
+              const myChars = myRoomChars.map(rc => rc.character);
               const coinReward = myChars.length > 0 
                 ? applyCoinBonus(dungeon.coinReward, myChars)
                 : dungeon.coinReward;
@@ -901,7 +902,7 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({ coins: state.coins + amount }));
       },
       // アイテムを消費
-      useItem: (itemId: string, count: number = 1): boolean => {
+      consumeItem: (itemId: string, count: number = 1): boolean => {
         const { inventory } = get();
         if ((inventory[itemId] || 0) < count) return false;
         
@@ -939,7 +940,7 @@ export const useGameStore = create<GameStore>()(
       },
       
       // 秘宝使用（対象種族/職業のキャラに全ステ+10）
-      useTreasure: async (characterId: string, treasureId: string): Promise<{ success: boolean; error?: string }> => {
+      consumeTreasure: async (characterId: string, treasureId: string): Promise<{ success: boolean; error?: string }> => {
         const { characters, inventory, syncToServer } = get();
         const character = characters.find(c => c.id === characterId);
         if (!character) return { success: false, error: 'キャラクターが見つかりません' };
@@ -950,7 +951,6 @@ export const useGameStore = create<GameStore>()(
         }
         
         // 秘宝の対象を確認
-        const { getTreasureTarget, getItemById } = require('@/lib/data/items');
         const target = getTreasureTarget(treasureId);
         if (!target) return { success: false, error: '無効なアイテムです' };
         
@@ -1150,12 +1150,10 @@ export const useGameStore = create<GameStore>()(
         const { party, username } = get();
         if (!username) return { success: false, error: 'ログインしてください' };
         
-        const { dungeons } = require('@/lib/data/dungeons');
         const dungeonData = dungeons[dungeon];
         
         // 探索時間短縮ボーナスを計算
         const allCharsForSpeed = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
-        const { applyExplorationSpeedBonus } = require('@/lib/drop/dropBonus');
         const actualDurationSeconds = applyExplorationSpeedBonus(dungeonData.durationSeconds, allCharsForSpeed);
         
         // バトル計算（開始時に結果を決定）
@@ -1166,13 +1164,11 @@ export const useGameStore = create<GameStore>()(
         let droppedEquipmentIds: string[] = [];
         if (battleResult.victory) {
           const allChars = [...(party.front || []), ...(party.back || [])].filter((c): c is Character => c !== null);
-          const { rollDrops } = require('@/lib/battle/engine');
           droppedItemIds = rollDrops(dungeon, allChars);
           
           // 装備ドロップ抽選（書とは別枠）
-          const { rollEquipmentDrops } = require('@/lib/data/equipments');
           const droppedEquipments = rollEquipmentDrops(dungeonData.durationSeconds, allChars, dungeon);
-          droppedEquipmentIds = droppedEquipments.map((e: any) => e.id);
+          droppedEquipmentIds = droppedEquipments.map((e: { id: string }) => e.id);
         }
         
         // バトル結果にドロップを含める（後方互換 + 複数対応）
@@ -1261,7 +1257,6 @@ export const useGameStore = create<GameStore>()(
           const { adventure } = await restoreSoloAdventureHelper(ctx, get().addEquipment);
           if (!adventure) return;
           
-          const { dungeons } = require('@/lib/data/dungeons');
           const dungeonData = dungeons[adventure.dungeon];
           // 時間短縮ボーナス適用後の時間を使用（後方互換で元の時間もフォールバック）
           const durationSeconds = adventure.actualDurationSeconds || dungeonData?.durationSeconds || 0;
