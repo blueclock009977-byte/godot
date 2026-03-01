@@ -17,21 +17,18 @@ export default function AdventurePage() {
   const router = useRouter();
   const { currentAdventure, username, completeAdventure, cancelAdventure, addItem, addEquipment, addCoins, syncToServer, addHistory, isLoggedIn, isLoading } = useGameStore();
   
-  // ローディング中またはログイン前
-  if (!isLoggedIn || isLoading) {
-    return <LoadingScreen />;
-  }
+  // 全てのHooksを条件分岐の前に配置
   const [progress, setProgress] = useState(0);
   const [displayedLogs, setDisplayedLogs] = useState<string[]>([]);
   const [currentEncounter, setCurrentEncounter] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [earnedCoinReward, setEarnedCoinReward] = useState<number | null>(null);
-  const isCompleteRef = useRef(false); // 二重実行防止用
+  const isCompleteRef = useRef(false);
   const logContainerRef = useRef<HTMLDivElement>(null);
+  const startLogShownRef = useRef(false);
   
   // バトル結果はサーバーから取得済み（currentAdventure.result）
   const battleResult = currentAdventure?.result || null;
-  const startLogShownRef = useRef(false);
   
   // 冒険開始ログを表示
   useEffect(() => {
@@ -254,6 +251,11 @@ export default function AdventurePage() {
     cancelAdventure();
     router.push('/');
   };
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   return (
     <PageLayout>

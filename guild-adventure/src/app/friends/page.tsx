@@ -25,25 +25,21 @@ import { getStatusDisplay, getStatusDisplays } from '@/lib/utils/status';
 
 export default function FriendsPage() {
   const { username, currentMultiRoom, isLoggedIn, isLoading: storeLoading } = useGameStore();
-  
-  // ローディング中またはログイン前
-  if (!isLoggedIn || storeLoading) {
-    return <LoadingScreen />;
-  }
   const { isActive } = useUserActivity();
+  
+  // 全てのHooksを条件分岐の前に配置
   const [friends, setFriends] = useState<string[]>([]);
   const [friendStatuses, setFriendStatuses] = useState<Record<string, FriendFullStatus>>({});
-  const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);  // 自分が参加中のルーム
+  const [myMultiRoom, setMyMultiRoom] = useState<MultiRoom | null>(null);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [searchName, setSearchName] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   // データ読み込み
   const loadData = useCallback(async () => {
     if (!username) return;
-    setIsLoading(true);
     const [friendList, requestList] = await Promise.all([
       getFriends(username),
       getFriendRequests(username),
@@ -65,16 +61,21 @@ export default function FriendsPage() {
       setMyMultiRoom(null);
     }
     
-    // アクティブな場合のみlastSeenを更新（5分操作なしでオフライン扱い）
+    // アクティブな場合のみlastSeenを更新
     if (isActive()) {
       const { updateLastSeen } = await import('@/lib/firebase');
       updateLastSeen(username);
     }
-    setIsLoading(false);
+    setIsDataLoaded(true);
   }, [username, currentMultiRoom, isActive]);
 
-  // 10秒ごとにポーリング
+  // 10秒ごとにポーリング（初回ロードも含む）
   usePolling(loadData, 10000, !!username);
+  
+  // ローディング中またはログイン前またはデータ未ロード
+  if (!isLoggedIn || storeLoading || !isDataLoaded) {
+    return <LoadingScreen />;
+  }
 
   // フレンド申請送信
   const handleSendRequest = async () => {
@@ -179,9 +180,7 @@ export default function FriendsPage() {
         {/* フレンドリスト */}
         <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
           <h2 className="text-sm text-slate-400 mb-3">フレンド一覧 ({friends.length}人)</h2>
-          {isLoading ? (
-            <p className="text-slate-500 text-sm">読み込み中...</p>
-          ) : friends.length === 0 ? (
+          {friends.length === 0 ? (
             <EmptyState message="まだフレンドがいません" className="py-4" />
           ) : (
             <div className="space-y-2">

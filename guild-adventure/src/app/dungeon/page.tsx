@@ -18,6 +18,11 @@ export default function DungeonPage() {
   const router = useRouter();
   const { party, currentAdventure, startAdventure, lastSoloDungeonId, isLoggedIn, isLoading } = useGameStore();
   
+  // 全てのHooksを条件分岐の前に配置
+  const [isStarting, setIsStarting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
+  
   // ローディング中またはログイン前
   if (!isLoggedIn || isLoading) {
     return <LoadingScreen />;
@@ -25,10 +30,6 @@ export default function DungeonPage() {
   
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const canStart = partyCount > 0 && partyCount <= 6 && !currentAdventure;
-  
-  const [isStarting, setIsStarting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
   
   const handleStart = async (dungeonId: DungeonType) => {
     if (!canStart || isStarting) return;

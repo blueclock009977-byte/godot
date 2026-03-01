@@ -17,11 +17,13 @@ export default function ItemsPage() {
   const router = useRouter();
   const { inventory, equipments, characters, coins, addCoins, useItem, removeEquipment, syncToServer, isLoggedIn, isLoading } = useGameStore();
   
+  // 全てのHooksを条件分岐の前に配置
+  const [message, setMessage] = useState('');
+  
   // ローディング中またはログイン前
   if (!isLoggedIn || isLoading) {
     return <LoadingScreen />;
   }
-  const [message, setMessage] = useState('');
   
   // 売却可能なアイテム（種族チケット・職業の書）
   const sellableItems = Object.entries(inventory)

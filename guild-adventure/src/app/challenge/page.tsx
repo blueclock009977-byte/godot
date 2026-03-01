@@ -39,12 +39,8 @@ export default function ChallengePage() {
     getRemainingCooldown,
   } = useChallengeStore();
   
-  const [isLoading, setIsLoading] = useState(true);
-  
-  // ローディング中またはログイン前
-  if (!isLoggedIn || storeLoading) {
-    return <LoadingScreen />;
-  }
+  // 全てのHooksを条件分岐の前に配置
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [result, setResult] = useState<ChallengeResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -52,21 +48,25 @@ export default function ChallengePage() {
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
   const [earnedItems, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
   
-  // 自動ログイン
-  useEffect(() => {
-    if (!username) {
-      autoLogin().then(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
-  }, [username, autoLogin]);
-  
-  // データロード
+  // データロード（usernameが確定したら）
   useEffect(() => {
     if (username) {
-      loadData(username);
+      loadData(username).then(() => setIsDataLoaded(true));
     }
   }, [username, loadData]);
+  
+  // クールダウン更新
+  useEffect(() => {
+    const update = () => setCooldown(getRemainingCooldown());
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [getRemainingCooldown, progress]);
+  
+  // ローディング中またはログイン前またはデータ未ロード
+  if (!isLoggedIn || storeLoading || !isDataLoaded) {
+    return <LoadingScreen />;
+  }
   
   // クールダウン更新
   useEffect(() => {
@@ -229,14 +229,6 @@ export default function ChallengePage() {
     const newParty = challengeParty.filter(s => s.charId !== charId);
     await saveParty(username, newParty);
   };
-  
-  if (isLoading || !username) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white flex items-center justify-center">
-        <p>読み込み中...</p>
-      </main>
-    );
-  }
   
   // 結果画面
   if (result) {

@@ -21,11 +21,7 @@ export default function CreatePage() {
   const router = useRouter();
   const { createCharacter, useItem, getItemCount, syncToServer, isLoggedIn, isLoading } = useGameStore();
   
-  // ローディング中またはログイン前
-  if (!isLoggedIn || isLoading) {
-    return <LoadingScreen />;
-  }
-  
+  // 全てのHooksを条件分岐の前に配置
   const [name, setName] = useState('');
   const [race, setRace] = useState<RaceType>('human');
   const [job, setJob] = useState<JobType>('warrior');
@@ -106,6 +102,11 @@ export default function CreatePage() {
     await syncToServer();
     router.push('/');
   };
+  
+  // ローディング中またはログイン前
+  if (!isLoggedIn || isLoading) {
+    return <LoadingScreen />;
+  }
   
   return (
     <PageLayout maxWidth="lg">

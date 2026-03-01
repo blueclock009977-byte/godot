@@ -12,12 +12,14 @@ const SHOP_PRICE = 200; // 購入価格
 export default function ShopPage() {
   const { coins, addCoins, addItem, syncToServer, inventory, isLoggedIn, isLoading } = useGameStore();
   
+  // 全てのHooksを条件分岐の前に配置
+  const [message, setMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<'race' | 'job'>('race');
+  
   // ローディング中またはログイン前
   if (!isLoggedIn || isLoading) {
     return <LoadingScreen />;
   }
-  const [message, setMessage] = useState('');
-  const [activeTab, setActiveTab] = useState<'race' | 'job'>('race');
   
   const handleBuy = async (item: ItemData) => {
     if (coins < SHOP_PRICE) {

@@ -27,16 +27,14 @@ export default function MultiPage() {
   const router = useRouter();
   const { username, lastRoomSettings, saveRoomSettings, isLoggedIn, isLoading: storeLoading } = useGameStore();
   
-  // ローディング中またはログイン前
-  if (!isLoggedIn || storeLoading) {
-    return <LoadingScreen />;
-  }
+  // 全てのHooksを条件分岐の前に配置
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [roomCode, setRoomCode] = useState('');
   const [selectedDungeon, setSelectedDungeon] = useState<DungeonType>('grassland');
   const [maxPlayers, setMaxPlayers] = useState<2 | 3>(2);
   const [isPublic, setIsPublic] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [error, setError] = useState('');
   const [detailDungeon, setDetailDungeon] = useState<DungeonData | null>(null);
   
@@ -66,8 +64,10 @@ export default function MultiPage() {
       try {
         const f = await getFriends(username);
         setFriends(f);
+        setIsDataLoaded(true);
       } catch (e) {
         console.error('Failed to load friends:', e);
+        setIsDataLoaded(true); // エラーでもロード完了扱い
       }
     };
     loadFriends();
@@ -83,9 +83,14 @@ export default function MultiPage() {
     }
   }, []);
   usePolling(loadPublicRooms, 3000, mode === 'join');
+  
+  // ローディング中またはログイン前またはデータ未ロード
+  if (!isLoggedIn || storeLoading || !isDataLoaded) {
+    return <LoadingScreen />;
+  }
   const handleCreate = async () => {
     if (!username) return;
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     
     // ルーム設定を保存
@@ -97,13 +102,13 @@ export default function MultiPage() {
     } else {
       setError('ルーム作成に失敗しました');
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
   
   // 前回の設定で即座に部屋作成
   const handleQuickCreate = async () => {
     if (!username || !lastRoomSettings) return;
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     
     const code = await createRoom(
@@ -117,12 +122,12 @@ export default function MultiPage() {
     } else {
       setError('ルーム作成に失敗しました');
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
 
   const handleJoin = async () => {
     if (!username || !roomCode) return;
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError('');
     
     const success = await joinRoom(roomCode.toUpperCase(), username);
@@ -131,7 +136,7 @@ export default function MultiPage() {
     } else {
       setError('ルームが見つからないか、満員です');
     }
-    setIsLoading(false);
+    setIsSubmitting(false);
   };
   
   const handleAcceptInvite = async (invite: RoomInvitation) => {
@@ -203,7 +208,7 @@ export default function MultiPage() {
             {lastRoomSettings && (
               <button
                 onClick={handleQuickCreate}
-                disabled={isLoading}
+                disabled={isSubmitting}
                 className="w-full bg-green-700 hover:bg-green-600 rounded-lg py-4 font-semibold text-lg border border-green-600 disabled:opacity-50"
               >
                 <div>⚡ 前回の設定で部屋を作る</div>
@@ -317,10 +322,10 @@ export default function MultiPage() {
             
             <button
               onClick={handleCreate}
-              disabled={isLoading}
+              disabled={isSubmitting}
               className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-3 font-semibold disabled:opacity-50"
             >
-              {isLoading ? '作成中...' : 'ルームを作成'}
+              {isSubmitting ? '作成中...' : 'ルームを作成'}
             </button>
           </div>
         )}
@@ -347,10 +352,10 @@ export default function MultiPage() {
             
             <button
               onClick={handleJoin}
-              disabled={isLoading || roomCode.length !== 6}
+              disabled={isSubmitting || roomCode.length !== 6}
               className="w-full bg-amber-600 hover:bg-amber-500 rounded-lg py-3 font-semibold disabled:opacity-50"
             >
-              {isLoading ? '参加中...' : '参加する'}
+              {isSubmitting ? '参加中...' : '参加する'}
             </button>
             
             {/* 公開ルーム一覧 */}
@@ -375,16 +380,16 @@ export default function MultiPage() {
                       <button
                         key={room.code}
                         onClick={async () => {
-                          setIsLoading(true);
+                          setIsSubmitting(true);
                           const success = await joinRoom(room.code, username!);
                           if (success) {
                             router.push(`/multi/${room.code}`);
                           } else {
                             setError('参加できませんでした');
-                            setIsLoading(false);
+                            setIsSubmitting(false);
                           }
                         }}
-                        disabled={isLoading}
+                        disabled={isSubmitting}
                         className={`w-full text-left p-3 rounded-lg border transition-colors ${
                           isFriendRoom
                             ? 'bg-purple-900/50 border-purple-600 hover:bg-purple-900/70'
