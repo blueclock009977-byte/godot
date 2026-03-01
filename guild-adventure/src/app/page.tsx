@@ -476,7 +476,7 @@ function GameScreen() {
                   <h2 className="text-xl font-semibold">🛒 ショップ</h2>
                   <p className="text-slate-400 text-sm">血統書・指南書を購入</p>
                 </div>
-                <span className="text-emerald-400">100🪙</span>
+                <span className="text-emerald-400">200🪙</span>
               </div>
             </div>
           </Link>

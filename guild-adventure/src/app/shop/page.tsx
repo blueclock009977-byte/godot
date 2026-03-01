@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { raceTickets, jobBooks, ItemData } from '@/lib/data/items';
 
-const SHOP_PRICE = 100; // 購入価格
+const SHOP_PRICE = 200; // 購入価格
 
 export default function ShopPage() {
   const { coins, addCoins, addItem, syncToServer, inventory } = useGameStore();
