@@ -111,67 +111,136 @@ const balancedMonsters: BaseMonsterData[] = [
   },
 ];
 
-// 物理耐性（1体）- 物理50%軽減
+// 物理耐性（1体）- 物理50%軽減 + 防御系スキル
 // 基準: 2F(×0.5)で草原レベル、耐性で難易度UP
 const physResistMonsters: BaseMonsterData[] = [
   {
     name: 'アイアンゴーレム',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 6, def: 15, agi: 3, mag: 0 },
+    stats: { hp: 80, maxHp: 80, mp: 20, maxMp: 20, atk: 6, def: 15, agi: 3, mag: 5 },
     physicalResist: 50,
+    skills: [{
+      id: 'earth_slam',
+      name: '大地の一撃',
+      description: '土属性の重い一撃',
+      type: 'attack',
+      element: 'earth',
+      target: 'single',
+      multiplier: 1.3,
+      mpCost: 10,
+    }],
   },
 ];
 
-// 魔法耐性（1体）- 魔法50%軽減
+// 魔法耐性（1体）- 魔法50%軽減 + 魔法攻撃
 // 基準: 3F(×0.6)で草原ボスレベル、耐性で難易度UP
 const magResistMonsters: BaseMonsterData[] = [
   {
     name: 'スペルイーター',
     species: 'demon',
     element: 'dark',
-    stats: { hp: 70, maxHp: 70, mp: 30, maxMp: 30, atk: 5, def: 6, agi: 8, mag: 10 },
+    stats: { hp: 70, maxHp: 70, mp: 40, maxMp: 40, atk: 5, def: 6, agi: 8, mag: 12 },
     magicResist: 50,
+    skills: [{
+      id: 'dark_bolt',
+      name: '闇の矢',
+      description: '闇属性魔法攻撃',
+      type: 'magic',
+      element: 'dark',
+      target: 'single',
+      multiplier: 1.2,
+      mpCost: 10,
+    }],
   },
 ];
 
-// 高AGI・回避（3体）- 素早い
+// 高AGI・回避（3体）- 素早い + 速攻スキル
 // 基準: 4F(×0.8)で森レベル、高AGIで回避
 const highAgiMonsters: BaseMonsterData[] = [
   {
     name: 'シャドウ',
     species: 'undead',
     element: 'dark',
-    stats: { hp: 30, maxHp: 30, mp: 0, maxMp: 0, atk: 6, def: 2, agi: 25, mag: 0 },
+    stats: { hp: 30, maxHp: 30, mp: 15, maxMp: 15, atk: 6, def: 2, agi: 25, mag: 5 },
+    skills: [{
+      id: 'shadow_strike',
+      name: '影撃ち',
+      description: '闇属性の素早い一撃',
+      type: 'hybrid',
+      element: 'dark',
+      target: 'single',
+      multiplier: 1.0,
+      mpCost: 8,
+    }],
   },
   {
     name: 'ウィンドスプライト',
     species: 'beast',
     element: 'wind',
-    stats: { hp: 25, maxHp: 25, mp: 15, maxMp: 15, atk: 5, def: 2, agi: 30, mag: 8 },
+    stats: { hp: 25, maxHp: 25, mp: 20, maxMp: 20, atk: 5, def: 2, agi: 30, mag: 10 },
+    skills: [{
+      id: 'gust',
+      name: '突風',
+      description: '風属性魔法攻撃',
+      type: 'magic',
+      element: 'wind',
+      target: 'single',
+      multiplier: 1.0,
+      mpCost: 8,
+    }],
   },
   {
     name: 'ファントム',
     species: 'undead',
     element: 'dark',
-    stats: { hp: 28, maxHp: 28, mp: 0, maxMp: 0, atk: 5, def: 2, agi: 28, mag: 0 },
+    stats: { hp: 28, maxHp: 28, mp: 10, maxMp: 10, atk: 5, def: 2, agi: 28, mag: 3 },
+    skills: [{
+      id: 'life_drain',
+      name: '生命吸収',
+      description: 'HP吸収攻撃',
+      type: 'attack',
+      target: 'single',
+      multiplier: 0.8,
+      mpCost: 10,
+      // 吸収効果はengine側で処理
+    }],
   },
 ];
 
-// 高火力（2体）- 高ATK
+// 高火力（2体）- 高ATK + 属性スキル
 // 基準: 5F(×1.0)で森レベル、高ATKで圧力
 const highAtkMonsters: BaseMonsterData[] = [
   {
     name: 'バーサーカー',
     species: 'humanoid',
     element: 'fire',
-    stats: { hp: 40, maxHp: 40, mp: 0, maxMp: 0, atk: 14, def: 3, agi: 10, mag: 0 },
+    stats: { hp: 40, maxHp: 40, mp: 15, maxMp: 15, atk: 14, def: 3, agi: 10, mag: 5 },
+    skills: [{
+      id: 'rage_strike',
+      name: '怒りの一撃',
+      description: '高威力物理攻撃',
+      type: 'attack',
+      target: 'single',
+      multiplier: 1.5,
+      mpCost: 10,
+    }],
   },
   {
     name: 'フレイムドラゴン',
     species: 'dragon',
     element: 'fire',
-    stats: { hp: 45, maxHp: 45, mp: 20, maxMp: 20, atk: 12, def: 5, agi: 8, mag: 10 },
+    stats: { hp: 45, maxHp: 45, mp: 25, maxMp: 25, atk: 12, def: 5, agi: 8, mag: 12 },
+    skills: [{
+      id: 'fire_breath',
+      name: '火炎ブレス',
+      description: '全体火属性攻撃',
+      type: 'magic',
+      element: 'fire',
+      target: 'all',
+      multiplier: 0.8,
+      mpCost: 12,
+    }],
   },
 ];
 
@@ -229,71 +298,143 @@ const debuffMonsters: BaseMonsterData[] = [
     name: 'ダークインプ',
     species: 'demon',
     element: 'dark',
-    stats: { hp: 24, maxHp: 24, mp: 20, maxMp: 20, atk: 8, def: 2, agi: 14, mag: 10 },
+    stats: { hp: 24, maxHp: 24, mp: 25, maxMp: 25, atk: 8, def: 2, agi: 14, mag: 12 },
+    skills: [{
+      id: 'dark_fire',
+      name: '暗黒の炎',
+      description: '闇属性魔法攻撃',
+      type: 'magic',
+      element: 'dark',
+      target: 'single',
+      multiplier: 1.0,
+      mpCost: 8,
+    }],
   },
 ];
 
-// 再生型（1体）- 毎ターンHP回復
+// 再生型（1体）- 毎ターンHP回復 + 回復スキル
 // 基準: 7F(×1.4)で森レベル、再生で持久戦
 const regenMonsters: BaseMonsterData[] = [
   {
     name: 'トロール',
     species: 'humanoid',
-    stats: { hp: 80, maxHp: 80, mp: 0, maxMp: 0, atk: 8, def: 6, agi: 4, mag: 0 },
+    stats: { hp: 80, maxHp: 80, mp: 20, maxMp: 20, atk: 8, def: 6, agi: 4, mag: 3 },
     regenPerTurn: 10,  // 毎ターン最大HPの10%回復
+    skills: [{
+      id: 'rage_howl',
+      name: '咆哮',
+      description: '自身のATKを上げる',
+      type: 'buff',
+      multiplier: 0,
+      target: 'self',
+      mpCost: 10,
+      effect: { type: 'atkUp' as any, value: 30, duration: 3 },
+    }],
   },
 ];
 
-// 複合耐性（2体）- 物理+魔法両方軽減
+// 複合耐性（2体）- 物理+魔法両方軽減 + 属性スキル
 // 基準: 8F(×1.6)で森〜洞窟レベル、両耐性で難敵
 const mixedResistMonsters: BaseMonsterData[] = [
   {
     name: 'エンシェントガーディアン',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 60, maxHp: 60, mp: 15, maxMp: 15, atk: 7, def: 10, agi: 5, mag: 6 },
+    stats: { hp: 60, maxHp: 60, mp: 25, maxMp: 25, atk: 7, def: 10, agi: 5, mag: 8 },
     physicalResist: 30,
     magicResist: 30,
+    skills: [{
+      id: 'ancient_curse',
+      name: '古代の呪い',
+      description: 'DEFを下げる',
+      type: 'debuff',
+      target: 'single',
+      multiplier: 0,
+      mpCost: 10,
+      effect: { type: 'defDown' as any, value: 25, duration: 3 },
+    }],
   },
   {
     name: 'ルーンナイト',
     species: 'humanoid',
-    stats: { hp: 55, maxHp: 55, mp: 20, maxMp: 20, atk: 6, def: 8, agi: 6, mag: 7 },
+    stats: { hp: 55, maxHp: 55, mp: 30, maxMp: 30, atk: 6, def: 8, agi: 6, mag: 10 },
     physicalResist: 25,
     magicResist: 25,
+    skills: [{
+      id: 'rune_blast',
+      name: 'ルーンブラスト',
+      description: '魔法攻撃',
+      type: 'magic',
+      target: 'single',
+      multiplier: 1.2,
+      mpCost: 12,
+    }],
   },
 ];
 
-// 高HP壁（1体）- 超耐久、低火力
+// 高HP壁（1体）- 超耐久、低火力 + 防御スキル
 // 基準: 9F(×1.8)で洞窟手前、高HPで持久戦
 const hpWallMonsters: BaseMonsterData[] = [
   {
     name: 'コロッサス',
     species: 'beast',
     element: 'earth',
-    stats: { hp: 150, maxHp: 150, mp: 0, maxMp: 0, atk: 5, def: 15, agi: 2, mag: 0 },
+    stats: { hp: 150, maxHp: 150, mp: 20, maxMp: 20, atk: 5, def: 15, agi: 2, mag: 3 },
     physicalResist: 20,
+    skills: [{
+      id: 'stone_skin',
+      name: '石化の皮膚',
+      description: '自身のDEFを上げる',
+      type: 'buff',
+      multiplier: 0,
+      target: 'self',
+      mpCost: 10,
+      effect: { type: 'defUp' as any, value: 50, duration: 3 },
+    }],
   },
 ];
 
-// ボス（1体）- 複合能力、高ステ
+// ボス（1体）- 複合能力、高ステ、複数スキル
 // 基準: 10F(×2.0)で森ボス相当(HP300,ATK18)
 const bossMonsters: BaseMonsterData[] = [
   {
     name: 'フロアガーディアン',
     species: 'demon',
-    stats: { hp: 150, maxHp: 150, mp: 30, maxMp: 30, atk: 9, def: 12, agi: 5, mag: 9 },
+    element: 'dark',
+    stats: { hp: 150, maxHp: 150, mp: 50, maxMp: 50, atk: 9, def: 12, agi: 5, mag: 12 },
     physicalResist: 15,
     magicResist: 15,
-    skills: [{
-      id: 'boss_smash',
-      name: '破壊の一撃',
-      description: '全体攻撃',
-      type: 'attack',
-      target: 'all',
-      multiplier: 0.8,
-      mpCost: 15,
-    }],
+    skills: [
+      {
+        id: 'boss_smash',
+        name: '破壊の一撃',
+        description: '全体物理攻撃',
+        type: 'attack',
+        target: 'all',
+        multiplier: 0.7,
+        mpCost: 12,
+      },
+      {
+        id: 'dark_wave',
+        name: '闇の波動',
+        description: '全体闇属性魔法攻撃',
+        type: 'magic',
+        element: 'dark',
+        target: 'all',
+        multiplier: 0.8,
+        mpCost: 15,
+      },
+      {
+        id: 'boss_roar',
+        name: '威圧の咆哮',
+        description: '全体のATKを下げる',
+        type: 'debuff',
+        target: 'all',
+        multiplier: 0,
+        mpCost: 10,
+        effect: { type: 'atkDown' as any, value: 20, duration: 2 },
+      },
+    ],
   },
 ];
 
