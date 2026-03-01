@@ -830,7 +830,7 @@ function processTurn(
     allUnits[0].wasFirstStrike = true;
   }
   
-  logs.push(`--- ターン ${turnNum} ---`);
+  logs.push(`═══ ⚔️ ターン ${turnNum} ═══`);
   
   // ターン開始時HP/MP表示
   const alivePlayers = getAliveUnits(playerUnits);
@@ -900,10 +900,10 @@ function processTurn(
       
       target.stats.hp = Math.max(0, target.stats.hp - damage);
       
-      const critText = isCritical ? '【会心】' : '';
+      const critText = isCritical ? '💥会心💥' : '';
       const hitText = actualHits > 1 ? `${actualHits}HIT! ` : (hitCount > 1 ? `${actualHits}/${hitCount}HIT ` : '');
       const degText = degradationAdded > 0 ? ` [劣化+${degradationAdded}%]` : '';
-      logs.push(`${unit.name}の攻撃！ ${hitText}${target.name}に${damage}ダメージ！${critText}${degText}`);
+      logs.push(`⚔️ ${unit.name}の攻撃！ → ${hitText}${target.name}に💥${damage}ダメージ！${critText}${degText}`);
       
       // allyHitHeal（味方被弾時にパーティ全体から回復）
       if (target.isPlayer && target.stats.hp > 0) {
@@ -948,7 +948,7 @@ function processTurn(
           target.stats.hp = 1;
           logs.push(`${target.name}は死に抗いHP1で耐えた！`);
         } else {
-          logs.push(`${target.name}を倒した！`);
+          logs.push(`${target.name}を撃破！💀`);
           // mpOnKill（敵を倒すとMP回復）
           if (unit.passiveEffects.mpOnKill > 0) {
             unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
@@ -983,7 +983,7 @@ function processTurn(
               target.stats.hp = Math.max(0, target.stats.hp - followUpDamage);
               logs.push(`${ally.name}が連携追撃！${target.name}に${followUpDamage}ダメージ！`);
               if (target.stats.hp <= 0) {
-                logs.push(`${target.name}を倒した！`);
+                logs.push(`${target.name}を撃破！💀`);
                 break;
               }
             }
@@ -1056,7 +1056,7 @@ function processTurn(
             }
             
             if (target.stats.hp <= 0) {
-              logs.push(`${target.name}を倒した！`);
+              logs.push(`${target.name}を撃破！💀`);
               // mpOnKill（敵を倒すとMP回復）
               if (unit.passiveEffects.mpOnKill > 0) {
                 unit.stats.mp = Math.min(unit.stats.maxMp, unit.stats.mp + unit.passiveEffects.mpOnKill);
@@ -1086,7 +1086,7 @@ function processTurn(
             if (target.stats.hp <= 0) continue;
             const heal = calculateHeal(unit, target, skill.multiplier);
             target.stats.hp = Math.min(target.stats.maxHp, target.stats.hp + heal);
-            logs.push(`${unit.name}の${skill.name}！ ${target.name}のHPが${heal}回復！(MP-${actualCost})`);
+            logs.push(`✨ ${unit.name}の${skill.name}！ → ${target.name}のHPが💚${heal}回復！(MP-${actualCost})`);
           }
         } else if (skill.type === 'buff' && skill.effect) {
           // バフスキル
@@ -1096,7 +1096,7 @@ function processTurn(
             applyBuff(target, skill.effect, skill.name);
           }
           const effectText = skill.effect.type === 'atkUp' ? 'ATK' : skill.effect.type === 'defUp' ? 'DEF' : skill.effect.type === 'agiUp' ? 'AGI' : 'ステータス';
-          logs.push(`${unit.name}の${skill.name}！ ${effectText}+${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
+          logs.push(`📈 ${unit.name}の${skill.name}！ → ${effectText}+${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
         } else if (skill.type === 'debuff' && skill.effect) {
           // デバフスキル
           const targets = Array.isArray(action.target) ? action.target : [action.target as ExtendedBattleUnit];
@@ -1119,11 +1119,11 @@ function processTurn(
               const followUpDamage = Math.floor(unit.stats.atk * unit.passiveEffects.debuffFollowUp / 100);
               target.stats.hp = Math.max(0, target.stats.hp - followUpDamage);
               logs.push(`${unit.name}の追撃！${target.name}に${followUpDamage}ダメージ！`);
-              if (target.stats.hp <= 0) logs.push(`${target.name}を倒した！`);
+              if (target.stats.hp <= 0) logs.push(`${target.name}を撃破！💀`);
             }
           }
           const effectText = skill.effect.type === 'atkDown' ? 'ATK' : skill.effect.type === 'agiDown' ? 'AGI' : 'ステータス';
-          logs.push(`${unit.name}の${skill.name}！ ${effectText}-${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
+          logs.push(`📉 ${unit.name}の${skill.name}！ → ${effectText}-${skill.effect.value}%（${skill.effect.duration}ターン）(MP-${actualCost})`);
         }
       }
       
@@ -1256,9 +1256,9 @@ function processEncounter(
     
     if (result.playerWin !== null) {
       if (result.playerWin) {
-        allLogs.push(`勝利！`);
+        allLogs.push(`🎉 勝利！`);
       } else {
-        allLogs.push(`パーティは全滅した...`);
+        allLogs.push(`😵 パーティは全滅した...`);
       }
       return { logs: allLogs, victory: result.playerWin };
     }
