@@ -544,3 +544,4 @@ export default function Home() {
   
   return isLoggedIn ? <GameScreen /> : <LoginScreen />;
 }
+// Trigger Vercel rebuild - Sun Mar  1 05:19:23 UTC 2026
