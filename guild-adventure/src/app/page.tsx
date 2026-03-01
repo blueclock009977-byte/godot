@@ -468,6 +468,19 @@ function GameScreen() {
             </div>
           </Link>
           
+          {/* ショップ */}
+          <Link href="/shop" className="block">
+            <div className="bg-emerald-700 hover:bg-emerald-600 transition-colors rounded-lg p-4 border border-emerald-600">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">🛒 ショップ</h2>
+                  <p className="text-emerald-200 text-sm">血統書・指南書を購入</p>
+                </div>
+                <span className="text-emerald-300">100🪙</span>
+              </div>
+            </div>
+          </Link>
+          
           {/* 過去の挑戦ログ */}
           <Link href="/history" className="block">
             <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-slate-600 transition-colors">
