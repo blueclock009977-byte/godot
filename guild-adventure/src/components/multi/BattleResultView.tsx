@@ -67,16 +67,50 @@ export default function BattleResultView({
               🪙 {coinReward}コイン獲得！
             </div>
           )}
-          {myDrop && myDrop.length > 0 && (
-            <div className="text-amber-400 text-lg mb-4">
-              📜 【書ドロップ】{myDrop.map(id => getItemById(id)?.name || id).join('、')}
-            </div>
-          )}
-          {myEquipment && myEquipment.length > 0 && (
-            <div className="text-yellow-300 text-lg mb-4">
-              ⚔️ 【装備ドロップ】{myEquipment.map(id => getEquipmentById(id)?.name || id).join('、')}
-            </div>
-          )}
+          {/* 複数アイテムドロップ表示 */}
+          {myDrop && myDrop.length > 0 && myDrop.map((itemId, idx) => {
+            const item = getItemById(itemId);
+            const isTreasure = itemId.startsWith('treasure_');
+            return (
+              <div 
+                key={`item-${idx}`} 
+                className={`mb-3 p-3 rounded-lg ${
+                  isTreasure 
+                    ? 'bg-gradient-to-r from-yellow-900/50 via-amber-800/50 to-yellow-900/50 border-2 border-yellow-500 animate-pulse' 
+                    : 'bg-slate-700/50'
+                }`}
+              >
+                <div className={`font-bold ${isTreasure ? 'text-2xl text-yellow-300' : 'text-lg text-amber-400'}`}>
+                  {isTreasure ? '👑✨【秘宝発見！】✨👑' : '💎【ドロップ】'}
+                </div>
+                <div className={isTreasure ? 'text-xl text-yellow-200 mt-1' : 'text-amber-400'}>
+                  {item?.name || itemId}
+                </div>
+              </div>
+            );
+          })}
+          {/* 複数装備ドロップ表示 */}
+          {myEquipment && myEquipment.length > 0 && myEquipment.map((eqId, idx) => {
+            const eq = getEquipmentById(eqId);
+            const isRare = eq?.rarity === 'rare';
+            return (
+              <div 
+                key={`eq-${idx}`} 
+                className={`mb-3 p-3 rounded-lg ${
+                  isRare 
+                    ? 'bg-gradient-to-r from-purple-900/50 via-pink-800/50 to-purple-900/50 border-2 border-purple-400 animate-pulse' 
+                    : 'bg-slate-700/50'
+                }`}
+              >
+                <div className={`font-bold ${isRare ? 'text-2xl text-purple-300' : 'text-lg text-green-400'}`}>
+                  {isRare ? '🌟⚔️【レア装備！】⚔️🌟' : '📦【装備】'}
+                </div>
+                <div className={isRare ? 'text-xl text-purple-200 mt-1' : 'text-green-400'}>
+                  {eq?.name || eqId}
+                </div>
+              </div>
+            );
+          })}
           {victory && (!myDrop || myDrop.length === 0) && (!myEquipment || myEquipment.length === 0) && dropClaimed && (
             <div className="text-slate-400 mb-4">ドロップなし...</div>
           )}
@@ -110,15 +144,11 @@ export default function BattleResultView({
             </div>
           )}
           
-          {/* 報酬受け取りボタン（未受け取りの場合） */}
-          {!dropClaimed && onClaimDrop && (
-            <button
-              onClick={onClaimDrop}
-              disabled={isClaiming}
-              className="inline-block bg-green-600 hover:bg-green-500 disabled:bg-slate-600 px-6 py-2 rounded-lg font-semibold mb-3"
-            >
-              {isClaiming ? '受け取り中...' : '🎁 報酬を受け取る'}
-            </button>
+          {/* 受け取り中表示 */}
+          {isClaiming && (
+            <div className="text-slate-400 mb-3 animate-pulse">
+              🎁 報酬を受け取り中...
+            </div>
           )}
           
           <button

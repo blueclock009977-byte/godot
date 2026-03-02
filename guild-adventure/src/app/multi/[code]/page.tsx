@@ -246,7 +246,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }
   };
   
-  // バトル完了時のドロップ表示用（自動受け取りはしない）
+  // バトル完了時に自動で報酬を受け取る
   useEffect(() => {
     if (room?.status === 'done' && room.battleResult && !dropClaimedRef.current && username) {
       // playerClaimedをチェック（既に受け取り済みかどうか）
@@ -265,9 +265,60 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
           }
         }
         setDropClaimed(true);
+      } else {
+        // リザルト表示時に自動で報酬を受け取る
+        const autoClaim = async () => {
+          if (dropClaimedRef.current) return;
+          dropClaimedRef.current = true;
+          setIsClaimingDrop(true);
+          
+          try {
+            const result = await claimMultiDrop(code, username);
+            
+            if (result.success) {
+              // 複数アイテムドロップを受け取り
+              if (result.itemIds && result.itemIds.length > 0) {
+                setMyDrop(result.itemIds);
+                result.itemIds.forEach(id => addItem(id));
+              } else if (result.itemId) {
+                setMyDrop([result.itemId]);
+                addItem(result.itemId);
+              }
+              
+              // 複数装備ドロップを受け取り
+              if (result.equipmentIds && result.equipmentIds.length > 0) {
+                setMyEquipment(result.equipmentIds);
+                result.equipmentIds.forEach(id => addEquipment(id));
+              } else if (result.equipmentId) {
+                setMyEquipment([result.equipmentId]);
+                addEquipment(result.equipmentId);
+              }
+              
+              // コイン付与
+              if (room.battleResult?.victory) {
+                const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+                if (baseCoinReward > 0) {
+                  const myChars = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
+                  const coinReward = applyCoinBonus(baseCoinReward, myChars);
+                  setMyCoinReward(coinReward);
+                  addCoins(coinReward);
+                }
+              }
+              
+              await syncToServer();
+            }
+          } catch (e) {
+            console.error('Auto claim failed:', e);
+          } finally {
+            setIsClaimingDrop(false);
+            setDropClaimed(true);
+          }
+        };
+        
+        autoClaim();
       }
     }
-  }, [room?.status, room?.battleResult, room?.dungeonId, username, room?.playerClaimed, room?.players, room?.playerDrops, room?.playerDropsMulti, room?.playerEquipmentDrops, room?.playerEquipmentDropsMulti]);
+  }, [room?.status, room?.battleResult, room?.dungeonId, username, room?.playerClaimed, room?.players, room?.playerDrops, room?.playerDropsMulti, room?.playerEquipmentDrops, room?.playerEquipmentDropsMulti, code, addItem, addEquipment, addCoins, syncToServer]);
   
   // 報酬を手動で受け取る
   const handleClaimDrop = useCallback(async () => {
