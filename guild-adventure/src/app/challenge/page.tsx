@@ -147,14 +147,15 @@ export default function ChallengePage() {
       setEarnedItems({ books, equipments });
       await syncToServer();
       
-      // 記録を保存
+      // 記録を保存（ログも保存）
       await recordAttempt(
         username,
         battleResult.reachedFloor,
         battleResult.defeatedAtFloor,
         battleResult.earnedCoins,
         battleResult.earnedBooks,
-        battleResult.earnedEquipments
+        battleResult.earnedEquipments,
+        battleResult.logs
       );
       
       setResult(battleResult);

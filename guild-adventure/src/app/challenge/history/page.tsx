@@ -6,6 +6,7 @@ import { useGameStore } from '@/store/gameStore';
 import { useChallengeStore } from '@/store/challengeStore';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { formatDate } from '@/lib/utils/format';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function ChallengeHistoryPage() {
   const { username, isLoggedIn, isLoading: storeLoading } = useGameStore();
@@ -35,35 +36,53 @@ export default function ChallengeHistoryPage() {
           <p className="text-center text-slate-400">まだ挑戦履歴がありません</p>
         ) : (
           <div className="space-y-3">
-            {history.map((entry) => (
-              <div
-                key={entry.id}
-                className="bg-slate-800 rounded-lg p-4 border border-slate-700"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-semibold">
-                      {entry.defeatedAtFloor === 0 
-                        ? '🎉 完全制覇！' 
-                        : `到達 ${entry.reachedFloor}F`}
-                    </p>
-                    {entry.defeatedAtFloor > 0 && (
-                      <p className="text-sm text-slate-400">
-                        {entry.defeatedAtFloor}Fで敗北
+            {history.map((entry) => {
+              const displayedLogs = entry.logs?.flatMap(log => 
+                log.message.split('\n').filter(l => l.trim())
+              ) || [];
+              
+              return (
+                <div
+                  key={entry.id}
+                  className="bg-slate-800 rounded-lg p-4 border border-slate-700"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-semibold">
+                        {entry.defeatedAtFloor === 0 
+                          ? '🎉 完全制覇！' 
+                          : `到達 ${entry.reachedFloor}F`}
                       </p>
-                    )}
+                      {entry.defeatedAtFloor > 0 && (
+                        <p className="text-sm text-slate-400">
+                          {entry.defeatedAtFloor}Fで敗北
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-sm text-slate-500">
+                      {formatDate(entry.attemptedAt)}
+                    </span>
                   </div>
-                  <span className="text-sm text-slate-500">
-                    {formatDate(entry.attemptedAt)}
-                  </span>
+                  <div className="flex gap-4 text-sm text-slate-300 mb-2">
+                    <span>💰 {entry.earnedCoins}</span>
+                    <span>📜 {entry.earnedBooks}冊</span>
+                    <span>🎒 {entry.earnedEquipments}個</span>
+                  </div>
+                  
+                  {/* バトルログ */}
+                  {displayedLogs.length > 0 && (
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-sm text-slate-400 hover:text-slate-300">
+                        📜 バトルログを表示
+                      </summary>
+                      <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto">
+                        <BattleLogDisplay logs={displayedLogs} />
+                      </div>
+                    </details>
+                  )}
                 </div>
-                <div className="flex gap-4 text-sm text-slate-300">
-                  <span>💰 {entry.earnedCoins}</span>
-                  <span>📜 {entry.earnedBooks}冊</span>
-                  <span>🎒 {entry.earnedEquipments}個</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

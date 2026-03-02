@@ -13,6 +13,7 @@ import {
   getChallengeRanking,
   updateChallengeRanking,
 } from '@/lib/firebase';
+import { BattleLog } from '@/lib/types';
 
 // 8時間をミリ秒で
 const COOLDOWN_MS = 8 * 60 * 60 * 1000;
@@ -38,7 +39,8 @@ interface ChallengeStore {
     defeatedAtFloor: number,
     earnedCoins: number,
     earnedBooks: number,
-    earnedEquipments: number
+    earnedEquipments: number,
+    logs?: BattleLog[]
   ) => Promise<void>;
   loadRanking: () => Promise<void>;
 }
@@ -105,7 +107,8 @@ export const useChallengeStore = create<ChallengeStore>()((set, get) => ({
     defeatedAtFloor: number,
     earnedCoins: number,
     earnedBooks: number,
-    earnedEquipments: number
+    earnedEquipments: number,
+    logs?: BattleLog[]
   ) => {
     const { progress } = get();
     
@@ -129,6 +132,7 @@ export const useChallengeStore = create<ChallengeStore>()((set, get) => ({
       earnedCoins,
       earnedBooks,
       earnedEquipments,
+      logs,
     });
     
     // ローカル状態を更新

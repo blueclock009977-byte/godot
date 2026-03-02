@@ -1504,6 +1504,7 @@ export interface ChallengeHistoryEntry {
   earnedCoins: number;          // 獲得コイン
   earnedBooks: number;          // 獲得した書の数
   earnedEquipments: number;     // 獲得した装備の数
+  logs?: BattleLog[];           // バトルログ（オプション）
 }
 
 export interface ChallengeRankingEntry {
