@@ -342,17 +342,46 @@ export default function AdventurePage() {
               </div>
             )}
             {/* 複数アイテムドロップ表示 */}
-            {(currentAdventure.result.droppedItemIds || (currentAdventure.result.droppedItemId ? [currentAdventure.result.droppedItemId] : [])).map((itemId, idx) => (
-              <div key={`item-${idx}`} className="text-amber-400 text-lg mb-2">
-                💎 【ドロップ】{getItemById(itemId)?.name || itemId}
-              </div>
-            ))}
+            {(currentAdventure.result.droppedItemIds || (currentAdventure.result.droppedItemId ? [currentAdventure.result.droppedItemId] : [])).map((itemId, idx) => {
+              const item = getItemById(itemId);
+              const isTreasure = itemId.startsWith('treasure_');
+              return (
+                <div 
+                  key={`item-${idx}`} 
+                  className={`mb-3 p-3 rounded-lg ${
+                    isTreasure 
+                      ? 'bg-gradient-to-r from-yellow-900/50 via-amber-800/50 to-yellow-900/50 border-2 border-yellow-500 animate-pulse' 
+                      : 'bg-slate-700/50'
+                  }`}
+                >
+                  <div className={`font-bold ${isTreasure ? 'text-2xl text-yellow-300' : 'text-lg text-amber-400'}`}>
+                    {isTreasure ? '👑✨【秘宝発見！】✨👑' : '💎【ドロップ】'}
+                  </div>
+                  <div className={isTreasure ? 'text-xl text-yellow-200 mt-1' : 'text-amber-400'}>
+                    {item?.name || itemId}
+                  </div>
+                </div>
+              );
+            })}
             {/* 複数装備ドロップ表示 */}
             {(currentAdventure.result.droppedEquipmentIds || (currentAdventure.result.droppedEquipmentId ? [currentAdventure.result.droppedEquipmentId] : [])).map((eqId, idx) => {
               const eq = getEquipmentById(eqId);
+              const isRare = eq?.rarity === 'rare';
               return (
-                <div key={`eq-${idx}`} className={`text-lg mb-2 ${eq?.rarity === 'rare' ? 'text-yellow-300' : 'text-green-400'}`}>
-                  {eq?.rarity === 'rare' ? '🌟【レア装備】' : '📦【装備】'}{eq?.name || eqId}
+                <div 
+                  key={`eq-${idx}`} 
+                  className={`mb-3 p-3 rounded-lg ${
+                    isRare 
+                      ? 'bg-gradient-to-r from-purple-900/50 via-pink-800/50 to-purple-900/50 border-2 border-purple-400 animate-pulse' 
+                      : 'bg-slate-700/50'
+                  }`}
+                >
+                  <div className={`font-bold ${isRare ? 'text-2xl text-purple-300' : 'text-lg text-green-400'}`}>
+                    {isRare ? '🌟⚔️【レア装備！】⚔️🌟' : '📦【装備】'}
+                  </div>
+                  <div className={isRare ? 'text-xl text-purple-200 mt-1' : 'text-green-400'}>
+                    {eq?.name || eqId}
+                  </div>
                 </div>
               );
             })}
