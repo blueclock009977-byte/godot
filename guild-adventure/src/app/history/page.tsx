@@ -16,10 +16,12 @@ function HistoryCard({
   history, 
   onClick,
   isSelected,
+  myUsername,
 }: { 
   history: AdventureHistory; 
   onClick: () => void;
   isSelected: boolean;
+  myUsername?: string;
 }) {
   const dungeon = dungeons[history.dungeonId as keyof typeof dungeons];
   const dateStr = formatDateTime(history.completedAt);
@@ -45,18 +47,32 @@ function HistoryCard({
         <span className="text-xs text-slate-400">{dateStr}</span>
       </div>
       <div className="font-semibold mt-1">{dungeon?.name || history.dungeonId}</div>
-      {/* アイテムドロップ（複数対応） */}
-      {(history.droppedItemIds || (history.droppedItemId ? [history.droppedItemId] : [])).map((itemId: string, idx: number) => (
-        <div key={`item-${idx}`} className="text-xs text-amber-400 mt-1">
-          📜 {getItemById(itemId)?.name}
-        </div>
-      ))}
-      {/* 装備ドロップ（複数対応） */}
-      {(history.droppedEquipmentIds || (history.droppedEquipmentId ? [history.droppedEquipmentId] : [])).map((eqId: string, idx: number) => (
-        <div key={`eq-${idx}`} className="text-xs text-yellow-300 mt-1">
-          ⚔️ {getEquipmentById(eqId)?.name}
-        </div>
-      ))}
+      {/* アイテムドロップ（複数対応、秘宝は金色） */}
+      {(history.droppedItemIds || (history.droppedItemId ? [history.droppedItemId] : [])).map((itemId: string, idx: number) => {
+        const item = getItemById(itemId);
+        const isTreasure = itemId.startsWith('treasure_');
+        return (
+          <div 
+            key={`item-${idx}`} 
+            className={`text-xs mt-1 ${isTreasure ? 'text-yellow-300 font-bold' : 'text-amber-400'}`}
+          >
+            {isTreasure ? '👑' : '📜'} {item?.name}
+          </div>
+        );
+      })}
+      {/* 装備ドロップ（複数対応、レアは紫） */}
+      {(history.droppedEquipmentIds || (history.droppedEquipmentId ? [history.droppedEquipmentId] : [])).map((eqId: string, idx: number) => {
+        const eq = getEquipmentById(eqId);
+        const isRare = eq?.rarity === 'rare';
+        return (
+          <div 
+            key={`eq-${idx}`} 
+            className={`text-xs mt-1 ${isRare ? 'text-purple-300 font-bold' : 'text-yellow-300'}`}
+          >
+            {isRare ? '🌟' : '⚔️'} {eq?.name}
+          </div>
+        );
+      })}
       {history.victory && history.coinReward && history.coinReward > 0 && (
         <div className="text-xs text-amber-400 mt-1">
           🪙 {history.coinReward}コイン
@@ -67,10 +83,10 @@ function HistoryCard({
           👥 {history.players.join(', ')}
         </div>
       )}
-      {/* マルチの場合、各プレイヤーのドロップを表示 */}
+      {/* マルチの場合、他プレイヤーのドロップを表示（自分は除外） */}
       {history.type === 'multi' && (history.playerDrops || history.playerEquipmentDrops || history.playerDropsMulti || history.playerEquipmentDropsMulti) && (
         <div className="text-xs mt-2 space-y-0.5">
-          {history.players?.map(player => {
+          {history.players?.filter(player => player !== myUsername).map(player => {
             // 複数対応優先、後方互換で単一も
             const items = history.playerDropsMulti?.[player] || (history.playerDrops?.[player] ? [history.playerDrops[player]] : undefined);
             const equips = history.playerEquipmentDropsMulti?.[player] || (history.playerEquipmentDrops?.[player] ? [history.playerEquipmentDrops[player]] : undefined);
@@ -78,12 +94,24 @@ function HistoryCard({
             return (
               <div key={player} className="text-slate-300">
                 <span className="text-slate-500">{player}:</span>
-                {items?.map((item, i) => (
-                  <span key={i} className="text-amber-400 ml-1">📜{getItemById(item!)?.name}</span>
-                ))}
-                {equips?.map((equip, i) => (
-                  <span key={i} className="text-yellow-300 ml-1">⚔️{getEquipmentById(equip!)?.name}</span>
-                ))}
+                {items?.map((itemId, i) => {
+                  const item = getItemById(itemId!);
+                  const isTreasure = itemId?.startsWith('treasure_');
+                  return (
+                    <span key={i} className={`ml-1 ${isTreasure ? 'text-yellow-300 font-bold' : 'text-amber-400'}`}>
+                      {isTreasure ? '👑' : '📜'}{item?.name}
+                    </span>
+                  );
+                })}
+                {equips?.map((eqId, i) => {
+                  const eq = getEquipmentById(eqId!);
+                  const isRare = eq?.rarity === 'rare';
+                  return (
+                    <span key={i} className={`ml-1 ${isRare ? 'text-purple-300 font-bold' : 'text-yellow-300'}`}>
+                      {isRare ? '🌟' : '⚔️'}{eq?.name}
+                    </span>
+                  );
+                })}
               </div>
             );
           })}
@@ -94,7 +122,7 @@ function HistoryCard({
 }
 
 export default function HistoryPage() {
-  const { history, isLoggedIn, isLoading } = useGameStore();
+  const { history, isLoggedIn, isLoading, username } = useGameStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   
   // ローディング中またはログイン前
@@ -125,6 +153,7 @@ export default function HistoryPage() {
                   history={h}
                   onClick={() => setSelectedId(h.id === selectedId ? null : h.id)}
                   isSelected={h.id === selectedId}
+                  myUsername={username || undefined}
                 />
               ))}
             </div>
