@@ -154,18 +154,18 @@ export default function ItemsPage() {
           </div>
         )}
         
-        {/* 秘宝（金色表示） */}
+        {/* 秘宝（超目立つ金色表示） */}
         {otherItems.filter(({ itemId }) => isTreasure(itemId)).length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-sm text-yellow-400 mb-2">🌟 秘宝（売却不可）</h2>
+          <div className="mb-6 p-4 bg-gradient-to-r from-yellow-900/50 via-amber-800/50 to-yellow-900/50 rounded-xl border-2 border-yellow-500">
+            <h2 className="text-lg font-bold text-yellow-300 mb-3 text-center">👑✨ 秘宝コレクション ✨👑</h2>
+            <p className="text-xs text-yellow-400/70 text-center mb-3">ダンジョンボス撃破でドロップ（売却不可）</p>
             <div className="space-y-2">
               {otherItems.filter(({ itemId }) => isTreasure(itemId)).map(({ itemId, count, item }) => (
-                <div key={itemId} className="bg-yellow-900/30 rounded-lg p-3 border border-yellow-700 flex items-center justify-between">
+                <div key={itemId} className="bg-yellow-800/40 rounded-lg p-3 border border-yellow-600 flex items-center justify-between animate-pulse">
                   <div>
-                    <span className="font-semibold text-yellow-300">{item?.name}</span>
-                    <span className="text-slate-400 ml-2">x{count}</span>
+                    <span className="font-bold text-yellow-200 text-lg">👑 {item?.name}</span>
+                    <span className="text-yellow-400 ml-2 font-semibold">×{count}</span>
                   </div>
-                  <span className="text-yellow-500 text-sm">売却不可</span>
                 </div>
               ))}
             </div>
