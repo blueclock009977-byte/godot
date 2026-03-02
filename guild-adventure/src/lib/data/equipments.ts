@@ -172,7 +172,7 @@ export const rareEquipments: Equipment[] = [
   {
     id: 'eq_rare_09',
     name: '🍀四葉のクローバー',
-    description: 'HP+30, AGI+10, ドロップ2回抽選',
+    description: 'HP+30, AGI+10, ドロップ+1',
     rarity: 'rare',
     statModifiers: { maxHp: 30, agi: 10 },
     effects: [{ type: 'doubleDropRoll', value: 1 }],
