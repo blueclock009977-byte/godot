@@ -1213,6 +1213,148 @@ export async function clearMultiAdventure(username: string): Promise<boolean> {
 }
 
 // ============================================
+// ソロ冒険結果（報酬画面経由で受け取る新システム）
+// ============================================
+
+export interface SoloAdventureResult {
+  dungeonId: string;
+  victory: boolean;
+  droppedItemId?: string;       // 後方互換
+  droppedEquipmentId?: string;  // 後方互換
+  droppedItemIds?: string[];    // 複数ドロップ対応
+  droppedEquipmentIds?: string[];  // 複数装備ドロップ対応
+  coinReward: number;           // 獲得コイン（ボーナス適用後）
+  completedAt: number;
+  logs: BattleLog[];
+  party: Party;
+  actualDurationSeconds?: number;  // 時間短縮ボーナス適用後の探索時間
+  claimed: boolean;
+}
+
+// ソロ冒険結果をユーザーに保存
+export async function saveSoloAdventure(
+  username: string,
+  dungeonId: string,
+  victory: boolean,
+  coinReward: number,
+  logs: BattleLog[],
+  party: Party,
+  droppedItemIds?: string[],
+  droppedEquipmentIds?: string[],
+  actualDurationSeconds?: number
+): Promise<boolean> {
+  try {
+    const result: SoloAdventureResult = {
+      dungeonId,
+      victory,
+      droppedItemId: droppedItemIds?.[0],
+      droppedEquipmentId: droppedEquipmentIds?.[0],
+      droppedItemIds,
+      droppedEquipmentIds,
+      coinReward,
+      completedAt: Date.now(),
+      logs,
+      party,
+      actualDurationSeconds,
+      claimed: false,
+    };
+
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/soloAdventure.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(result),
+    });
+
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to save solo adventure:', e);
+    return false;
+  }
+}
+
+// ソロ冒険結果を取得
+export async function getSoloAdventure(username: string): Promise<SoloAdventureResult | null> {
+  return firebaseGet<SoloAdventureResult>(`guild-adventure/users/${username}/soloAdventure`);
+}
+
+// ソロ冒険報酬を受け取り（ETag条件付き書き込みで競合防止）
+export async function claimSoloAdventure(username: string): Promise<{
+  success: boolean;
+  itemId?: string;
+  equipmentId?: string;
+  itemIds?: string[];
+  equipmentIds?: string[];
+  coinReward?: number;
+}> {
+  try {
+    // 1. ETag付きでGET（現在の値と一意識別子を取得）
+    const getRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/users/${username}/soloAdventure/claimed.json`,
+      { headers: { 'X-Firebase-ETag': 'true' } }
+    );
+
+    if (!getRes.ok) return { success: false };
+
+    const etag = getRes.headers.get('ETag');
+    const currentValue = await getRes.json();
+
+    // 既に受け取り済み
+    if (currentValue === true) {
+      return { success: false };
+    }
+
+    // 2. ETag条件付きでPUT（他の端末が先に書き込んでたら412エラー）
+    const putRes = await fetch(
+      `${FIREBASE_URL}/guild-adventure/users/${username}/soloAdventure/claimed.json`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'if-match': etag || ''
+        },
+        body: JSON.stringify(true),
+      }
+    );
+
+    // 412 = 競合（他の端末が先に書き込んだ）
+    if (putRes.status === 412) {
+      return { success: false };
+    }
+
+    if (putRes.ok) {
+      // ドロップ情報を取得
+      const adventure = await getSoloAdventure(username);
+      return {
+        success: true,
+        itemId: adventure?.droppedItemId,
+        equipmentId: adventure?.droppedEquipmentId,
+        itemIds: adventure?.droppedItemIds,
+        equipmentIds: adventure?.droppedEquipmentIds,
+        coinReward: adventure?.coinReward,
+      };
+    }
+
+    return { success: false };
+  } catch (e) {
+    console.error('Failed to claim solo adventure:', e);
+    return { success: false };
+  }
+}
+
+// ソロ冒険結果をクリア
+export async function clearSoloAdventure(username: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guild-adventure/users/${username}/soloAdventure.json`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (e) {
+    console.error('Failed to clear solo adventure:', e);
+    return false;
+  }
+}
+
+// ============================================
 // 未受取マルチ結果の管理（pendingResults）
 // ============================================
 
