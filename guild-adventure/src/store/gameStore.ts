@@ -158,55 +158,12 @@ async function restoreSoloAdventureHelper(ctx: RestoreContext, addEquipment: (id
   const durationSeconds = adventure.actualDurationSeconds || dungeonData.durationSeconds;
   const duration = durationSeconds * 1000;
   
-  // 探索時間が終了している場合
+  // 探索時間が終了している場合 → 報酬は手動受け取り
+  // 冒険完了後でもadventureを返す（adventure/page.tsxで報酬受け取りUIを表示するため）
   if (elapsed >= duration && !adventure.claimed) {
-    const droppedItemIds: string[] = [];
-    const droppedEquipmentIds: string[] = [];
-    let coinReward = 0;
-    
-    if (adventure.battleResult?.victory) {
-      const claimResult = await claimAdventureDrop(username);
-      if (claimResult.success) {
-        // 複数アイテムドロップ対応
-        const itemIds = claimResult.itemIds || (claimResult.itemId ? [claimResult.itemId] : []);
-        for (const itemId of itemIds) {
-          droppedItemIds.push(itemId);
-          addItem(itemId);
-        }
-        // 複数装備ドロップ対応
-        const equipmentIds = claimResult.equipmentIds || (claimResult.equipmentId ? [claimResult.equipmentId] : []);
-        for (const eqId of equipmentIds) {
-          droppedEquipmentIds.push(eqId);
-          addEquipment(eqId);
-        }
-        
-        // コインを付与（リロード時でも付与）
-        const baseCoinReward = dungeonData.coinReward || 0;
-        if (baseCoinReward > 0) {
-          const allChars = [...(adventure.party?.front || []), ...(adventure.party?.back || [])].filter((c): c is Character => c !== null);
-          coinReward = applyCoinBonus(baseCoinReward, allChars);
-          addCoins(coinReward);
-        }
-        
-        await syncToServer();
-      }
-    }
-    
-    await addHistory({
-      type: 'solo',
-      dungeonId: adventure.dungeon,
-      victory: adventure.battleResult?.victory || false,
-      droppedItemId: droppedItemIds[0],
-      droppedItemIds: droppedItemIds.length > 0 ? droppedItemIds : undefined,
-      droppedEquipmentId: droppedEquipmentIds[0],
-      droppedEquipmentIds: droppedEquipmentIds.length > 0 ? droppedEquipmentIds : undefined,
-      coinReward,
-      logs: adventure.battleResult?.logs || [],
-    });
-    
-    await clearAdventureOnServer(username);
-    // 履歴追加済みなのでnullを返す（adventure/page.tsxでの二重追加を防ぐ）
-    return { adventure: null, droppedItemId: droppedItemIds[0] };
+    console.log('[restoreSoloAdventure] solo adventure done, pending claim');
+    // 報酬は手動受け取り（adventure/page.tsxで受け取る）
+    // adventureをそのまま返して、UIで報酬受け取りボタンを表示
   }
   
   return { adventure };
