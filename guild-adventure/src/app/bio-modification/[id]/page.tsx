@@ -225,12 +225,7 @@ export default function BioModificationPage({ params }: { params: Promise<{ id: 
       <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
         <h3 className="text-sm text-slate-400 mb-3">📋 ボーナス一覧</h3>
         
-        {totalSlots === 0 ? (
-          <p className="text-slate-500 text-sm text-center py-4">
-            まず枠を解放してください
-          </p>
-        ) : (
-          <div className="space-y-2">
+        <div className="space-y-2">
             {([1, 3, 5, 10] as SlotCategory[]).map(slotCost => {
               const mods = getModificationsBySlotCost(slotCost);
               const isExpanded = expandedCategory === slotCost;
@@ -298,7 +293,6 @@ export default function BioModificationPage({ params }: { params: Promise<{ id: 
               );
             })}
           </div>
-        )}
       </div>
 
       {/* 戻るリンク */}
