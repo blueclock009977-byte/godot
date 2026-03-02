@@ -8,7 +8,7 @@ import { dungeons } from '@/lib/data/dungeons';
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
 import { applyCoinBonus } from '@/lib/drop/dropBonus';
-import { updateUserStatus, saveSoloAdventure } from '@/lib/firebase';
+import { updateUserStatus, saveSoloAdventure, claimSoloAdventure, clearSoloAdventure } from '@/lib/firebase';
 import { formatDuration } from '@/lib/utils';
 import { PageLayout } from '@/components/PageLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -16,7 +16,7 @@ import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 export default function AdventurePage() {
   const router = useRouter();
-  const { currentAdventure, username, completeAdventure, cancelAdventure, isLoggedIn, isLoading } = useGameStore();
+  const { currentAdventure, username, completeAdventure, cancelAdventure, isLoggedIn, isLoading, addItem, addEquipment, addCoins, addHistory, syncToServer } = useGameStore();
   
   // 全てのHooksを条件分岐の前に配置
   const [progress, setProgress] = useState(0);
@@ -189,9 +189,45 @@ export default function AdventurePage() {
                 droppedEquipmentIds.length > 0 ? droppedEquipmentIds : undefined,
                 actualDurationSeconds
               );
+              
+              // リザルト画面表示時に報酬を自動受け取り
+              const claimResult = await claimSoloAdventure(username);
+              if (claimResult.success) {
+                // アイテム付与
+                const claimedItemIds = claimResult.itemIds || (claimResult.itemId ? [claimResult.itemId] : []);
+                for (const itemId of claimedItemIds) {
+                  addItem(itemId);
+                }
+                // 装備付与
+                const claimedEquipmentIds = claimResult.equipmentIds || (claimResult.equipmentId ? [claimResult.equipmentId] : []);
+                for (const eqId of claimedEquipmentIds) {
+                  addEquipment(eqId);
+                }
+                // コイン付与
+                if (claimResult.coinReward && claimResult.coinReward > 0) {
+                  addCoins(claimResult.coinReward);
+                }
+                
+                // 履歴追加
+                await addHistory({
+                  type: 'solo',
+                  dungeonId: currentAdventure.dungeon,
+                  victory: battleResult.victory,
+                  droppedItemId: claimedItemIds[0],
+                  droppedItemIds: claimedItemIds.length > 0 ? claimedItemIds : undefined,
+                  droppedEquipmentId: claimedEquipmentIds[0],
+                  droppedEquipmentIds: claimedEquipmentIds.length > 0 ? claimedEquipmentIds : undefined,
+                  coinReward: claimResult.coinReward || 0,
+                  logs: battleResult.logs,
+                });
+                
+                // サーバー同期
+                await syncToServer();
+                
+                // Firebase側のsoloAdventureをクリア
+                await clearSoloAdventure(username);
+              }
             }
-
-            // 履歴への追加は報酬受け取り時に行う（二重追加防止）
           };
           
           handleComplete();
