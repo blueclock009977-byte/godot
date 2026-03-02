@@ -642,11 +642,36 @@ function GameScreen() {
             <div className="space-y-2">
               {characters.map(char => {
                 const eq = char.equipmentId ? getEquipmentById(char.equipmentId) : null;
+                // 強化可能判定
+                const raceTicketId = `ticket_${char.race}`;
+                const jobBookId = `book_${char.job}`;
+                const raceTreasureId = `treasure_${char.race}`;
+                const jobTreasureId = `treasure_${char.job}`;
+                const raceTicketCount = inventory[raceTicketId] || 0;
+                const jobBookCount = inventory[jobBookId] || 0;
+                const hasRaceTreasure = (inventory[raceTreasureId] || 0) > 0;
+                const hasJobTreasure = (inventory[jobTreasureId] || 0) > 0;
+                // マスタリー可能判定
+                const canUnlockRaceMastery = !char.raceMastery && raceTicketCount >= 5;
+                const canUnlockRaceMastery2 = char.raceMastery && !char.raceMastery2 && raceTicketCount >= 10;
+                const canUnlockJobMastery = !char.jobMastery && jobBookCount >= 5;
+                const canUnlockJobMastery2 = char.jobMastery && !char.jobMastery2 && jobBookCount >= 10;
+                // 秘宝使用可能判定（まだ使用してない場合）
+                const canUseRaceTreasure = hasRaceTreasure && !char.raceTreasureBonus;
+                const canUseJobTreasure = hasJobTreasure && !char.jobTreasureBonus;
+                // 強化可能フラグ
+                const canUpgrade = canUnlockRaceMastery || canUnlockRaceMastery2 || canUnlockJobMastery || canUnlockJobMastery2 || canUseRaceTreasure || canUseJobTreasure;
+                
                 return (
                 <Link key={char.id} href={`/character/${char.id}`} className="block">
-                  <div className="flex items-center gap-3 p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
+                  <div className={`flex items-center gap-3 p-2 rounded hover:bg-slate-600 transition-colors ${canUpgrade ? 'bg-amber-900/30 border border-amber-600' : 'bg-slate-700'}`}>
                     {/* キャラアイコン */}
-                    <CharacterIcon race={char.race} job={char.job} size={40} />
+                    <div className="relative">
+                      <CharacterIcon race={char.race} job={char.job} size={40} />
+                      {canUpgrade && (
+                        <span className="absolute -top-1 -right-1 text-xs">⬆️</span>
+                      )}
+                    </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -659,6 +684,7 @@ function GameScreen() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      {canUpgrade && <span className="text-green-400 text-xs font-bold">強化可</span>}
                       {char.raceMastery && <span className="text-amber-400 text-xs">★種</span>}
                       {char.jobMastery && <span className="text-amber-400 text-xs">★職</span>}
                       <span className="text-slate-400">→</span>
