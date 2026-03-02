@@ -1,11 +1,13 @@
 {
-  "currentPhase": 1,
+  "currentPhase": 4,
   "totalPhases": 4,
   "startedAt": "2026-03-02T21:52:00+09:00",
+  "completedAt": "2026-03-02T22:04:00+09:00",
   "phases": {
-    "1": { "name": "データ層", "status": "in_progress" },
-    "2": { "name": "バトルロジック", "status": "pending" },
-    "3": { "name": "UI", "status": "pending" },
-    "4": { "name": "Firebase同期", "status": "pending" }
-  }
+    "1": { "name": "データ層", "status": "completed", "completedAt": "2026-03-02T21:54:00+09:00" },
+    "2": { "name": "バトルロジック", "status": "completed", "completedAt": "2026-03-02T21:58:00+09:00" },
+    "3": { "name": "UI", "status": "completed", "completedAt": "2026-03-02T22:02:00+09:00" },
+    "4": { "name": "Firebase同期", "status": "completed", "completedAt": "2026-03-02T22:04:00+09:00" }
+  },
+  "status": "all_completed"
 }

@@ -11,6 +11,7 @@ import {
   Position,
   DungeonType,
   Stats,
+  BattleAIType,
 } from '@/lib/types';
 import { getModificationById } from '@/lib/data/modifications';
 import { races } from '@/lib/data/races';
@@ -335,6 +336,9 @@ interface GameStore {
   
   // 秘宝使用
   consumeTreasure: (characterId: string, treasureId: string) => Promise<{ success: boolean; error?: string }>;
+  
+  // バトルAI設定
+  setBattleAI: (characterId: string, ai: BattleAIType | undefined) => Promise<void>;
   
   // 履歴管理
   addHistory: (history: Omit<AdventureHistory, 'id' | 'completedAt'>) => Promise<void>;
@@ -1015,6 +1019,21 @@ export const useGameStore = create<GameStore>()(
         
         await syncToServer();
         return { success: true };
+      },
+      
+      // バトルAI設定
+      setBattleAI: async (characterId: string, ai: BattleAIType | undefined) => {
+        const { characters, syncToServer } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return;
+        
+        set((state) => ({
+          characters: state.characters.map(c =>
+            c.id === characterId ? { ...c, battleAI: ai } : c
+          ),
+        }));
+        
+        await syncToServer();
       },
       
       // キャラクターレベルアップ

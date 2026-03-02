@@ -9,8 +9,9 @@ import { PageLayout } from '@/components/PageLayout';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { SkillDetail, PassiveDetail } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
+import { BattleAISelector } from '@/components/BattleAISelector';
 import { races } from '@/lib/data/races';
-import { jobs } from '@/lib/data/jobs';
+import { jobs, JOB_DEFAULT_AI } from '@/lib/data/jobs';
 import { traits } from '@/lib/data/traits';
 import { environments } from '@/lib/data/environments';
 import { getLvSkill } from '@/lib/data/lvSkills';
@@ -39,6 +40,7 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
     inventory,
     isLoggedIn,
     isLoading: storeLoading,
+    setBattleAI,
   } = useGameStore();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -278,6 +280,18 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
+        {/* 戦闘AI設定 */}
+        <BattleAISelector
+          currentAI={character.battleAI}
+          jobDefaultAI={JOB_DEFAULT_AI[character.job]}
+          jobName={jobData.name}
+          onSelect={async (ai) => {
+            setIsLoading(true);
+            await setBattleAI(character.id, ai);
+            setIsLoading(false);
+          }}
+          isLoading={isLoading}
+        />
 
 {/* 種族マスタリー解放 */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">

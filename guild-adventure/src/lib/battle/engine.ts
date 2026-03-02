@@ -13,9 +13,11 @@ import {
   SpeciesType,
   ELEMENT_ADVANTAGE,
   ELEMENT_MULTIPLIER,
+  BattleAIType,
+  SkillData,
 } from '../types';
 import { dungeons } from '../data/dungeons';
-import { jobs } from '../data/jobs';
+import { jobs, JOB_DEFAULT_AI } from '../data/jobs';
 import { races } from '../data/races';
 import { 
   PassiveEffects, 
@@ -244,6 +246,7 @@ interface ExtendedBattleUnit extends BattleUnit {
   firstAttackDone: boolean;     // 最初の攻撃済み
   wasFirstStrike: boolean;      // 先制成功フラグ
   regenPerTurn?: number;        // 毎ターンHP回復率%（再生型モンスター用）
+  battleAI?: BattleAIType;      // キャラ設定のAI（未設定なら職業デフォルト）
 }
 
 function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedBattleUnit {
@@ -300,6 +303,7 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     nextCritGuaranteed: false,
     firstAttackDone: false,
     wasFirstStrike: false,
+    battleAI: char.battleAI,  // キャラ設定のAI
   };
   unit.passiveEffects = collectPassiveEffects(unit);
   
@@ -722,79 +726,441 @@ function checkCover(allies: ExtendedBattleUnit[], target: ExtendedBattleUnit): E
 }
 
 // ============================================
-// 行動決定
+// ダメージ予測（AI用）
+// ============================================
+
+interface AttackOption {
+  type: 'normalAttack' | 'skill';
+  skillIndex?: number;
+  skill?: SkillData;
+  estimatedDamage: number;
+}
+
+/**
+ * 攻撃オプションのダメージを予測
+ * 通常攻撃+全スキルから期待ダメージを計算してランキング
+ */
+function estimateAttackDamage(
+  attacker: ExtendedBattleUnit,
+  targets: ExtendedBattleUnit[],
+  skillIndex?: number,
+  skill?: SkillData
+): number {
+  const aliveTargets = targets.filter(t => t.stats.hp > 0);
+  if (aliveTargets.length === 0) return 0;
+  
+  let totalDamage = 0;
+  
+  if (!skill) {
+    // 通常攻撃: 物理ダメージ概算
+    for (const target of aliveTargets) {
+      // 基本ダメージ: ATK - DEF/2
+      let damage = Math.max(1, attacker.stats.atk * 0.8 - target.stats.def * 0.25);
+      
+      // 物理耐性
+      const physResist = (target.physicalResist || 0) + target.passiveEffects.physicalResist;
+      damage *= percentReduce(physResist);
+      
+      // 系統特攻
+      damage *= getSpeciesKillerMultiplier(attacker.passiveEffects, target.species);
+      
+      // HIT数（AGI依存）
+      const hitCount = getHitCount(attacker);
+      // 減衰を考慮した平均ダメージ（概算: 初回 + 後続0.8倍ずつ）
+      let totalHitDamage = damage;
+      for (let i = 1; i < hitCount; i++) {
+        totalHitDamage += damage * Math.pow(MULTI_HIT_DECAY, i);
+      }
+      
+      totalDamage += totalHitDamage;
+    }
+    // 通常攻撃は単体なので最初の1体のみ
+    return totalDamage / aliveTargets.length;
+  }
+  
+  // スキルダメージ予測
+  const isAllTarget = skill.target === 'all';
+  const targetList = isAllTarget ? aliveTargets : [aliveTargets[0]];
+  const multiplier = skill.multiplier;
+  
+  for (const target of targetList) {
+    let damage = 0;
+    
+    if (skill.type === 'magic') {
+      // 魔法: MAG * 倍率
+      damage = attacker.stats.mag * multiplier;
+      
+      // 属性相性
+      damage *= getElementMultiplier(skill.element, target.elementModifier);
+      
+      // 魔法耐性
+      const magResist = (target.magicResist || 0) + target.passiveEffects.magicResist;
+      damage *= percentReduce(magResist);
+    } else if (skill.type === 'hybrid') {
+      // ハイブリッド: (ATK+MAG)/2 * 倍率
+      damage = ((attacker.stats.atk + attacker.stats.mag) / 2) * multiplier;
+      
+      // 属性相性
+      damage *= getElementMultiplier(skill.element, target.elementModifier);
+      
+      // 耐性（物理+魔法の平均）
+      const physResist = (target.physicalResist || 0) + target.passiveEffects.physicalResist;
+      const magResist = (target.magicResist || 0) + target.passiveEffects.magicResist;
+      damage *= percentReduce((physResist + magResist) / 2);
+    } else {
+      // 物理スキル: ATK * 倍率
+      damage = attacker.stats.atk * multiplier * 0.8;
+      
+      // 物理耐性
+      const physResist = (target.physicalResist || 0) + target.passiveEffects.physicalResist;
+      damage *= percentReduce(physResist);
+    }
+    
+    // 系統特攻
+    damage *= getSpeciesKillerMultiplier(attacker.passiveEffects, target.species);
+    
+    totalDamage += damage;
+  }
+  
+  return totalDamage;
+}
+
+/**
+ * 全攻撃オプションをダメージ順にソート
+ */
+function rankAttackOptions(
+  unit: ExtendedBattleUnit,
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): AttackOption[] {
+  const options: AttackOption[] = [];
+  
+  // 通常攻撃
+  const normalDamage = estimateAttackDamage(unit, enemies);
+  options.push({ type: 'normalAttack', estimatedDamage: normalDamage });
+  
+  // 攻撃系スキル
+  for (const { skill, index } of usableSkills) {
+    if (skill.type === 'attack' || skill.type === 'magic' || skill.type === 'hybrid') {
+      const skillDamage = estimateAttackDamage(unit, enemies, index, skill);
+      options.push({ type: 'skill', skillIndex: index, skill, estimatedDamage: skillDamage });
+    }
+  }
+  
+  // ダメージ降順ソート
+  options.sort((a, b) => b.estimatedDamage - a.estimatedDamage);
+  
+  return options;
+}
+
+/**
+ * 75%で1番、25%で2番を選択
+ */
+function selectTopAttack(options: AttackOption[]): AttackOption | null {
+  if (options.length === 0) return null;
+  if (options.length === 1) return options[0];
+  
+  return Math.random() < 0.75 ? options[0] : options[1];
+}
+
+// ============================================
+// AIタイプ取得
+// ============================================
+
+function getUnitAIType(unit: ExtendedBattleUnit): BattleAIType {
+  // プレイヤーキャラの場合、設定されたAI or 職業デフォルト
+  if (unit.isPlayer && unit.job) {
+    // キャラに設定されたAIがあればそれを使用
+    if (unit.battleAI) {
+      return unit.battleAI;
+    }
+    // 未設定なら職業デフォルト
+    return JOB_DEFAULT_AI[unit.job] || 'balanced';
+  }
+  // モンスターはbalanced
+  return 'balanced';
+}
+
+// ============================================
+// 行動決定（AIタイプ別）
+// ============================================
+
+type ActionResult = { type: 'attack' | 'skill'; skillIndex?: number; target: ExtendedBattleUnit | ExtendedBattleUnit[] };
+
+/**
+ * バランス型AI
+ * 回復・バフ・デバフ・攻撃を状況に応じて使い分け
+ */
+function decideActionBalanced(
+  unit: ExtendedBattleUnit,
+  allies: ExtendedBattleUnit[],
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): ActionResult | null {
+  const aliveAllies = getAliveUnits(allies);
+  const aliveEnemies = getAliveUnits(enemies);
+  
+  // 回復優先（HP50%以下の味方がいれば）
+  const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
+  if (healSkills.length > 0) {
+    const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.5);
+    if (lowHpAlly) {
+      const { skill, index } = healSkills[0];
+      const target = skill.target === 'allAllies' ? aliveAllies : lowHpAlly;
+      return { type: 'skill', skillIndex: index, target };
+    }
+  }
+  
+  // バフ（30%確率、未バフ時）
+  const buffSkills = usableSkills.filter(({ skill }) => skill.type === 'buff');
+  if (buffSkills.length > 0 && Math.random() < 0.3) {
+    const hasBuffAlready = unit.buffs.some(b => b.type === 'atkUp' || b.type === 'defUp' || b.type === 'agiUp');
+    if (!hasBuffAlready) {
+      const { skill, index } = pickRandom(buffSkills);
+      let target: ExtendedBattleUnit | ExtendedBattleUnit[];
+      if (skill.target === 'self') target = unit;
+      else if (skill.target === 'allAllies') target = aliveAllies;
+      else target = pickRandom(aliveAllies);
+      return { type: 'skill', skillIndex: index, target };
+    }
+  }
+  
+  // デバフ（25%確率）
+  const debuffSkills = usableSkills.filter(({ skill }) => skill.type === 'debuff');
+  if (debuffSkills.length > 0 && Math.random() < 0.25) {
+    const { skill, index } = pickRandom(debuffSkills);
+    const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: index, target };
+  }
+  
+  // 攻撃（60%確率でスキル、40%で通常攻撃）
+  if (Math.random() < 0.6) {
+    const attackOptions = rankAttackOptions(unit, aliveEnemies, usableSkills);
+    const skillOptions = attackOptions.filter(o => o.type === 'skill');
+    if (skillOptions.length > 0) {
+      const selected = selectTopAttack(skillOptions);
+      if (selected && selected.skill) {
+        const target = selected.skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+        return { type: 'skill', skillIndex: selected.skillIndex, target };
+      }
+    }
+  }
+  
+  return null; // 通常攻撃
+}
+
+/**
+ * ブレイク型AI
+ * 50%でデバフ、50%で攻撃（与ダメ最大を75%で選択）
+ */
+function decideActionBreaker(
+  unit: ExtendedBattleUnit,
+  allies: ExtendedBattleUnit[],
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): ActionResult | null {
+  const aliveEnemies = getAliveUnits(enemies);
+  
+  // 50%でデバフ
+  if (Math.random() < 0.5) {
+    const debuffSkills = usableSkills.filter(({ skill }) => skill.type === 'debuff');
+    if (debuffSkills.length > 0) {
+      const { skill, index } = pickRandom(debuffSkills);
+      const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+      return { type: 'skill', skillIndex: index, target };
+    }
+  }
+  
+  // 50%で攻撃（与ダメ最大選択）
+  const attackOptions = rankAttackOptions(unit, aliveEnemies, usableSkills);
+  const selected = selectTopAttack(attackOptions);
+  if (selected && selected.type === 'skill' && selected.skill) {
+    const target = selected.skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: selected.skillIndex, target };
+  }
+  
+  return null; // 通常攻撃
+}
+
+/**
+ * アタック型AI
+ * 全攻撃手段から与ダメ最大を選択（75%:1番、25%:2番）
+ * 回復・バフ・デバフは使わない
+ */
+function decideActionAttacker(
+  unit: ExtendedBattleUnit,
+  allies: ExtendedBattleUnit[],
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): ActionResult | null {
+  const aliveEnemies = getAliveUnits(enemies);
+  
+  // 全攻撃手段（通常攻撃+スキル）から最大ダメージを選択
+  const attackOptions = rankAttackOptions(unit, aliveEnemies, usableSkills);
+  const selected = selectTopAttack(attackOptions);
+  
+  if (selected && selected.type === 'skill' && selected.skill) {
+    const target = selected.skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: selected.skillIndex, target };
+  }
+  
+  return null; // 通常攻撃
+}
+
+/**
+ * サポート型AI
+ * 優先順位: バフ → デバフ → 回復 → 攻撃
+ */
+function decideActionSupport(
+  unit: ExtendedBattleUnit,
+  allies: ExtendedBattleUnit[],
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): ActionResult | null {
+  const aliveAllies = getAliveUnits(allies);
+  const aliveEnemies = getAliveUnits(enemies);
+  
+  // 1. バフ優先（未バフの味方がいれば）
+  const buffSkills = usableSkills.filter(({ skill }) => skill.type === 'buff');
+  if (buffSkills.length > 0) {
+    // 自分か味方にバフがかかってないか確認
+    const hasBuffAlready = unit.buffs.some(b => b.type === 'atkUp' || b.type === 'defUp' || b.type === 'agiUp');
+    if (!hasBuffAlready) {
+      const { skill, index } = pickRandom(buffSkills);
+      let target: ExtendedBattleUnit | ExtendedBattleUnit[];
+      if (skill.target === 'self') target = unit;
+      else if (skill.target === 'allAllies') target = aliveAllies;
+      else target = pickRandom(aliveAllies);
+      return { type: 'skill', skillIndex: index, target };
+    }
+  }
+  
+  // 2. デバフ
+  const debuffSkills = usableSkills.filter(({ skill }) => skill.type === 'debuff');
+  if (debuffSkills.length > 0) {
+    const { skill, index } = pickRandom(debuffSkills);
+    const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: index, target };
+  }
+  
+  // 3. 回復（HP低い味方がいれば）
+  const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
+  if (healSkills.length > 0) {
+    const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.7);
+    if (lowHpAlly) {
+      const { skill, index } = healSkills[0];
+      const target = skill.target === 'allAllies' ? aliveAllies : lowHpAlly;
+      return { type: 'skill', skillIndex: index, target };
+    }
+  }
+  
+  // 4. 攻撃
+  const attackOptions = rankAttackOptions(unit, aliveEnemies, usableSkills);
+  const selected = selectTopAttack(attackOptions);
+  if (selected && selected.type === 'skill' && selected.skill) {
+    const target = selected.skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: selected.skillIndex, target };
+  }
+  
+  return null; // 通常攻撃
+}
+
+/**
+ * ヒーラー型AI
+ * 回復最優先（味方HP70%以下で即回復）
+ */
+function decideActionHealer(
+  unit: ExtendedBattleUnit,
+  allies: ExtendedBattleUnit[],
+  enemies: ExtendedBattleUnit[],
+  usableSkills: { skill: SkillData; index: number }[]
+): ActionResult | null {
+  const aliveAllies = getAliveUnits(allies);
+  const aliveEnemies = getAliveUnits(enemies);
+  
+  // 回復最優先（HP70%以下で即発動）
+  const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
+  if (healSkills.length > 0) {
+    // HP70%以下の味方を探す
+    const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.7);
+    if (lowHpAlly) {
+      // 全体回復があればそれを優先
+      const groupHeal = healSkills.find(({ skill }) => skill.target === 'allAllies');
+      if (groupHeal) {
+        return { type: 'skill', skillIndex: groupHeal.index, target: aliveAllies };
+      }
+      const { skill, index } = healSkills[0];
+      return { type: 'skill', skillIndex: index, target: lowHpAlly };
+    }
+  }
+  
+  // 回復不要なら攻撃
+  const attackOptions = rankAttackOptions(unit, aliveEnemies, usableSkills);
+  const selected = selectTopAttack(attackOptions);
+  if (selected && selected.type === 'skill' && selected.skill) {
+    const target = selected.skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
+    return { type: 'skill', skillIndex: selected.skillIndex, target };
+  }
+  
+  return null; // 通常攻撃
+}
+
+// ============================================
+// 行動決定（メイン）
 // ============================================
 
 function decideAction(
   unit: ExtendedBattleUnit, 
   allies: ExtendedBattleUnit[], 
   enemies: ExtendedBattleUnit[]
-): { type: 'attack' | 'skill'; skillIndex?: number; target: ExtendedBattleUnit | ExtendedBattleUnit[] } {
+): ActionResult {
   const aliveEnemies = getAliveUnits(enemies);
-  const aliveAllies = getAliveUnits(allies);
   
   if (aliveEnemies.length === 0) {
     return { type: 'attack', target: enemies[0] };
   }
   
-  if (unit.skills && unit.skills.length > 0) {
-    const mpReduction = unit.passiveEffects.mpReduction;
-    const usableSkills = unit.skills
-      .map((skill, index) => ({ skill, index }))
-      .filter(({ skill }) => {
-        const actualCost = calculateActualMpCost(skill.mpCost, mpReduction);
-        return unit.stats.mp >= actualCost;
-      });
-    
-    if (usableSkills.length > 0) {
-      // 回復スキル優先
-      const healSkills = usableSkills.filter(({ skill }) => skill.type === 'heal');
-      if (healSkills.length > 0) {
-        const lowHpAlly = aliveAllies.find(a => (a.stats.hp / a.stats.maxHp) < 0.5);
-        if (lowHpAlly) {
-          const { skill, index } = healSkills[0];
-          const target = skill.target === 'allAllies' ? aliveAllies : lowHpAlly;
-          return { type: 'skill', skillIndex: index, target };
-        }
-      }
-      
-      // バフスキル（30%の確率で使用、まだバフがかかってなければ）
-      const buffSkills = usableSkills.filter(({ skill }) => skill.type === 'buff');
-      if (buffSkills.length > 0 && Math.random() < 0.3) {
-        const hasBuffAlready = unit.buffs.some(b => b.type === 'atkUp' || b.type === 'defUp' || b.type === 'agiUp');
-        if (!hasBuffAlready) {
-          const { skill, index } = pickRandom(buffSkills);
-          let target: ExtendedBattleUnit | ExtendedBattleUnit[];
-          if (skill.target === 'self') target = unit;
-          else if (skill.target === 'allAllies') target = aliveAllies;
-          else target = pickRandom(aliveAllies);
-          return { type: 'skill', skillIndex: index, target };
-        }
-      }
-      
-      // デバフスキル（25%の確率で使用）
-      const debuffSkills = usableSkills.filter(({ skill }) => skill.type === 'debuff');
-      if (debuffSkills.length > 0 && Math.random() < 0.25) {
-        const { skill, index } = pickRandom(debuffSkills);
-        const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
-        return { type: 'skill', skillIndex: index, target };
-      }
-      
-      if (Math.random() < 0.6) {
-        const attackSkills = usableSkills.filter(({ skill }) => 
-          skill.type === 'attack' || skill.type === 'magic' || skill.type === 'hybrid'
-        );
-        
-        if (attackSkills.length > 0) {
-          const { skill, index } = pickRandom(attackSkills);
-          const target = skill.target === 'all' ? aliveEnemies : pickRandom(aliveEnemies);
-          return { type: 'skill', skillIndex: index, target };
-        }
-      }
-    }
+  // 使用可能なスキルを取得
+  const mpReduction = unit.passiveEffects.mpReduction;
+  const usableSkills = (unit.skills || [])
+    .map((skill, index) => ({ skill, index }))
+    .filter(({ skill }) => {
+      const actualCost = calculateActualMpCost(skill.mpCost, mpReduction);
+      return unit.stats.mp >= actualCost;
+    });
+  
+  // AIタイプを取得
+  const aiType = getUnitAIType(unit);
+  
+  // AIタイプ別に行動決定
+  let result: ActionResult | null = null;
+  
+  switch (aiType) {
+    case 'balanced':
+      result = decideActionBalanced(unit, allies, enemies, usableSkills);
+      break;
+    case 'breaker':
+      result = decideActionBreaker(unit, allies, enemies, usableSkills);
+      break;
+    case 'attacker':
+      result = decideActionAttacker(unit, allies, enemies, usableSkills);
+      break;
+    case 'support':
+      result = decideActionSupport(unit, allies, enemies, usableSkills);
+      break;
+    case 'healer':
+      result = decideActionHealer(unit, allies, enemies, usableSkills);
+      break;
+    default:
+      result = decideActionBalanced(unit, allies, enemies, usableSkills);
   }
   
-  return { type: 'attack', target: pickRandom(aliveEnemies) };
+  // 結果がなければ通常攻撃
+  if (!result) {
+    return { type: 'attack', target: pickRandom(aliveEnemies) };
+  }
+  
+  return result;
 }
 
 // ============================================
