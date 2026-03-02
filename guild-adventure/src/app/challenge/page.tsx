@@ -10,6 +10,8 @@ import { Party, Character } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { allEquipments } from '@/lib/data/equipments';
+import { allItems } from '@/lib/data/items';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 // クールダウン時間をフォーマット
 function formatCooldown(ms: number): string {
@@ -43,7 +45,7 @@ export default function ChallengePage() {
   const [isRunning, setIsRunning] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [selectedChar, setSelectedChar] = useState<string | null>(null);
-  const [, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
+  const [earnedItems, setEarnedItems] = useState<{ books: string[]; equipments: string[] }>({ books: [], equipments: [] });
   
   // データロード（usernameが確定したら）
   useEffect(() => {
@@ -208,8 +210,31 @@ export default function ChallengePage() {
             <h2 className="font-semibold mb-3">獲得報酬</h2>
             <div className="space-y-2">
               <p>💰 コイン: {result.earnedCoins}</p>
-              <p>📜 書: {result.earnedBooks}冊</p>
-              <p>🎒 装備: {result.earnedEquipments}個</p>
+              {earnedItems.books.length > 0 && (
+                <div>
+                  <p className="text-amber-400">📜 書:</p>
+                  <ul className="ml-4 text-sm text-slate-300">
+                    {earnedItems.books.map((bookId, i) => {
+                      const item = allItems.find(it => it.id === bookId);
+                      return <li key={i}>・{item?.name || bookId}</li>;
+                    })}
+                  </ul>
+                </div>
+              )}
+              {earnedItems.equipments.length > 0 && (
+                <div>
+                  <p className="text-blue-400">🎒 装備:</p>
+                  <ul className="ml-4 text-sm text-slate-300">
+                    {earnedItems.equipments.map((eqId, i) => {
+                      const eq = allEquipments.find(e => e.id === eqId);
+                      return <li key={i}>・{eq?.name || eqId}</li>;
+                    })}
+                  </ul>
+                </div>
+              )}
+              {earnedItems.books.length === 0 && earnedItems.equipments.length === 0 && result.earnedCoins === 0 && (
+                <p className="text-slate-400">報酬なし</p>
+              )}
             </div>
           </div>
           
@@ -223,13 +248,10 @@ export default function ChallengePage() {
           
           {showLogs && (
             <div className="bg-slate-900 rounded-lg p-4 border border-slate-700 mb-4 max-h-96 overflow-y-auto">
-              <div className="text-xs font-mono text-slate-300 space-y-1">
-                {result.logs.map((log, i) => (
-                  <div key={i} className="whitespace-pre-wrap">
-                    {log.message}
-                  </div>
-                ))}
-              </div>
+              <BattleLogDisplay 
+                logs={result.logs.map(log => log.message)}
+                characters={getPartyCharacters().map(p => p.char)}
+              />
             </div>
           )}
           
