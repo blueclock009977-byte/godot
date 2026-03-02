@@ -14,6 +14,8 @@ interface BattleResultViewProps {
   logs: BattleLog[];
   coinReward?: number;
   onGoHome: () => void;
+  onClaimDrop?: () => void;  // 報酬受け取りボタン用
+  isClaiming?: boolean;  // 受け取り中フラグ
   // 全プレイヤーのドロップ情報
   players?: string[];
   playerDrops?: Record<string, string | undefined>;  // 後方互換
@@ -35,6 +37,8 @@ export default function BattleResultView({
   logs,
   coinReward,
   onGoHome,
+  onClaimDrop,
+  isClaiming,
   players,
   playerDrops,
   playerEquipmentDrops,
@@ -104,6 +108,17 @@ export default function BattleResultView({
                 );
               })}
             </div>
+          )}
+          
+          {/* 報酬受け取りボタン（未受け取りの場合） */}
+          {!dropClaimed && onClaimDrop && (
+            <button
+              onClick={onClaimDrop}
+              disabled={isClaiming}
+              className="inline-block bg-green-600 hover:bg-green-500 disabled:bg-slate-600 px-6 py-2 rounded-lg font-semibold mb-3"
+            >
+              {isClaiming ? '受け取り中...' : '🎁 報酬を受け取る'}
+            </button>
           )}
           
           <button

@@ -46,6 +46,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   const [myCoinReward, setMyCoinReward] = useState<number>(0);
   const [dropClaimed, setDropClaimed] = useState(false);
   const dropClaimedRef = useRef(false); // 二重実行防止用
+  const [isClaimingDrop, setIsClaimingDrop] = useState(false); // 報酬受け取り中フラグ
   
   // フレンド招待関連
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -245,123 +246,119 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     }
   };
   
-  // バトル完了時にドロップ受け取り（サーバーでclaimed管理）
+  // バトル完了時のドロップ表示用（自動受け取りはしない）
   useEffect(() => {
     if (room?.status === 'done' && room.battleResult && !dropClaimedRef.current && username) {
-      dropClaimedRef.current = true; // 即座にフラグを立てて二重実行防止
-      
-      const handleClaim = async () => {
-        // サーバーからドロップ受け取り
-        // claimMultiDropは既に受け取り済みならsuccess=falseを返す（敗北時もフラグ更新）
-        const result = await claimMultiDrop(code, username);
-        
-        // success=false は既に処理済み（別端末やリロードで再実行された場合）
-        // ただしコイン表示用に計算は行う
-        if (!result.success) {
-          // 既に処理済みでもルームからドロップ情報を取得して表示
-          // 複数対応優先、後方互換で単一も
-          const drops = room?.playerDropsMulti?.[username] || (room?.playerDrops?.[username] ? [room.playerDrops[username]] : null);
-          const equips = room?.playerEquipmentDropsMulti?.[username] || (room?.playerEquipmentDrops?.[username] ? [room.playerEquipmentDrops[username]] : null);
-          if (drops) {
-            setMyDrop(drops);
-          }
-          if (equips) {
-            setMyEquipment(equips);
-          }
-          // コイン報酬も表示（付与は済んでいるはずだが表示用）
-          if (room.battleResult?.victory) {
-            const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
-            if (baseCoinReward > 0) {
-              const myChars = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
-              const coinReward = applyCoinBonus(baseCoinReward, myChars);
-              setMyCoinReward(coinReward);
-            }
-          }
-          await clearMultiAdventure(username);
-          setCurrentMultiRoom(null);
-          setDropClaimed(true);
-          return;
-        }
-        
-        // 複数アイテムドロップを受け取り
-        if (result.itemIds && result.itemIds.length > 0) {
-          setMyDrop(result.itemIds);
-          result.itemIds.forEach(id => addItem(id));
-          syncToServer();
-        } else if (result.itemId) {
-          // 後方互換
-          setMyDrop([result.itemId]);
-          addItem(result.itemId);
-          syncToServer();
-        }
-        
-        // 複数装備ドロップを受け取り
-        if (result.equipmentIds && result.equipmentIds.length > 0) {
-          setMyEquipment(result.equipmentIds);
-          result.equipmentIds.forEach(id => addEquipment(id));
-          syncToServer();
-        } else if (result.equipmentId) {
-          // 後方互換
-          setMyEquipment([result.equipmentId]);
-          addEquipment(result.equipmentId);
-          syncToServer();
-        }
-        
-        // multiAdventureもクリア（ログイン時の二重受け取り防止）
-        await clearMultiAdventure(username);
-        
-        // 勝利時はコインを付与（自分のキャラのボーナス適用）
+      // playerClaimedをチェック（既に受け取り済みかどうか）
+      if (room.playerClaimed?.[username]) {
+        dropClaimedRef.current = true;
+        // 既に処理済みの場合、表示用にドロップ情報を取得
+        const drops = room?.playerDropsMulti?.[username] || (room?.playerDrops?.[username] ? [room.playerDrops[username]] : null);
+        const equips = room?.playerEquipmentDropsMulti?.[username] || (room?.playerEquipmentDrops?.[username] ? [room.playerEquipmentDrops[username]] : null);
+        if (drops) setMyDrop(drops);
+        if (equips) setMyEquipment(equips);
         if (room.battleResult?.victory) {
           const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
           if (baseCoinReward > 0) {
-            const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
-            const coinReward = applyCoinBonus(baseCoinReward, myChars);
-            addCoins(coinReward);
-            setMyCoinReward(coinReward);
-            syncToServer();
+            const myChars = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
+            setMyCoinReward(applyCoinBonus(baseCoinReward, myChars));
           }
         }
-
-        // 履歴を追加（初回のみ）- 全プレイヤーのドロップ情報も含める
-        const baseCoinRewardForHistory = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
-        const myCharsForHistory = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
-        const coinRewardForHistory = room.battleResult?.victory ? applyCoinBonus(baseCoinRewardForHistory, myCharsForHistory) : 0;
-        
-        addHistory({
-          type: 'multi',
-          dungeonId: room.dungeonId,
-          victory: room.battleResult?.victory ?? false,
-          droppedItemId: result.itemId,
-          droppedEquipmentId: result.equipmentId,
-          coinReward: coinRewardForHistory,
-          logs: room.battleResult?.logs || [],
-          roomCode: code,
-          players: Object.keys(room.players),
-          playerDrops: room.playerDrops,
-          playerEquipmentDrops: room.playerEquipmentDrops,
-        });
-        
-        // pendingResultsから削除（自動受取リストから除外）
-        const { removePendingResult, deleteRoomIfAllClaimed, updateUserStatus } = await import('@/lib/firebase');
-        await removePendingResult(username, code);
-        
-        // 全員がclaimedならルームを削除
-        await deleteRoomIfAllClaimed(code);
-        
-        // ソロ冒険中でなければステータスをロビーに戻す
-        const { getAdventureOnServer } = await import('@/lib/firebase');
-        const soloAdventure = await getAdventureOnServer(username);
-        if (!soloAdventure) {
-          await updateUserStatus(username, 'lobby');
-        }
-        
-        setCurrentMultiRoom(null);
         setDropClaimed(true);
-      };
-      
-      handleClaim();
+      }
     }
-  }, [room?.status, room?.battleResult, room?.dungeonId, code, username, addItem, addEquipment, syncToServer, room?.players, addHistory]);
+  }, [room?.status, room?.battleResult, room?.dungeonId, username, room?.playerClaimed, room?.players, room?.playerDrops, room?.playerDropsMulti, room?.playerEquipmentDrops, room?.playerEquipmentDropsMulti]);
+  
+  // 報酬を手動で受け取る
+  const handleClaimDrop = useCallback(async () => {
+    if (!room || !username || isClaimingDrop || dropClaimed) return;
+    setIsClaimingDrop(true);
+    dropClaimedRef.current = true;
+    
+    try {
+      // サーバーからドロップ受け取り
+      const result = await claimMultiDrop(code, username);
+      
+      if (!result.success) {
+        // 既に受け取り済み
+        setDropClaimed(true);
+        setIsClaimingDrop(false);
+        return;
+      }
+      
+      // 複数アイテムドロップを受け取り
+      if (result.itemIds && result.itemIds.length > 0) {
+        setMyDrop(result.itemIds);
+        result.itemIds.forEach(id => addItem(id));
+        syncToServer();
+      } else if (result.itemId) {
+        setMyDrop([result.itemId]);
+        addItem(result.itemId);
+        syncToServer();
+      }
+      
+      // 複数装備ドロップを受け取り
+      if (result.equipmentIds && result.equipmentIds.length > 0) {
+        setMyEquipment(result.equipmentIds);
+        result.equipmentIds.forEach(id => addEquipment(id));
+        syncToServer();
+      } else if (result.equipmentId) {
+        setMyEquipment([result.equipmentId]);
+        addEquipment(result.equipmentId);
+        syncToServer();
+      }
+      
+      // multiAdventureもクリア
+      await clearMultiAdventure(username);
+      
+      // 勝利時はコインを付与
+      if (room.battleResult?.victory) {
+        const baseCoinReward = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+        if (baseCoinReward > 0) {
+          const myChars = (room.players[username]?.characters || []).map(rc => rc.character);
+          const coinReward = applyCoinBonus(baseCoinReward, myChars);
+          addCoins(coinReward);
+          setMyCoinReward(coinReward);
+          syncToServer();
+        }
+      }
+
+      // 履歴を追加
+      const baseCoinRewardForHistory = dungeons[room.dungeonId as keyof typeof dungeons]?.coinReward || 0;
+      const myCharsForHistory = (room.players[username]?.characters || []).map((rc: RoomCharacter) => rc.character);
+      const coinRewardForHistory = room.battleResult?.victory ? applyCoinBonus(baseCoinRewardForHistory, myCharsForHistory) : 0;
+      
+      addHistory({
+        type: 'multi',
+        dungeonId: room.dungeonId,
+        victory: room.battleResult?.victory ?? false,
+        droppedItemId: result.itemId,
+        droppedEquipmentId: result.equipmentId,
+        coinReward: coinRewardForHistory,
+        logs: room.battleResult?.logs || [],
+        roomCode: code,
+        players: Object.keys(room.players),
+        playerDrops: room.playerDrops,
+        playerEquipmentDrops: room.playerEquipmentDrops,
+      });
+      
+      // pendingResultsから削除
+      const { removePendingResult, deleteRoomIfAllClaimed, updateUserStatus, getAdventureOnServer } = await import('@/lib/firebase');
+      await removePendingResult(username, code);
+      await deleteRoomIfAllClaimed(code);
+      
+      // ソロ冒険中でなければステータスをロビーに戻す
+      const soloAdventure = await getAdventureOnServer(username);
+      if (!soloAdventure) {
+        await updateUserStatus(username, 'lobby');
+      }
+      
+      setCurrentMultiRoom(null);
+      setDropClaimed(true);
+    } finally {
+      setIsClaimingDrop(false);
+    }
+  }, [room, code, username, isClaimingDrop, dropClaimed, addItem, addEquipment, addCoins, syncToServer, addHistory, setCurrentMultiRoom]);
   
   // 退出
   const handleLeave = async () => {
@@ -428,6 +425,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     return (
       <BattleResultView
         onGoHome={() => { setCurrentMultiRoom(null); router.push("/"); }}
+        onClaimDrop={handleClaimDrop}
+        isClaiming={isClaimingDrop}
         victory={room.battleResult.victory}
         dungeonName={dungeonData?.name || '不明なダンジョン'}
         myDrop={myDrop}

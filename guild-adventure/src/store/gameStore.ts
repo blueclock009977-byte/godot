@@ -128,46 +128,10 @@ async function restoreMultiAdventureHelper(ctx: RestoreContext): Promise<boolean
     }
   }
 
-  // claimを試みる（レースコンディション防止）
-  const claimResult = await claimMultiAdventure(username);
-  if (!claimResult.success) {
-    console.log('[restoreMultiAdventure] multiAdventure already claimed');
-    return false;
-  }
-  
-  // ドロップを受け取る
-  let droppedItemId: string | undefined;
-  if (claimResult.itemId) {
-    droppedItemId = claimResult.itemId;
-    addItem(claimResult.itemId);
-    await syncToServer();
-  }
-  
-  // コインを獲得（勝利時のみ）
-  let coinReward = 0;
-  if (multiAdventure.victory) {
-    const dungeonData = dungeons[multiAdventure.dungeonId];
-    if (dungeonData?.coinReward) {
-      coinReward = dungeonData.coinReward;
-      addCoins(coinReward);
-      await syncToServer();
-    }
-  }
-  
-  // 履歴に追加
-  await addHistory({
-    type: 'multi',
-    dungeonId: multiAdventure.dungeonId,
-    victory: multiAdventure.victory,
-    droppedItemId,
-    coinReward,
-    logs: multiAdventure.logs,
-    roomCode: multiAdventure.roomCode,
-    players: multiAdventure.players,
-  });
-  
-  await clearMultiAdventure(username);
-  await setCurrentMultiRoom(null);  // マルチ状態を確実にクリア
+  // 報酬は手動受け取り（/multi/[code]画面で受け取る）
+  // 冒険完了後、ルームへリダイレクトできるよう currentMultiRoom を設定
+  console.log('[restoreMultiAdventure] multi adventure done, pending claim on /multi/' + multiAdventure.roomCode);
+  await setCurrentMultiRoom(multiAdventure.roomCode);
   return true;
 }
 
