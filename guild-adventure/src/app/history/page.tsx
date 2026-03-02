@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
@@ -11,30 +10,23 @@ import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
 import { formatDateTime } from '@/lib/utils';
 import { AdventureHistory } from '@/lib/firebase';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 function HistoryCard({ 
   history, 
-  onClick,
-  isSelected,
   myUsername,
 }: { 
   history: AdventureHistory; 
-  onClick: () => void;
-  isSelected: boolean;
   myUsername?: string;
 }) {
   const dungeon = dungeons[history.dungeonId as keyof typeof dungeons];
   const dateStr = formatDateTime(history.completedAt);
+  const displayedLogs = history.logs?.flatMap(log => 
+    log.message?.split('\n').filter((l: string) => l.trim()) || []
+  ) || [];
   
   return (
-    <div
-      onClick={onClick}
-      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-        isSelected 
-          ? 'bg-amber-600 border-amber-500' 
-          : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
-      }`}
-    >
+    <div className="p-3 rounded-lg border bg-slate-700 border-slate-600">
       <div className="flex justify-between items-start">
         <div>
           <span className={`text-xs px-2 py-0.5 rounded ${history.type === 'solo' ? 'bg-blue-600' : 'bg-purple-600'}`}>
@@ -117,23 +109,32 @@ function HistoryCard({
           })}
         </div>
       )}
+      
+      {/* バトルログ（折りたたみ） */}
+      {displayedLogs.length > 0 && (
+        <details className="mt-3">
+          <summary className="cursor-pointer text-sm text-slate-400 hover:text-slate-300">
+            📜 バトルログを表示
+          </summary>
+          <div className="mt-2 bg-slate-800 rounded-lg p-3 max-h-64 overflow-y-auto">
+            <BattleLogDisplay logs={displayedLogs} />
+          </div>
+        </details>
+      )}
     </div>
   );
 }
 
 export default function HistoryPage() {
   const { history, isLoggedIn, isLoading, username } = useGameStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   
   // ローディング中またはログイン前
   if (!isLoggedIn || isLoading) {
     return <LoadingScreen />;
   }
   
-  const selectedHistory = history.find(h => h.id === selectedId);
-  
   return (
-    <PageLayout maxWidth="2xl">
+    <PageLayout maxWidth="md">
       <PageHeader title="📜 過去の挑戦ログ" />
         
         {history.length === 0 ? (
@@ -143,56 +144,15 @@ export default function HistoryPage() {
             className="py-12"
           />
         ) : (
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* 履歴リスト */}
-            <div className="space-y-2">
-              <h2 className="text-sm text-slate-400 mb-2">履歴（{history.length}件）</h2>
-              {history.map((h) => (
-                <HistoryCard
-                  key={h.id}
-                  history={h}
-                  onClick={() => setSelectedId(h.id === selectedId ? null : h.id)}
-                  isSelected={h.id === selectedId}
-                  myUsername={username || undefined}
-                />
-              ))}
-            </div>
-            
-            {/* ログ詳細 */}
-            <div className="md:sticky md:top-4 h-fit">
-              <h2 className="text-sm text-slate-400 mb-2">バトルログ</h2>
-              <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 h-96 overflow-y-auto">
-                {selectedHistory ? (
-                  <div className="space-y-1 text-sm font-mono">
-                    {selectedHistory.logs.map((log, i) => (
-                      <div key={i}>
-                        {log.message?.split('\n').filter((l: string) => l.trim()).map((line: string, j: number) => (
-                          <div 
-                            key={j} 
-                            className={`${
-                              line.includes('🔴BOSS:') ? 'text-red-500 font-bold mt-3' :
-                              line.includes('【遭遇') ? 'text-yellow-400 font-bold mt-3' :
-                              line.includes('勝利') ? 'text-green-400 font-bold' :
-                              line.includes('全滅') ? 'text-red-400 font-bold' :
-                              line.includes('倒した') ? 'text-green-300' :
-                              line.includes('ダメージ') ? 'text-orange-300' :
-                              line.includes('回復') ? 'text-blue-300' :
-                              'text-slate-300'
-                            }`}
-                          >
-                            {line}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-slate-500 text-center py-8">
-                    履歴を選択してログを表示
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="space-y-3">
+            <h2 className="text-sm text-slate-400">履歴（{history.length}件）</h2>
+            {history.map((h) => (
+              <HistoryCard
+                key={h.id}
+                history={h}
+                myUsername={username || undefined}
+              />
+            ))}
           </div>
         )}
     </PageLayout>
