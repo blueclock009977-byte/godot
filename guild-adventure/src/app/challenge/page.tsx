@@ -479,23 +479,23 @@ export default function ChallengePage() {
 
 // ランダムな血統書を取得
 function getRandomBloodlineBook(): string {
-  const books = [
-    'human_bloodline', 'elf_bloodline', 'dwarf_bloodline', 'halfling_bloodline',
-    'orc_bloodline', 'goblin_bloodline', 'undead_bloodline', 'fairy_bloodline',
-    'dragonborn_bloodline', 'beastkin_bloodline', 'demon_bloodline', 'angel_bloodline',
-    'genasi_bloodline', 'aasimar_bloodline', 'tiefling_bloodline', 'dhampir_bloodline',
+  const tickets = [
+    'ticket_human', 'ticket_elf', 'ticket_dwarf', 'ticket_halfling',
+    'ticket_orc', 'ticket_goblin', 'ticket_undead', 'ticket_fairy',
+    'ticket_dragonewt', 'ticket_lizardman', 'ticket_demon', 'ticket_angel',
+    'ticket_genasi', 'ticket_aasimar', 'ticket_tiefling', 'ticket_dhampir',
   ];
-  return books[Math.floor(Math.random() * books.length)];
+  return tickets[Math.floor(Math.random() * tickets.length)];
 }
 
 // ランダムな指南書を取得
 function getRandomJobBook(): string {
   const books = [
-    'warrior_guide', 'mage_guide', 'priest_guide', 'thief_guide',
-    'ranger_guide', 'paladin_guide', 'monk_guide', 'bard_guide',
-    'necromancer_guide', 'berserker_guide', 'assassin_guide', 'summoner_guide',
-    'witch_guide', 'samurai_guide', 'ninja_guide', 'alchemist_guide',
-    'spellblade_guide', 'battlemage_guide', 'runesmith_guide', 'redmage_guide',
+    'book_warrior', 'book_mage', 'book_priest', 'book_thief',
+    'book_knight', 'book_hunter', 'book_ninja', 'book_sage',
+    'book_berserker', 'book_paladin', 'book_necromancer', 'book_monk',
+    'book_ranger', 'book_samurai', 'book_witch', 'book_bard',
+    'book_spellblade', 'book_battlemage', 'book_runesmith', 'book_redmage',
   ];
   return books[Math.floor(Math.random() * books.length)];
 }
