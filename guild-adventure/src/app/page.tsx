@@ -13,6 +13,7 @@ import { jobs } from '@/lib/data/jobs';
 import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { HowToPlayModal } from '@/components/HowToPlayModal';
+import { CharacterIcon } from '@/components/CharacterIcon';
 import { useChallengeStore } from '@/store/challengeStore';
 
 // クールダウン時間をフォーマット
@@ -551,18 +552,21 @@ function GameScreen() {
                 const eq = char.equipmentId ? getEquipmentById(char.equipmentId) : null;
                 return (
                 <Link key={char.id} href={`/character/${char.id}`} className="block">
-                  <div className="flex justify-between items-center p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
-                    <div>
+                  <div className="flex items-center gap-3 p-2 bg-slate-700 rounded hover:bg-slate-600 transition-colors">
+                    {/* キャラアイコン */}
+                    <CharacterIcon race={char.race} job={char.job} size={40} />
+                    
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">{char.name}</span>
-                        <span className="text-xs text-amber-400">Lv.{char.level || 1}</span>
+                        <span className="font-semibold truncate">{char.name}</span>
+                        <span className="text-xs text-amber-400 flex-shrink-0">Lv.{char.level || 1}</span>
                       </div>
                       <div className="text-xs text-slate-400">
                         {races[char.race]?.name || char.race} / {jobs[char.job]?.name || char.job}
                         {eq && <span className={`ml-2 ${eq.rarity === "rare" ? "text-yellow-300" : "text-slate-300"}`}>🎒{eq.name}</span>}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {char.raceMastery && <span className="text-amber-400 text-xs">★種</span>}
                       {char.jobMastery && <span className="text-amber-400 text-xs">★職</span>}
                       <span className="text-slate-400">→</span>

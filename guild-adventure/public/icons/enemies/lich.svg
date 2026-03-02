@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Lich: リッチ（死の魔術師） -->
+  <!-- Robe -->
+  <path d="M24 22 L10 46 L38 46 Z" fill="#4A148C"/>
+  <path d="M24 24 L14 46 L34 46 Z" fill="#6A1B9A"/>
+  <!-- Hood -->
+  <path d="M12 20 Q14 10 24 8 Q34 10 36 20 Q32 24 24 26 Q16 24 12 20 Z" fill="#4A148C"/>
+  <!-- Skull face -->
+  <circle cx="24" cy="16" r="8" fill="#ECEFF1"/>
+  <circle cx="24" cy="18" r="6" fill="#E0E0E0"/>
+  <!-- Eye sockets -->
+  <circle cx="21" cy="15" r="3" fill="#1A237E"/>
+  <circle cx="27" cy="15" r="3" fill="#1A237E"/>
+  <circle cx="21" cy="15" r="1.5" fill="#7C4DFF"/>
+  <circle cx="27" cy="15" r="1.5" fill="#7C4DFF"/>
+  <!-- Nose hole -->
+  <polygon points="24,18 23,21 25,21" fill="#BDBDBD"/>
+  <!-- Teeth -->
+  <rect x="20" y="22" width="2" height="2" fill="#ECEFF1"/>
+  <rect x="23" y="22" width="2" height="2" fill="#ECEFF1"/>
+  <rect x="26" y="22" width="2" height="2" fill="#ECEFF1"/>
+  <!-- Staff -->
+  <line x1="40" y1="12" x2="40" y2="44" stroke="#5D4037" stroke-width="2"/>
+  <circle cx="40" cy="10" r="4" fill="#7C4DFF"/>
+  <circle cx="40" cy="10" r="2" fill="#B388FF"/>
+  <!-- Skeletal hands -->
+  <line x1="18" y1="28" x2="10" y2="32" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="30" y1="28" x2="38" y2="32" stroke="#BDBDBD" stroke-width="2"/>
+  <!-- Magic aura -->
+  <circle cx="24" cy="30" r="12" fill="none" stroke="#7C4DFF" stroke-width="1" opacity="0.4"/>
+</svg>

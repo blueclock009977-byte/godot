@@ -9,6 +9,8 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { SkillDetail, PassiveDetail, formatEffects } from '@/components/SkillDisplay';
 import { StatsDisplay } from '@/components/StatsDisplay';
 import { RaceType, JobType, TraitType, EnvironmentType } from '@/lib/types';
+import { RaceIcon } from '@/components/RaceIcon';
+import { JobIcon } from '@/components/JobIcon';
 import { races, raceList } from '@/lib/data/races';
 import { jobs, jobList } from '@/lib/data/jobs';
 import { traits, traitList } from '@/lib/data/traits';
@@ -146,7 +148,10 @@ export default function CreatePage() {
                         : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                   }`}
                 >
-                  <div className="font-semibold text-sm">{r.name}</div>
+                  <div className="flex flex-col items-center gap-1">
+                    <RaceIcon race={r.id} size={28} />
+                    <div className="font-semibold text-xs">{r.name}</div>
+                  </div>
                   {count !== null && (
                     <div className={`text-xs ${count > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {count > 0 ? `×${count}` : '🔒'}
@@ -279,7 +284,10 @@ export default function CreatePage() {
                         : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
                   }`}
                 >
-                  <div className="font-semibold text-sm">{j.name}</div>
+                  <div className="flex flex-col items-center gap-1">
+                    <JobIcon job={j.id} size={28} />
+                    <div className="font-semibold text-xs">{j.name}</div>
+                  </div>
                   {count !== null && (
                     <div className={`text-xs ${count > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {count > 0 ? `×${count}` : '🔒'}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Demon: 角、赤肌 -->
+  <polygon points="10,16 14,2 18,14" fill="#333"/>
+  <polygon points="38,16 34,2 30,14" fill="#333"/>
+  <circle cx="24" cy="20" r="12" fill="#DC143C"/>
+  <ellipse cx="24" cy="42" rx="12" ry="10" fill="#1C1C1C"/>
+  <ellipse cx="18" cy="18" rx="3" ry="3" fill="#000"/>
+  <ellipse cx="30" cy="18" rx="3" ry="3" fill="#000"/>
+  <circle cx="18" cy="18" r="1.5" fill="#FF0"/>
+  <circle cx="30" cy="18" r="1.5" fill="#FF0"/>
+  <path d="M18 26 Q24 30 30 26" stroke="#000" stroke-width="2" fill="none"/>
+  <polygon points="20,28 22,24 24,28" fill="#FFF"/>
+  <polygon points="26,28 28,24 24,28" fill="#FFF"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Ice Queen: 氷の女王 -->
+  <!-- Dress -->
+  <path d="M24 24 L10 46 L38 46 Z" fill="#4FC3F7"/>
+  <path d="M24 26 L14 46 L34 46 Z" fill="#81D4FA"/>
+  <!-- Body -->
+  <ellipse cx="24" cy="24" rx="8" ry="6" fill="#E1F5FE"/>
+  <!-- Head -->
+  <circle cx="24" cy="14" r="8" fill="#ECEFF1"/>
+  <!-- Crown -->
+  <polygon points="12,10 16,4 20,8 24,2 28,8 32,4 36,10 32,12 24,10 16,12" fill="#B3E5FC"/>
+  <circle cx="16" cy="6" r="2" fill="#00BCD4"/>
+  <circle cx="24" cy="4" r="2" fill="#00BCD4"/>
+  <circle cx="32" cy="6" r="2" fill="#00BCD4"/>
+  <!-- Face -->
+  <circle cx="21" cy="13" r="2" fill="#0097A7"/>
+  <circle cx="27" cy="13" r="2" fill="#0097A7"/>
+  <path d="M22 18 Q24 20 26 18" stroke="#90A4AE" stroke-width="1" fill="none"/>
+  <!-- Hair -->
+  <path d="M16 14 Q12 18 14 24" stroke="#B3E5FC" stroke-width="2" fill="none"/>
+  <path d="M32 14 Q36 18 34 24" stroke="#B3E5FC" stroke-width="2" fill="none"/>
+  <!-- Arms -->
+  <line x1="16" y1="26" x2="6" y2="32" stroke="#E1F5FE" stroke-width="3"/>
+  <line x1="32" y1="26" x2="42" y2="32" stroke="#E1F5FE" stroke-width="3"/>
+  <!-- Ice scepter -->
+  <line x1="42" y1="32" x2="44" y2="20" stroke="#4FC3F7" stroke-width="2"/>
+  <polygon points="42,20 44,14 46,20 44,18" fill="#E1F5FE"/>
+  <!-- Snowflakes -->
+  <circle cx="8" cy="40" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="40" cy="38" r="2" fill="#fff" opacity="0.6"/>
+</svg>

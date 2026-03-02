@@ -7,6 +7,7 @@ import { getEquipmentDropRate } from '@/lib/data/equipments';
 import { formatDuration, speciesNames, elementNames } from '@/lib/utils';
 import { DifficultyStars } from './DifficultyStars';
 import { Modal } from './Modal';
+import { MonsterIcon } from './MonsterIcon';
 
 // 属性耐性/弱点の表示
 function ElementModifierDisplay({ modifier }: { modifier?: Partial<Record<string, number>> }) {
@@ -40,21 +41,26 @@ function MonsterDetailCard({ monster, isBoss = false }: { monster: Monster; isBo
       }`}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          {isBoss && <span className="text-red-400 text-xs">🔴 BOSS</span>}
-          <div className="font-semibold">{monster.name}</div>
-          <div className="text-xs text-slate-300">
-            {speciesNames[monster.species] || monster.species}
-            {monster.element && monster.element !== 'none' && (
-              <span className="ml-2">{elementNames[monster.element]}</span>
-            )}
+      <div className="flex items-start gap-3">
+        <MonsterIcon monsterId={monster.id} size={48} isBoss={isBoss} />
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <div>
+              {isBoss && <span className="text-red-400 text-xs">🔴 BOSS</span>}
+              <div className="font-semibold">{monster.name}</div>
+              <div className="text-xs text-slate-300">
+                {speciesNames[monster.species] || monster.species}
+                {monster.element && monster.element !== 'none' && (
+                  <span className="ml-2">{elementNames[monster.element]}</span>
+                )}
+              </div>
+            </div>
+            <div className="text-xs text-right">
+              <div>HP {monster.stats.hp}</div>
+              <div>ATK {monster.stats.atk}</div>
+              <span className="text-slate-500">{expanded ? '▲' : '▼'}</span>
+            </div>
           </div>
-        </div>
-        <div className="text-xs text-right">
-          <div>HP {monster.stats.hp}</div>
-          <div>ATK {monster.stats.atk}</div>
-          <span className="text-slate-500">{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
       

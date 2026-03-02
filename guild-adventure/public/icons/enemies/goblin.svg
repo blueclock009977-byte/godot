@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Goblin: 緑の小鬼 -->
+  <circle cx="24" cy="20" r="12" fill="#8BC34A"/>
+  <ellipse cx="24" cy="40" rx="10" ry="8" fill="#795548"/>
+  <circle cx="19" cy="18" r="3" fill="#FFEB3B"/>
+  <circle cx="29" cy="18" r="3" fill="#FFEB3B"/>
+  <circle cx="19" cy="18" r="1.5" fill="#333"/>
+  <circle cx="29" cy="18" r="1.5" fill="#333"/>
+  <polygon points="14,14 10,6 18,12" fill="#8BC34A"/>
+  <polygon points="34,14 38,6 30,12" fill="#8BC34A"/>
+  <path d="M20 26 L24 24 L28 26" stroke="#333" stroke-width="2" fill="none"/>
+  <rect x="18" y="24" width="2" height="3" fill="#fff"/>
+  <rect x="28" y="24" width="2" height="3" fill="#fff"/>
+</svg>

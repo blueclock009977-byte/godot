@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Wolf: 灰色の狼 -->
+  <ellipse cx="22" cy="32" rx="16" ry="10" fill="#607D8B"/>
+  <circle cx="34" cy="24" r="10" fill="#607D8B"/>
+  <polygon points="28,14 32,4 36,14" fill="#78909C"/>
+  <polygon points="36,14 42,6 40,16" fill="#78909C"/>
+  <circle cx="36" cy="22" r="2.5" fill="#FFD54F"/>
+  <circle cx="42" cy="24" r="2.5" fill="#FFD54F"/>
+  <circle cx="36" cy="22" r="1" fill="#333"/>
+  <circle cx="42" cy="24" r="1" fill="#333"/>
+  <ellipse cx="40" cy="30" rx="4" ry="3" fill="#37474F"/>
+  <ellipse cx="40" cy="31" rx="2" ry="1.5" fill="#333"/>
+  <path d="M6 34 Q2 32 4 28" stroke="#607D8B" stroke-width="5" fill="none"/>
+  <ellipse cx="14" cy="40" rx="4" ry="5" fill="#455A64"/>
+  <ellipse cx="30" cy="40" rx="4" ry="5" fill="#455A64"/>
+</svg>

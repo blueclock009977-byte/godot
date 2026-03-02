@@ -241,6 +241,16 @@ export default function AdventurePage() {
   // remainingSecはuseState + useEffect(setInterval)で管理
   // レンダー中にDate.now()を呼ばないことでReactの純粋性を保つ
   
+  // バトルログ表示用のキャラとモンスター情報
+  const partyCharacters = [
+    ...(currentAdventure.party.front || []),
+    ...(currentAdventure.party.back || [])
+  ];
+  const dungeonMonsters = [
+    ...dungeon.monsters.map(m => m.monster),
+    ...(dungeon.boss ? [dungeon.boss] : [])
+  ];
+  
   const handleCancel = () => {
     if (confirm('冒険を中断しますか？')) {
       cancelAdventure();
@@ -351,7 +361,11 @@ export default function AdventurePage() {
                 📜 戦闘ログを表示
               </summary>
               <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto">
-                <BattleLogDisplay logs={displayedLogs} />
+                <BattleLogDisplay 
+                  logs={displayedLogs} 
+                  characters={partyCharacters}
+                  monsters={dungeonMonsters}
+                />
               </div>
             </details>
           </div>
@@ -363,7 +377,11 @@ export default function AdventurePage() {
               className="mb-6 bg-slate-800 rounded-lg border border-slate-700 p-4 h-96 overflow-y-auto"
             >
               <h2 className="text-sm text-slate-400 mb-2 sticky top-0 bg-slate-800">戦闘ログ</h2>
-              <BattleLogDisplay logs={displayedLogs} />
+              <BattleLogDisplay 
+                logs={displayedLogs}
+                characters={partyCharacters}
+                monsters={dungeonMonsters}
+              />
             </div>
             
             {/* 中断ボタン */}

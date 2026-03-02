@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Tiefling: 角、紫肌 -->
+  <path d="M12 18 Q10 8 14 4 Q16 10 14 16" fill="#4B0082"/>
+  <path d="M36 18 Q38 8 34 4 Q32 10 34 16" fill="#4B0082"/>
+  <circle cx="24" cy="20" r="12" fill="#9370DB"/>
+  <ellipse cx="24" cy="40" rx="12" ry="10" fill="#2F2F4F"/>
+  <ellipse cx="19" cy="18" rx="2.5" ry="3" fill="#FF0"/>
+  <ellipse cx="29" cy="18" rx="2.5" ry="3" fill="#FF0"/>
+  <ellipse cx="19" cy="18" rx="1" ry="2" fill="#000"/>
+  <ellipse cx="29" cy="18" rx="1" ry="2" fill="#000"/>
+  <path d="M20 26 Q24 28 28 26" stroke="#4B0082" stroke-width="1.5" fill="none"/>
+  <path d="M24 32 Q28 36 26 44 Q30 40 28 48" fill="#9370DB" stroke="#4B0082" stroke-width="1"/>
+</svg>

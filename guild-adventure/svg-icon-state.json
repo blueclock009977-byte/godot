@@ -1,0 +1,32 @@
+{
+  "currentPhase": 5,
+  "totalPhases": 5,
+  "startedAt": "2026-03-02T14:22:00+09:00",
+  "completedAt": "2026-03-02T15:50:00+09:00",
+  "phases": {
+    "1": { "name": "種族SVG作成", "status": "completed", "startedAt": "2026-03-02T14:22:00+09:00", "completedAt": "2026-03-02T14:26:00+09:00" },
+    "2": { "name": "職業SVG作成", "status": "completed", "startedAt": "2026-03-02T14:26:00+09:00", "completedAt": "2026-03-02T14:28:00+09:00" },
+    "3": { "name": "組み合わせSVG生成ロジック", "status": "completed", "startedAt": "2026-03-02T14:29:00+09:00", "completedAt": "2026-03-02T14:31:00+09:00" },
+    "4": { "name": "敵キャラSVG作成", "status": "completed", "startedAt": "2026-03-02T15:43:00+09:00", "completedAt": "2026-03-02T15:45:00+09:00" },
+    "5": { "name": "バトルログにアイコン反映", "status": "completed", "startedAt": "2026-03-02T15:47:00+09:00", "completedAt": "2026-03-02T15:50:00+09:00" }
+  },
+  "races": [
+    "human", "elf", "dwarf", "halfling", "orc", "lizardman", "fairy", "undead",
+    "goblin", "dragonewt", "angel", "demon", "genasi", "aasimar", "tiefling", "dhampir"
+  ],
+  "jobs": [
+    "warrior", "mage", "priest", "thief", "knight", "hunter", "ninja", "sage",
+    "berserker", "paladin", "necromancer", "monk", "ranger", "samurai", "witch",
+    "bard", "spellblade", "battlemage", "runesmith", "redmage"
+  ],
+  "monsters": [
+    "slime", "goblin", "wild_dog", "slime_king",
+    "wolf", "fairy_forest", "archer_goblin", "treant",
+    "bat_swarm", "stone_golem", "cave_troll", "dark_dragon",
+    "merman", "sea_serpent", "ghost_ship", "kraken",
+    "sand_worm", "mummy", "scorpion_king", "sphinx",
+    "fire_elemental", "lava_golem", "salamander", "ifrit",
+    "ice_wolf", "frost_giant", "ice_wraith", "ice_queen",
+    "fallen_angel", "ancient_dragon", "lich", "god_of_destruction"
+  ]
+}

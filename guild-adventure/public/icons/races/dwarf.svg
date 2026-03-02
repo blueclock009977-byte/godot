@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Dwarf: ひげ、頑丈 -->
+  <circle cx="24" cy="16" r="12" fill="#DEB887"/>
+  <ellipse cx="24" cy="40" rx="14" ry="10" fill="#8B4513"/>
+  <circle cx="19" cy="14" r="2" fill="#333"/>
+  <circle cx="29" cy="14" r="2" fill="#333"/>
+  <ellipse cx="24" cy="18" rx="3" ry="2" fill="#CD853F"/>
+  <path d="M12 20 Q16 24 24 32 Q32 24 36 20 L36 28 Q24 38 12 28 Z" fill="#D2691E"/>
+  <rect x="12" y="4" width="24" height="8" rx="4" fill="#696969"/>
+</svg>

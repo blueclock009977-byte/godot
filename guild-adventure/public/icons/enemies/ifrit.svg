@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Ifrit: 炎の魔神 -->
+  <!-- Flame aura -->
+  <path d="M24 4 Q30 8 28 14 Q34 10 32 18 Q38 14 34 22 Q40 20 36 28 Q42 28 38 34 Q36 40 30 38 Q32 44 24 46 Q16 44 18 38 Q12 40 10 34 Q6 28 12 28 Q8 20 14 22 Q10 14 16 18 Q12 10 20 14 Q18 8 24 4 Z" fill="#FF5722" opacity="0.6"/>
+  <!-- Body -->
+  <ellipse cx="24" cy="34" rx="12" ry="10" fill="#D32F2F"/>
+  <!-- Torso -->
+  <ellipse cx="24" cy="24" rx="10" ry="12" fill="#F44336"/>
+  <!-- Head -->
+  <circle cx="24" cy="14" r="8" fill="#E53935"/>
+  <!-- Horns -->
+  <polygon points="16,10 12,2 18,8" fill="#BF360C"/>
+  <polygon points="32,10 36,2 30,8" fill="#BF360C"/>
+  <!-- Eyes -->
+  <circle cx="21" cy="14" r="3" fill="#FFEB3B"/>
+  <circle cx="27" cy="14" r="3" fill="#FFEB3B"/>
+  <circle cx="21" cy="14" r="1.5" fill="#fff"/>
+  <circle cx="27" cy="14" r="1.5" fill="#fff"/>
+  <!-- Mouth -->
+  <path d="M20 20 Q24 24 28 20" stroke="#BF360C" stroke-width="2" fill="none"/>
+  <!-- Arms with flames -->
+  <ellipse cx="8" cy="26" rx="6" ry="8" fill="#F44336"/>
+  <ellipse cx="40" cy="26" rx="6" ry="8" fill="#F44336"/>
+  <path d="M4 20 Q2 16 6 18 Q4 14 8 16" stroke="#FF9800" stroke-width="2" fill="none"/>
+  <path d="M44 20 Q46 16 42 18 Q44 14 40 16" stroke="#FF9800" stroke-width="2" fill="none"/>
+  <!-- Flame crown -->
+  <path d="M18 6 Q20 2 22 6 Q24 2 26 6 Q28 2 30 6" fill="#FF9800"/>
+</svg>

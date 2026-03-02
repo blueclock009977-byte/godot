@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Salamander: 火トカゲ -->
+  <!-- Body -->
+  <ellipse cx="24" cy="28" rx="14" ry="8" fill="#E65100"/>
+  <ellipse cx="24" cy="26" rx="10" ry="6" fill="#FF6D00"/>
+  <!-- Head -->
+  <ellipse cx="38" cy="24" rx="8" ry="6" fill="#FF6D00"/>
+  <circle cx="40" cy="22" r="2.5" fill="#FFEB3B"/>
+  <circle cx="44" cy="24" r="2.5" fill="#FFEB3B"/>
+  <circle cx="40" cy="22" r="1" fill="#333"/>
+  <circle cx="44" cy="24" r="1" fill="#333"/>
+  <ellipse cx="46" cy="26" rx="2" ry="1.5" fill="#BF360C"/>
+  <!-- Fire pattern on back -->
+  <path d="M18 22 Q20 18 22 22 Q24 18 26 22 Q28 18 30 22" stroke="#FFEB3B" stroke-width="2" fill="none"/>
+  <!-- Legs -->
+  <ellipse cx="14" cy="34" rx="4" ry="6" fill="#E65100"/>
+  <ellipse cx="34" cy="34" rx="4" ry="6" fill="#E65100"/>
+  <ellipse cx="10" cy="22" rx="4" ry="5" fill="#E65100"/>
+  <ellipse cx="30" cy="20" rx="4" ry="5" fill="#E65100"/>
+  <!-- Tail with flames -->
+  <path d="M10 28 Q6 30 4 26 Q2 30 0 26" stroke="#FF6D00" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M2 24 Q0 20 4 22" stroke="#FF9800" stroke-width="2" fill="none"/>
+  <path d="M0 26 Q-2 22 2 24" stroke="#FFEB3B" stroke-width="1.5" fill="none"/>
+</svg>

@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { PageLayout } from '@/components/PageLayout';
 import { EmptyState } from '@/components/EmptyState';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { CharacterIcon } from '@/components/CharacterIcon';
 import { getPartyTreasureHuntBonuses, hasTreasureHuntBonuses } from '@/lib/drop/dropBonus';
 
 function CharacterCard({ 
@@ -38,20 +39,27 @@ function CharacterCard({
             : 'bg-slate-700 border-slate-600 hover:bg-slate-600'
       }`}
     >
-      <div className="flex justify-between items-start">
-        <div className="font-semibold">{character.name}</div>
-        {position && (
-          <span className={`text-xs px-1 rounded ${position === 'front' ? 'bg-red-600' : 'bg-blue-600'}`}>
-            {position === 'front' ? '前' : '後'}
-          </span>
-        )}
-      </div>
-      <div className="text-xs text-slate-300">
-        {raceData.name} / {jobData.name}
-      </div>
-      <div className="flex gap-2 mt-2 text-xs">
-        <span className="text-red-400">HP{character.stats.maxHp}</span>
-        <span className="text-orange-400">ATK{character.stats.atk}</span>
+      <div className="flex gap-3 items-start">
+        {/* キャラアイコン */}
+        <CharacterIcon race={character.race} job={character.job} size={48} />
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start">
+            <div className="font-semibold truncate">{character.name}</div>
+            {position && (
+              <span className={`text-xs px-1 rounded flex-shrink-0 ${position === 'front' ? 'bg-red-600' : 'bg-blue-600'}`}>
+                {position === 'front' ? '前' : '後'}
+              </span>
+            )}
+          </div>
+          <div className="text-xs text-slate-300">
+            {raceData.name} / {jobData.name}
+          </div>
+          <div className="flex gap-2 mt-1 text-xs">
+            <span className="text-red-400">HP{character.stats.maxHp}</span>
+            <span className="text-orange-400">ATK{character.stats.atk}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

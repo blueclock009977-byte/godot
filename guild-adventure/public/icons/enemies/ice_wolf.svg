@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Ice Wolf: 氷の狼 -->
+  <ellipse cx="22" cy="32" rx="16" ry="10" fill="#B3E5FC"/>
+  <circle cx="34" cy="24" r="10" fill="#81D4FA"/>
+  <!-- Ears -->
+  <polygon points="28,14 32,4 36,14" fill="#B3E5FC"/>
+  <polygon points="36,14 42,6 40,16" fill="#B3E5FC"/>
+  <!-- Ice crystals on fur -->
+  <polygon points="18,24 20,20 22,24 20,22" fill="#E1F5FE"/>
+  <polygon points="26,18 28,14 30,18 28,16" fill="#E1F5FE"/>
+  <!-- Eyes -->
+  <circle cx="36" cy="22" r="2.5" fill="#00BCD4"/>
+  <circle cx="42" cy="24" r="2.5" fill="#00BCD4"/>
+  <circle cx="36" cy="22" r="1" fill="#fff"/>
+  <circle cx="42" cy="24" r="1" fill="#fff"/>
+  <!-- Nose -->
+  <ellipse cx="40" cy="30" rx="4" ry="3" fill="#4FC3F7"/>
+  <ellipse cx="40" cy="31" rx="2" ry="1.5" fill="#0097A7"/>
+  <!-- Tail -->
+  <path d="M6 34 Q2 32 4 28 Q0 30 2 26" stroke="#B3E5FC" stroke-width="5" fill="none"/>
+  <!-- Legs -->
+  <ellipse cx="14" cy="40" rx="4" ry="5" fill="#81D4FA"/>
+  <ellipse cx="30" cy="40" rx="4" ry="5" fill="#81D4FA"/>
+  <!-- Frost breath hint -->
+  <circle cx="46" cy="28" r="2" fill="#E1F5FE" opacity="0.6"/>
+  <circle cx="44" cy="32" r="1.5" fill="#E1F5FE" opacity="0.4"/>
+</svg>

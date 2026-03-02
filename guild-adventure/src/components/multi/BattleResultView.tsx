@@ -2,8 +2,8 @@
 
 import { getItemById } from '@/lib/data/items';
 import { getEquipmentById } from '@/lib/data/equipments';
-import { getLogClassName } from '@/lib/utils';
-import { BattleLog } from '@/lib/types';
+import { BattleLog, Character, Monster } from '@/lib/types';
+import BattleLogDisplay from '@/components/BattleLogDisplay';
 
 interface BattleResultViewProps {
   victory: boolean;
@@ -21,6 +21,9 @@ interface BattleResultViewProps {
   playerDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
   playerEquipmentDropsMulti?: Record<string, string[] | undefined>;  // 複数対応
   myUsername?: string;
+  // バトルログ用アイコン情報
+  characters?: (Character | null)[];
+  monsters?: Monster[];
 }
 
 export default function BattleResultView({
@@ -38,7 +41,13 @@ export default function BattleResultView({
   playerDropsMulti,
   playerEquipmentDropsMulti,
   myUsername,
+  characters,
+  monsters,
 }: BattleResultViewProps) {
+  // ログをstring[]に展開
+  const displayedLogs = logs.flatMap(logEntry => 
+    logEntry.message.split('\n').filter(l => l.trim())
+  );
   return (
     <main className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-8 max-w-md">
@@ -110,14 +119,12 @@ export default function BattleResultView({
               <summary className="cursor-pointer text-slate-400 hover:text-slate-300">
                 📜 戦闘ログを表示
               </summary>
-              <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto text-sm font-mono">
-                {logs.map((logEntry, idx) => (
-                  <div key={idx}>
-                    {logEntry.message.split('\n').filter((l: string) => l.trim()).map((line: string, i: number) => (
-                      <div key={`${idx}-${i}`} className={getLogClassName(line)}>{line}</div>
-                    ))}
-                  </div>
-                ))}
+              <div className="mt-2 bg-slate-700 rounded-lg p-3 max-h-64 overflow-y-auto">
+                <BattleLogDisplay 
+                  logs={displayedLogs}
+                  characters={characters}
+                  monsters={monsters}
+                />
               </div>
             </details>
           )}

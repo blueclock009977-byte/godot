@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Lizardman: 鱗、トカゲ顔 -->
+  <ellipse cx="24" cy="18" rx="12" ry="14" fill="#2E8B57"/>
+  <ellipse cx="24" cy="42" rx="12" ry="10" fill="#006400"/>
+  <ellipse cx="18" cy="12" rx="3" ry="4" fill="#ADFF2F"/>
+  <ellipse cx="30" cy="12" rx="3" ry="4" fill="#ADFF2F"/>
+  <circle cx="18" cy="12" r="1.5" fill="#000"/>
+  <circle cx="30" cy="12" r="1.5" fill="#000"/>
+  <ellipse cx="24" cy="24" rx="6" ry="4" fill="#228B22"/>
+  <circle cx="22" cy="26" r="1" fill="#000"/>
+  <circle cx="26" cy="26" r="1" fill="#000"/>
+  <polygon points="16,2 18,8 14,8" fill="#2E8B57"/>
+  <polygon points="24,0 26,6 22,6" fill="#2E8B57"/>
+  <polygon points="32,2 34,8 30,8" fill="#2E8B57"/>
+</svg>

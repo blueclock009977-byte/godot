@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatDuration } from '@/lib/utils';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
+import { Character, Monster } from '@/lib/types';
 
 interface BattleProgressViewProps {
   dungeonName: string;
@@ -11,6 +12,8 @@ interface BattleProgressViewProps {
   startTime: number;
   progress: number;
   displayedLogs: string[];
+  characters?: (Character | null)[];
+  monsters?: Monster[];
 }
 
 export default function BattleProgressView({
@@ -19,6 +22,8 @@ export default function BattleProgressView({
   startTime,
   progress,
   displayedLogs,
+  characters,
+  monsters,
 }: BattleProgressViewProps) {
   const logContainerRef = useRef<HTMLDivElement>(null);
   const [remainingSec, setRemainingSec] = useState(0);
@@ -86,7 +91,11 @@ export default function BattleProgressView({
           ref={logContainerRef}
           className="bg-slate-800 rounded-lg p-4 h-96 overflow-y-auto border border-slate-700"
         >
-          <BattleLogDisplay logs={displayedLogs} />
+          <BattleLogDisplay 
+            logs={displayedLogs}
+            characters={characters}
+            monsters={monsters}
+          />
         </div>
       </div>
     </main>

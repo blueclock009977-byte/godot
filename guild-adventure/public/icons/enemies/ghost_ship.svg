@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Ghost Ship: 幽霊船 -->
+  <!-- Hull -->
+  <path d="M4 36 Q8 42 24 42 Q40 42 44 36 L40 32 Q24 34 8 32 Z" fill="#5D4037" opacity="0.7"/>
+  <!-- Mast -->
+  <line x1="24" y1="8" x2="24" y2="36" stroke="#8D6E63" stroke-width="2" opacity="0.8"/>
+  <!-- Sail with ghostly glow -->
+  <path d="M12 12 L24 8 L24 28 L12 24 Z" fill="#B0BEC5" opacity="0.5"/>
+  <path d="M36 12 L24 8 L24 28 L36 24 Z" fill="#90A4AE" opacity="0.5"/>
+  <!-- Skull on sail -->
+  <circle cx="24" cy="18" r="5" fill="#ECEFF1" opacity="0.8"/>
+  <circle cx="22" cy="17" r="1.5" fill="#37474F"/>
+  <circle cx="26" cy="17" r="1.5" fill="#37474F"/>
+  <path d="M22 21 L24 20 L26 21" stroke="#37474F" stroke-width="1" fill="none"/>
+  <!-- Ghost aura -->
+  <ellipse cx="24" cy="28" rx="18" ry="10" fill="#81D4FA" opacity="0.2"/>
+  <!-- Waves -->
+  <path d="M0 44 Q6 42 12 44 Q18 46 24 44 Q30 42 36 44 Q42 46 48 44" stroke="#4FC3F7" stroke-width="2" fill="none" opacity="0.6"/>
+  <!-- Green ghostly lights -->
+  <circle cx="10" cy="30" r="2" fill="#76FF03" opacity="0.6"/>
+  <circle cx="38" cy="30" r="2" fill="#76FF03" opacity="0.6"/>
+</svg>

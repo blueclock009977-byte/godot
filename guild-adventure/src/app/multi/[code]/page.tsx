@@ -400,6 +400,14 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
   
   const dungeonData = dungeons[room.dungeonId as keyof typeof dungeons];
   
+  // バトルログ表示用のキャラとモンスター情報
+  const allCharacters = Object.values(room.players || {})
+    .flatMap(p => (p.characters || []).map(rc => rc.character));
+  const dungeonMonsters = dungeonData ? [
+    ...dungeonData.monsters.map(m => m.monster),
+    ...(dungeonData.boss ? [dungeonData.boss] : [])
+  ] : [];
+  
   // 冒険中のUI
   if (room.status === 'battle' && room.startTime) {
     return (
@@ -409,6 +417,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         startTime={room.startTime}
         progress={progress}
         displayedLogs={displayedLogs}
+        characters={allCharacters}
+        monsters={dungeonMonsters}
       />
     );
   }
@@ -431,6 +441,8 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
         playerDropsMulti={room.playerDropsMulti}
         playerEquipmentDropsMulti={room.playerEquipmentDropsMulti}
         myUsername={username || undefined}
+        characters={allCharacters}
+        monsters={dungeonMonsters}
       />
     );
   }
