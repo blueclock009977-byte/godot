@@ -2,6 +2,14 @@
 // 基本型定義
 // ============================================
 
+// バトルAIタイプ
+export type BattleAIType = 
+  | 'balanced'  // バランス型
+  | 'breaker'   // ブレイク型（50%デバフ/50%攻撃）
+  | 'attacker'  // アタック型（与ダメ最大攻撃のみ）
+  | 'support'   // サポート型（バフ→デバフ→回復→攻撃）
+  | 'healer';   // ヒーラー型（回復最優先）
+
 export type RaceType = 
   | 'human' | 'elf' | 'dwarf' | 'halfling' | 'orc' | 'lizardman' | 'fairy' | 'undead'
   | 'goblin' | 'dragonewt' | 'angel' | 'demon'
@@ -309,6 +317,8 @@ export interface Character {
   // 生物改造
   modificationSlots?: number;  // 解放済み改造枠（0-15）
   modifications?: string[];    // 選択中のボーナスID配列
+  // バトルAI
+  battleAI?: BattleAIType;     // 未設定なら職業デフォルト
 }
 
 // ============================================

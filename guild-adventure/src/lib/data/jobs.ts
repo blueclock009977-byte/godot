@@ -1,4 +1,28 @@
-import { JobData } from '../types';
+import { JobData, JobType, BattleAIType } from '../types';
+
+// 職業別デフォルトAI
+export const JOB_DEFAULT_AI: Record<JobType, BattleAIType> = {
+  warrior: 'attacker',
+  mage: 'breaker',
+  priest: 'healer',
+  thief: 'balanced',
+  knight: 'balanced',
+  hunter: 'attacker',
+  ninja: 'breaker',
+  sage: 'breaker',
+  berserker: 'attacker',
+  paladin: 'healer',
+  necromancer: 'breaker',
+  monk: 'attacker',
+  ranger: 'balanced',
+  samurai: 'balanced',
+  witch: 'breaker',
+  bard: 'support',
+  spellblade: 'balanced',
+  battlemage: 'breaker',
+  runesmith: 'support',
+  redmage: 'balanced',
+};
 
 export const jobs: Record<string, JobData> = {
   warrior: {
@@ -380,5 +404,5 @@ export const jobs: Record<string, JobData> = {
   },
 };
 
-export type JobType = keyof typeof jobs;
+// JobTypeはtypes.tsで定義済み
 export const jobList = Object.values(jobs);

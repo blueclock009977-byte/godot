@@ -1,0 +1,11 @@
+{
+  "currentPhase": 1,
+  "totalPhases": 4,
+  "startedAt": "2026-03-02T21:52:00+09:00",
+  "phases": {
+    "1": { "name": "データ層", "status": "in_progress" },
+    "2": { "name": "バトルロジック", "status": "pending" },
+    "3": { "name": "UI", "status": "pending" },
+    "4": { "name": "Firebase同期", "status": "pending" }
+  }
+}
