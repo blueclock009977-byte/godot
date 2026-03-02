@@ -40,7 +40,9 @@ interface ChallengeStore {
     earnedCoins: number,
     earnedBooks: number,
     earnedEquipments: number,
-    logs?: BattleLog[]
+    logs?: BattleLog[],
+    earnedBookIds?: string[],
+    earnedEquipmentIds?: string[]
   ) => Promise<void>;
   loadRanking: () => Promise<void>;
 }
@@ -108,7 +110,9 @@ export const useChallengeStore = create<ChallengeStore>()((set, get) => ({
     earnedCoins: number,
     earnedBooks: number,
     earnedEquipments: number,
-    logs?: BattleLog[]
+    logs?: BattleLog[],
+    earnedBookIds?: string[],
+    earnedEquipmentIds?: string[]
   ) => {
     const { progress } = get();
     
@@ -132,6 +136,8 @@ export const useChallengeStore = create<ChallengeStore>()((set, get) => ({
       earnedCoins,
       earnedBooks,
       earnedEquipments,
+      earnedBookIds,
+      earnedEquipmentIds,
       logs,
     });
     

@@ -7,6 +7,8 @@ import { useChallengeStore } from '@/store/challengeStore';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { formatDate } from '@/lib/utils/format';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
+import { getItemById } from '@/lib/data/items';
+import { getEquipmentById } from '@/lib/data/equipments';
 
 export default function ChallengeHistoryPage() {
   const { username, isLoggedIn, isLoading: storeLoading } = useGameStore();
@@ -63,10 +65,29 @@ export default function ChallengeHistoryPage() {
                       {formatDate(entry.attemptedAt)}
                     </span>
                   </div>
-                  <div className="flex gap-4 text-sm text-slate-300 mb-2">
-                    <span>💰 {entry.earnedCoins}</span>
-                    <span>📜 {entry.earnedBooks}冊</span>
-                    <span>🎒 {entry.earnedEquipments}個</span>
+                  <div className="text-sm text-slate-300 mb-2">
+                    <div className="flex gap-4 mb-1">
+                      <span>💰 {entry.earnedCoins}</span>
+                    </div>
+                    {/* 書の詳細 */}
+                    {entry.earnedBookIds && entry.earnedBookIds.length > 0 ? (
+                      <div className="text-amber-400 text-xs">
+                        📜 {entry.earnedBookIds.map(id => getItemById(id)?.name || id).join(', ')}
+                      </div>
+                    ) : entry.earnedBooks > 0 && (
+                      <div className="text-slate-400 text-xs">📜 {entry.earnedBooks}冊</div>
+                    )}
+                    {/* 装備の詳細 */}
+                    {entry.earnedEquipmentIds && entry.earnedEquipmentIds.length > 0 ? (
+                      <div className="text-green-400 text-xs">
+                        🎒 {entry.earnedEquipmentIds.map(id => {
+                          const eq = getEquipmentById(id);
+                          return eq?.rarity === 'rare' ? `🌟${eq.name}` : eq?.name || id;
+                        }).join(', ')}
+                      </div>
+                    ) : entry.earnedEquipments > 0 && (
+                      <div className="text-slate-400 text-xs">🎒 {entry.earnedEquipments}個</div>
+                    )}
                   </div>
                   
                   {/* バトルログ */}
