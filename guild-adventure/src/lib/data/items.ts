@@ -121,8 +121,36 @@ export const normalItems: ItemData[] = [...raceTickets, ...jobBooks];
 export const allItems: ItemData[] = [...normalItems, ...allTreasures];
 
 // アイテムIDからアイテムデータを取得
+// 古いID形式を新しいIDに変換（後方互換）
+function convertLegacyId(id: string): string {
+  // 古い血統書形式: human_bloodline → ticket_human
+  if (id.endsWith('_bloodline')) {
+    const race = id.replace('_bloodline', '');
+    // dragonborn → dragonewt、beastkin → lizardman
+    const raceMap: Record<string, string> = {
+      dragonborn: 'dragonewt',
+      beastkin: 'lizardman',
+    };
+    return `ticket_${raceMap[race] || race}`;
+  }
+  // 古い指南書形式: thief_guide → book_thief
+  if (id.endsWith('_guide')) {
+    const job = id.replace('_guide', '');
+    return `book_${job}`;
+  }
+  return id;
+}
+
 export function getItemById(id: string): ItemData | undefined {
-  return findById(allItems, id);
+  // まず直接検索
+  const item = findById(allItems, id);
+  if (item) return item;
+  // 古いID形式の場合、変換して再検索
+  const convertedId = convertLegacyId(id);
+  if (convertedId !== id) {
+    return findById(allItems, convertedId);
+  }
+  return undefined;
 }
 
 // 種族に必要なアイテムIDを取得
