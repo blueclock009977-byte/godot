@@ -12,6 +12,7 @@ import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { HowToPlayModal } from '@/components/HowToPlayModal';
 import { useChallengeStore } from '@/store/challengeStore';
 
 // クールダウン時間をフォーマット
@@ -137,6 +138,7 @@ function GameScreen() {
   const [publicRoomCount, setPublicRoomCount] = useState(0);
   const [challengeCooldown, setChallengeCooldown] = useState(0);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   
   // ユーザーアクティビティ検知
   const { isActive } = useUserActivity();
@@ -276,12 +278,20 @@ function GameScreen() {
             <p className="text-sm text-slate-400">ようこそ、{username} さん</p>
             <p className="text-sm text-amber-400">🪙 {coins} コイン</p>
           </div>
-          <button
-            onClick={logout}
-            className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 border border-slate-600 rounded"
-          >
-            ログアウト
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowHowToPlay(true)}
+              className="text-xs text-amber-400 hover:text-amber-300 px-2 py-1 border border-amber-600 rounded"
+            >
+              ❓遊び方
+            </button>
+            <button
+              onClick={logout}
+              className="text-xs text-slate-500 hover:text-slate-300 px-2 py-1 border border-slate-600 rounded"
+            >
+              ログアウト
+            </button>
+          </div>
         </div>
         
         {/* マルチ冒険中バナー */}
@@ -621,6 +631,10 @@ function GameScreen() {
           <p>v0.9.63 Beta</p>
         </div>
       </div>
+      
+      {showHowToPlay && (
+        <HowToPlayModal onClose={() => setShowHowToPlay(false)} />
+      )}
     </main>
   );
 }

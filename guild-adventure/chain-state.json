@@ -1,49 +1,125 @@
 {
-  "taskId": "challenge-dungeon-review-2026-03-01",
-  "goal": "チャレンジダンジョン機能の仕様書比較→不具合/仕様漏れ修正→リファクタリング→共通処理統合",
+  "taskId": "battle-log-improvement-2026-03-02",
+  "goal": "バトルログを人間が見て分かりやすく、読みやすくする",
   "completionCriteria": [
-    "仕様書の全項目が実装されている",
-    "不具合がない",
-    "共通処理が統合されている",
-    "TypeScriptエラーがない",
-    "REPORT.mdに変更ログがある"
+    "バトルログが視覚的に見やすい（絵文字、フォーマット統一）",
+    "ダメージ、回復、状態異常が一目で分かる",
+    "ターン区切りが明確",
+    "勝敗が分かりやすい"
   ],
   "judgmentCriteria": [
-    "既存機能を壊さない",
-    "DRY原則（重複コード削除）",
+    "既存テストが壊れない",
     "可読性向上",
-    "変更量は最小限"
+    "変更量最小"
   ],
   "constraints": [
-    "既存バトルロジック(engine.ts)を使用",
-    "1回のcronで1タスクのみ"
+    "engine.tsのログ生成ロジックを変更",
+    "getLogClassName関数のルールを必要に応じて更新"
   ],
-  "currentPhase": 2,
-  "phaseAttempt": 1,
+  "currentPhase": "final",
+  "phaseAttempt": 4,
   "maxAttempts": 20,
-  "startedAt": "2026-03-01T16:57:00+09:00",
+  "startedAt": "2026-03-02T00:59:00+09:00",
   "discordChannel": "channel:1471429991005950013",
   "assumptions": [],
   "log": [
     {
       "phase": 1,
       "attempt": 1,
-      "action": "仕様書vs実装 詳細比較",
-      "reasoning": "不具合/仕様漏れを発見するため",
-      "result": "仕様は全て実装済み。リファクタリング候補を発見",
-      "next": "Phase2でリファクタリング開始"
+      "action": "バトルログ実装の調査",
+      "reasoning": "改善点を洗い出すため",
+      "result": "改善点を7つ発見",
+      "next": "Phase2で絵文字追加・フォーマット改善"
+    },
+    {
+      "phase": 2,
+      "attempt": 2,
+      "action": "F3: 回復ログ、F4: バフ/デバフログに絵文字追加",
+      "reasoning": "視認性を高めるため",
+      "result": "✨💚を回復に、📈をバフに、📉をデバフに追加",
+      "next": "Phase2続行でF5, F6, F7を修正"
+    },
+    {
+      "phase": 2,
+      "attempt": 3,
+      "action": "F5: 死亡表示、F6: 勝敗表示、F7: クリティカル表示に絵文字追加",
+      "reasoning": "残りの視認性改善",
+      "result": "💀撃破、🎉勝利/😵全滅、💥会心💥を追加。全7箇所完了",
+      "next": "Phase Final"
     }
   ],
   "findings": [
-    "formatDate関数がhistory/page.tsxにローカル定義 → 共通化すべき",
-    "autoLogin処理が複数ページで重複",
-    "結果画面に獲得した書/装備の具体名が表示されていない"
+    {
+      "id": "F1",
+      "issue": "ターン区切りが地味",
+      "current": "--- ターン N ---",
+      "proposed": "═══ ⚔️ ターン N ═══",
+      "file": "engine.ts:processTurn",
+      "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": "F2",
+      "issue": "攻撃ログに絵文字がない",
+      "current": "○○の攻撃！ △△に100ダメージ！",
+      "proposed": "⚔️ ○○の攻撃！ → △△に💥100ダメージ！",
+      "file": "engine.ts:processTurn",
+      "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": "F3",
+      "issue": "回復ログに絵文字がない",
+      "current": "○○のヒール！ △△のHPが50回復！",
+      "proposed": "✨ ○○のヒール！ → △△のHPが💚50回復！",
+      "file": "engine.ts:processTurn",
+      "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": "F4",
+      "issue": "バフ/デバフが分かりにくい",
+      "current": "○○のバフ！ ATK+20%（3ターン）",
+      "proposed": "📈 ○○のバフ！ → ATK+20%（3ターン）",
+      "file": "engine.ts:processTurn",
+      "priority": "medium",
+      "status": "done"
+    },
+    {
+      "id": "F5",
+      "issue": "死亡表示が地味",
+      "current": "○○を倒した！",
+      "proposed": "💀 ○○を撃破！",
+      "file": "engine.ts:processTurn",
+      "priority": "medium",
+      "status": "done"
+    },
+    {
+      "id": "F6",
+      "issue": "勝敗表示が地味",
+      "current": "勝利！ / パーティは全滅した...",
+      "proposed": "🎉 勝利！ / 😵 パーティは全滅した...",
+      "file": "engine.ts:processEncounter",
+      "priority": "high",
+      "status": "done"
+    },
+    {
+      "id": "F7",
+      "issue": "クリティカル表示が目立たない",
+      "current": "【会心】",
+      "proposed": "💥会心💥",
+      "file": "engine.ts:processTurn",
+      "priority": "low",
+      "status": "done"
+    }
   ],
   "completed": [
-    "v1.1.1: バトルロジックを既存engine.tsに統合",
-    "v1.1.1: 前衛/後衛UI改善",
-    "v1.1.1: 詳細ログ表示追加",
-    "v1.1.2: 再生型モンスター処理追加",
-    "仕様書全項目の実装確認完了"
+    "F1: ターン区切り改善",
+    "F2: 攻撃ログに絵文字追加",
+    "F3: 回復ログに✨💚追加",
+    "F4: バフ📈/デバフ📉に絵文字追加",
+    "F5: 死亡表示💀撃破！",
+    "F6: 勝敗表示🎉/😵",
+    "F7: クリティカル💥会心💥"
   ]
 }

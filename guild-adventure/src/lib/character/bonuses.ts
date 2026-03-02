@@ -12,6 +12,7 @@ import { getLvBonus } from '../data/lvStatBonuses';
 import { getLvSkill } from '../data/lvSkills';
 import { getEquipmentById } from '../data/equipments';
 import { TREASURE_BONUS } from '../data/items';
+import { getModificationById } from '../data/modifications';
 
 // ============================================
 // 型定義
@@ -231,6 +232,31 @@ interface CharacterInput {
   lv5Skill?: string;
   equipmentId?: string;
   ownerId?: string;  // マルチプレイ用
+  // 生物改造
+  modificationSlots?: number;  // 解放済み改造枠（0-15）
+  modifications?: string[];    // 選択中のボーナスID配列
+}
+
+// ============================================
+// 生物改造ボーナス取得
+// ============================================
+
+/**
+ * キャラクターの生物改造によるエフェクト配列を取得
+ */
+export function getModificationEffects(char: CharacterInput): Effect[] {
+  if (!char.modifications || char.modifications.length === 0) {
+    return [];
+  }
+  
+  const effects: Effect[] = [];
+  for (const modId of char.modifications) {
+    const mod = getModificationById(modId);
+    if (mod?.effects) {
+      effects.push(...mod.effects);
+    }
+  }
+  return effects;
 }
 
 // ============================================
@@ -292,6 +318,12 @@ export function calculateCharacterBonuses(char: CharacterInput): CharacterBonuse
     if (equipment?.effects) {
       applyEffects(bonuses, equipment.effects);
     }
+  }
+  
+  // 5. 生物改造
+  const modEffects = getModificationEffects(char);
+  if (modEffects.length > 0) {
+    applyEffects(bonuses, modEffects);
   }
   
   return bonuses;
@@ -490,6 +522,8 @@ interface CharacterForTotalStats extends CharacterForStats {
   lv5Skill?: string;
   raceTreasureBonus?: number;  // 種族秘宝ボーナス
   jobTreasureBonus?: number;   // 職業秘宝ボーナス
+  // 生物改造
+  modifications?: string[];    // 選択中のボーナスID配列
 }
 
 export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
@@ -547,6 +581,36 @@ export function calculateTotalStats(char: CharacterForTotalStats): TotalStats {
     total.def += TREASURE_BONUS.OTHER * treasureCount;
     total.agi += TREASURE_BONUS.OTHER * treasureCount;
     total.mag += TREASURE_BONUS.OTHER * treasureCount;
+  }
+  
+  // 生物改造のステータスボーナス（constantHp等）を加算
+  if (char.modifications && char.modifications.length > 0) {
+    for (const modId of char.modifications) {
+      const mod = getModificationById(modId);
+      if (!mod?.effects) continue;
+      for (const effect of mod.effects) {
+        switch (effect.type) {
+          case 'constantHp':
+            total.maxHp += effect.value;
+            break;
+          case 'constantMp':
+            total.maxMp += effect.value;
+            break;
+          case 'constantAtk':
+            total.atk += effect.value;
+            break;
+          case 'constantDef':
+            total.def += effect.value;
+            break;
+          case 'constantAgi':
+            total.agi += effect.value;
+            break;
+          case 'constantMag':
+            total.mag += effect.value;
+            break;
+        }
+      }
+    }
   }
   
   // hp/mpはmaxHpに連動させる（表示用）

@@ -63,6 +63,12 @@ export interface Stats {
 // ============================================
 
 export type EffectType = 
+  | 'constantHp'        // HP固定値+
+  | 'constantMp'        // MP固定値+
+  | 'constantAtk'       // ATK固定値+
+  | 'constantDef'       // DEF固定値+
+  | 'constantAgi'       // AGI固定値+
+  | 'constantMag'       // MAG固定値+
   | 'damageBonus'       // 与ダメージ+%
   | 'damageReduction'   // 被ダメージ-%
   | 'physicalResist'    // 物理被ダメージ-%
@@ -300,6 +306,9 @@ export interface Character {
   equipmentId?: string;    // 装備中のアイテムID
   raceTreasureBonus?: number;  // 種族秘宝による全ステボーナス
   jobTreasureBonus?: number;   // 職業秘宝による全ステボーナス
+  // 生物改造
+  modificationSlots?: number;  // 解放済み改造枠（0-15）
+  modifications?: string[];    // 選択中のボーナスID配列
 }
 
 // ============================================
@@ -374,6 +383,7 @@ export interface BattleUnit {
   lv3Skill?: string;
   lv5Skill?: string;
   equipmentId?: string;  // 装備中のアイテムID
+  modifications?: string[];  // 生物改造ボーナスID配列
   // モンスター用
   species?: SpeciesType;
   element?: ElementType;

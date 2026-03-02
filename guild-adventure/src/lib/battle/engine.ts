@@ -123,9 +123,12 @@ function collectPassiveEffects(unit: BattleUnit): PassiveEffects {
     job: unit.job,
     raceMastery: unit.raceMastery,
     jobMastery: unit.jobMastery,
+    raceMastery2: unit.raceMastery2,
+    jobMastery2: unit.jobMastery2,
     lv3Skill: unit.lv3Skill,
     lv5Skill: unit.lv5Skill,
     equipmentId: unit.equipmentId,
+    modifications: unit.modifications,  // 生物改造ボーナス
   });
   
   // rawEffectsは不要なので削除
@@ -281,9 +284,12 @@ function characterToUnit(char: Character, position: 'front' | 'back'): ExtendedB
     skills: allSkills,
     raceMastery: char.raceMastery,
     jobMastery: char.jobMastery,
+    raceMastery2: char.raceMastery2,
+    jobMastery2: char.jobMastery2,
     lv3Skill: char.lv3Skill,
     lv5Skill: char.lv5Skill,
     equipmentId: char.equipmentId,
+    modifications: char.modifications,  // 生物改造ボーナス
     passiveEffects: getEmptyPassiveEffects(),
     buffs: [],
     attackStackCount: 0,

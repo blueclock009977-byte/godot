@@ -1,0 +1,79 @@
+{
+  "taskId": "bio-mod-2026-03-02",
+  "goal": "生物改造機能の実装",
+  "currentPhase": "complete",
+  "startedAt": "2026-03-02T10:19:00+09:00",
+  "completedAt": "2026-03-02T10:37:00+09:00",
+  "completedPhases": [
+    {
+      "phase": 1,
+      "name": "データ層",
+      "completedAt": "2026-03-02T10:25:00+09:00",
+      "actions": [
+        "lib/data/modifications.ts 作成（73種類のボーナス定義）",
+        "lib/types.ts にEffectType追加（constantHp/Mp/Atk/Def/Agi/Mag）",
+        "Character型に modificationSlots, modifications フィールド追加",
+        "TypeScriptチェック: エラーなし"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "bonuses.ts統合",
+      "completedAt": "2026-03-02T10:25:00+09:00",
+      "actions": [
+        "getModificationEffects(char)関数追加 - 改造エフェクト配列を取得",
+        "calculateCharacterBonuses()に改造ボーナス統合（パッシブ効果）",
+        "calculateTotalStats()に改造ボーナス統合（constantHp等のステータス上昇）",
+        "CharacterInput/CharacterForTotalStatsにmodificationsフィールド追加",
+        "TypeScriptチェック: エラーなし"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "gameStore拡張",
+      "completedAt": "2026-03-02T10:27:00+09:00",
+      "actions": [
+        "unlockModificationSlots: 500コインで3枠解放（最大15枠=5回まで）",
+        "selectModification: ボーナス選択アクション（枠チェック、重複チェック）",
+        "removeModification: ボーナス解除アクション",
+        "TypeScriptチェック: エラーなし"
+      ]
+    },
+    {
+      "phase": 4,
+      "name": "戦闘反映",
+      "completedAt": "2026-03-02T10:31:00+09:00",
+      "actions": [
+        "BattleUnit型にmodificationsフィールド追加",
+        "characterToUnit()でmodificationsをコピー",
+        "collectPassiveEffects()でmodificationsをcalculateCharacterBonuses()に渡す",
+        "ついでにraceMastery2/jobMastery2も戦闘に反映するよう修正",
+        "TypeScriptチェック: エラーなし"
+      ]
+    },
+    {
+      "phase": "5a",
+      "name": "UI作成 - 改造ページ",
+      "completedAt": "2026-03-02T10:37:00+09:00",
+      "actions": [
+        "src/app/bio-modification/[id]/page.tsx 作成",
+        "枠解放UI、ボーナス選択/解除UI実装",
+        "カテゴリ別（1枠/3枠/5枠/10枠）のアコーディオン表示",
+        "TypeScriptチェック: エラーなし"
+      ]
+    },
+    {
+      "phase": "5b",
+      "name": "UI作成 - キャラ詳細にボタン追加",
+      "completedAt": "2026-03-02T10:37:00+09:00",
+      "actions": [
+        "キャラ詳細ページに🧬生物改造ボタン追加",
+        "装備セクションとステータスセクションの間に配置",
+        "改造枠の使用状況を表示（X / Y枠 使用中）",
+        "TypeScriptチェック: エラーなし"
+      ]
+    }
+  ],
+  "remainingPhases": [],
+  "summary": "生物改造機能の実装完了。73種類のボーナス、500コインで3枠解放（最大15枠）、戦闘・ステータスへの反映、UIすべて実装済み。"
+}

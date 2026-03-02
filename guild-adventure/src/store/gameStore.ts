@@ -12,6 +12,7 @@ import {
   DungeonType,
   Stats,
 } from '@/lib/types';
+import { getModificationById } from '@/lib/data/modifications';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
 import { dungeons } from '@/lib/data/dungeons';
@@ -405,6 +406,11 @@ interface GameStore {
   unlockRaceMastery2: (characterId: string) => Promise<boolean>;
   unlockJobMastery2: (characterId: string) => Promise<boolean>;
   levelUpCharacter: (characterId: string) => Promise<{ success: boolean; newLevel?: number; skill?: string; bonus?: string }>;
+  
+  // 生物改造
+  unlockModificationSlots: (characterId: string) => Promise<{ success: boolean; newSlots?: number; error?: string }>;
+  selectModification: (characterId: string, modificationId: string) => Promise<{ success: boolean; error?: string }>;
+  removeModification: (characterId: string, modificationId: string) => Promise<{ success: boolean; error?: string }>;
   
   // 秘宝使用
   consumeTreasure: (characterId: string, treasureId: string) => Promise<{ success: boolean; error?: string }>;
@@ -937,6 +943,109 @@ export const useGameStore = create<GameStore>()(
       // 職業マスタリー2解放（指南書10枚消費）
       unlockJobMastery2: async (characterId: string): Promise<boolean> => {
         return unlockMastery2(get, set, characterId, 'job');
+      },
+      
+      // 生物改造: 枠解放（500コインで3枠解放、最大15枠=5回まで）
+      unlockModificationSlots: async (characterId: string): Promise<{ success: boolean; newSlots?: number; error?: string }> => {
+        const { characters, coins, syncToServer } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return { success: false, error: 'キャラクターが見つかりません' };
+        
+        const currentSlots = character.modificationSlots || 0;
+        const maxSlots = 15;
+        const slotsPerUnlock = 3;
+        const cost = 500;
+        
+        // 最大枠チェック
+        if (currentSlots >= maxSlots) {
+          return { success: false, error: '改造枠は最大です' };
+        }
+        
+        // コインチェック
+        if (coins < cost) {
+          return { success: false, error: 'コインが足りません' };
+        }
+        
+        const newSlots = Math.min(currentSlots + slotsPerUnlock, maxSlots);
+        
+        // コイン消費 + 枠解放
+        set((state) => ({
+          coins: state.coins - cost,
+          characters: state.characters.map(c =>
+            c.id === characterId ? { ...c, modificationSlots: newSlots } : c
+          ),
+        }));
+        
+        await syncToServer();
+        return { success: true, newSlots };
+      },
+      
+      // 生物改造: ボーナス選択
+      selectModification: async (characterId: string, modificationId: string): Promise<{ success: boolean; error?: string }> => {
+        const { characters, syncToServer } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return { success: false, error: 'キャラクターが見つかりません' };
+        
+        const modification = getModificationById(modificationId);
+        if (!modification) return { success: false, error: 'ボーナスが見つかりません' };
+        
+        const currentSlots = character.modificationSlots || 0;
+        const currentMods = character.modifications || [];
+        
+        // 同じボーナスは選択不可
+        if (currentMods.includes(modificationId)) {
+          return { success: false, error: 'このボーナスは既に選択済みです' };
+        }
+        
+        // 使用中の枠数を計算
+        let usedSlots = 0;
+        for (const modId of currentMods) {
+          const mod = getModificationById(modId);
+          if (mod) usedSlots += mod.slotCost;
+        }
+        
+        // 空き枠チェック
+        if (usedSlots + modification.slotCost > currentSlots) {
+          return { success: false, error: '枠が足りません' };
+        }
+        
+        // ボーナス追加
+        set((state) => ({
+          characters: state.characters.map(c =>
+            c.id === characterId
+              ? { ...c, modifications: [...(c.modifications || []), modificationId] }
+              : c
+          ),
+        }));
+        
+        await syncToServer();
+        return { success: true };
+      },
+      
+      // 生物改造: ボーナス解除
+      removeModification: async (characterId: string, modificationId: string): Promise<{ success: boolean; error?: string }> => {
+        const { characters, syncToServer } = get();
+        const character = characters.find(c => c.id === characterId);
+        if (!character) return { success: false, error: 'キャラクターが見つかりません' };
+        
+        const currentMods = character.modifications || [];
+        
+        // 選択中かチェック
+        if (!currentMods.includes(modificationId)) {
+          return { success: false, error: 'このボーナスは選択されていません' };
+        }
+        
+        // ボーナス削除
+        set((state) => ({
+          characters: state.characters.map(c =>
+            c.id === characterId
+              ? { ...c, modifications: (c.modifications || []).filter(id => id !== modificationId) }
+              : c
+          ),
+        }));
+        
+        await syncToServer();
+        return { success: true };
       },
       
       // 秘宝使用（対象種族/職業のキャラに全ステ+10）

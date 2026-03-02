@@ -604,6 +604,18 @@ export default function CharacterDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
         
+        {/* 生物改造 */}
+        <Link
+          href={`/bio-modification/${character.id}`}
+          className="block bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 rounded-lg p-4 mb-4 border border-emerald-600 text-center"
+        >
+          <div className="text-lg font-semibold text-emerald-300">🧬 生物改造</div>
+          <div className="text-xs text-emerald-400 mt-1">
+            {(character.modificationSlots ?? 0) > 0 
+              ? `${character.modifications?.length || 0} / ${character.modificationSlots}枠 使用中`
+              : '改造枠を解放してボーナスを獲得'}
+          </div>
+        </Link>
 
         {/* ステータス（総合） */}
         <div className="bg-slate-800 rounded-lg p-4 mb-4 border border-slate-700">
