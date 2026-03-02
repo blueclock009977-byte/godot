@@ -10,7 +10,7 @@ import { getEquipmentById } from '@/lib/data/equipments';
 import { dungeons } from '@/lib/data/dungeons';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
-import { getInvitations, getFriendRequests, getPublicRooms, RoomInvitation, FriendRequest } from '@/lib/firebase';
+import { getInvitations, getFriendRequests, getPublicRooms, getSoloAdventure, claimSoloAdventure, clearSoloAdventure, RoomInvitation, FriendRequest, SoloAdventureResult } from '@/lib/firebase';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { HowToPlayModal } from '@/components/HowToPlayModal';
 import { CharacterIcon } from '@/components/CharacterIcon';
@@ -132,7 +132,7 @@ function LoginScreen() {
 }
 
 function GameScreen() {
-  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, equipments, coins } = useGameStore();
+  const { characters, party, currentAdventure, currentMultiRoom, username, logout, inventory, equipments, coins, addItem, addEquipment, addCoins, syncToServer } = useGameStore();
   const { progress: challengeProgress, loadData: loadChallengeData, canChallenge, getRemainingCooldown } = useChallengeStore();
   const [invitations, setInvitations] = useState<RoomInvitation[]>([]);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
@@ -140,24 +140,33 @@ function GameScreen() {
   const [challengeCooldown, setChallengeCooldown] = useState(0);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [unclaimedSolo, setUnclaimedSolo] = useState<SoloAdventureResult | null>(null);
+  const [isClaimingSolo, setIsClaimingSolo] = useState(false);
   
   // ユーザーアクティビティ検知
   const { isActive } = useUserActivity();
   
-  // 初回データロード（通知 + チャレンジ）
+  // 初回データロード（通知 + チャレンジ + 未受け取りソロ報酬）
   useEffect(() => {
     if (!username) return;
     
     const loadInitialData = async () => {
       try {
-        const [invites, requests, rooms] = await Promise.all([
+        const [invites, requests, rooms, soloAdv] = await Promise.all([
           getInvitations(username),
           getFriendRequests(username),
           getPublicRooms(),
+          getSoloAdventure(username),
         ]);
         setInvitations(invites);
         setFriendRequests(requests);
         setPublicRoomCount(rooms.length);
+        // 未受け取りの報酬があれば表示
+        if (soloAdv && !soloAdv.claimed) {
+          setUnclaimedSolo(soloAdv);
+        } else {
+          setUnclaimedSolo(null);
+        }
         await loadChallengeData(username);
         setIsDataLoaded(true);
       } catch (e) {
@@ -263,6 +272,47 @@ function GameScreen() {
   const partyCount = [...(party.front || []), ...(party.back || [])].filter(Boolean).length;
   const itemCount = Object.values(inventory).reduce((sum, count) => sum + count, 0);
   
+  // ソロ報酬受け取り処理
+  const handleClaimSolo = async () => {
+    if (!username || isClaimingSolo || !unclaimedSolo) return;
+    setIsClaimingSolo(true);
+    try {
+      const result = await claimSoloAdventure(username);
+      if (result.success) {
+        // ローカルストアに反映
+        if (result.itemIds && result.itemIds.length > 0) {
+          for (const itemId of result.itemIds) {
+            addItem(itemId);
+          }
+        } else if (result.itemId) {
+          addItem(result.itemId);
+        }
+        if (result.equipmentIds && result.equipmentIds.length > 0) {
+          for (const eqId of result.equipmentIds) {
+            addEquipment(eqId);
+          }
+        } else if (result.equipmentId) {
+          addEquipment(result.equipmentId);
+        }
+        if (result.coinReward) {
+          addCoins(result.coinReward);
+        }
+        // サーバーに同期
+        syncToServer();
+        // Firebase上のソロ冒険結果をクリア
+        await clearSoloAdventure(username);
+        // UI状態をクリア
+        setUnclaimedSolo(null);
+      } else {
+        console.error('Failed to claim solo reward: already claimed');
+      }
+    } catch (e) {
+      console.error('Failed to claim solo reward:', e);
+    } finally {
+      setIsClaimingSolo(false);
+    }
+  };
+  
   // データロード完了まで待機
   if (!isDataLoaded) {
     return <LoadingScreen />;
@@ -343,6 +393,48 @@ function GameScreen() {
               </div>
             </div>
           </Link>
+        )}
+        
+        {/* ソロ報酬未受け取りバナー */}
+        {unclaimedSolo && (
+          <div className="mb-4 bg-yellow-900/50 rounded-lg p-4 border border-yellow-600">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">🎁</span>
+              <div>
+                <p className="font-semibold">ソロ冒険の報酬があります！</p>
+                <p className="text-sm text-yellow-300">
+                  {dungeons[unclaimedSolo.dungeonId as keyof typeof dungeons]?.name || unclaimedSolo.dungeonId}
+                  {unclaimedSolo.victory ? ' - 勝利' : ' - 敗北'}
+                </p>
+              </div>
+            </div>
+            {/* 報酬内容 */}
+            <div className="bg-slate-800/50 rounded p-2 mb-3 text-sm">
+              <p className="text-amber-400">🪙 {unclaimedSolo.coinReward} コイン</p>
+              {unclaimedSolo.droppedItemIds && unclaimedSolo.droppedItemIds.length > 0 && (
+                <p className="text-green-300">
+                  💎 {unclaimedSolo.droppedItemIds.map(id => getItemById(id)?.name || id).join(', ')}
+                </p>
+              )}
+              {unclaimedSolo.droppedEquipmentIds && unclaimedSolo.droppedEquipmentIds.length > 0 && (
+                <p className="text-blue-300">
+                  ⚔️ {unclaimedSolo.droppedEquipmentIds.map(id => getEquipmentById(id)?.name || id).join(', ')}
+                </p>
+              )}
+            </div>
+            {/* 受け取りボタン */}
+            <button
+              onClick={handleClaimSolo}
+              disabled={isClaimingSolo}
+              className={`w-full py-2 rounded font-semibold transition-colors ${
+                isClaimingSolo
+                  ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                  : 'bg-yellow-600 hover:bg-yellow-500 text-white'
+              }`}
+            >
+              {isClaimingSolo ? '受け取り中...' : '報酬を受け取る'}
+            </button>
+          </div>
         )}
         
         {/* 招待通知 */}

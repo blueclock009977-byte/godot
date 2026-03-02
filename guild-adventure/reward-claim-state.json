@@ -1,0 +1,11 @@
+{
+  "currentPhase": 3,
+  "phases": {
+    "1": { "status": "completed", "completedAt": "2026-03-02T18:00:00+09:00", "description": "Firebase関数追加（ソロ用）" },
+    "2": { "status": "completed", "completedAt": "2026-03-02T18:15:00+09:00", "description": "冒険開始/完了時のFirebase保存" },
+    "3": { "status": "pending", "description": "報酬画面UIと受け取りボタン" },
+    "4": { "status": "pending", "description": "マルチ自動受け取り削除＆テスト" }
+  },
+  "goal": "ソロ冒険もFirebaseに保存し、報酬を手動で受け取るまで部屋情報を保持",
+  "nextCronId": null
+}
