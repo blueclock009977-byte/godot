@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Card from '@/components/Card';
 import { Card as CardType, Player } from '@/types/card';
 import { ALL_CARDS } from '@/data/cards';
@@ -9,9 +9,26 @@ import { selectNPCCards } from '@/lib/npcAI';
 
 type Phase = 'select' | 'reveal' | 'result';
 
+// 初期プレイヤーを作成する関数
+const createInitialPlayers = (): { player: Player; npc: Player } => {
+  const playerDeck = ALL_CARDS.filter(c => 
+    ['fire-1', 'fire-2', 'fire-3', 'water-2', 'water-3', 'wind-2'].includes(c.id)
+  );
+  const npcDeck = ALL_CARDS.filter(c => 
+    ['water-1', 'water-2', 'water-3', 'fire-2', 'fire-3', 'wind-3'].includes(c.id)
+  );
+  return {
+    player: createPlayer('player', 'あなた', playerDeck),
+    npc: createPlayer('npc', 'NPC', npcDeck)
+  };
+};
+
 export default function Home() {
-  const [player, setPlayer] = useState<Player | null>(null);
-  const [npc, setNpc] = useState<Player | null>(null);
+  // useMemoで初期値を遅延生成（SSR互換性のため）
+  const initialPlayers = useMemo(() => createInitialPlayers(), []);
+  
+  const [player, setPlayer] = useState<Player>(() => initialPlayers.player);
+  const [npc, setNpc] = useState<Player>(() => initialPlayers.npc);
   const [turn, setTurn] = useState(1);
   const [phase, setPhase] = useState<Phase>('select');
   const [playerSelected, setPlayerSelected] = useState<CardType[]>([]);
@@ -20,18 +37,6 @@ export default function Home() {
   const [winner, setWinner] = useState<string | null>(null);
 
   const maxCost = Math.min(turn, 5);
-
-  // ゲーム初期化
-  useEffect(() => {
-    const playerDeck = ALL_CARDS.filter(c => 
-      ['fire-1', 'fire-2', 'fire-3', 'water-2', 'water-3', 'wind-2'].includes(c.id)
-    );
-    const npcDeck = ALL_CARDS.filter(c => 
-      ['water-1', 'water-2', 'water-3', 'fire-2', 'fire-3', 'wind-3'].includes(c.id)
-    );
-    setPlayer(createPlayer('player', 'あなた', playerDeck));
-    setNpc(createPlayer('npc', 'NPC', npcDeck));
-  }, []);
 
   const getTotalCost = (cards: CardType[]) => cards.reduce((sum, c) => sum + c.cost, 0);
 
@@ -46,24 +51,23 @@ export default function Home() {
   };
 
   const handleConfirm = () => {
-    if (phase !== 'select' || !npc) return;
+    if (phase !== 'select') return;
     
     // NPCのカード選択
-    const npcCards = selectNPCCards(npc, maxCost, player?.life || 10);
+    const npcCards = selectNPCCards(npc, maxCost);
     setNpcSelected(npcCards);
     
     // バトル解決
     const result = resolveBattle(playerSelected, npcCards);
     setBattleResult(result.description);
     
-    setPlayer(prev => prev ? { ...prev, life: prev.life - result.p1Damage } : null);
-    setNpc(prev => prev ? { ...prev, life: prev.life - result.p2Damage } : null);
+    setPlayer(prev => ({ ...prev, life: prev.life - result.p1Damage }));
+    setNpc(prev => ({ ...prev, life: prev.life - result.p2Damage }));
     
     setPhase('reveal');
   };
 
   const handleNextTurn = () => {
-    if (!player || !npc) return;
 
     // 勝敗チェック
     if (player.life <= 0) {
@@ -86,8 +90,6 @@ export default function Home() {
     setNpcSelected([]);
     setBattleResult('');
   };
-
-  if (!player || !npc) return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">Loading...</div>;
 
   if (winner) {
     return (

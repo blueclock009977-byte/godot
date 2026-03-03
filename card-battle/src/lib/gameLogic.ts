@@ -94,7 +94,7 @@ export const createPlayer = (id: string, name: string, deckCards: Card[]): Playe
 export const refreshHand = (player: Player, usedCards: Card[]): Player => {
   let newDiscardPile = [...player.discardPile, ...usedCards];
   const usedIds = new Set(usedCards.map(c => c.id));
-  let newHand = player.hand.filter(c => !usedIds.has(c.id));
+  const newHand = player.hand.filter(c => !usedIds.has(c.id));
   let newDeck = [...player.deck];
   
   while (newHand.length < 3 && (newDeck.length > 0 || newDiscardPile.length > 0)) {

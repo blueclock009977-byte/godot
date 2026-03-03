@@ -1,10 +1,9 @@
-import { Card, Player, ELEMENT_ADVANTAGE } from '@/types/card';
+import { Card, Player } from '@/types/card';
 
 // NPCのカード選択AI
 export const selectNPCCards = (
   player: Player,
-  maxCost: number,
-  opponentLife: number
+  maxCost: number
 ): Card[] => {
   const hand = [...player.hand];
   
