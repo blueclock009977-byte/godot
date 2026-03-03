@@ -164,6 +164,9 @@ function MainScreen() {
     addEquipmentToInventory,
     resetFloorAndHeal,
     healHp,
+    buyPotion,
+    usePotion,
+    getPotionCount,
   } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
@@ -299,15 +302,18 @@ function MainScreen() {
             <BattleCanvas
               playerStats={{
                 maxHp: stats.maxHp,
+                hp: stats.hp,
                 atk: stats.atk,
                 def: stats.def,
                 speed: stats.spd,
               }}
               skillEffects={skillEffects}
               floor={userData.currentFloor}
+              potionCount={getPotionCount()}
               onFloorClear={handleFloorClear}
               onPlayerDeath={handlePlayerDeath}
               onBossKill={handleBossKill}
+              onUsePotion={usePotion}
             />
             <button
               onClick={() => setIsBattling(false)}
@@ -367,11 +373,42 @@ function MainScreen() {
           </div>
         </div>
         
-        {/* 所持コイン */}
-        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4 text-center">
-          <span className="text-2xl mr-2">💰</span>
-          <span className="text-xl font-bold text-amber-400">{userData.coins}</span>
-          <span className="text-slate-400 ml-1">コイン</span>
+        {/* 所持コイン & ショップ */}
+        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4">
+          <div className="text-center mb-3">
+            <span className="text-2xl mr-2">💰</span>
+            <span className="text-xl font-bold text-amber-400">{userData.coins}</span>
+            <span className="text-slate-400 ml-1">コイン</span>
+          </div>
+          
+          {/* ポーション */}
+          <div className="flex items-center justify-between p-3 bg-slate-700 rounded-lg">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🧪</span>
+              <div>
+                <div className="font-semibold">ヒールポーション</div>
+                <div className="text-xs text-slate-400">HP 50%回復</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-emerald-400 font-bold">×{getPotionCount()}</span>
+              <button
+                onClick={() => {
+                  if (buyPotion()) {
+                    // 購入成功
+                  }
+                }}
+                disabled={userData.coins < 100}
+                className={`px-3 py-1.5 rounded font-semibold text-sm ${
+                  userData.coins >= 100
+                    ? 'bg-amber-600 hover:bg-amber-500'
+                    : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+                }`}
+              >
+                💰100 購入
+              </button>
+            </div>
+          </div>
         </div>
         
         {/* アクションボタン */}

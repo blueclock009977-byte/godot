@@ -60,6 +60,7 @@ export function createNewUser(username: string): UserData {
     skillInventory: [],
     lastActiveAt: Date.now(),
     coins: 0,
+    potions: 3, // 初期ポーション
   };
 }
 

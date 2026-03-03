@@ -47,18 +47,22 @@ interface DamageNumber {
 interface BattleCanvasProps {
   playerStats: {
     maxHp: number;
+    hp: number;  // 現在HP
     atk: number;
     def: number;
     speed: number;
   };
   skillEffects: SkillEffect;  // スキル効果を受け取る
   floor: number;
+  potionCount: number;        // ポーション所持数
   onFloorClear: () => void;
   onPlayerDeath: () => void;
   onBossKill?: (bonusCoins: number) => void;
+  onUsePotion?: () => boolean; // ポーション使用（成功時true）
+  onHpChange?: (newHp: number) => void; // HP変化通知
 }
 
-export function BattleCanvas({ playerStats, skillEffects, floor, onFloorClear, onPlayerDeath, onBossKill }: BattleCanvasProps) {
+export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, onFloorClear, onPlayerDeath, onBossKill, onUsePotion, onHpChange }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
   const [enemiesKilled, setEnemiesKilled] = useState(0);
@@ -76,7 +80,7 @@ export function BattleCanvas({ playerStats, skillEffects, floor, onFloorClear, o
   const playerRef = useRef<Player>({
     x: 200,
     y: 300,
-    hp: playerStats.maxHp,
+    hp: playerStats.hp,  // 現在HPから開始
     maxHp: playerStats.maxHp,
     atk: Math.floor(playerStats.atk * atkBonus),
     def: Math.floor(playerStats.def * defBonus),
@@ -88,6 +92,20 @@ export function BattleCanvas({ playerStats, skillEffects, floor, onFloorClear, o
     critDamage,
     dodgeRate,
   });
+  
+  // ポーション使用
+  const handleUsePotion = useCallback(() => {
+    if (!onUsePotion) return;
+    const success = onUsePotion();
+    if (success) {
+      // HP回復（50%）
+      const healAmount = Math.floor(playerRef.current.maxHp * 0.5);
+      playerRef.current.hp = Math.min(
+        playerRef.current.maxHp,
+        playerRef.current.hp + healAmount
+      );
+    }
+  }, [onUsePotion]);
   
   const enemiesRef = useRef<Enemy[]>([]);
   const damageNumbersRef = useRef<DamageNumber[]>([]);
@@ -667,14 +685,79 @@ export function BattleCanvas({ playerStats, skillEffects, floor, onFloorClear, o
     };
   }, [floor, playerStats, skillEffects, spawnEnemy, addDamageNumber, drawEnemy, drawCritEffect, onFloorClear, onPlayerDeath, onBossKill, enemiesPerFloor, isBoss, atkBonus, defBonus, critRate, critDamage, dodgeRate]);
   
+  // 現在のプレイヤーHPを取得するためのstate（UI更新用）
+  const [displayHp, setDisplayHp] = useState(playerStats.hp);
+  
+  // 定期的にHPを同期
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDisplayHp(Math.max(0, Math.floor(playerRef.current.hp)));
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="relative">
+      {/* スキル効果パネル */}
+      <div className="mb-2 p-2 bg-slate-700 rounded-lg flex flex-wrap gap-2 text-xs">
+        <span className="text-slate-400">スキル効果:</span>
+        {critRate > 0 && (
+          <span className="px-2 py-0.5 bg-amber-600/30 rounded text-amber-300">
+            CRIT +{critRate}%
+          </span>
+        )}
+        {skillEffects.critDamage && skillEffects.critDamage > 0 && (
+          <span className="px-2 py-0.5 bg-orange-600/30 rounded text-orange-300">
+            CRIT威力 +{skillEffects.critDamage}%
+          </span>
+        )}
+        {dodgeRate > 0 && (
+          <span className="px-2 py-0.5 bg-blue-600/30 rounded text-blue-300">
+            回避 +{dodgeRate}%
+          </span>
+        )}
+        {skillEffects.atkPercent && skillEffects.atkPercent > 0 && (
+          <span className="px-2 py-0.5 bg-red-600/30 rounded text-red-300">
+            ATK +{skillEffects.atkPercent}%
+          </span>
+        )}
+        {skillEffects.defPercent && skillEffects.defPercent > 0 && (
+          <span className="px-2 py-0.5 bg-green-600/30 rounded text-green-300">
+            DEF +{skillEffects.defPercent}%
+          </span>
+        )}
+        {skillEffects.hpRegen && skillEffects.hpRegen > 0 && (
+          <span className="px-2 py-0.5 bg-emerald-600/30 rounded text-emerald-300">
+            HP回復 +{skillEffects.hpRegen}%
+          </span>
+        )}
+        {Object.keys(skillEffects).length === 0 && (
+          <span className="text-slate-500">なし</span>
+        )}
+      </div>
+
       <canvas
         ref={canvasRef}
         width={400}
         height={400}
         className="rounded-lg border-2 border-slate-600"
       />
+      
+      {/* ポーション使用ボタン */}
+      {gameState === 'playing' && (
+        <button
+          onClick={handleUsePotion}
+          disabled={potionCount <= 0 || displayHp >= playerStats.maxHp}
+          className={`absolute bottom-3 right-3 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-1 ${
+            potionCount > 0 && displayHp < playerStats.maxHp
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              : 'bg-slate-600 text-slate-400 cursor-not-allowed'
+          }`}
+        >
+          🧪 {potionCount}
+        </button>
+      )}
+      
       {gameState === 'clear' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
           <div className="text-center">

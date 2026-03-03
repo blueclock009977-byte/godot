@@ -44,6 +44,11 @@ interface GameStore {
   addEquipmentToInventory: (itemId: string) => void;
   resetFloorAndHeal: () => void;
   healHp: (percent: number) => void;  // HP回復（%）
+  
+  // ポーション
+  buyPotion: () => boolean;  // 購入成功ならtrue
+  usePotion: () => boolean;  // 使用成功ならtrue
+  getPotionCount: () => number;
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
@@ -431,5 +436,53 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     
     set({ userData: newData });
     get().syncToServer();
+  },
+  
+  buyPotion: () => {
+    const { userData } = get();
+    if (!userData) return false;
+    
+    const POTION_PRICE = 100;
+    if (userData.coins < POTION_PRICE) return false;
+    
+    const potions = userData.potions ?? 0;
+    const newData = {
+      ...userData,
+      coins: userData.coins - POTION_PRICE,
+      potions: potions + 1,
+    };
+    
+    set({ userData: newData });
+    get().syncToServer();
+    return true;
+  },
+  
+  usePotion: () => {
+    const { userData, getTotalStats, healHp } = get();
+    if (!userData) return false;
+    
+    const potions = userData.potions ?? 0;
+    if (potions <= 0) return false;
+    
+    const stats = getTotalStats();
+    // 既に満タンなら使わない
+    if (userData.character.hp >= stats.maxHp) return false;
+    
+    // ポーション消費
+    const newData = {
+      ...userData,
+      potions: potions - 1,
+    };
+    set({ userData: newData });
+    
+    // 50%回復
+    healHp(50);
+    
+    return true;
+  },
+  
+  getPotionCount: () => {
+    const { userData } = get();
+    return userData?.potions ?? 0;
   },
 }));

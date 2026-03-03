@@ -44,6 +44,16 @@ export interface SkillEffect {
   dodgeRate?: number;     // 回避率
 }
 
+// ポーションタイプ
+export interface PotionType {
+  id: string;
+  name: string;
+  description: string;
+  healPercent: number;  // HP回復量（最大HPの%）
+  price: number;        // 購入価格
+  emoji: string;
+}
+
 // ユーザーデータ（Firebase保存）
 export interface UserData {
   username: string;
@@ -58,6 +68,7 @@ export interface UserData {
   skillInventory: string[]; // 所持スキル
   lastActiveAt: number;     // 最終アクティブ時刻
   coins: number;
+  potions: number;          // 所持ポーション数
 }
 
 // 敵データ
