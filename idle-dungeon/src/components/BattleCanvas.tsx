@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { EnemyType, selectRandomEnemy, selectBoss, calculateEnemyStats, isBossFloor } from '@/data/enemies';
+import { SkillEffect } from '@/lib/types';
 
 interface Player {
   x: number;
@@ -14,6 +15,10 @@ interface Player {
   attackRange: number;
   attackCooldown: number;
   lastAttackTime: number;
+  // スキル効果
+  critRate: number;
+  critDamage: number;
+  dodgeRate: number;
 }
 
 interface Enemy {
@@ -32,9 +37,11 @@ interface DamageNumber {
   id: number;
   x: number;
   y: number;
-  value: number;
+  value: number | string;  // 数値または"MISS"などの文字
   color: string;
   createdAt: number;
+  isCrit?: boolean;        // クリティカル表示
+  isMiss?: boolean;        // 回避表示
 }
 
 interface BattleCanvasProps {
@@ -44,18 +51,26 @@ interface BattleCanvasProps {
     def: number;
     speed: number;
   };
+  skillEffects: SkillEffect;  // スキル効果を受け取る
   floor: number;
   onFloorClear: () => void;
   onPlayerDeath: () => void;
   onBossKill?: (bonusCoins: number) => void;
 }
 
-export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, onBossKill }: BattleCanvasProps) {
+export function BattleCanvas({ playerStats, skillEffects, floor, onFloorClear, onPlayerDeath, onBossKill }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
   const [enemiesKilled, setEnemiesKilled] = useState(0);
   const isBoss = isBossFloor(floor);
   const enemiesPerFloor = isBoss ? 1 : 5 + Math.floor(floor / 5) * 2;
+  
+  // スキル効果を適用したステータス計算
+  const atkBonus = 1 + (skillEffects.atkPercent || 0) / 100;
+  const defBonus = 1 + (skillEffects.defPercent || 0) / 100;
+  const critRate = skillEffects.critRate || 0;
+  const critDamage = 150 + (skillEffects.critDamage || 0); // 基礎150% + スキル効果
+  const dodgeRate = skillEffects.dodgeRate || 0;
   
   // ゲーム状態をrefで管理（アニメーションループ内で使用）
   const playerRef = useRef<Player>({
@@ -63,12 +78,15 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
     y: 300,
     hp: playerStats.maxHp,
     maxHp: playerStats.maxHp,
-    atk: playerStats.atk,
-    def: playerStats.def,
+    atk: Math.floor(playerStats.atk * atkBonus),
+    def: Math.floor(playerStats.def * defBonus),
     speed: playerStats.speed,
     attackRange: 120, // 攻撃範囲
     attackCooldown: 1000, // ms
     lastAttackTime: 0,
+    critRate,
+    critDamage,
+    dodgeRate,
   });
   
   const enemiesRef = useRef<Enemy[]>([]);
@@ -298,7 +316,13 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
   }, [drawBossCrown, drawBossAura]);
   
   // ダメージ数字を追加
-  const addDamageNumber = useCallback((x: number, y: number, value: number, color: string) => {
+  const addDamageNumber = useCallback((
+    x: number, 
+    y: number, 
+    value: number | string, 
+    color: string,
+    options?: { isCrit?: boolean; isMiss?: boolean }
+  ) => {
     damageNumbersRef.current.push({
       id: nextDamageIdRef.current++,
       x,
@@ -306,7 +330,35 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
       value,
       color,
       createdAt: Date.now(),
+      isCrit: options?.isCrit,
+      isMiss: options?.isMiss,
     });
+  }, []);
+  
+  // クリティカルエフェクト描画
+  const drawCritEffect = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, time: number) => {
+    ctx.save();
+    
+    // 放射状のスターバースト
+    const spokes = 8;
+    const innerRadius = 10;
+    const outerRadius = 30 + Math.sin(time * 0.01) * 5;
+    
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath();
+    for (let i = 0; i < spokes * 2; i++) {
+      const angle = (i * Math.PI) / spokes;
+      const radius = i % 2 === 0 ? outerRadius : innerRadius;
+      if (i === 0) {
+        ctx.moveTo(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius);
+      } else {
+        ctx.lineTo(x + Math.cos(angle) * radius, y + Math.sin(angle) * radius);
+      }
+    }
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.restore();
   }, []);
   
   // ゲームループ
@@ -319,6 +371,7 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
     
     let animationId: number;
     let lastTime = 0;
+    let critEffectTarget: { x: number; y: number; endTime: number } | null = null;
     
     const gameLoop = (currentTime: number) => {
       const deltaTime = currentTime - lastTime;
@@ -371,9 +424,16 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
         } else {
           // 近接攻撃（簡易）
           if (Math.random() < 0.01) {
-            const damage = Math.max(1, enemy.atk - player.def);
-            player.hp -= damage;
-            addDamageNumber(player.x, player.y - 20, damage, '#ff6b6b');
+            // 回避判定
+            if (Math.random() * 100 < player.dodgeRate) {
+              // 回避成功！
+              addDamageNumber(player.x, player.y - 20, 'MISS', '#60a5fa', { isMiss: true });
+            } else {
+              // ダメージを受ける
+              const damage = Math.max(1, enemy.atk - player.def);
+              player.hp -= damage;
+              addDamageNumber(player.x, player.y - 20, damage, '#ff6b6b');
+            }
           }
         }
         
@@ -438,14 +498,27 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
       
       // プレイヤー攻撃
       if (currentTime - player.lastAttackTime > player.attackCooldown && nearestEnemy && nearestDist <= player.attackRange) {
-        const damage = player.atk;
+        // クリティカル判定
+        const isCrit = Math.random() * 100 < player.critRate;
+        const damageMultiplier = isCrit ? player.critDamage / 100 : 1;
+        const damage = Math.floor(player.atk * damageMultiplier);
+        
         nearestEnemy.hp -= damage;
-        addDamageNumber(nearestEnemy.x, nearestEnemy.y - 20, damage, '#fbbf24');
+        
+        if (isCrit) {
+          // クリティカル時は金色で「CRIT!」+ ダメージ
+          addDamageNumber(nearestEnemy.x, nearestEnemy.y - 30, 'CRIT!', '#fbbf24', { isCrit: true });
+          addDamageNumber(nearestEnemy.x, nearestEnemy.y - 10, damage, '#fbbf24', { isCrit: true });
+          critEffectTarget = { x: nearestEnemy.x, y: nearestEnemy.y, endTime: currentTime + 300 };
+        } else {
+          addDamageNumber(nearestEnemy.x, nearestEnemy.y - 20, damage, '#fbbf24');
+        }
+        
         player.lastAttackTime = currentTime;
         
         // 攻撃エフェクト（線）
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = isCrit ? '#fbbf24' : '#fbbf24';
+        ctx.lineWidth = isCrit ? 5 : 3;
         ctx.beginPath();
         ctx.moveTo(player.x, player.y);
         ctx.lineTo(nearestEnemy.x, nearestEnemy.y);
@@ -463,6 +536,11 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
           killedCountRef.current++;
           setEnemiesKilled(killedCountRef.current);
         }
+      }
+      
+      // クリティカルエフェクト描画
+      if (critEffectTarget && currentTime < critEffectTarget.endTime) {
+        drawCritEffect(ctx, critEffectTarget.x, critEffectTarget.y, currentTime);
       }
       
       // プレイヤー描画
@@ -497,9 +575,30 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
         
         ctx.fillStyle = dn.color;
         ctx.globalAlpha = alpha;
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(dn.value), dn.x, dn.y - offsetY);
+        
+        // クリティカル時は大きめのフォント + 揺れ
+        if (dn.isCrit) {
+          const shake = Math.sin(age * 0.05) * 2;
+          ctx.font = 'bold 28px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 3;
+          ctx.strokeText(String(dn.value), dn.x + shake, dn.y - offsetY);
+          ctx.fillText(String(dn.value), dn.x + shake, dn.y - offsetY);
+        } else if (dn.isMiss) {
+          // MISS時は斜めにフェードアウト
+          ctx.font = 'bold 24px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.strokeStyle = '#000';
+          ctx.lineWidth = 2;
+          ctx.strokeText(String(dn.value), dn.x + age * 0.03, dn.y - offsetY);
+          ctx.fillText(String(dn.value), dn.x + age * 0.03, dn.y - offsetY);
+        } else {
+          ctx.font = 'bold 20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(dn.value), dn.x, dn.y - offsetY);
+        }
+        
         ctx.globalAlpha = 1;
       }
       
@@ -528,6 +627,21 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
       ctx.font = '12px sans-serif';
       ctx.fillText(`HP: ${Math.max(0, Math.floor(player.hp))}/${player.maxHp}`, 10, 80);
       
+      // UI: スキル効果表示（右上）
+      ctx.textAlign = 'right';
+      ctx.font = '10px sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      let skillY = 20;
+      if (player.critRate > 0) {
+        ctx.fillText(`CRIT: ${player.critRate}%`, canvas.width - 10, skillY);
+        skillY += 14;
+      }
+      if (player.dodgeRate > 0) {
+        ctx.fillText(`回避: ${player.dodgeRate}%`, canvas.width - 10, skillY);
+        skillY += 14;
+      }
+      ctx.textAlign = 'left';
+      
       // ゲーム終了判定
       if (player.hp <= 0) {
         setGameState('dead');
@@ -551,7 +665,7 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, 
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [floor, playerStats, spawnEnemy, addDamageNumber, drawEnemy, onFloorClear, onPlayerDeath, onBossKill, enemiesPerFloor, isBoss]);
+  }, [floor, playerStats, skillEffects, spawnEnemy, addDamageNumber, drawEnemy, drawCritEffect, onFloorClear, onPlayerDeath, onBossKill, enemiesPerFloor, isBoss, atkBonus, defBonus, critRate, critDamage, dodgeRate]);
   
   return (
     <div className="relative">

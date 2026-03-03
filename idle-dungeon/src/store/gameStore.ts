@@ -43,6 +43,7 @@ interface GameStore {
   advanceFloor: () => void;
   addEquipmentToInventory: (itemId: string) => void;
   resetFloorAndHeal: () => void;
+  healHp: (percent: number) => void;  // HP回復（%）
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
@@ -405,6 +406,26 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       character: {
         ...userData.character,
         hp: stats.maxHp,
+      },
+    };
+    
+    set({ userData: newData });
+    get().syncToServer();
+  },
+  
+  healHp: (percent: number) => {
+    const { userData, getTotalStats } = get();
+    if (!userData || percent <= 0) return;
+    
+    const stats = getTotalStats();
+    const healAmount = Math.floor(stats.maxHp * percent / 100);
+    const newHp = Math.min(stats.maxHp, userData.character.hp + healAmount);
+    
+    const newData = {
+      ...userData,
+      character: {
+        ...userData.character,
+        hp: newHp,
       },
     };
     

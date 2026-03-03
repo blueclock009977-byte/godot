@@ -154,7 +154,8 @@ function EquipmentSlot({
 function MainScreen() {
   const { 
     userData, 
-    getTotalStats, 
+    getTotalStats,
+    getSkillEffects,
     logout, 
     idleResult,
     addCoins,
@@ -162,6 +163,7 @@ function MainScreen() {
     advanceFloor,
     addEquipmentToInventory,
     resetFloorAndHeal,
+    healHp,
   } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
@@ -171,6 +173,7 @@ function MainScreen() {
   if (!userData) return null;
   
   const stats = getTotalStats();
+  const skillEffects = getSkillEffects();
   
   // ボス報酬を保持するstate
   const [bossBonus, setBossBonus] = useState<number>(0);
@@ -193,6 +196,12 @@ function MainScreen() {
     addCoins(coins);
     addExp(exp);
     advanceFloor();
+    
+    // スキル効果: HP回復
+    const hpRegen = skillEffects.hpRegen || 0;
+    if (hpRegen > 0) {
+      healHp(hpRegen);
+    }
     
     // ボスフロアは20%、通常は10%で装備ドロップ
     const dropChance = isBoss ? 0.2 : 0.1;
@@ -294,6 +303,7 @@ function MainScreen() {
                 def: stats.def,
                 speed: stats.spd,
               }}
+              skillEffects={skillEffects}
               floor={userData.currentFloor}
               onFloorClear={handleFloorClear}
               onPlayerDeath={handlePlayerDeath}
