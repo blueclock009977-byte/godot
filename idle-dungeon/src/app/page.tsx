@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
-import { getEquipmentById, getRarityColor, getRarityBgColor } from '@/lib/data/equipments';
+import { getEquipmentById, getRarityColor, getRarityBgColor, getRandomEquipment } from '@/lib/data/equipments';
 import { getSkillById } from '@/lib/data/skills';
 import { BattleCanvas } from '@/components/BattleCanvas';
 
@@ -152,14 +152,54 @@ function EquipmentSlot({
 
 // メイン画面
 function MainScreen() {
-  const { userData, getTotalStats, logout, idleResult } = useGameStore();
+  const { 
+    userData, 
+    getTotalStats, 
+    logout, 
+    idleResult,
+    addCoins,
+    addExp,
+    advanceFloor,
+    addEquipmentToInventory,
+    resetFloorAndHeal,
+  } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
+  const [lastReward, setLastReward] = useState<{ coins: number; exp: number; equipment?: string } | null>(null);
   
   if (!userData) return null;
   
   const stats = getTotalStats();
+  
+  // フロアクリア報酬処理
+  const handleFloorClear = () => {
+    const floor = userData.currentFloor;
+    const coins = floor * 10;
+    const exp = floor * 5;
+    
+    addCoins(coins);
+    addExp(exp);
+    advanceFloor();
+    
+    // 10%確率で装備ドロップ
+    let droppedEquipment: string | undefined;
+    if (Math.random() < 0.1) {
+      const equipment = getRandomEquipment(floor);
+      addEquipmentToInventory(equipment.id);
+      droppedEquipment = equipment.name;
+    }
+    
+    setLastReward({ coins, exp, equipment: droppedEquipment });
+    setIsBattling(false);
+  };
+  
+  // プレイヤー死亡処理
+  const handlePlayerDeath = () => {
+    resetFloorAndHeal();
+    setLastReward(null);
+    setIsBattling(false);
+  };
   
   return (
     <main className="min-h-screen p-4 pb-20">
@@ -241,13 +281,8 @@ function MainScreen() {
                 speed: stats.spd,
               }}
               floor={userData.currentFloor}
-              onFloorClear={() => {
-                // フロアクリア処理
-                setIsBattling(false);
-              }}
-              onPlayerDeath={() => {
-                setIsBattling(false);
-              }}
+              onFloorClear={handleFloorClear}
+              onPlayerDeath={handlePlayerDeath}
             />
             <button
               onClick={() => setIsBattling(false)}
@@ -257,12 +292,32 @@ function MainScreen() {
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => setIsBattling(true)}
-            className="w-full mb-4 py-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 font-bold text-xl"
-          >
-            ⚔️ 戦闘開始
-          </button>
+          <>
+            {/* 報酬表示 */}
+            {lastReward && (
+              <div className="bg-gradient-to-r from-amber-900/50 to-green-900/50 rounded-xl p-4 border border-amber-500 mb-4">
+                <div className="text-center font-bold text-amber-400 mb-2">🎉 クリア報酬</div>
+                <div className="flex justify-center gap-6 text-sm">
+                  <span>💰 +{lastReward.coins}</span>
+                  <span>✨ +{lastReward.exp}</span>
+                </div>
+                {lastReward.equipment && (
+                  <div className="text-center mt-2 text-purple-400">
+                    ⚔️ {lastReward.equipment} をゲット！
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              onClick={() => {
+                setLastReward(null);
+                setIsBattling(true);
+              }}
+              className="w-full mb-4 py-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 font-bold text-xl"
+            >
+              ⚔️ 戦闘開始
+            </button>
+          </>
         )}
         
         {/* 装備スロット */}

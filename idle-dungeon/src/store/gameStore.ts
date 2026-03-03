@@ -36,6 +36,13 @@ interface GameStore {
   
   // 進行
   updateLastActive: () => void;
+  
+  // 戦闘報酬
+  addCoins: (amount: number) => void;
+  addExp: (amount: number) => void;
+  advanceFloor: () => void;
+  addEquipmentToInventory: (itemId: string) => void;
+  resetFloorAndHeal: () => void;
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
@@ -332,6 +339,76 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     if (!userData) return;
     
     set({ userData: { ...userData, lastActiveAt: Date.now() } });
+    get().syncToServer();
+  },
+  
+  addCoins: (amount: number) => {
+    const { userData } = get();
+    if (!userData) return;
+    
+    set({ userData: { ...userData, coins: userData.coins + amount } });
+    get().syncToServer();
+  },
+  
+  addExp: (amount: number) => {
+    const { userData, getTotalStats } = get();
+    if (!userData) return;
+    
+    const newData = { ...userData };
+    const expForLevel = (lv: number) => lv * 100;
+    
+    let totalExp = newData.character.exp + amount;
+    while (totalExp >= expForLevel(newData.character.level)) {
+      totalExp -= expForLevel(newData.character.level);
+      newData.character.level++;
+      newData.character.maxHp += 10;
+      newData.character.atk += 2;
+      newData.character.def += 1;
+    }
+    newData.character.exp = totalExp;
+    
+    set({ userData: newData });
+    get().syncToServer();
+  },
+  
+  advanceFloor: () => {
+    const { userData } = get();
+    if (!userData) return;
+    
+    const newFloor = userData.currentFloor + 1;
+    const newData = {
+      ...userData,
+      currentFloor: newFloor,
+      highestFloor: Math.max(userData.highestFloor, newFloor),
+    };
+    
+    set({ userData: newData });
+    get().syncToServer();
+  },
+  
+  addEquipmentToInventory: (itemId: string) => {
+    const { userData } = get();
+    if (!userData) return;
+    
+    set({ userData: { ...userData, inventory: [...userData.inventory, itemId] } });
+    get().syncToServer();
+  },
+  
+  resetFloorAndHeal: () => {
+    const { userData, getTotalStats } = get();
+    if (!userData) return;
+    
+    const stats = getTotalStats();
+    const newData = {
+      ...userData,
+      currentFloor: 1,
+      character: {
+        ...userData.character,
+        hp: stats.maxHp,
+      },
+    };
+    
+    set({ userData: newData });
     get().syncToServer();
   },
 }));
