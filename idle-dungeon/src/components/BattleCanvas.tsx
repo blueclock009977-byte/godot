@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { EnemyType, selectRandomEnemy, calculateEnemyStats } from '@/data/enemies';
+import { EnemyType, selectRandomEnemy, selectBoss, calculateEnemyStats, isBossFloor } from '@/data/enemies';
 
 interface Player {
   x: number;
@@ -47,13 +47,15 @@ interface BattleCanvasProps {
   floor: number;
   onFloorClear: () => void;
   onPlayerDeath: () => void;
+  onBossKill?: (bonusCoins: number) => void;
 }
 
-export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }: BattleCanvasProps) {
+export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath, onBossKill }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
   const [enemiesKilled, setEnemiesKilled] = useState(0);
-  const enemiesPerFloor = 5 + Math.floor(floor / 5) * 2;
+  const isBoss = isBossFloor(floor);
+  const enemiesPerFloor = isBoss ? 1 : 5 + Math.floor(floor / 5) * 2;
   
   // ゲーム状態をrefで管理（アニメーションループ内で使用）
   const playerRef = useRef<Player>({
@@ -79,18 +81,20 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
   // 敵をスポーン
   const spawnEnemy = useCallback(() => {
     const side = Math.random() > 0.5 ? 'left' : 'right';
-    const enemyType = selectRandomEnemy(floor);
+    
+    // ボスフロアならボスを生成
+    const enemyType = isBoss ? selectBoss(floor) : selectRandomEnemy(floor);
     const stats = calculateEnemyStats(enemyType, floor);
     
-    // ±10%のランダム変動
-    const hpVariance = 1 + (Math.random() - 0.5) * 0.2;
-    const atkVariance = 1 + (Math.random() - 0.5) * 0.2;
+    // ボスは変動なし、通常敵は±10%のランダム変動
+    const hpVariance = isBoss ? 1 : 1 + (Math.random() - 0.5) * 0.2;
+    const atkVariance = isBoss ? 1 : 1 + (Math.random() - 0.5) * 0.2;
     
     const enemy: Enemy = {
       id: nextEnemyIdRef.current++,
       type: enemyType,
       x: side === 'left' ? -30 : 430,
-      y: 150 + Math.random() * 200,
+      y: isBoss ? 200 : 150 + Math.random() * 200, // ボスは中央
       hp: Math.floor(stats.hp * hpVariance),
       maxHp: Math.floor(stats.hp * hpVariance),
       atk: Math.floor(stats.atk * atkVariance),
@@ -98,13 +102,69 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
       size: stats.size,
     };
     enemiesRef.current.push(enemy);
-  }, [floor]);
+  }, [floor, isBoss]);
+  
+  // ボス用の王冠を描画
+  const drawBossCrown = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => {
+    ctx.save();
+    ctx.fillStyle = '#fbbf24'; // 金色
+    
+    // 王冠の土台
+    const crownWidth = size * 0.8;
+    const crownHeight = size * 0.4;
+    const crownY = y - size - crownHeight;
+    
+    ctx.beginPath();
+    ctx.moveTo(x - crownWidth / 2, crownY + crownHeight);
+    ctx.lineTo(x - crownWidth / 2, crownY + crownHeight * 0.4);
+    ctx.lineTo(x - crownWidth * 0.25, crownY + crownHeight * 0.6);
+    ctx.lineTo(x, crownY);
+    ctx.lineTo(x + crownWidth * 0.25, crownY + crownHeight * 0.6);
+    ctx.lineTo(x + crownWidth / 2, crownY + crownHeight * 0.4);
+    ctx.lineTo(x + crownWidth / 2, crownY + crownHeight);
+    ctx.closePath();
+    ctx.fill();
+    
+    // 宝石
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(x, crownY + crownHeight * 0.5, size * 0.08, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  }, []);
+  
+  // ボス用のオーラエフェクト
+  const drawBossAura = useCallback((ctx: CanvasRenderingContext2D, x: number, y: number, size: number, time: number) => {
+    ctx.save();
+    
+    // パルスするオーラ
+    const pulse = Math.sin(time * 0.003) * 0.2 + 0.8;
+    const auraSize = size * 1.5 * pulse;
+    
+    const gradient = ctx.createRadialGradient(x, y, size * 0.5, x, y, auraSize);
+    gradient.addColorStop(0, 'rgba(220, 38, 38, 0.3)');
+    gradient.addColorStop(0.5, 'rgba(251, 191, 36, 0.2)');
+    gradient.addColorStop(1, 'rgba(220, 38, 38, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(x, y, auraSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+  }, []);
   
   // 敵描画関数（タイプ別）
-  const drawEnemy = useCallback((ctx: CanvasRenderingContext2D, enemy: Enemy) => {
+  const drawEnemy = useCallback((ctx: CanvasRenderingContext2D, enemy: Enemy, time: number) => {
     const { type, x, y, size } = enemy;
     
     ctx.save();
+    
+    // ボスならオーラを描画
+    if (type.isBoss) {
+      drawBossAura(ctx, x, y, size, time);
+    }
     
     switch (type.id) {
       case 'slime':
@@ -229,8 +289,13 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
         ctx.fill();
     }
     
+    // ボスなら王冠を描画
+    if (type.isBoss) {
+      drawBossCrown(ctx, x, y, size);
+    }
+    
     ctx.restore();
-  }, []);
+  }, [drawBossCrown, drawBossAura]);
   
   // ダメージ数字を追加
   const addDamageNumber = useCallback((x: number, y: number, value: number, color: string) => {
@@ -313,7 +378,7 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
         }
         
         // 敵描画（タイプに応じた見た目）
-        drawEnemy(ctx, enemy);
+        drawEnemy(ctx, enemy, currentTime);
         
         // 敵HP
         const hpWidth = enemy.size * 2;
@@ -388,6 +453,12 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
         
         // 敵死亡チェック
         if (nearestEnemy.hp <= 0) {
+          // ボス撃破時の特別報酬
+          if (nearestEnemy.type.isBoss && onBossKill) {
+            const bonusCoins = 50 + floor * 10; // ボス報酬: 基本50 + フロア×10
+            onBossKill(bonusCoins);
+          }
+          
           enemiesRef.current = enemies.filter(e => e.id !== nearestEnemy!.id);
           killedCountRef.current++;
           setEnemiesKilled(killedCountRef.current);
@@ -436,8 +507,17 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`Floor ${floor}`, 10, 25);
-      ctx.fillText(`Enemies: ${killedCountRef.current}/${enemiesPerFloor}`, 10, 45);
+      
+      if (isBoss) {
+        // ボスフロア表示
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillText(`👑 BOSS Floor ${floor}`, 10, 25);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillText(`⚔️ BOSS BATTLE!`, 10, 45);
+      } else {
+        ctx.fillText(`Floor ${floor}`, 10, 25);
+        ctx.fillText(`Enemies: ${killedCountRef.current}/${enemiesPerFloor}`, 10, 45);
+      }
       
       // UI: プレイヤーHP
       ctx.fillStyle = '#333';
@@ -471,7 +551,7 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [floor, playerStats, spawnEnemy, addDamageNumber, onFloorClear, onPlayerDeath, enemiesPerFloor]);
+  }, [floor, playerStats, spawnEnemy, addDamageNumber, drawEnemy, onFloorClear, onPlayerDeath, onBossKill, enemiesPerFloor, isBoss]);
   
   return (
     <div className="relative">
@@ -483,7 +563,16 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
       />
       {gameState === 'clear' && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
-          <div className="text-2xl font-bold text-amber-400">🎉 Floor Clear!</div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-amber-400">
+              {isBoss ? '👑 BOSS DEFEATED!' : '🎉 Floor Clear!'}
+            </div>
+            {isBoss && (
+              <div className="text-lg text-yellow-300 mt-2">
+                💰 Bonus Coins +{50 + floor * 10}!
+              </div>
+            )}
+          </div>
         </div>
       )}
       {gameState === 'dead' && (

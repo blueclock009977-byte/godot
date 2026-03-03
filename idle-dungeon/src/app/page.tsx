@@ -172,9 +172,21 @@ function MainScreen() {
   
   const stats = getTotalStats();
   
+  // ボス報酬を保持するstate
+  const [bossBonus, setBossBonus] = useState<number>(0);
+  
+  // ボス撃破報酬処理
+  const handleBossKill = (bonusCoins: number) => {
+    addCoins(bonusCoins);
+    setBossBonus(bonusCoins);
+  };
+  
   // フロアクリア報酬処理
   const handleFloorClear = () => {
     const floor = userData.currentFloor;
+    const isBoss = floor % 5 === 0;
+    
+    // 基本報酬
     const coins = floor * 10;
     const exp = floor * 5;
     
@@ -182,15 +194,17 @@ function MainScreen() {
     addExp(exp);
     advanceFloor();
     
-    // 10%確率で装備ドロップ
+    // ボスフロアは20%、通常は10%で装備ドロップ
+    const dropChance = isBoss ? 0.2 : 0.1;
     let droppedEquipment: string | undefined;
-    if (Math.random() < 0.1) {
+    if (Math.random() < dropChance) {
       const equipment = getRandomEquipment(floor);
       addEquipmentToInventory(equipment.id);
       droppedEquipment = equipment.name;
     }
     
-    setLastReward({ coins, exp, equipment: droppedEquipment });
+    setLastReward({ coins: coins + bossBonus, exp, equipment: droppedEquipment });
+    setBossBonus(0); // リセット
     setIsBattling(false);
   };
   
@@ -283,6 +297,7 @@ function MainScreen() {
               floor={userData.currentFloor}
               onFloorClear={handleFloorClear}
               onPlayerDeath={handlePlayerDeath}
+              onBossKill={handleBossKill}
             />
             <button
               onClick={() => setIsBattling(false)}
