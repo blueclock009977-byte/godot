@@ -55,14 +55,16 @@ interface BattleCanvasProps {
   skillEffects: SkillEffect;  // スキル効果を受け取る
   floor: number;
   potionCount: number;        // ポーション所持数
+  autoBattle?: boolean;       // オートバトルモード
   onFloorClear: () => void;
   onPlayerDeath: () => void;
   onBossKill?: (bonusCoins: number) => void;
   onUsePotion?: () => boolean; // ポーション使用（成功時true）
   onHpChange?: (newHp: number) => void; // HP変化通知
+  onAutoNextFloor?: () => void; // オートバトル時の次フロア開始
 }
 
-export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, onFloorClear, onPlayerDeath, onBossKill, onUsePotion, onHpChange }: BattleCanvasProps) {
+export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, autoBattle, onFloorClear, onPlayerDeath, onBossKill, onUsePotion, onHpChange, onAutoNextFloor }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
   const [enemiesKilled, setEnemiesKilled] = useState(0);
@@ -695,6 +697,16 @@ export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, on
     }, 100);
     return () => clearInterval(interval);
   }, []);
+  
+  // オートバトル: クリア後に自動で次のフロアへ
+  useEffect(() => {
+    if (gameState === 'clear' && autoBattle && onAutoNextFloor) {
+      const timer = setTimeout(() => {
+        onAutoNextFloor();
+      }, 1500); // 1.5秒後に次のフロアへ
+      return () => clearTimeout(timer);
+    }
+  }, [gameState, autoBattle, onAutoNextFloor]);
 
   return (
     <div className="relative">

@@ -150,6 +150,19 @@ function EquipmentSlot({
   );
 }
 
+// 放置時間をフォーマット
+function formatIdleTime(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days}日${hours % 24}時間`;
+  if (hours > 0) return `${hours}時間${minutes % 60}分`;
+  if (minutes > 0) return `${minutes}分${seconds % 60}秒`;
+  return `${seconds}秒`;
+}
+
 // メイン画面
 function MainScreen() {
   const { 
@@ -167,11 +180,59 @@ function MainScreen() {
     buyPotion,
     usePotion,
     getPotionCount,
+    updateLastActive,
   } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
   const [lastReward, setLastReward] = useState<{ coins: number; exp: number; equipment?: string } | null>(null);
+  const [autoBattle, setAutoBattle] = useState(false);
+  const [currentIdleTime, setCurrentIdleTime] = useState(0);
+  
+  // 放置時間のリアルタイム更新
+  useEffect(() => {
+    if (!userData) return;
+    
+    const updateIdleTime = () => {
+      const elapsed = Date.now() - userData.lastActiveAt;
+      setCurrentIdleTime(elapsed);
+    };
+    
+    updateIdleTime();
+    const interval = setInterval(updateIdleTime, 1000);
+    return () => clearInterval(interval);
+  }, [userData?.lastActiveAt]);
+  
+  // バックグラウンド検知と通知
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // フォアグラウンドに戻った時
+        updateLastActive();
+      } else if (document.visibilityState === 'hidden' && isBattling) {
+        // バックグラウンドに移行した時（戦闘中なら通知を出す準備）
+        if ('Notification' in window && Notification.permission === 'granted') {
+          // バックグラウンドでも戦闘は続くことを通知
+          new Notification('⚔️ Idle Dungeon', {
+            body: `${userData?.currentFloor}階で戦闘中...バックグラウンドでも自動進行します`,
+            icon: '/favicon.ico',
+          });
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isBattling, userData?.currentFloor, updateLastActive]);
+  
+  // 通知許可リクエスト
+  const requestNotificationPermission = () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  };
   
   if (!userData) return null;
   
@@ -299,6 +360,21 @@ function MainScreen() {
         {/* バトルセクション */}
         {isBattling ? (
           <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4">
+            {/* オートバトルトグル */}
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm text-slate-400">オートバトル</span>
+              <button
+                onClick={() => setAutoBattle(!autoBattle)}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+                  autoBattle
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-slate-600 text-slate-300'
+                }`}
+              >
+                {autoBattle ? '🔄 ON' : 'OFF'}
+              </button>
+            </div>
+            
             <BattleCanvas
               playerStats={{
                 maxHp: stats.maxHp,
@@ -310,13 +386,21 @@ function MainScreen() {
               skillEffects={skillEffects}
               floor={userData.currentFloor}
               potionCount={getPotionCount()}
+              autoBattle={autoBattle}
               onFloorClear={handleFloorClear}
               onPlayerDeath={handlePlayerDeath}
               onBossKill={handleBossKill}
               onUsePotion={usePotion}
+              onAutoNextFloor={() => {
+                // オートバトル: 次のフロアを自動開始
+                setLastReward(null);
+              }}
             />
             <button
-              onClick={() => setIsBattling(false)}
+              onClick={() => {
+                setIsBattling(false);
+                setAutoBattle(false);
+              }}
               className="w-full mt-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
             >
               戦闘を中断
@@ -427,10 +511,37 @@ function MainScreen() {
           </button>
         </div>
         
-        {/* 放置中表示 */}
-        <div className="mt-6 text-center text-slate-400">
-          <p>アプリを閉じている間も自動で冒険が進みます</p>
-          <p className="text-xs mt-1">（最大8時間分）</p>
+        {/* 放置時間・通知設定 */}
+        <div className="mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700">
+          <h3 className="text-sm text-slate-400 mb-2">放置進行</h3>
+          <div className="text-center">
+            <p className="text-slate-300">
+              現在のセッション: <span className="text-amber-400 font-semibold">{formatIdleTime(currentIdleTime)}</span>
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              アプリを閉じている間も自動で冒険が進みます（最大8時間）
+            </p>
+          </div>
+          
+          {/* 通知許可 */}
+          {'Notification' in (typeof window !== 'undefined' ? window : {}) && (
+            <div className="mt-3 text-center">
+              {typeof window !== 'undefined' && Notification.permission === 'default' && (
+                <button
+                  onClick={requestNotificationPermission}
+                  className="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm"
+                >
+                  🔔 通知を有効にする
+                </button>
+              )}
+              {typeof window !== 'undefined' && Notification.permission === 'granted' && (
+                <span className="text-xs text-green-400">🔔 通知ON</span>
+              )}
+              {typeof window !== 'undefined' && Notification.permission === 'denied' && (
+                <span className="text-xs text-red-400">🔕 通知OFF（ブラウザ設定で許可してください）</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
       

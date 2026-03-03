@@ -3,8 +3,9 @@
 import { create } from 'zustand';
 import { UserData, CharacterStats, IdleResult, SkillEffect } from '@/lib/types';
 import { getUserData, saveUserData, createNewUser } from '@/lib/firebase';
-import { getEquipmentById } from '@/lib/data/equipments';
+import { getEquipmentById, getRandomEquipment } from '@/lib/data/equipments';
 import { getSkillById } from '@/lib/data/skills';
+import { selectRandomEnemy, selectBoss, calculateEnemyStats, isBossFloor } from '@/data/enemies';
 
 interface GameStore {
   // 状態
@@ -194,6 +195,16 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const stats = getTotalStats();
     const effects = getSkillEffects();
     
+    // スキル効果を適用
+    const atkBonus = 1 + (effects.atkPercent || 0) / 100;
+    const defBonus = 1 + (effects.defPercent || 0) / 100;
+    const critRate = effects.critRate || 0;
+    const critDamage = 150 + (effects.critDamage || 0);
+    const dodgeRate = effects.dodgeRate || 0;
+    
+    const playerAtk = Math.floor(stats.atk * atkBonus);
+    const playerDef = Math.floor(stats.def * defBonus);
+    
     // 放置シミュレーション
     let currentFloor = userData.currentFloor;
     let playerHp = stats.hp;
@@ -202,47 +213,79 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const droppedEquipment: string[] = [];
     const droppedSkills: string[] = [];
     
-    // 1分あたり1戦闘として計算
-    const battles = Math.floor(elapsedSeconds / 60);
+    // 1分あたり1フロアとして計算
+    const floors = Math.floor(elapsedSeconds / 60);
     
-    for (let i = 0; i < battles; i++) {
-      // 簡易戦闘シミュレーション
-      const floorDifficulty = currentFloor * 2;
-      const playerPower = stats.atk + stats.def;
+    for (let i = 0; i < floors; i++) {
+      const isBoss = isBossFloor(currentFloor);
+      const enemiesPerFloor = isBoss ? 1 : 5 + Math.floor(currentFloor / 5) * 2;
       
-      // 勝率計算（装備・レベル依存）
-      const winChance = Math.min(90, 50 + (playerPower - floorDifficulty));
+      // このフロアの戦闘シミュレーション
+      let floorCleared = true;
       
-      if (Math.random() * 100 < winChance) {
-        // 勝利
-        earnedExp += 10 + currentFloor * 3;
-        earnedCoins += 5 + currentFloor;
+      for (let enemyIdx = 0; enemyIdx < enemiesPerFloor; enemyIdx++) {
+        // 敵タイプを選択してステータスを計算
+        const enemyType = isBoss ? selectBoss(currentFloor) : selectRandomEnemy(currentFloor);
+        const enemyStats = calculateEnemyStats(enemyType, currentFloor);
+        let enemyHp = enemyStats.hp;
         
-        // ドロップ判定（10%）
-        if (Math.random() < 0.1) {
-          droppedEquipment.push('iron_sword'); // 簡易: 固定ドロップ（後で改善）
+        // 戦闘シミュレーション（簡略化: ターン制）
+        const maxTurns = 20; // 無限ループ防止
+        for (let turn = 0; turn < maxTurns && enemyHp > 0 && playerHp > 0; turn++) {
+          // プレイヤー攻撃
+          const isCrit = Math.random() * 100 < critRate;
+          const dmgMultiplier = isCrit ? critDamage / 100 : 1;
+          const playerDamage = Math.floor(playerAtk * dmgMultiplier);
+          enemyHp -= playerDamage;
+          
+          if (enemyHp <= 0) break;
+          
+          // 敵攻撃（回避判定）
+          const dodged = Math.random() * 100 < dodgeRate;
+          if (!dodged) {
+            const enemyDamage = Math.max(1, enemyStats.atk - playerDef);
+            playerHp -= enemyDamage;
+          }
         }
-        
-        // スキルドロップ（5%）
-        if (Math.random() < 0.05) {
-          droppedSkills.push('crit_rate_1');
-        }
-        
-        currentFloor++;
-        
-        // HP回復
-        const regen = effects.hpRegen || 0;
-        playerHp = Math.min(stats.maxHp, playerHp + Math.floor(stats.maxHp * regen / 100));
-      } else {
-        // 敗北
-        playerHp -= Math.floor(floorDifficulty * 0.5);
         
         if (playerHp <= 0) {
-          // 死亡 → 階層リセット
-          playerHp = stats.maxHp;
-          // currentFloorはそのまま（死んだ階からやり直し）
+          // 敗北
+          floorCleared = false;
+          playerHp = stats.maxHp; // 回復してやり直し
           break;
         }
+      }
+      
+      if (floorCleared) {
+        // フロアクリア報酬
+        earnedExp += 10 + currentFloor * 3;
+        earnedCoins += 5 + currentFloor * 2;
+        
+        // ボス報酬
+        if (isBoss) {
+          earnedCoins += 50 + currentFloor * 10;
+        }
+        
+        // ドロップ判定（ボス20%, 通常10%）
+        const dropChance = isBoss ? 0.2 : 0.1;
+        if (Math.random() < dropChance) {
+          const equipment = getRandomEquipment(currentFloor);
+          droppedEquipment.push(equipment.id);
+        }
+        
+        // スキルドロップ（ボス10%, 通常5%）
+        const skillDropChance = isBoss ? 0.1 : 0.05;
+        if (Math.random() < skillDropChance) {
+          // ランダムスキル選択
+          const skillPool = ['crit_rate_1', 'crit_damage_1', 'dodge_1', 'atk_percent_1', 'def_percent_1', 'hp_regen_1'];
+          droppedSkills.push(skillPool[Math.floor(Math.random() * skillPool.length)]);
+        }
+        
+        // HP回復（スキル効果）
+        const regen = effects.hpRegen || 0;
+        playerHp = Math.min(stats.maxHp, playerHp + Math.floor(stats.maxHp * regen / 100));
+        
+        currentFloor++;
       }
     }
     
