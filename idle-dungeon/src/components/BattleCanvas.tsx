@@ -59,12 +59,13 @@ interface BattleCanvasProps {
   onFloorClear: () => void;
   onPlayerDeath: () => void;
   onBossKill?: (bonusCoins: number) => void;
+  onEnemyKill?: (isBoss: boolean) => void; // 敵撃破時（統計記録用）
   onUsePotion?: () => boolean; // ポーション使用（成功時true）
   onHpChange?: (newHp: number) => void; // HP変化通知
   onAutoNextFloor?: () => void; // オートバトル時の次フロア開始
 }
 
-export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, autoBattle, onFloorClear, onPlayerDeath, onBossKill, onUsePotion, onHpChange, onAutoNextFloor }: BattleCanvasProps) {
+export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, autoBattle, onFloorClear, onPlayerDeath, onBossKill, onEnemyKill, onUsePotion, onHpChange, onAutoNextFloor }: BattleCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
   const [enemiesKilled, setEnemiesKilled] = useState(0);
@@ -546,10 +547,17 @@ export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, au
         
         // 敵死亡チェック
         if (nearestEnemy.hp <= 0) {
+          const isBoss = nearestEnemy.type.isBoss;
+          
           // ボス撃破時の特別報酬
-          if (nearestEnemy.type.isBoss && onBossKill) {
+          if (isBoss && onBossKill) {
             const bonusCoins = 50 + floor * 10; // ボス報酬: 基本50 + フロア×10
             onBossKill(bonusCoins);
+          }
+          
+          // 敵撃破を統計に記録（ボスでない場合）
+          if (!isBoss && onEnemyKill) {
+            onEnemyKill(false);
           }
           
           enemiesRef.current = enemies.filter(e => e.id !== nearestEnemy!.id);
@@ -685,7 +693,7 @@ export function BattleCanvas({ playerStats, skillEffects, floor, potionCount, au
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [floor, playerStats, skillEffects, spawnEnemy, addDamageNumber, drawEnemy, drawCritEffect, onFloorClear, onPlayerDeath, onBossKill, enemiesPerFloor, isBoss, atkBonus, defBonus, critRate, critDamage, dodgeRate]);
+  }, [floor, playerStats, skillEffects, spawnEnemy, addDamageNumber, drawEnemy, drawCritEffect, onFloorClear, onPlayerDeath, onBossKill, onEnemyKill, enemiesPerFloor, isBoss, atkBonus, defBonus, critRate, critDamage, dodgeRate]);
   
   // 現在のプレイヤーHPを取得するためのstate（UI更新用）
   const [displayHp, setDisplayHp] = useState(playerStats.hp);

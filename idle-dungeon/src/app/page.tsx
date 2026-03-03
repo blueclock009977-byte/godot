@@ -5,6 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { getEquipmentById, getRarityColor, getRarityBgColor, getRandomEquipment } from '@/lib/data/equipments';
 import { getSkillById } from '@/lib/data/skills';
 import { BattleCanvas } from '@/components/BattleCanvas';
+import { StatsPanel } from '@/components/StatsPanel';
 
 // ログイン画面
 function LoginScreen() {
@@ -181,6 +182,9 @@ function MainScreen() {
     usePotion,
     getPotionCount,
     updateLastActive,
+    recordKill,
+    recordDeath,
+    recordFloorClear,
   } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
@@ -246,6 +250,7 @@ function MainScreen() {
   const handleBossKill = (bonusCoins: number) => {
     addCoins(bonusCoins);
     setBossBonus(bonusCoins);
+    recordKill(true); // ボス撃破を統計に記録
   };
   
   // フロアクリア報酬処理
@@ -260,6 +265,9 @@ function MainScreen() {
     addCoins(coins);
     addExp(exp);
     advanceFloor();
+    
+    // フロアクリアを統計に記録
+    recordFloorClear(floor);
     
     // スキル効果: HP回復
     const hpRegen = skillEffects.hpRegen || 0;
@@ -283,6 +291,7 @@ function MainScreen() {
   
   // プレイヤー死亡処理
   const handlePlayerDeath = () => {
+    recordDeath(); // 死亡を統計に記録
     resetFloorAndHeal();
     setLastReward(null);
     setIsBattling(false);
@@ -390,6 +399,7 @@ function MainScreen() {
               onFloorClear={handleFloorClear}
               onPlayerDeath={handlePlayerDeath}
               onBossKill={handleBossKill}
+              onEnemyKill={(isBoss) => recordKill(isBoss)}
               onUsePotion={usePotion}
               onAutoNextFloor={() => {
                 // オートバトル: 次のフロアを自動開始
@@ -554,6 +564,9 @@ function MainScreen() {
       {showSkills && (
         <SkillModal onClose={() => setShowSkills(false)} />
       )}
+      
+      {/* 統計パネル */}
+      <StatsPanel />
     </main>
   );
 }

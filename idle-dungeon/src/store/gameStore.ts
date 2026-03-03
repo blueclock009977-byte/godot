@@ -1,11 +1,12 @@
 'use client';
 
 import { create } from 'zustand';
-import { UserData, CharacterStats, IdleResult, SkillEffect } from '@/lib/types';
+import { UserData, CharacterStats, IdleResult, SkillEffect, BattleHistoryEntry, Statistics, AchievementProgress } from '@/lib/types';
 import { getUserData, saveUserData, createNewUser } from '@/lib/firebase';
 import { getEquipmentById, getRandomEquipment } from '@/lib/data/equipments';
 import { getSkillById } from '@/lib/data/skills';
 import { selectRandomEnemy, selectBoss, calculateEnemyStats, isBossFloor } from '@/data/enemies';
+import { checkNewAchievements, getAchievementById, ACHIEVEMENTS } from '@/lib/data/achievements';
 
 interface GameStore {
   // 状態
@@ -50,6 +51,20 @@ interface GameStore {
   buyPotion: () => boolean;  // 購入成功ならtrue
   usePotion: () => boolean;  // 使用成功ならtrue
   getPotionCount: () => number;
+  
+  // 統計・履歴
+  getStatistics: () => Statistics;
+  getBattleHistory: () => BattleHistoryEntry[];
+  addBattleHistoryEntry: (entry: Omit<BattleHistoryEntry, 'id' | 'timestamp'>) => void;
+  recordKill: (isBoss: boolean) => void;
+  recordDeath: () => void;
+  recordFloorClear: (floor: number) => void;
+  recordPotionUse: () => void;
+  
+  // 実績
+  checkAndUnlockAchievements: () => string[];  // 新規解除された実績IDを返す
+  claimAchievementReward: (achievementId: string) => boolean;
+  getAchievementProgress: () => Record<string, AchievementProgress>;
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
@@ -392,19 +407,54 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
   
   addCoins: (amount: number) => {
-    const { userData } = get();
+    const { userData, checkAndUnlockAchievements } = get();
     if (!userData) return;
     
-    set({ userData: { ...userData, coins: userData.coins + amount } });
+    // 統計も更新
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newStats = {
+      ...stats,
+      totalCoinsEarned: stats.totalCoinsEarned + amount,
+    };
+    
+    set({ userData: { ...userData, coins: userData.coins + amount, statistics: newStats } });
+    checkAndUnlockAchievements();
     get().syncToServer();
   },
   
   addExp: (amount: number) => {
-    const { userData, getTotalStats } = get();
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
     if (!userData) return;
     
     const newData = { ...userData };
     const expForLevel = (lv: number) => lv * 100;
+    const oldLevel = newData.character.level;
+    
+    // 統計更新
+    const stats = newData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    newData.statistics = {
+      ...stats,
+      totalExpEarned: stats.totalExpEarned + amount,
+    };
     
     let totalExp = newData.character.exp + amount;
     while (totalExp >= expForLevel(newData.character.level)) {
@@ -417,6 +467,19 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     newData.character.exp = totalExp;
     
     set({ userData: newData });
+    
+    // レベルアップした場合、履歴に追加
+    if (newData.character.level > oldLevel) {
+      addBattleHistoryEntry({
+        type: 'level_up',
+        message: `⬆️ レベルアップ！Lv.${newData.character.level}になった`,
+        details: {
+          level: newData.character.level,
+        },
+      });
+    }
+    
+    checkAndUnlockAchievements();
     get().syncToServer();
   },
   
@@ -436,10 +499,26 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
   
   addEquipmentToInventory: (itemId: string) => {
-    const { userData } = get();
+    const { userData, addBattleHistoryEntry } = get();
     if (!userData) return;
     
+    const equipment = getEquipmentById(itemId);
+    
     set({ userData: { ...userData, inventory: [...userData.inventory, itemId] } });
+    
+    // 履歴に追加
+    if (equipment) {
+      addBattleHistoryEntry({
+        type: 'drop',
+        floor: userData.currentFloor,
+        message: `💎 ${equipment.name}をゲット！`,
+        details: {
+          itemId,
+          itemName: equipment.name,
+        },
+      });
+    }
+    
     get().syncToServer();
   },
   
@@ -501,7 +580,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
   
   usePotion: () => {
-    const { userData, getTotalStats, healHp } = get();
+    const { userData, getTotalStats, healHp, recordPotionUse } = get();
     if (!userData) return false;
     
     const potions = userData.potions ?? 0;
@@ -521,11 +600,272 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     // 50%回復
     healHp(50);
     
+    // 統計記録
+    recordPotionUse();
+    
     return true;
   },
   
   getPotionCount: () => {
     const { userData } = get();
     return userData?.potions ?? 0;
+  },
+  
+  // 統計取得
+  getStatistics: () => {
+    const { userData } = get();
+    if (!userData?.statistics) {
+      return {
+        totalKills: 0,
+        totalBossKills: 0,
+        totalCoinsEarned: 0,
+        totalFloorsCleared: 0,
+        totalDeaths: 0,
+        totalPotionsUsed: 0,
+        totalPlayTimeSeconds: 0,
+        totalExpEarned: 0,
+      };
+    }
+    return userData.statistics;
+  },
+  
+  // 戦闘履歴取得
+  getBattleHistory: () => {
+    const { userData } = get();
+    return userData?.battleHistory ?? [];
+  },
+  
+  // 戦闘履歴追加
+  addBattleHistoryEntry: (entry: Omit<BattleHistoryEntry, 'id' | 'timestamp'>) => {
+    const { userData } = get();
+    if (!userData) return;
+    
+    const newEntry: BattleHistoryEntry = {
+      ...entry,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      timestamp: Date.now(),
+    };
+    
+    // 直近50件を保持
+    const history = [newEntry, ...(userData.battleHistory ?? [])].slice(0, 50);
+    
+    set({ userData: { ...userData, battleHistory: history } });
+    get().syncToServer();
+  },
+  
+  // キル記録
+  recordKill: (isBoss: boolean) => {
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    if (!userData) return;
+    
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newStats = {
+      ...stats,
+      totalKills: stats.totalKills + 1,
+      totalBossKills: isBoss ? stats.totalBossKills + 1 : stats.totalBossKills,
+    };
+    
+    set({ userData: { ...userData, statistics: newStats } });
+    
+    if (isBoss) {
+      addBattleHistoryEntry({
+        type: 'boss_kill',
+        floor: userData.currentFloor,
+        message: `🏆 フロア${userData.currentFloor}のボスを撃破！`,
+      });
+    }
+    
+    // 実績チェック
+    checkAndUnlockAchievements();
+    get().syncToServer();
+  },
+  
+  // 死亡記録
+  recordDeath: () => {
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    if (!userData) return;
+    
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newStats = {
+      ...stats,
+      totalDeaths: stats.totalDeaths + 1,
+    };
+    
+    set({ userData: { ...userData, statistics: newStats } });
+    
+    addBattleHistoryEntry({
+      type: 'death',
+      floor: userData.currentFloor,
+      message: `💀 フロア${userData.currentFloor}で倒れた...`,
+    });
+    
+    // 実績チェック
+    checkAndUnlockAchievements();
+    get().syncToServer();
+  },
+  
+  // フロアクリア記録
+  recordFloorClear: (floor: number) => {
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    if (!userData) return;
+    
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newStats = {
+      ...stats,
+      totalFloorsCleared: stats.totalFloorsCleared + 1,
+    };
+    
+    set({ userData: { ...userData, statistics: newStats } });
+    
+    addBattleHistoryEntry({
+      type: 'floor_clear',
+      floor,
+      message: `🎉 フロア${floor}をクリア！`,
+    });
+    
+    // 実績チェック
+    checkAndUnlockAchievements();
+    get().syncToServer();
+  },
+  
+  // ポーション使用記録
+  recordPotionUse: () => {
+    const { userData, checkAndUnlockAchievements } = get();
+    if (!userData) return;
+    
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newStats = {
+      ...stats,
+      totalPotionsUsed: stats.totalPotionsUsed + 1,
+    };
+    
+    set({ userData: { ...userData, statistics: newStats } });
+    
+    // 実績チェック
+    checkAndUnlockAchievements();
+    get().syncToServer();
+  },
+  
+  // 実績チェック・解除
+  checkAndUnlockAchievements: () => {
+    const { userData, addBattleHistoryEntry } = get();
+    if (!userData) return [];
+    
+    const stats = userData.statistics ?? {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    };
+    
+    const newAchievements = checkNewAchievements(stats, userData);
+    if (newAchievements.length === 0) return [];
+    
+    const achievements = { ...(userData.achievements ?? {}) };
+    const unlockedIds: string[] = [];
+    
+    for (const achievement of newAchievements) {
+      achievements[achievement.id] = {
+        unlockedAt: Date.now(),
+        claimed: false,
+      };
+      unlockedIds.push(achievement.id);
+      
+      // 履歴に追加
+      addBattleHistoryEntry({
+        type: 'achievement',
+        message: `🏅 実績解除: ${achievement.name}`,
+        details: {
+          achievementId: achievement.id,
+        },
+      });
+    }
+    
+    set({ userData: { ...userData, achievements } });
+    get().syncToServer();
+    
+    return unlockedIds;
+  },
+  
+  // 実績報酬受け取り
+  claimAchievementReward: (achievementId: string) => {
+    const { userData, addCoins, addExp } = get();
+    if (!userData) return false;
+    
+    const progress = userData.achievements?.[achievementId];
+    if (!progress || progress.unlockedAt === 0 || progress.claimed) return false;
+    
+    const achievement = getAchievementById(achievementId);
+    if (!achievement) return false;
+    
+    // 報酬付与
+    if (achievement.reward?.coins) {
+      addCoins(achievement.reward.coins);
+    }
+    if (achievement.reward?.exp) {
+      addExp(achievement.reward.exp);
+    }
+    
+    // 受け取り済みにする
+    const achievements = { ...userData.achievements };
+    achievements[achievementId] = {
+      ...progress,
+      claimed: true,
+    };
+    
+    set({ userData: { ...userData, achievements } });
+    get().syncToServer();
+    
+    return true;
+  },
+  
+  // 実績進捗取得
+  getAchievementProgress: () => {
+    const { userData } = get();
+    return userData?.achievements ?? {};
   },
 }));

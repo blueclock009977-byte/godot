@@ -61,6 +61,18 @@ export function createNewUser(username: string): UserData {
     lastActiveAt: Date.now(),
     coins: 0,
     potions: 3, // 初期ポーション
+    statistics: {
+      totalKills: 0,
+      totalBossKills: 0,
+      totalCoinsEarned: 0,
+      totalFloorsCleared: 0,
+      totalDeaths: 0,
+      totalPotionsUsed: 0,
+      totalPlayTimeSeconds: 0,
+      totalExpEarned: 0,
+    },
+    battleHistory: [],
+    achievements: {},
   };
 }
 

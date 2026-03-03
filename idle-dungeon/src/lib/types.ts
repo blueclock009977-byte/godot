@@ -69,6 +69,9 @@ export interface UserData {
   lastActiveAt: number;     // 最終アクティブ時刻
   coins: number;
   potions: number;          // 所持ポーション数
+  statistics: Statistics;   // 累計統計
+  battleHistory: BattleHistoryEntry[]; // 戦闘履歴（直近50件）
+  achievements: Record<string, AchievementProgress>; // 実績進捗
 }
 
 // 敵データ
@@ -94,4 +97,50 @@ export interface IdleResult {
   earnedExp: number;
   earnedCoins: number;
   elapsedSeconds: number;
+}
+
+// 累計統計
+export interface Statistics {
+  totalKills: number;           // 累計撃破数
+  totalBossKills: number;       // 累計ボス撃破数
+  totalCoinsEarned: number;     // 累計獲得コイン
+  totalFloorsCleared: number;   // 累計クリアフロア数
+  totalDeaths: number;          // 累計死亡回数
+  totalPotionsUsed: number;     // 累計ポーション使用数
+  totalPlayTimeSeconds: number; // 累計プレイ時間（秒）
+  totalExpEarned: number;       // 累計獲得経験値
+}
+
+// 戦闘履歴エントリー
+export interface BattleHistoryEntry {
+  id: string;
+  timestamp: number;
+  type: 'floor_clear' | 'boss_kill' | 'death' | 'level_up' | 'drop' | 'achievement';
+  floor?: number;
+  message: string;
+  details?: {
+    itemId?: string;
+    itemName?: string;
+    level?: number;
+    achievementId?: string;
+  };
+}
+
+// 実績
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  condition: (stats: Statistics, userData: UserData) => boolean;
+  reward?: {
+    coins?: number;
+    exp?: number;
+  };
+}
+
+// 実績解除状態
+export interface AchievementProgress {
+  unlockedAt: number;  // 解除時刻（0なら未解除）
+  claimed: boolean;    // 報酬受け取り済み
 }
