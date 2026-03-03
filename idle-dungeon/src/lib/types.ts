@@ -77,6 +77,55 @@ export interface UserData {
   achievements: Record<string, AchievementProgress>; // 実績進捗
   milestones: Record<string, MilestoneProgress>;     // マイルストーン進捗
   sessionStartedAt: number; // 現在セッション開始時刻
+  
+  // ソーシャル機能
+  friends: string[];        // フレンドのusername配列
+  friendRequests: FriendRequest[];  // 受信したフレンドリクエスト
+  sentRequests: string[];   // 送信したフレンドリクエスト（username配列）
+  
+  // ログインボーナス
+  loginBonus: LoginBonusProgress;
+  
+  // ウィークリーチャレンジ
+  weeklyChallenge: WeeklyChallengeProgress;
+}
+
+// フレンドリクエスト
+export interface FriendRequest {
+  from: string;       // 送信者username
+  timestamp: number;  // リクエスト送信時刻
+}
+
+// ログインボーナス進捗
+export interface LoginBonusProgress {
+  lastClaimDate: string;   // 最後に受け取った日付（YYYY-MM-DD）
+  consecutiveDays: number; // 連続ログイン日数
+  totalDays: number;       // 累計ログイン日数
+}
+
+// ウィークリーチャレンジ進捗
+export interface WeeklyChallengeProgress {
+  weekStartDate: string;   // 週の開始日（YYYY-MM-DD、月曜基準）
+  challenges: WeeklyChallengeEntry[];
+}
+
+// ウィークリーチャレンジ個別エントリー
+export interface WeeklyChallengeEntry {
+  id: string;
+  type: 'boss_kill' | 'floor_clear' | 'enemy_kill' | 'coins_earn' | 'level_up';
+  target: number;          // 目標値
+  current: number;         // 現在の進捗
+  reward: { coins?: number; exp?: number };
+  claimed: boolean;
+}
+
+// ランキングエントリー（拡張）
+export interface RankingEntry {
+  username: string;
+  highestFloor: number;
+  level: number;
+  totalKills: number;
+  lastActiveAt: number;
 }
 
 // 敵データ

@@ -6,6 +6,10 @@ import { getEquipmentById, getRarityColor, getRarityBgColor, getRandomEquipment 
 import { getSkillById } from '@/lib/data/skills';
 import { BattleCanvas } from '@/components/BattleCanvas';
 import { StatsPanel } from '@/components/StatsPanel';
+import { RankingPanel } from '@/components/RankingPanel';
+import { FriendsPanel } from '@/components/FriendsPanel';
+import { DailyBonusPanel } from '@/components/DailyBonusPanel';
+import { WeeklyChallengePanel } from '@/components/WeeklyChallengePanel';
 import { getMilestoneById, getMilestoneProgress, MILESTONES } from '@/lib/data/milestones';
 
 // ログイン画面
@@ -708,8 +712,12 @@ function MainScreen() {
         />
       )}
       
-      {/* 統計パネル */}
+      {/* パネル群 */}
       <StatsPanel />
+      <RankingPanel />
+      <FriendsPanel />
+      <DailyBonusPanel />
+      <WeeklyChallengePanel />
     </main>
   );
 }

@@ -8,6 +8,8 @@ import { getSkillById } from '@/lib/data/skills';
 import { selectRandomEnemy, selectBoss, calculateEnemyStats, isBossFloor } from '@/data/enemies';
 import { checkNewAchievements, getAchievementById, ACHIEVEMENTS } from '@/lib/data/achievements';
 import { checkNewMilestones, getMilestoneById, MILESTONES } from '@/lib/data/milestones';
+import { updateChallengeProgress, isNewWeek, generateWeeklyChallenges, getWeekStartDate } from '@/lib/data/weeklyChallenge';
+import { WeeklyChallengeEntry } from '@/lib/types';
 
 interface GameStore {
   // 状態
@@ -79,6 +81,9 @@ interface GameStore {
   
   // 放置効率
   getIdleEfficiencyBonus: () => { coins: number; exp: number; drop: number };
+  
+  // ウィークリーチャレンジ
+  updateWeeklyChallenge: (type: WeeklyChallengeEntry['type'], amount: number) => void;
 }
 
 export const useGameStore = create<GameStore>()((set, get) => ({
@@ -530,7 +535,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
   
   addCoins: (amount: number) => {
-    const { userData, checkAndUnlockAchievements } = get();
+    const { userData, checkAndUnlockAchievements, updateWeeklyChallenge } = get();
     if (!userData) return;
     
     // 統計も更新
@@ -551,12 +556,16 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     };
     
     set({ userData: { ...userData, coins: userData.coins + amount, statistics: newStats } });
+    
+    // ウィークリーチャレンジ更新
+    updateWeeklyChallenge('coins_earn', amount);
+    
     checkAndUnlockAchievements();
     get().syncToServer();
   },
   
   addExp: (amount: number) => {
-    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements, updateWeeklyChallenge } = get();
     if (!userData) return;
     
     const newData = { ...userData };
@@ -580,18 +589,20 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     };
     
     let totalExp = newData.character.exp + amount;
+    let levelsGained = 0;
     while (totalExp >= expForLevel(newData.character.level)) {
       totalExp -= expForLevel(newData.character.level);
       newData.character.level++;
       newData.character.maxHp += 10;
       newData.character.atk += 2;
       newData.character.def += 1;
+      levelsGained++;
     }
     newData.character.exp = totalExp;
     
     set({ userData: newData });
     
-    // レベルアップした場合、履歴に追加
+    // レベルアップした場合、履歴に追加＆ウィークリーチャレンジ更新
     if (newData.character.level > oldLevel) {
       addBattleHistoryEntry({
         type: 'level_up',
@@ -600,6 +611,9 @@ export const useGameStore = create<GameStore>()((set, get) => ({
           level: newData.character.level,
         },
       });
+      
+      // ウィークリーチャレンジ更新
+      updateWeeklyChallenge('level_up', levelsGained);
     }
     
     checkAndUnlockAchievements();
@@ -778,7 +792,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   
   // キル記録
   recordKill: (isBoss: boolean) => {
-    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements, updateWeeklyChallenge } = get();
     if (!userData) return;
     
     const stats = userData.statistics ?? {
@@ -799,6 +813,12 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     };
     
     set({ userData: { ...userData, statistics: newStats } });
+    
+    // ウィークリーチャレンジ更新
+    updateWeeklyChallenge('enemy_kill', 1);
+    if (isBoss) {
+      updateWeeklyChallenge('boss_kill', 1);
+    }
     
     if (isBoss) {
       addBattleHistoryEntry({
@@ -849,7 +869,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   
   // フロアクリア記録
   recordFloorClear: (floor: number) => {
-    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements } = get();
+    const { userData, addBattleHistoryEntry, checkAndUnlockAchievements, updateWeeklyChallenge } = get();
     if (!userData) return;
     
     const stats = userData.statistics ?? {
@@ -869,6 +889,9 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     };
     
     set({ userData: { ...userData, statistics: newStats } });
+    
+    // ウィークリーチャレンジ更新
+    updateWeeklyChallenge('floor_clear', 1);
     
     addBattleHistoryEntry({
       type: 'floor_clear',
@@ -1139,5 +1162,34 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     }
     
     return { coins, exp, drop };
+  },
+  
+  // ウィークリーチャレンジ進捗更新
+  updateWeeklyChallenge: (type: WeeklyChallengeEntry['type'], amount: number) => {
+    const { userData } = get();
+    if (!userData) return;
+    
+    // 週のリセットチェック
+    let weeklyChallenge = userData.weeklyChallenge;
+    if (!weeklyChallenge || isNewWeek(weeklyChallenge.weekStartDate)) {
+      weeklyChallenge = {
+        weekStartDate: getWeekStartDate(),
+        challenges: generateWeeklyChallenges(),
+      };
+    }
+    
+    // 進捗更新
+    const updatedChallenges = updateChallengeProgress(weeklyChallenge.challenges, type, amount);
+    
+    const newData = {
+      ...userData,
+      weeklyChallenge: {
+        ...weeklyChallenge,
+        challenges: updatedChallenges,
+      },
+    };
+    
+    set({ userData: newData });
+    // syncToServerはここでは呼ばない（呼び出し元で呼ぶ）
   },
 }));
