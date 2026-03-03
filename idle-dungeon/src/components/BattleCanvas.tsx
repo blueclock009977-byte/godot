@@ -2,11 +2,6 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 
-interface Position {
-  x: number;
-  y: number;
-}
-
 interface Player {
   x: number;
   y: number;
@@ -15,6 +10,7 @@ interface Player {
   atk: number;
   def: number;
   speed: number;
+  attackRange: number;
   attackCooldown: number;
   lastAttackTime: number;
 }
@@ -67,6 +63,7 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
     atk: playerStats.atk,
     def: playerStats.def,
     speed: playerStats.speed,
+    attackRange: 120, // 攻撃範囲
     attackCooldown: 1000, // ms
     lastAttackTime: 0,
   });
@@ -194,42 +191,73 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
         ctx.fillRect(enemy.x - hpWidth / 2, enemy.y - enemy.size - 10, hpWidth * (enemy.hp / enemy.maxHp), hpHeight);
       }
       
-      // プレイヤー攻撃
-      if (currentTime - player.lastAttackTime > player.attackCooldown && enemies.length > 0) {
-        // 最も近い敵を攻撃
-        let nearestEnemy: Enemy | null = null;
-        let nearestDist = Infinity;
-        
-        for (const enemy of enemies) {
-          const dx = player.x - enemy.x;
-          const dy = player.y - enemy.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < nearestDist) {
-            nearestDist = dist;
-            nearestEnemy = enemy;
-          }
+      // 最も近い敵を探す
+      let nearestEnemy: Enemy | null = null;
+      let nearestDist = Infinity;
+      
+      for (const enemy of enemies) {
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestEnemy = enemy;
         }
+      }
+      
+      // プレイヤー自動移動（攻撃範囲外なら敵に向かって移動）
+      if (nearestEnemy && nearestDist > player.attackRange * 0.8) {
+        const dx = nearestEnemy.x - player.x;
+        const dy = nearestEnemy.y - player.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const moveSpeed = player.speed * 0.03 * deltaTime;
         
-        if (nearestEnemy && nearestDist < 150) {
-          const damage = player.atk;
-          nearestEnemy.hp -= damage;
-          addDamageNumber(nearestEnemy.x, nearestEnemy.y - 20, damage, '#fbbf24');
-          player.lastAttackTime = currentTime;
-          
-          // 攻撃エフェクト（線）
-          ctx.strokeStyle = '#fbbf24';
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(player.x, player.y);
-          ctx.lineTo(nearestEnemy.x, nearestEnemy.y);
-          ctx.stroke();
-          
-          // 敵死亡チェック
-          if (nearestEnemy.hp <= 0) {
-            enemiesRef.current = enemies.filter(e => e.id !== nearestEnemy!.id);
-            killedCountRef.current++;
-            setEnemiesKilled(killedCountRef.current);
-          }
+        player.x += (dx / dist) * moveSpeed;
+        player.y += (dy / dist) * moveSpeed;
+        
+        // 画面内に収める
+        player.x = Math.max(30, Math.min(canvas.width - 30, player.x));
+        player.y = Math.max(30, Math.min(canvas.height - 30, player.y));
+      }
+      
+      // 攻撃範囲の視覚表示（薄い円）
+      ctx.strokeStyle = 'rgba(34, 197, 94, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // 攻撃範囲内の敵がいる場合、より濃い円
+      if (nearestEnemy && nearestDist <= player.attackRange) {
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.attackRange, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
+      // プレイヤー攻撃
+      if (currentTime - player.lastAttackTime > player.attackCooldown && nearestEnemy && nearestDist <= player.attackRange) {
+        const damage = player.atk;
+        nearestEnemy.hp -= damage;
+        addDamageNumber(nearestEnemy.x, nearestEnemy.y - 20, damage, '#fbbf24');
+        player.lastAttackTime = currentTime;
+        
+        // 攻撃エフェクト（線）
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(player.x, player.y);
+        ctx.lineTo(nearestEnemy.x, nearestEnemy.y);
+        ctx.stroke();
+        
+        // 敵死亡チェック
+        if (nearestEnemy.hp <= 0) {
+          enemiesRef.current = enemies.filter(e => e.id !== nearestEnemy!.id);
+          killedCountRef.current++;
+          setEnemiesKilled(killedCountRef.current);
         }
       }
       
