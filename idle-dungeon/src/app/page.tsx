@@ -6,6 +6,7 @@ import { getEquipmentById, getRarityColor, getRarityBgColor, getRandomEquipment 
 import { getSkillById } from '@/lib/data/skills';
 import { BattleCanvas } from '@/components/BattleCanvas';
 import { StatsPanel } from '@/components/StatsPanel';
+import { getMilestoneById, getMilestoneProgress, MILESTONES } from '@/lib/data/milestones';
 
 // ログイン画面
 function LoginScreen() {
@@ -48,19 +49,22 @@ function LoginScreen() {
   );
 }
 
-// 放置結果モーダル
+// 放置結果モーダル（詳細版）
 function IdleResultModal() {
-  const { idleResult, clearIdleResult } = useGameStore();
+  const { idleResult, clearIdleResult, getIdleEfficiencyBonus } = useGameStore();
+  const [showDetails, setShowDetails] = useState(false);
   
   if (!idleResult) return null;
   
   const minutes = Math.floor(idleResult.elapsedSeconds / 60);
   const hours = Math.floor(minutes / 60);
   const remainMinutes = minutes % 60;
+  const efficiency = getIdleEfficiencyBonus();
+  const hasEfficiencyBonus = efficiency.coins > 0 || efficiency.exp > 0 || efficiency.drop > 0;
   
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-amber-500">
+      <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-amber-500 max-h-[85vh] overflow-y-auto">
         <h2 className="text-2xl font-bold text-center mb-4">🎉 放置結果</h2>
         
         <div className="text-center mb-4">
@@ -74,9 +78,36 @@ function IdleResultModal() {
           </p>
         </div>
         
+        {/* サマリー */}
         <div className="bg-slate-700 rounded-lg p-4 mb-4 space-y-2">
-          <p>💰 コイン: +{idleResult.earnedCoins}</p>
-          <p>✨ 経験値: +{idleResult.earnedExp}</p>
+          <p>💰 コイン: +{idleResult.earnedCoins.toLocaleString()}</p>
+          <p>✨ 経験値: +{idleResult.earnedExp.toLocaleString()}</p>
+          
+          {/* 詳細統計 */}
+          {idleResult.details && (
+            <div className="border-t border-slate-600 pt-2 mt-2 text-sm text-slate-400">
+              <p>⚔️ 撃破: {idleResult.details.enemiesKilled}体（ボス{idleResult.details.bossesKilled}体）</p>
+              <p>🏔️ クリア: {idleResult.details.floorsCleared}フロア</p>
+              {idleResult.details.deaths > 0 && (
+                <p>💀 倒れた回数: {idleResult.details.deaths}回</p>
+              )}
+              {idleResult.details.levelsGained > 0 && (
+                <p className="text-amber-400">⬆️ レベルアップ: +{idleResult.details.levelsGained}</p>
+              )}
+            </div>
+          )}
+          
+          {/* 効率ボーナス */}
+          {hasEfficiencyBonus && (
+            <div className="border-t border-slate-600 pt-2 mt-2 text-sm">
+              <p className="text-green-400 font-semibold">📈 効率ボーナス適用中:</p>
+              <div className="ml-2 text-green-300">
+                {efficiency.coins > 0 && <span className="mr-2">💰+{efficiency.coins}%</span>}
+                {efficiency.exp > 0 && <span className="mr-2">✨+{efficiency.exp}%</span>}
+                {efficiency.drop > 0 && <span>🎁+{efficiency.drop}%</span>}
+              </div>
+            </div>
+          )}
           
           {idleResult.droppedEquipment.length > 0 && (
             <div>
@@ -103,6 +134,40 @@ function IdleResultModal() {
           )}
         </div>
         
+        {/* 詳細イベントログ */}
+        {idleResult.details?.events && idleResult.details.events.length > 0 && (
+          <div className="mb-4">
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="w-full text-left text-sm text-slate-400 hover:text-white flex items-center justify-between"
+            >
+              <span>📋 詳細ログ ({idleResult.details.events.length}件)</span>
+              <span>{showDetails ? '▲' : '▼'}</span>
+            </button>
+            
+            {showDetails && (
+              <div className="mt-2 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto text-sm space-y-1">
+                {idleResult.details.events.map((event, i) => {
+                  const timeStr = formatEventTime(event.timestamp);
+                  const icon = event.type === 'boss_kill' ? '👑' 
+                    : event.type === 'death' ? '💀'
+                    : event.type === 'level_up' ? '⬆️'
+                    : event.type === 'equipment_drop' ? '💎'
+                    : event.type === 'skill_drop' ? '📜'
+                    : event.type === 'milestone' ? '🏆'
+                    : '🏔️';
+                  
+                  return (
+                    <p key={i} className="text-slate-300">
+                      <span className="text-slate-500">[{timeStr}]</span> {icon} {event.message}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        
         <button
           onClick={clearIdleResult}
           className="w-full py-3 rounded-lg bg-amber-600 hover:bg-amber-500 font-semibold"
@@ -112,6 +177,13 @@ function IdleResultModal() {
       </div>
     </div>
   );
+}
+
+// イベント時間をフォーマット（秒→m:ss）
+function formatEventTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 // 装備スロット
@@ -185,13 +257,20 @@ function MainScreen() {
     recordKill,
     recordDeath,
     recordFloorClear,
+    checkAndShowNewMilestones,
+    claimMilestoneReward,
+    getMilestoneProgress,
+    getTotalPlayTime,
+    getIdleEfficiencyBonus,
   } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
   const [isBattling, setIsBattling] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
+  const [showMilestones, setShowMilestones] = useState(false);
   const [lastReward, setLastReward] = useState<{ coins: number; exp: number; equipment?: string } | null>(null);
   const [autoBattle, setAutoBattle] = useState(false);
   const [currentIdleTime, setCurrentIdleTime] = useState(0);
+  const [newMilestoneIds, setNewMilestoneIds] = useState<string[]>([]);
   
   // 放置時間のリアルタイム更新
   useEffect(() => {
@@ -238,10 +317,21 @@ function MainScreen() {
     }
   };
   
+  // マイルストーンチェック
+  useEffect(() => {
+    if (!userData) return;
+    const newIds = checkAndShowNewMilestones();
+    if (newIds.length > 0) {
+      setNewMilestoneIds(newIds);
+    }
+  }, [userData?.highestFloor, checkAndShowNewMilestones]);
+  
   if (!userData) return null;
   
   const stats = getTotalStats();
   const skillEffects = getSkillEffects();
+  const efficiency = getIdleEfficiencyBonus();
+  const totalPlayTime = getTotalPlayTime();
   
   // ボス報酬を保持するstate
   const [bossBonus, setBossBonus] = useState<number>(0);
@@ -506,23 +596,59 @@ function MainScreen() {
         </div>
         
         {/* アクションボタン */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => setShowEquipment(true)}
-            className="py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold"
+            className="py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold text-sm"
           >
-            🎒 装備変更
+            🎒 装備
           </button>
           <button
             onClick={() => setShowSkills(true)}
-            className="py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold"
+            className="py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-semibold text-sm"
           >
             📜 スキル
           </button>
+          <button
+            onClick={() => setShowMilestones(true)}
+            className={`py-3 rounded-lg font-semibold text-sm relative ${
+              newMilestoneIds.length > 0
+                ? 'bg-amber-600 hover:bg-amber-500 animate-pulse'
+                : 'bg-slate-700 hover:bg-slate-600'
+            }`}
+          >
+            🏆 報酬
+            {newMilestoneIds.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs flex items-center justify-center">
+                {newMilestoneIds.length}
+              </span>
+            )}
+          </button>
         </div>
         
+        {/* マイルストーン進捗 */}
+        <MilestoneProgressBar currentFloor={userData.highestFloor} />
+        
+        {/* 放置効率ボーナス */}
+        {(efficiency.coins > 0 || efficiency.exp > 0 || efficiency.drop > 0) && (
+          <div className="mt-4 bg-gradient-to-r from-green-900/30 to-emerald-900/30 rounded-xl p-4 border border-green-600">
+            <h3 className="text-sm text-green-400 mb-2 font-semibold">📈 放置効率ボーナス</h3>
+            <div className="flex justify-center gap-4 text-sm">
+              {efficiency.coins > 0 && (
+                <span className="text-green-300">💰 +{efficiency.coins}%</span>
+              )}
+              {efficiency.exp > 0 && (
+                <span className="text-green-300">✨ +{efficiency.exp}%</span>
+              )}
+              {efficiency.drop > 0 && (
+                <span className="text-green-300">🎁 +{efficiency.drop}%</span>
+              )}
+            </div>
+          </div>
+        )}
+        
         {/* 放置時間・通知設定 */}
-        <div className="mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700">
+        <div className="mt-4 bg-slate-800 rounded-xl p-4 border border-slate-700">
           <h3 className="text-sm text-slate-400 mb-2">放置進行</h3>
           <div className="text-center">
             <p className="text-slate-300">
@@ -530,6 +656,13 @@ function MainScreen() {
             </p>
             <p className="text-xs text-slate-500 mt-1">
               アプリを閉じている間も自動で冒険が進みます（最大8時間）
+            </p>
+          </div>
+          
+          {/* 累計プレイ時間 */}
+          <div className="mt-3 pt-3 border-t border-slate-700 text-center">
+            <p className="text-xs text-slate-500">
+              累計プレイ時間: <span className="text-slate-300">{formatPlayTime(totalPlayTime)}</span>
             </p>
           </div>
           
@@ -563,6 +696,16 @@ function MainScreen() {
       {/* スキルモーダル */}
       {showSkills && (
         <SkillModal onClose={() => setShowSkills(false)} />
+      )}
+      
+      {/* マイルストーンモーダル */}
+      {showMilestones && (
+        <MilestoneModal 
+          onClose={() => {
+            setShowMilestones(false);
+            setNewMilestoneIds([]); // 閉じたら通知クリア
+          }}
+        />
       )}
       
       {/* 統計パネル */}
@@ -726,6 +869,129 @@ function SkillModal({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+}
+
+// マイルストーンプログレスバー
+function MilestoneProgressBar({ currentFloor }: { currentFloor: number }) {
+  const progress = getMilestoneProgress(currentFloor);
+  
+  return (
+    <div className="mt-4 bg-slate-800 rounded-xl p-4 border border-slate-700">
+      <div className="flex items-center justify-between text-sm mb-2">
+        <span className="text-slate-400">次のマイルストーン</span>
+        {progress.next ? (
+          <span className="text-amber-400">{progress.next.icon} {progress.next.floor}階</span>
+        ) : (
+          <span className="text-green-400">🏆 全達成！</span>
+        )}
+      </div>
+      
+      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all"
+          style={{ width: `${progress.progress}%` }}
+        />
+      </div>
+      
+      {progress.next && (
+        <div className="text-center mt-2 text-xs text-slate-500">
+          あと{progress.next.floor - currentFloor}階で「{progress.next.name}」達成
+        </div>
+      )}
+    </div>
+  );
+}
+
+// マイルストーンモーダル
+function MilestoneModal({ onClose }: { onClose: () => void }) {
+  const { 
+    userData, 
+    claimMilestoneReward, 
+    getMilestoneProgress: getUserMilestoneProgress 
+  } = useGameStore();
+  
+  if (!userData) return null;
+  
+  const userProgress = getUserMilestoneProgress();
+  
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+      <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full border border-amber-500 max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">🏆 マイルストーン報酬</h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
+        </div>
+        
+        <p className="text-sm text-slate-400 mb-4">
+          特定の階層に初めて到達するとボーナス報酬がもらえます！
+        </p>
+        
+        <div className="space-y-3">
+          {MILESTONES.map(milestone => {
+            const progress = userProgress[milestone.id];
+            const isReached = userData.highestFloor >= milestone.floor;
+            const isClaimed = progress?.claimedAt && progress.claimedAt > 0;
+            const canClaim = isReached && !isClaimed;
+            
+            return (
+              <div
+                key={milestone.id}
+                className={`p-3 rounded-lg border ${
+                  canClaim
+                    ? 'bg-amber-900/30 border-amber-500 animate-pulse'
+                    : isClaimed
+                    ? 'bg-slate-700 border-green-600'
+                    : isReached
+                    ? 'bg-slate-700 border-slate-500'
+                    : 'bg-slate-900/50 border-slate-700 opacity-60'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{milestone.icon}</span>
+                    <div>
+                      <div className="font-semibold">{milestone.name}</div>
+                      <div className="text-xs text-slate-400">{milestone.description}</div>
+                    </div>
+                  </div>
+                  
+                  {canClaim ? (
+                    <button
+                      onClick={() => claimMilestoneReward(milestone.id)}
+                      className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-semibold"
+                    >
+                      受取
+                    </button>
+                  ) : isClaimed ? (
+                    <span className="text-green-400 text-sm">✓ 受取済</span>
+                  ) : (
+                    <span className="text-slate-500 text-sm">{milestone.floor}階</span>
+                  )}
+                </div>
+                
+                {/* 報酬表示 */}
+                <div className="mt-2 text-xs text-slate-400 flex gap-3">
+                  {milestone.reward.coins && <span>💰 {milestone.reward.coins}</span>}
+                  {milestone.reward.exp && <span>✨ {milestone.reward.exp}</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// プレイ時間フォーマット
+function formatPlayTime(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  
+  if (hours > 0) {
+    return `${hours}時間${mins}分`;
+  }
+  return `${mins}分`;
 }
 
 // メインコンポーネント

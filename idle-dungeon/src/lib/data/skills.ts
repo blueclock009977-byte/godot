@@ -70,6 +70,44 @@ export const skills: Skill[] = [
     description: '回避率+7%',
     effect: { dodgeRate: 7 }
   },
+  
+  // 放置効率系
+  {
+    id: 'idle_coins_1',
+    name: 'ゴールドラッシュI',
+    description: '放置コイン+15%',
+    effect: { idleCoinsBonus: 15 }
+  },
+  {
+    id: 'idle_coins_2',
+    name: 'ゴールドラッシュII',
+    description: '放置コイン+30%',
+    effect: { idleCoinsBonus: 30 }
+  },
+  {
+    id: 'idle_exp_1',
+    name: '経験の宝珠I',
+    description: '放置経験値+15%',
+    effect: { idleExpBonus: 15 }
+  },
+  {
+    id: 'idle_exp_2',
+    name: '経験の宝珠II',
+    description: '放置経験値+30%',
+    effect: { idleExpBonus: 30 }
+  },
+  {
+    id: 'idle_drop_1',
+    name: '幸運のお守りI',
+    description: '放置ドロップ率+10%',
+    effect: { idleDropBonus: 10 }
+  },
+  {
+    id: 'idle_drop_2',
+    name: '幸運のお守りII',
+    description: '放置ドロップ率+20%',
+    effect: { idleDropBonus: 20 }
+  },
 ];
 
 export function getSkillById(id: string): Skill | undefined {

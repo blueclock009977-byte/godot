@@ -42,6 +42,9 @@ export interface SkillEffect {
   atkPercent?: number;    // ATK%上昇
   defPercent?: number;    // DEF%上昇
   dodgeRate?: number;     // 回避率
+  idleCoinsBonus?: number;  // 放置コインボーナス（%）
+  idleExpBonus?: number;    // 放置経験値ボーナス（%）
+  idleDropBonus?: number;   // 放置ドロップ率ボーナス（%）
 }
 
 // ポーションタイプ
@@ -72,6 +75,8 @@ export interface UserData {
   statistics: Statistics;   // 累計統計
   battleHistory: BattleHistoryEntry[]; // 戦闘履歴（直近50件）
   achievements: Record<string, AchievementProgress>; // 実績進捗
+  milestones: Record<string, MilestoneProgress>;     // マイルストーン進捗
+  sessionStartedAt: number; // 現在セッション開始時刻
 }
 
 // 敵データ
@@ -97,6 +102,45 @@ export interface IdleResult {
   earnedExp: number;
   earnedCoins: number;
   elapsedSeconds: number;
+  // 詳細情報
+  details?: IdleResultDetails;
+}
+
+// 放置中の詳細イベント
+export interface IdleResultDetails {
+  floorsCleared: number;          // クリアしたフロア数
+  enemiesKilled: number;          // 倒した敵の数
+  bossesKilled: number;           // 倒したボスの数
+  deaths: number;                 // 死亡回数
+  levelsGained: number;           // 上がったレベル数
+  efficiencyBonus: number;        // 効率ボーナス（%）
+  events: IdleEvent[];            // 発生イベントログ
+}
+
+// 放置中イベント
+export interface IdleEvent {
+  type: 'floor_clear' | 'boss_kill' | 'death' | 'level_up' | 'equipment_drop' | 'skill_drop' | 'milestone';
+  floor?: number;
+  message: string;
+  timestamp: number;  // 相対時間（秒）
+}
+
+// マイルストーン報酬
+export interface Milestone {
+  id: string;
+  name: string;
+  description: string;
+  floor: number;
+  icon: string;
+  reward: {
+    coins?: number;
+    exp?: number;
+  };
+}
+
+// マイルストーン達成状態
+export interface MilestoneProgress {
+  claimedAt: number;  // 受け取り時刻（0なら未受け取り）
 }
 
 // 累計統計

@@ -135,6 +135,14 @@ function TabButton({
 
 // 統計タブ
 function StatisticsTab({ stats, userData }: { stats: ReturnType<typeof useGameStore.getState>['getStatistics'] extends () => infer R ? R : never; userData: ReturnType<typeof useGameStore.getState>['userData'] }) {
+  // プレイ時間フォーマット
+  const formatPlayTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    if (hours > 0) return `${hours}時間${mins}分`;
+    return `${mins}分`;
+  };
+  
   return (
     <div className="space-y-4">
       {/* 基本統計 */}
@@ -146,6 +154,7 @@ function StatisticsTab({ stats, userData }: { stats: ReturnType<typeof useGameSt
         <StatCard icon="💰" label="累計獲得コイン" value={stats.totalCoinsEarned.toLocaleString()} />
         <StatCard icon="✨" label="累計獲得EXP" value={stats.totalExpEarned.toLocaleString()} />
         <StatCard icon="🧪" label="ポーション使用数" value={stats.totalPotionsUsed.toLocaleString()} />
+        <StatCard icon="⏱️" label="累計プレイ時間" value={formatPlayTime(stats.totalPlayTimeSeconds)} />
         <StatCard
           icon="📊"
           label="到達最高階層"

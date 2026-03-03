@@ -39,6 +39,7 @@ export async function saveUserData(username: string, data: UserData): Promise<bo
 
 // 新規ユーザー作成
 export function createNewUser(username: string): UserData {
+  const now = Date.now();
   return {
     username,
     character: {
@@ -58,7 +59,7 @@ export function createNewUser(username: string): UserData {
     inventory: ['wooden_sword', 'cloth_armor'], // 初期装備
     equippedSkills: [],
     skillInventory: [],
-    lastActiveAt: Date.now(),
+    lastActiveAt: now,
     coins: 0,
     potions: 3, // 初期ポーション
     statistics: {
@@ -73,6 +74,8 @@ export function createNewUser(username: string): UserData {
     },
     battleHistory: [],
     achievements: {},
+    milestones: {},
+    sessionStartedAt: now,
   };
 }
 

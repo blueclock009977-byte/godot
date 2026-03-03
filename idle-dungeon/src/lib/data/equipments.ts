@@ -38,6 +38,11 @@ export const equipments: Equipment[] = [
   
   // Epic アクセサリ
   { id: 'vampiric_ring', name: '吸血のリング', type: 'accessory', rarity: 'epic', atk: 20, effect: 'HP吸収5%' },
+  
+  // 放置効率ボーナス装備（Legendary）
+  { id: 'idle_crown', name: '放置王の冠', type: 'accessory', rarity: 'legendary', hp: 50, effect: '放置コイン+25%' },
+  { id: 'fortune_pendant', name: '幸運のペンダント', type: 'accessory', rarity: 'epic', hp: 30, effect: '放置ドロップ+15%' },
+  { id: 'exp_crystal', name: '経験の結晶', type: 'accessory', rarity: 'rare', hp: 20, effect: '放置経験値+20%' },
 ];
 
 export function getEquipmentById(id: string): Equipment | undefined {
