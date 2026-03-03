@@ -103,6 +103,15 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       data = createNewUser(username);
       await saveUserData(username, data);
     }
+
+    // データマイグレーション（古いユーザー対応）
+    if (!data.equippedSkills) {
+      data.equippedSkills = [];
+    }
+    if (!data.skillInventory) {
+      data.skillInventory = [];
+
+    }
     
     // 放置進行を計算
     const now = Date.now();
