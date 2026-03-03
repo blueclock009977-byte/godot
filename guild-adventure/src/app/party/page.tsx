@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { CharacterIcon } from '@/components/CharacterIcon';
 import { getPartyTreasureHuntBonuses, hasTreasureHuntBonuses } from '@/lib/drop/dropBonus';
+import { calculateTotalStats } from '@/lib/character/bonuses';
 
 function CharacterCard({ 
   character, 
@@ -27,6 +28,7 @@ function CharacterCard({
 }) {
   const raceData = races[character.race];
   const jobData = jobs[character.job];
+  const totalStats = calculateTotalStats(character);
   
   return (
     <div
@@ -56,8 +58,8 @@ function CharacterCard({
             {raceData.name} / {jobData.name}
           </div>
           <div className="flex gap-2 mt-1 text-xs">
-            <span className="text-red-400">HP{character.stats.maxHp}</span>
-            <span className="text-orange-400">ATK{character.stats.atk}</span>
+            <span className="text-red-400">HP{totalStats.maxHp}</span>
+            <span className="text-orange-400">ATK{totalStats.atk}</span>
           </div>
         </div>
       </div>

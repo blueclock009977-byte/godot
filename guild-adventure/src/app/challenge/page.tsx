@@ -9,6 +9,7 @@ import { runChallengeBattle, ChallengeResult } from '@/lib/battle/engine';
 import { Party, Character } from '@/lib/types';
 import { races } from '@/lib/data/races';
 import { jobs } from '@/lib/data/jobs';
+import { calculateTotalStats } from '@/lib/character/bonuses';
 import { allEquipments } from '@/lib/data/equipments';
 import { allItems } from '@/lib/data/items';
 import BattleLogDisplay from '@/components/BattleLogDisplay';
@@ -332,8 +333,8 @@ export default function ChallengePage() {
                     </div>
                     <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
                     <div className="flex gap-2 mt-1 text-xs">
-                      <span className="text-red-400">HP{char.stats.maxHp}</span>
-                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                      <span className="text-red-400">HP{calculateTotalStats(char).maxHp}</span>
+                      <span className="text-orange-400">ATK{calculateTotalStats(char).atk}</span>
                     </div>
                   </button>
                 ))}
@@ -372,8 +373,8 @@ export default function ChallengePage() {
                     </div>
                     <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
                     <div className="flex gap-2 mt-1 text-xs">
-                      <span className="text-red-400">HP{char.stats.maxHp}</span>
-                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                      <span className="text-red-400">HP{calculateTotalStats(char).maxHp}</span>
+                      <span className="text-orange-400">ATK{calculateTotalStats(char).atk}</span>
                     </div>
                   </button>
                 ))}
@@ -416,8 +417,8 @@ export default function ChallengePage() {
                     <p className="font-semibold truncate">{char.name}</p>
                     <p className="text-xs text-slate-300">{races[char.race].name} / {jobs[char.job].name}</p>
                     <div className="flex gap-2 mt-1 text-xs">
-                      <span className="text-red-400">HP{char.stats.maxHp}</span>
-                      <span className="text-orange-400">ATK{char.stats.atk}</span>
+                      <span className="text-red-400">HP{calculateTotalStats(char).maxHp}</span>
+                      <span className="text-orange-400">ATK{calculateTotalStats(char).atk}</span>
                     </div>
                   </button>
                 ))}
