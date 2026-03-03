@@ -123,6 +123,14 @@ export function createNewUser(username: string): UserData {
         { id: 'level_up_5', type: 'level_up', target: 5, current: 0, reward: { coins: 600, exp: 300 }, claimed: false },
       ],
     },
+    
+    // ガチャ履歴
+    gachaHistory: {
+      totalPulls: 0,
+      pityCounter: 0,
+      lastPullTimestamp: 0,
+      legendaryPulls: 0,
+    },
   };
 }
 

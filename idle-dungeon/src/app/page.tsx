@@ -10,6 +10,7 @@ import { RankingPanel } from '@/components/RankingPanel';
 import { FriendsPanel } from '@/components/FriendsPanel';
 import { DailyBonusPanel } from '@/components/DailyBonusPanel';
 import { WeeklyChallengePanel } from '@/components/WeeklyChallengePanel';
+import { GachaPanel } from '@/components/GachaPanel';
 import { getMilestoneById, getMilestoneProgress, MILESTONES } from '@/lib/data/milestones';
 
 // ログイン画面
@@ -718,6 +719,7 @@ function MainScreen() {
       <FriendsPanel />
       <DailyBonusPanel />
       <WeeklyChallengePanel />
+      <GachaPanel />
     </main>
   );
 }

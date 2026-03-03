@@ -88,6 +88,9 @@ export interface UserData {
   
   // ウィークリーチャレンジ
   weeklyChallenge: WeeklyChallengeProgress;
+  
+  // ガチャ履歴
+  gachaHistory: GachaHistory;
 }
 
 // フレンドリクエスト
@@ -236,4 +239,21 @@ export interface Achievement {
 export interface AchievementProgress {
   unlockedAt: number;  // 解除時刻（0なら未解除）
   claimed: boolean;    // 報酬受け取り済み
+}
+
+// ガチャ履歴
+export interface GachaHistory {
+  totalPulls: number;           // 累計ガチャ回数
+  pityCounter: number;          // 天井カウンター（100で確定）
+  lastPullTimestamp: number;    // 最後にガチャを引いた時刻
+  legendaryPulls: number;       // レジェンダリー排出回数
+}
+
+// ガチャ結果
+export interface GachaResult {
+  item: Equipment | Skill;
+  isNew: boolean;               // 新規入手か
+  rarity: Rarity;
+  isPity: boolean;              // 天井発動か
+  itemType: 'equipment' | 'skill';
 }
