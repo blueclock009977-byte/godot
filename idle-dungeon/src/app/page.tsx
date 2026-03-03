@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { getEquipmentById, getRarityColor, getRarityBgColor } from '@/lib/data/equipments';
 import { getSkillById } from '@/lib/data/skills';
+import { BattleCanvas } from '@/components/BattleCanvas';
 
 // ログイン画面
 function LoginScreen() {
@@ -153,6 +154,7 @@ function EquipmentSlot({
 function MainScreen() {
   const { userData, getTotalStats, logout, idleResult } = useGameStore();
   const [showEquipment, setShowEquipment] = useState(false);
+  const [isBattling, setIsBattling] = useState(false);
   const [showSkills, setShowSkills] = useState(false);
   
   if (!userData) return null;
@@ -227,6 +229,41 @@ function MainScreen() {
             最高記録: {userData.highestFloor}階
           </div>
         </div>
+
+        {/* バトルセクション */}
+        {isBattling ? (
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4">
+            <BattleCanvas
+              playerStats={{
+                maxHp: stats.maxHp,
+                atk: stats.atk,
+                def: stats.def,
+                speed: stats.spd,
+              }}
+              floor={userData.currentFloor}
+              onFloorClear={() => {
+                // フロアクリア処理
+                setIsBattling(false);
+              }}
+              onPlayerDeath={() => {
+                setIsBattling(false);
+              }}
+            />
+            <button
+              onClick={() => setIsBattling(false)}
+              className="w-full mt-4 py-2 rounded-lg bg-slate-600 hover:bg-slate-500"
+            >
+              戦闘を中断
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsBattling(true)}
+            className="w-full mb-4 py-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 font-bold text-xl"
+          >
+            ⚔️ 戦闘開始
+          </button>
+        )}
         
         {/* 装備スロット */}
         <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 mb-4">

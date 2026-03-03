@@ -1,0 +1,335 @@
+'use client';
+
+import { useRef, useEffect, useState, useCallback } from 'react';
+
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Player {
+  x: number;
+  y: number;
+  hp: number;
+  maxHp: number;
+  atk: number;
+  def: number;
+  speed: number;
+  attackCooldown: number;
+  lastAttackTime: number;
+}
+
+interface Enemy {
+  id: number;
+  x: number;
+  y: number;
+  hp: number;
+  maxHp: number;
+  atk: number;
+  speed: number;
+  color: string;
+  size: number;
+}
+
+interface DamageNumber {
+  id: number;
+  x: number;
+  y: number;
+  value: number;
+  color: string;
+  createdAt: number;
+}
+
+interface BattleCanvasProps {
+  playerStats: {
+    maxHp: number;
+    atk: number;
+    def: number;
+    speed: number;
+  };
+  floor: number;
+  onFloorClear: () => void;
+  onPlayerDeath: () => void;
+}
+
+export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }: BattleCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [gameState, setGameState] = useState<'playing' | 'clear' | 'dead'>('playing');
+  const [enemiesKilled, setEnemiesKilled] = useState(0);
+  const enemiesPerFloor = 5 + Math.floor(floor / 5) * 2;
+  
+  // ゲーム状態をrefで管理（アニメーションループ内で使用）
+  const playerRef = useRef<Player>({
+    x: 200,
+    y: 300,
+    hp: playerStats.maxHp,
+    maxHp: playerStats.maxHp,
+    atk: playerStats.atk,
+    def: playerStats.def,
+    speed: playerStats.speed,
+    attackCooldown: 1000, // ms
+    lastAttackTime: 0,
+  });
+  
+  const enemiesRef = useRef<Enemy[]>([]);
+  const damageNumbersRef = useRef<DamageNumber[]>([]);
+  const nextEnemyIdRef = useRef(0);
+  const nextDamageIdRef = useRef(0);
+  const killedCountRef = useRef(0);
+  const lastSpawnTimeRef = useRef(0);
+  
+  // 敵をスポーン
+  const spawnEnemy = useCallback(() => {
+    const side = Math.random() > 0.5 ? 'left' : 'right';
+    const baseHp = 20 + floor * 5;
+    const baseAtk = 5 + floor * 2;
+    
+    const enemy: Enemy = {
+      id: nextEnemyIdRef.current++,
+      x: side === 'left' ? -30 : 430,
+      y: 150 + Math.random() * 200,
+      hp: baseHp + Math.floor(Math.random() * 10),
+      maxHp: baseHp + Math.floor(Math.random() * 10),
+      atk: baseAtk + Math.floor(Math.random() * 3),
+      speed: 0.5 + Math.random() * 0.5,
+      color: `hsl(${Math.random() * 60 + 300}, 70%, 50%)`,
+      size: 20 + Math.floor(Math.random() * 10),
+    };
+    enemy.maxHp = enemy.hp;
+    enemiesRef.current.push(enemy);
+  }, [floor]);
+  
+  // ダメージ数字を追加
+  const addDamageNumber = useCallback((x: number, y: number, value: number, color: string) => {
+    damageNumbersRef.current.push({
+      id: nextDamageIdRef.current++,
+      x,
+      y,
+      value,
+      color,
+      createdAt: Date.now(),
+    });
+  }, []);
+  
+  // ゲームループ
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    let animationId: number;
+    let lastTime = 0;
+    
+    const gameLoop = (currentTime: number) => {
+      const deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      
+      const player = playerRef.current;
+      const enemies = enemiesRef.current;
+      const damageNumbers = damageNumbersRef.current;
+      
+      // 背景クリア
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // グリッド描画（床）
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+      
+      // 敵スポーン
+      if (currentTime - lastSpawnTimeRef.current > 2000 && 
+          enemies.length < 3 && 
+          killedCountRef.current < enemiesPerFloor) {
+        spawnEnemy();
+        lastSpawnTimeRef.current = currentTime;
+      }
+      
+      // 敵更新・描画
+      for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i];
+        
+        // プレイヤーに向かって移動
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist > 40) {
+          enemy.x += (dx / dist) * enemy.speed * deltaTime * 0.1;
+          enemy.y += (dy / dist) * enemy.speed * deltaTime * 0.1;
+        } else {
+          // 近接攻撃（簡易）
+          if (Math.random() < 0.01) {
+            const damage = Math.max(1, enemy.atk - player.def);
+            player.hp -= damage;
+            addDamageNumber(player.x, player.y - 20, damage, '#ff6b6b');
+          }
+        }
+        
+        // 敵描画
+        ctx.fillStyle = enemy.color;
+        ctx.beginPath();
+        ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 敵HP
+        const hpWidth = enemy.size * 2;
+        const hpHeight = 4;
+        ctx.fillStyle = '#333';
+        ctx.fillRect(enemy.x - hpWidth / 2, enemy.y - enemy.size - 10, hpWidth, hpHeight);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(enemy.x - hpWidth / 2, enemy.y - enemy.size - 10, hpWidth * (enemy.hp / enemy.maxHp), hpHeight);
+      }
+      
+      // プレイヤー攻撃
+      if (currentTime - player.lastAttackTime > player.attackCooldown && enemies.length > 0) {
+        // 最も近い敵を攻撃
+        let nearestEnemy: Enemy | null = null;
+        let nearestDist = Infinity;
+        
+        for (const enemy of enemies) {
+          const dx = player.x - enemy.x;
+          const dy = player.y - enemy.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearestEnemy = enemy;
+          }
+        }
+        
+        if (nearestEnemy && nearestDist < 150) {
+          const damage = player.atk;
+          nearestEnemy.hp -= damage;
+          addDamageNumber(nearestEnemy.x, nearestEnemy.y - 20, damage, '#fbbf24');
+          player.lastAttackTime = currentTime;
+          
+          // 攻撃エフェクト（線）
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(player.x, player.y);
+          ctx.lineTo(nearestEnemy.x, nearestEnemy.y);
+          ctx.stroke();
+          
+          // 敵死亡チェック
+          if (nearestEnemy.hp <= 0) {
+            enemiesRef.current = enemies.filter(e => e.id !== nearestEnemy!.id);
+            killedCountRef.current++;
+            setEnemiesKilled(killedCountRef.current);
+          }
+        }
+      }
+      
+      // プレイヤー描画
+      ctx.fillStyle = '#22c55e';
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, 25, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // プレイヤー顔
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.arc(player.x - 8, player.y - 5, 4, 0, Math.PI * 2);
+      ctx.arc(player.x + 8, player.y - 5, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(player.x, player.y + 5, 8, 0, Math.PI);
+      ctx.stroke();
+      
+      // ダメージ数字更新・描画
+      const now = Date.now();
+      for (let i = damageNumbers.length - 1; i >= 0; i--) {
+        const dn = damageNumbers[i];
+        const age = now - dn.createdAt;
+        
+        if (age > 1000) {
+          damageNumbers.splice(i, 1);
+          continue;
+        }
+        
+        const alpha = 1 - age / 1000;
+        const offsetY = age * 0.05;
+        
+        ctx.fillStyle = dn.color;
+        ctx.globalAlpha = alpha;
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(String(dn.value), dn.x, dn.y - offsetY);
+        ctx.globalAlpha = 1;
+      }
+      
+      // UI: フロア情報
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Floor ${floor}`, 10, 25);
+      ctx.fillText(`Enemies: ${killedCountRef.current}/${enemiesPerFloor}`, 10, 45);
+      
+      // UI: プレイヤーHP
+      ctx.fillStyle = '#333';
+      ctx.fillRect(10, 55, 150, 10);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(10, 55, 150 * (player.hp / player.maxHp), 10);
+      ctx.fillStyle = '#fff';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`HP: ${Math.max(0, Math.floor(player.hp))}/${player.maxHp}`, 10, 80);
+      
+      // ゲーム終了判定
+      if (player.hp <= 0) {
+        setGameState('dead');
+        onPlayerDeath();
+        return;
+      }
+      
+      if (killedCountRef.current >= enemiesPerFloor && enemies.length === 0) {
+        setGameState('clear');
+        onFloorClear();
+        return;
+      }
+      
+      animationId = requestAnimationFrame(gameLoop);
+    };
+    
+    // 初期敵スポーン
+    spawnEnemy();
+    animationId = requestAnimationFrame(gameLoop);
+    
+    return () => {
+      cancelAnimationFrame(animationId);
+    };
+  }, [floor, playerStats, spawnEnemy, addDamageNumber, onFloorClear, onPlayerDeath, enemiesPerFloor]);
+  
+  return (
+    <div className="relative">
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={400}
+        className="rounded-lg border-2 border-slate-600"
+      />
+      {gameState === 'clear' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+          <div className="text-2xl font-bold text-amber-400">🎉 Floor Clear!</div>
+        </div>
+      )}
+      {gameState === 'dead' && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+          <div className="text-2xl font-bold text-red-400">💀 Game Over</div>
+        </div>
+      )}
+    </div>
+  );
+}
