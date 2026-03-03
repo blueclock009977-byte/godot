@@ -512,7 +512,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     
     const effects: SkillEffect = {};
     
-    userData.equippedSkills.forEach(skillId => {
+    (userData.equippedSkills || []).forEach(skillId => {
       if (!skillId) return;
       const skill = getSkillById(skillId);
       if (!skill) return;
