@@ -468,7 +468,7 @@ export default function Home() {
     }
   }, [login]);
   
-  if (!autoLoginChecked || isLoading) {
+  if (!autoLoginChecked) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-xl">⏳ 読み込み中...</div>
