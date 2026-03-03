@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
+import { EnemyType, selectRandomEnemy, calculateEnemyStats } from '@/data/enemies';
 
 interface Player {
   x: number;
@@ -17,13 +18,13 @@ interface Player {
 
 interface Enemy {
   id: number;
+  type: EnemyType;
   x: number;
   y: number;
   hp: number;
   maxHp: number;
   atk: number;
   speed: number;
-  color: string;
   size: number;
 }
 
@@ -78,23 +79,158 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
   // 敵をスポーン
   const spawnEnemy = useCallback(() => {
     const side = Math.random() > 0.5 ? 'left' : 'right';
-    const baseHp = 20 + floor * 5;
-    const baseAtk = 5 + floor * 2;
+    const enemyType = selectRandomEnemy(floor);
+    const stats = calculateEnemyStats(enemyType, floor);
+    
+    // ±10%のランダム変動
+    const hpVariance = 1 + (Math.random() - 0.5) * 0.2;
+    const atkVariance = 1 + (Math.random() - 0.5) * 0.2;
     
     const enemy: Enemy = {
       id: nextEnemyIdRef.current++,
+      type: enemyType,
       x: side === 'left' ? -30 : 430,
       y: 150 + Math.random() * 200,
-      hp: baseHp + Math.floor(Math.random() * 10),
-      maxHp: baseHp + Math.floor(Math.random() * 10),
-      atk: baseAtk + Math.floor(Math.random() * 3),
-      speed: 0.5 + Math.random() * 0.5,
-      color: `hsl(${Math.random() * 60 + 300}, 70%, 50%)`,
-      size: 20 + Math.floor(Math.random() * 10),
+      hp: Math.floor(stats.hp * hpVariance),
+      maxHp: Math.floor(stats.hp * hpVariance),
+      atk: Math.floor(stats.atk * atkVariance),
+      speed: stats.speed,
+      size: stats.size,
     };
-    enemy.maxHp = enemy.hp;
     enemiesRef.current.push(enemy);
   }, [floor]);
+  
+  // 敵描画関数（タイプ別）
+  const drawEnemy = useCallback((ctx: CanvasRenderingContext2D, enemy: Enemy) => {
+    const { type, x, y, size } = enemy;
+    
+    ctx.save();
+    
+    switch (type.id) {
+      case 'slime':
+        // スライム: ぷよぷよした楕円
+        ctx.fillStyle = type.color;
+        ctx.beginPath();
+        ctx.ellipse(x, y + size * 0.1, size, size * 0.8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // ハイライト
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(x - size * 0.3, y - size * 0.2, size * 0.2, size * 0.15, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        // 目
+        ctx.fillStyle = type.secondaryColor;
+        ctx.beginPath();
+        ctx.arc(x - size * 0.3, y, size * 0.15, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.3, y, size * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+        
+      case 'goblin':
+        // ゴブリン: 角ばった体
+        ctx.fillStyle = type.color;
+        ctx.beginPath();
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size * 0.8, y - size * 0.3);
+        ctx.lineTo(x + size * 0.6, y + size);
+        ctx.lineTo(x - size * 0.6, y + size);
+        ctx.lineTo(x - size * 0.8, y - size * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        // 耳
+        ctx.beginPath();
+        ctx.moveTo(x - size * 0.8, y - size * 0.3);
+        ctx.lineTo(x - size * 1.2, y - size * 0.6);
+        ctx.lineTo(x - size * 0.5, y - size * 0.5);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.8, y - size * 0.3);
+        ctx.lineTo(x + size * 1.2, y - size * 0.6);
+        ctx.lineTo(x + size * 0.5, y - size * 0.5);
+        ctx.fill();
+        // 目
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(x - size * 0.25, y - size * 0.2, size * 0.12, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.25, y - size * 0.2, size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+        
+      case 'skeleton':
+        // スケルトン: 骸骨っぽい
+        ctx.fillStyle = type.color;
+        // 頭蓋骨
+        ctx.beginPath();
+        ctx.arc(x, y - size * 0.3, size * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        // 顎
+        ctx.fillRect(x - size * 0.4, y + size * 0.1, size * 0.8, size * 0.4);
+        // 目（穴）
+        ctx.fillStyle = type.secondaryColor;
+        ctx.beginPath();
+        ctx.arc(x - size * 0.25, y - size * 0.35, size * 0.18, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.25, y - size * 0.35, size * 0.18, 0, Math.PI * 2);
+        ctx.fill();
+        // 鼻穴
+        ctx.beginPath();
+        ctx.moveTo(x, y - size * 0.05);
+        ctx.lineTo(x - size * 0.1, y + size * 0.1);
+        ctx.lineTo(x + size * 0.1, y + size * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        // 歯
+        ctx.fillStyle = type.color;
+        for (let i = -2; i <= 2; i++) {
+          ctx.fillRect(x + i * size * 0.15 - size * 0.05, y + size * 0.15, size * 0.1, size * 0.2);
+        }
+        break;
+        
+      case 'orc':
+        // オーク: 大きくて筋肉質
+        ctx.fillStyle = type.color;
+        // 体
+        ctx.beginPath();
+        ctx.ellipse(x, y, size, size * 1.1, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // 牙
+        ctx.fillStyle = '#e5e5e5';
+        ctx.beginPath();
+        ctx.moveTo(x - size * 0.4, y + size * 0.2);
+        ctx.lineTo(x - size * 0.3, y - size * 0.2);
+        ctx.lineTo(x - size * 0.2, y + size * 0.2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.4, y + size * 0.2);
+        ctx.lineTo(x + size * 0.3, y - size * 0.2);
+        ctx.lineTo(x + size * 0.2, y + size * 0.2);
+        ctx.fill();
+        // 目
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(x - size * 0.35, y - size * 0.25, size * 0.12, 0, Math.PI * 2);
+        ctx.arc(x + size * 0.35, y - size * 0.25, size * 0.12, 0, Math.PI * 2);
+        ctx.fill();
+        // 眉毛（怒り）
+        ctx.strokeStyle = type.secondaryColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x - size * 0.5, y - size * 0.5);
+        ctx.lineTo(x - size * 0.2, y - size * 0.35);
+        ctx.moveTo(x + size * 0.5, y - size * 0.5);
+        ctx.lineTo(x + size * 0.2, y - size * 0.35);
+        ctx.stroke();
+        break;
+        
+      default:
+        // フォールバック
+        ctx.fillStyle = type.color;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    ctx.restore();
+  }, []);
   
   // ダメージ数字を追加
   const addDamageNumber = useCallback((x: number, y: number, value: number, color: string) => {
@@ -176,11 +312,8 @@ export function BattleCanvas({ playerStats, floor, onFloorClear, onPlayerDeath }
           }
         }
         
-        // 敵描画
-        ctx.fillStyle = enemy.color;
-        ctx.beginPath();
-        ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
-        ctx.fill();
+        // 敵描画（タイプに応じた見た目）
+        drawEnemy(ctx, enemy);
         
         // 敵HP
         const hpWidth = enemy.size * 2;
