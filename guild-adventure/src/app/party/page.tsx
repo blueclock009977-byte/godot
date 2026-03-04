@@ -77,8 +77,15 @@ export default function PartyPage() {
   }
   
   // パーティメンバー
-  const frontMembers = (party.front || []).filter(Boolean) as Character[];
-  const backMembers = (party.back || []).filter(Boolean) as Character[];
+  // パーティメンバー（最新のcharactersから取得）
+  const frontMembers = (party.front || [])
+    .filter((c): c is Character => c !== null)
+    .map(c => characters.find(char => char.id === c.id))
+    .filter((c): c is Character => c !== undefined);
+  const backMembers = (party.back || [])
+    .filter((c): c is Character => c !== null)
+    .map(c => characters.find(char => char.id === c.id))
+    .filter((c): c is Character => c !== undefined);
   const partyCharIds = [...frontMembers, ...backMembers].map(c => c.id);
   const partyCount = partyCharIds.length;
   
