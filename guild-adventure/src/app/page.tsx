@@ -687,6 +687,8 @@ function GameScreen() {
                       {canUpgrade && <span className="text-green-400 text-xs font-bold">強化可</span>}
                       {char.raceMastery && <span className="text-amber-400 text-xs">★種</span>}
                       {char.jobMastery && <span className="text-amber-400 text-xs">★職</span>}
+                      {char.raceMastery2 && <span className="text-purple-400 text-xs">★種2</span>}
+                      {char.jobMastery2 && <span className="text-purple-400 text-xs">★職2</span>}
                       <span className="text-slate-400">→</span>
                     </div>
                   </div>
