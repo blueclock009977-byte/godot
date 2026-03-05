@@ -1643,3 +1643,108 @@ export async function updateChallengeRanking(username: string, floor: number): P
     return false;
   }
 }
+
+// ============================================
+// バックアップ機能
+// ============================================
+
+/**
+ * ユーザーデータをバックアップ
+ * @param username ユーザー名
+ * @param userData バックアップするデータ
+ * @returns 成功したらtrue
+ */
+export async function backupUserData(username: string, userData: UserData): Promise<boolean> {
+  // キャラクターがいない場合はバックアップしない
+  if (!userData.characters || userData.characters.length === 0) {
+    return false;
+  }
+  
+  const timestamp = Date.now();
+  const backupPath = `guild-adventure/backups/${username}/${timestamp}`;
+  
+  try {
+    const success = await firebaseSet(backupPath, {
+      ...userData,
+      backupAt: timestamp,
+    });
+    
+    if (success) {
+      console.log(`[backup] ${username}のバックアップを作成: ${timestamp}`);
+      
+      // 古いバックアップを削除（最新5件のみ保持）
+      await cleanupOldBackups(username, 5);
+    }
+    
+    return success;
+  } catch (e) {
+    console.error(`[backup] ${username}のバックアップに失敗:`, e);
+    return false;
+  }
+}
+
+/**
+ * 古いバックアップを削除
+ * @param username ユーザー名
+ * @param keepCount 保持するバックアップ数
+ */
+async function cleanupOldBackups(username: string, keepCount: number): Promise<void> {
+  try {
+    const backups = await firebaseGet<Record<string, unknown>>(`guild-adventure/backups/${username}`);
+    if (!backups) return;
+    
+    const timestamps = Object.keys(backups).map(Number).sort((a, b) => b - a);
+    
+    // keepCount件より古いものを削除
+    for (let i = keepCount; i < timestamps.length; i++) {
+      await firebaseDelete(`guild-adventure/backups/${username}/${timestamps[i]}`);
+      console.log(`[backup] 古いバックアップを削除: ${timestamps[i]}`);
+    }
+  } catch (e) {
+    console.error(`[backup] 古いバックアップの削除に失敗:`, e);
+  }
+}
+
+/**
+ * バックアップからユーザーデータを復元
+ * @param username ユーザー名
+ * @param timestamp バックアップのタイムスタンプ（省略時は最新）
+ * @returns 復元したデータ、なければnull
+ */
+export async function restoreFromBackup(username: string, timestamp?: number): Promise<UserData | null> {
+  try {
+    if (timestamp) {
+      // 指定されたタイムスタンプのバックアップを取得
+      return await firebaseGet<UserData>(`guild-adventure/backups/${username}/${timestamp}`);
+    }
+    
+    // 最新のバックアップを取得
+    const backups = await firebaseGet<Record<string, UserData>>(`guild-adventure/backups/${username}`);
+    if (!backups) return null;
+    
+    const timestamps = Object.keys(backups).map(Number).sort((a, b) => b - a);
+    if (timestamps.length === 0) return null;
+    
+    return backups[timestamps[0].toString()];
+  } catch (e) {
+    console.error(`[backup] 復元に失敗:`, e);
+    return null;
+  }
+}
+
+/**
+ * ユーザーのバックアップ一覧を取得
+ * @param username ユーザー名
+ * @returns バックアップのタイムスタンプ配列
+ */
+export async function getBackupList(username: string): Promise<number[]> {
+  try {
+    const backups = await firebaseGet<Record<string, unknown>>(`guild-adventure/backups/${username}`);
+    if (!backups) return [];
+    
+    return Object.keys(backups).map(Number).sort((a, b) => b - a);
+  } catch (e) {
+    console.error(`[backup] バックアップ一覧取得に失敗:`, e);
+    return [];
+  }
+}

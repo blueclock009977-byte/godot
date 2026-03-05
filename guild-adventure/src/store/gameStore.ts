@@ -609,6 +609,12 @@ export const useGameStore = create<GameStore>()(
             // 既存の探索を復元
             await get().restoreAdventure();
             
+            
+            // ログイン時にバックアップを作成（10%の確率で実行、負荷軽減）
+            if (Math.random() < 0.1) {
+              const { backupUserData } = await import('@/lib/firebase');
+              backupUserData(storedUsername, userData);
+            }
             // マルチルームをサーバーから復元
             const { getCurrentMultiRoomOnServer } = await import('@/lib/firebase');
             const savedRoomCode = await getCurrentMultiRoomOnServer(storedUsername);
