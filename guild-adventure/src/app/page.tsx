@@ -631,6 +631,19 @@ function GameScreen() {
               </div>
             </div>
           </Link>
+          
+          {/* シミュレーションモード */}
+          <Link href="/simulation" className="block">
+            <div className="bg-slate-700 hover:bg-slate-600 rounded-lg p-4 border border-cyan-600 transition-colors">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">🎮 シミュレーション</h2>
+                  <p className="text-slate-400 text-sm">ボス戦を模擬体験（報酬なし）</p>
+                </div>
+                <span className="text-cyan-400">→</span>
+              </div>
+            </div>
+          </Link>
         </div>
         
         
