@@ -17,8 +17,15 @@ import { getLogClassName } from '@/lib/utils';
 // アニメーション定数
 // ============================================
 
-const LOG_INTERVAL_MS = 1500;  // ログ表示間隔
+const LOG_INTERVAL_BASE_MS = 1500;  // ログ表示間隔（1x速度）
 const ANIMATION_DURATION_MS = 300;  // アニメーション時間
+
+// 速度オプション
+const SPEED_OPTIONS = [
+  { label: '1x', value: 1 },
+  { label: '2x', value: 2 },
+  { label: '3x', value: 3 },
+] as const;
 
 // ============================================
 // HPバー コンポーネント（アニメーション対応）
@@ -449,6 +456,9 @@ function SimulationBattleContent() {
   // HP推移の事前計算結果
   const [hpStates, setHpStates] = useState<HPState[]>([]);
   
+  // 戦闘速度（1, 2, 3）
+  const [battleSpeed, setBattleSpeed] = useState(1);
+  
   // URLパラメータからダンジョンを取得
   const dungeonId = searchParams.get('dungeon') as DungeonType | null;
   const dungeon = dungeonId ? dungeons[dungeonId] : null;
@@ -553,6 +563,7 @@ function SimulationBattleContent() {
       return;
     }
     
+    const intervalMs = LOG_INTERVAL_BASE_MS / battleSpeed;
     const timer = setInterval(() => {
       setDisplayedLogIndex(prev => {
         const nextIndex = prev + 1;
@@ -592,10 +603,10 @@ function SimulationBattleContent() {
         
         return nextIndex;
       });
-    }, LOG_INTERVAL_MS);
+    }, intervalMs);
     
     return () => clearInterval(timer);
-  }, [allLogs, displayedLogIndex, allNames, dungeon, hpStates, partyMembers]);
+  }, [allLogs, displayedLogIndex, allNames, dungeon, hpStates, partyMembers, battleSpeed]);
   
   // 表示するログ
   const displayedLogs = allLogs.slice(0, displayedLogIndex);
@@ -633,6 +644,7 @@ function SimulationBattleContent() {
     setBossHp(null);
     setBattleEnded(false);
     setHpStates([]);
+    setBattleSpeed(1);
   };
   
   // ローディング中またはログイン前
@@ -807,14 +819,35 @@ function SimulationBattleContent() {
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold text-slate-400">📜 戦闘ログ</h2>
-              {!battleEnded && allLogs.length > 0 && (
-                <button
-                  onClick={skipToEnd}
-                  className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded"
-                >
-                  ⏩ スキップ
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {/* 速度調整 */}
+                {!battleEnded && allLogs.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    {SPEED_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setBattleSpeed(opt.value)}
+                        className={`px-2 py-1 text-xs rounded ${
+                          battleSpeed === opt.value
+                            ? 'bg-amber-600 text-white'
+                            : 'bg-slate-700 hover:bg-slate-600 text-slate-300'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* スキップ */}
+                {!battleEnded && allLogs.length > 0 && (
+                  <button
+                    onClick={skipToEnd}
+                    className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded"
+                  >
+                    ⏩ スキップ
+                  </button>
+                )}
+              </div>
             </div>
             {displayedLogs.length > 0 ? (
               <BattleLogArea 
