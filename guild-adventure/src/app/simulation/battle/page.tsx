@@ -384,13 +384,13 @@ function precomputeHPStates(
   
   for (const log of logs) {
     const parsed = parseLogLine(log, knownNames);
-    let changed = false;
+    
     
     // ダメージ処理
     if (parsed.target && parsed.damage && parsed.damage > 0) {
       if (currentHPs[parsed.target] !== undefined) {
         currentHPs[parsed.target] = Math.max(0, currentHPs[parsed.target] - parsed.damage);
-        changed = true;
+        
       }
     }
     
@@ -404,7 +404,7 @@ function precomputeHPStates(
         } else {
           currentHPs[parsed.healTarget] = Math.min(maxHp, currentHPs[parsed.healTarget] + parsed.heal);
         }
-        changed = true;
+        
       }
     }
     
@@ -412,7 +412,7 @@ function precomputeHPStates(
     if (parsed.isKill && parsed.target) {
       if (currentHPs[parsed.target] !== undefined) {
         currentHPs[parsed.target] = 0;
-        changed = true;
+        
       }
     }
     
@@ -422,7 +422,7 @@ function precomputeHPStates(
         const maxHp = maxHPs[parsed.reviveTarget] || 100;
         // 蘇生時は30%回復（大まかな推定）
         currentHPs[parsed.reviveTarget] = Math.floor(maxHp * 0.3);
-        changed = true;
+        
       }
     }
     
@@ -529,10 +529,11 @@ function SimulationBattleContent() {
   useEffect(() => {
     if (!battleStarted || !dungeon || partyMembers.length === 0) return;
     
-    initializeHPs();
+    // initializeHPsはtimerの中で呼ぶ
     
     // 少し待ってから戦闘開始
     const timer = setTimeout(() => {
+      initializeHPs();
       const result = runBattle(party, dungeonId!);
       setBattleResult(result);
       
@@ -558,7 +559,7 @@ function SimulationBattleContent() {
   useEffect(() => {
     if (allLogs.length === 0 || displayedLogIndex >= allLogs.length) {
       if (allLogs.length > 0 && displayedLogIndex >= allLogs.length) {
-        setBattleEnded(true);
+        setTimeout(() => setBattleEnded(true), 0);
       }
       return;
     }
@@ -614,7 +615,7 @@ function SimulationBattleContent() {
   // スキップ機能（事前計算した最終HPを使用）
   const skipToEnd = () => {
     setDisplayedLogIndex(allLogs.length);
-    setBattleEnded(true);
+    setTimeout(() => setBattleEnded(true), 0);
     
     // 最終HPを反映（事前計算した最終状態を使用）
     if (hpStates.length > 0) {
