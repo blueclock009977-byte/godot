@@ -228,14 +228,20 @@ function BattleLogArea({ logs, characters, monsters }: BattleLogProps) {
 }
 
 // ============================================
-// ログパーサー（攻撃者・被攻撃者・ダメージを抽出）
+// ログパーサー（攻撃者・被攻撃者・ダメージ・回復・バフ/デバフを抽出）
 // ============================================
 
 interface ParsedLogInfo {
   attacker?: string;
   target?: string;
   damage?: number;
+  heal?: number;
+  healTarget?: string;
   isKill?: boolean;
+  isBuff?: boolean;
+  isDebuff?: boolean;
+  isRevive?: boolean;
+  reviveTarget?: string;
 }
 
 function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
@@ -253,11 +259,70 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
     info.attacker = skillMatch[1];
   }
   
-  // ダメージターゲット: "YYYに💥NNNダメージ" or "YYYに🔮NNNダメージ"
-  const damageMatch = log.match(/(.+?)に[💥🔮](\d+)ダメージ/);
+  // ダメージターゲット: "YYYに💥NNNダメージ" or "YYYに🔮NNNダメージ" or "YYYにNNNダメージ"
+  const damageMatch = log.match(/(.+?)に[💥🔮]?(\d+)ダメージ/);
   if (damageMatch) {
     info.target = damageMatch[1];
     info.damage = parseInt(damageMatch[2], 10);
+  }
+  
+  // 回復ログ: "✨ XXXのヒール！ → YYYのHPが💚NNN回復！"
+  const skillHealMatch = log.match(/→ (.+?)のHPが💚(\d+)回復/);
+  if (skillHealMatch) {
+    info.healTarget = skillHealMatch[1];
+    info.heal = parseInt(skillHealMatch[2], 10);
+  }
+  
+  // 回復ログ（リジェネ等）: "XXXはHPNNN回復（リジェネ）"
+  const regenMatch = log.match(/(.+?)はHP(\d+)回復/);
+  if (regenMatch) {
+    info.healTarget = regenMatch[1];
+    info.heal = parseInt(regenMatch[2], 10);
+  }
+  
+  // 回復ログ（聖なる加護等）: "聖なる加護がXXXをHPNNN回復！"
+  const blessingMatch = log.match(/加護が(.+?)をHP(\d+)回復/);
+  if (blessingMatch) {
+    info.healTarget = blessingMatch[1];
+    info.heal = parseInt(blessingMatch[2], 10);
+  }
+  
+  // 回復ログ（命を吸収/魂を吸収）: "XXXは命を吸収しHPNNN回復！"
+  const absorbHpMatch = log.match(/(.+?)は[命魂]を吸収しHP(\d+)回復/);
+  if (absorbHpMatch) {
+    info.healTarget = absorbHpMatch[1];
+    info.heal = parseInt(absorbHpMatch[2], 10);
+  }
+  
+  // 回復ログ（祝福）: "XXXは祝福によりHPNNN回復"
+  const blessingHealMatch = log.match(/(.+?)は祝福によりHP(\d+)回復/);
+  if (blessingHealMatch) {
+    info.healTarget = blessingHealMatch[1];
+    info.heal = parseInt(blessingHealMatch[2], 10);
+  }
+  
+  // HP吸収: "XXXはHPNNN吸収！"
+  const stealMatch = log.match(/(.+?)はHP(\d+)吸収/);
+  if (stealMatch) {
+    info.healTarget = stealMatch[1];
+    info.heal = parseInt(stealMatch[2], 10);
+  }
+  
+  // 再生: "XXXは再生しHPNNN回復！"
+  const regenMonsterMatch = log.match(/(.+?)は再生しHP(\d+)回復/);
+  if (regenMonsterMatch) {
+    info.healTarget = regenMonsterMatch[1];
+    info.heal = parseInt(regenMonsterMatch[2], 10);
+  }
+  
+  // バフ: "📈 XXXのスキル名！ → ..."
+  if (log.startsWith('📈')) {
+    info.isBuff = true;
+  }
+  
+  // デバフ: "📉 XXXのスキル名！ → ..."
+  if (log.startsWith('📉')) {
+    info.isDebuff = true;
   }
   
   // 撃破: "XXXを撃破！💀"
@@ -267,7 +332,98 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
     info.isKill = true;
   }
   
+  // 蘇生: "XXXは不死の力で蘇った！" or "XXXの奇跡の力でYYYが蘇生！"
+  const selfReviveMatch = log.match(/(.+?)は不死の力で蘇った/);
+  if (selfReviveMatch) {
+    info.isRevive = true;
+    info.reviveTarget = selfReviveMatch[1];
+  }
+  const allyReviveMatch = log.match(/の奇跡の力で(.+?)が蘇生/);
+  if (allyReviveMatch) {
+    info.isRevive = true;
+    info.reviveTarget = allyReviveMatch[1];
+  }
+  
+  // HP1で耐え: "XXXは不屈の精神でHP1で耐えた！" or "XXXは死に抗いHP1で耐えた！"
+  const surviveMatch = log.match(/(.+?)は[不屈の精神で|死に抗い]HP1で耐えた/);
+  if (surviveMatch) {
+    // HPを1に設定するために healTarget として扱う（特殊処理）
+    info.healTarget = surviveMatch[1];
+    info.heal = -999; // 特殊マーカー: HP1にする
+  }
+  
   return info;
+}
+
+// ============================================
+// HP推移を事前計算
+// ============================================
+
+interface HPState {
+  [name: string]: number;
+}
+
+function precomputeHPStates(
+  logs: string[],
+  knownNames: string[],
+  initialHPs: Record<string, number>,
+  maxHPs: Record<string, number>
+): HPState[] {
+  const states: HPState[] = [];
+  const currentHPs = { ...initialHPs };
+  
+  // 初期状態を追加
+  states.push({ ...currentHPs });
+  
+  for (const log of logs) {
+    const parsed = parseLogLine(log, knownNames);
+    let changed = false;
+    
+    // ダメージ処理
+    if (parsed.target && parsed.damage && parsed.damage > 0) {
+      if (currentHPs[parsed.target] !== undefined) {
+        currentHPs[parsed.target] = Math.max(0, currentHPs[parsed.target] - parsed.damage);
+        changed = true;
+      }
+    }
+    
+    // 回復処理
+    if (parsed.healTarget && parsed.heal !== undefined) {
+      if (currentHPs[parsed.healTarget] !== undefined) {
+        const maxHp = maxHPs[parsed.healTarget] || currentHPs[parsed.healTarget];
+        if (parsed.heal === -999) {
+          // HP1で耐え
+          currentHPs[parsed.healTarget] = 1;
+        } else {
+          currentHPs[parsed.healTarget] = Math.min(maxHp, currentHPs[parsed.healTarget] + parsed.heal);
+        }
+        changed = true;
+      }
+    }
+    
+    // 撃破処理（念のため）
+    if (parsed.isKill && parsed.target) {
+      if (currentHPs[parsed.target] !== undefined) {
+        currentHPs[parsed.target] = 0;
+        changed = true;
+      }
+    }
+    
+    // 蘇生処理
+    if (parsed.isRevive && parsed.reviveTarget) {
+      if (currentHPs[parsed.reviveTarget] !== undefined) {
+        const maxHp = maxHPs[parsed.reviveTarget] || 100;
+        // 蘇生時は30%回復（大まかな推定）
+        currentHPs[parsed.reviveTarget] = Math.floor(maxHp * 0.3);
+        changed = true;
+      }
+    }
+    
+    // 状態を保存
+    states.push({ ...currentHPs });
+  }
+  
+  return states;
 }
 
 // ============================================
@@ -289,6 +445,9 @@ function SimulationBattleContent() {
   const [characterHPs, setCharacterHPs] = useState<Record<string, number>>({});
   const [bossHp, setBossHp] = useState<number | null>(null);
   const [battleEnded, setBattleEnded] = useState(false);
+  
+  // HP推移の事前計算結果
+  const [hpStates, setHpStates] = useState<HPState[]>([]);
   
   // URLパラメータからダンジョンを取得
   const dungeonId = searchParams.get('dungeon') as DungeonType | null;
@@ -341,6 +500,21 @@ function SimulationBattleContent() {
     }
   }, [partyMembers, dungeon]);
   
+  // 初期HPとmaxHPを計算
+  const { initialHPs, maxHPs } = useMemo(() => {
+    const initial: Record<string, number> = {};
+    const max: Record<string, number> = {};
+    for (const char of partyMembers) {
+      initial[char.name] = char.stats?.maxHp || 100;
+      max[char.name] = char.stats?.maxHp || 100;
+    }
+    if (dungeon?.boss) {
+      initial[dungeon.boss.name] = dungeon.boss.stats.maxHp;
+      max[dungeon.boss.name] = dungeon.boss.stats.maxHp;
+    }
+    return { initialHPs: initial, maxHPs: max };
+  }, [partyMembers, dungeon]);
+  
   // 戦闘実行
   useEffect(() => {
     if (!battleStarted || !dungeon || partyMembers.length === 0) return;
@@ -361,12 +535,16 @@ function SimulationBattleContent() {
       }
       setAllLogs(logs);
       setDisplayedLogIndex(0);
+      
+      // HP推移を事前計算
+      const states = precomputeHPStates(logs, allNames, initialHPs, maxHPs);
+      setHpStates(states);
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [battleStarted, dungeon, dungeonId, party, partyMembers.length, initializeHPs]);
+  }, [battleStarted, dungeon, dungeonId, party, partyMembers.length, initializeHPs, allNames, initialHPs, maxHPs]);
   
-  // ログを1行ずつアニメーション表示
+  // ログを1行ずつアニメーション表示（HP推移は事前計算済み）
   useEffect(() => {
     if (allLogs.length === 0 || displayedLogIndex >= allLogs.length) {
       if (allLogs.length > 0 && displayedLogIndex >= allLogs.length) {
@@ -394,28 +572,21 @@ function SimulationBattleContent() {
           if (parsed.target && parsed.damage) {
             setShakingCharName(parsed.target);
             setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
-            
-            // HP更新
-            if (parsed.target === dungeon?.boss?.name) {
-              setBossHp(prev => Math.max(0, (prev ?? dungeon.boss!.stats.maxHp) - parsed.damage!));
-            } else {
-              setCharacterHPs(prev => ({
-                ...prev,
-                [parsed.target!]: Math.max(0, (prev[parsed.target!] || 0) - parsed.damage!),
-              }));
-            }
           }
           
-          // 撃破時HP0
-          if (parsed.isKill && parsed.target) {
-            if (parsed.target === dungeon?.boss?.name) {
-              setBossHp(0);
-            } else {
-              setCharacterHPs(prev => ({
-                ...prev,
-                [parsed.target!]: 0,
-              }));
+          // HP更新（事前計算したHPを使用）
+          if (hpStates.length > nextIndex) {
+            const hpState = hpStates[nextIndex];
+            if (dungeon?.boss?.name && hpState[dungeon.boss.name] !== undefined) {
+              setBossHp(hpState[dungeon.boss.name]);
             }
+            const newCharHPs: Record<string, number> = {};
+            for (const char of partyMembers) {
+              if (hpState[char.name] !== undefined) {
+                newCharHPs[char.name] = hpState[char.name];
+              }
+            }
+            setCharacterHPs(prev => ({ ...prev, ...newCharHPs }));
           }
         }
         
@@ -424,18 +595,29 @@ function SimulationBattleContent() {
     }, LOG_INTERVAL_MS);
     
     return () => clearInterval(timer);
-  }, [allLogs, displayedLogIndex, allNames, dungeon]);
+  }, [allLogs, displayedLogIndex, allNames, dungeon, hpStates, partyMembers]);
   
   // 表示するログ
   const displayedLogs = allLogs.slice(0, displayedLogIndex);
   
-  // スキップ機能
+  // スキップ機能（事前計算した最終HPを使用）
   const skipToEnd = () => {
     setDisplayedLogIndex(allLogs.length);
     setBattleEnded(true);
-    // 最終HPを反映（battleResultから取得できれば）
-    if (dungeon?.boss) {
-      setBossHp(battleResult?.victory ? 0 : dungeon.boss.stats.maxHp);
+    
+    // 最終HPを反映（事前計算した最終状態を使用）
+    if (hpStates.length > 0) {
+      const finalState = hpStates[hpStates.length - 1];
+      if (dungeon?.boss?.name && finalState[dungeon.boss.name] !== undefined) {
+        setBossHp(finalState[dungeon.boss.name]);
+      }
+      const newCharHPs: Record<string, number> = {};
+      for (const char of partyMembers) {
+        if (finalState[char.name] !== undefined) {
+          newCharHPs[char.name] = finalState[char.name];
+        }
+      }
+      setCharacterHPs(prev => ({ ...prev, ...newCharHPs }));
     }
   };
   
@@ -450,6 +632,7 @@ function SimulationBattleContent() {
     setCharacterHPs({});
     setBossHp(null);
     setBattleEnded(false);
+    setHpStates([]);
   };
   
   // ローディング中またはログイン前
@@ -606,6 +789,15 @@ function SimulationBattleContent() {
                   <div className="text-sm text-slate-300">
                     {battleResult.encountersCleared}/{battleResult.totalEncounters} 遭遇クリア
                   </div>
+                  {/* 敗北時の敵HP表示 */}
+                  {dungeon.boss && bossHp !== null && bossHp > 0 && (
+                    <div className="mt-2 text-orange-400">
+                      👹 {dungeon.boss.name}の残りHP: {bossHp}/{dungeon.boss.stats.maxHp}
+                      <span className="text-slate-400 ml-2">
+                        ({Math.floor((bossHp / dungeon.boss.stats.maxHp) * 100)}%)
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
