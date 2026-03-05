@@ -66,7 +66,7 @@ export default function SimulationPage() {
               >
                 <div className="font-semibold">{dungeon.name}</div>
                 <div className="text-xs text-slate-400">
-                  ★{'★'.repeat(dungeon.difficulty - 1)} | {dungeon.boss.name}
+                  ★{'★'.repeat(dungeon.difficulty - 1)} | {dungeon.boss?.name || '???'}
                 </div>
               </button>
             );
