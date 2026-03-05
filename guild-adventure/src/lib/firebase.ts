@@ -178,6 +178,13 @@ async function cleanupOldHistory(username: string, limit: number): Promise<void>
 // 新規ユーザー作成
 export async function createUser(username: string): Promise<boolean> {
   // 初期インベントリをインポート
+  // 安全チェック: 既にデータが存在する場合は上書きしない
+  const existing = await firebaseGet<UserData>(`guild-adventure/users/${username}`);
+  if (existing && (existing.characters?.length > 0 || existing.history)) {
+    console.error(`[createUser] 危険な操作を検出: ${username}には既存データがあります。作成をスキップ`);
+    return false;
+  }
+
   const { initialInventory } = await import('./data/items');
   
   const initialData: UserData = {
