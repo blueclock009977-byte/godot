@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, Suspense } from 'react';
+import { useEffect, useState, useMemo, Suspense, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useGameStore } from '@/store/gameStore';
@@ -14,7 +14,14 @@ import { runBattle } from '@/lib/battle/engine';
 import { getLogClassName } from '@/lib/utils';
 
 // ============================================
-// HPバー コンポーネント
+// アニメーション定数
+// ============================================
+
+const LOG_INTERVAL_MS = 1500;  // ログ表示間隔
+const ANIMATION_DURATION_MS = 300;  // アニメーション時間
+
+// ============================================
+// HPバー コンポーネント（アニメーション対応）
 // ============================================
 
 interface HPBarProps {
@@ -22,19 +29,21 @@ interface HPBarProps {
   max: number;
   showText?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  animated?: boolean;
 }
 
-function HPBar({ current, max, showText = true, size = 'md' }: HPBarProps) {
+function HPBar({ current, max, showText = true, size = 'md', animated = false }: HPBarProps) {
   const percent = Math.max(0, Math.min(100, (current / max) * 100));
   const barColor = percent > 50 ? 'bg-green-500' : percent > 25 ? 'bg-yellow-500' : 'bg-red-500';
   
   const heightClass = size === 'sm' ? 'h-2' : size === 'lg' ? 'h-5' : 'h-3';
+  const transitionClass = animated ? 'transition-all duration-500 ease-out' : 'transition-all duration-300';
   
   return (
     <div className="w-full">
       <div className={`${heightClass} bg-slate-700 rounded-full overflow-hidden`}>
         <div 
-          className={`h-full ${barColor} transition-all duration-300`}
+          className={`h-full ${barColor} ${transitionClass}`}
           style={{ width: `${percent}%` }}
         />
       </div>
@@ -48,26 +57,31 @@ function HPBar({ current, max, showText = true, size = 'md' }: HPBarProps) {
 }
 
 // ============================================
-// ボス表示 コンポーネント
+// ボス表示 コンポーネント（アニメーション対応）
 // ============================================
 
 interface BossDisplayProps {
   boss: Monster;
   currentHp?: number;
+  isShaking?: boolean;
 }
 
-function BossDisplay({ boss, currentHp }: BossDisplayProps) {
+function BossDisplay({ boss, currentHp, isShaking }: BossDisplayProps) {
   const hp = currentHp ?? boss.stats.maxHp;
   
   return (
     <div className="bg-gradient-to-b from-red-900/30 to-slate-800 rounded-lg p-4 border border-red-800/50">
       <div className="text-center">
         <div className="text-lg font-bold text-red-400 mb-2">👹 {boss.name}</div>
-        <div className="flex justify-center mb-3">
+        <div 
+          className={`flex justify-center mb-3 transition-transform ${
+            isShaking ? 'animate-shake' : ''
+          }`}
+        >
           <MonsterIcon monsterId={boss.id} size={80} isBoss={true} />
         </div>
         <div className="max-w-[200px] mx-auto">
-          <HPBar current={hp} max={boss.stats.maxHp} size="lg" />
+          <HPBar current={hp} max={boss.stats.maxHp} size="lg" animated />
         </div>
         <div className="mt-2 grid grid-cols-4 gap-1 text-xs">
           <div className="text-orange-400">ATK {boss.stats.atk}</div>
@@ -81,26 +95,37 @@ function BossDisplay({ boss, currentHp }: BossDisplayProps) {
 }
 
 // ============================================
-// 味方キャラ表示 コンポーネント
+// 味方キャラ表示 コンポーネント（アニメーション対応）
 // ============================================
 
 interface CharacterDisplayProps {
   character: Character;
   position: 'front' | 'back';
+  currentHp?: number;
+  isAttacking?: boolean;
+  isShaking?: boolean;
 }
 
-function CharacterDisplay({ character, position }: CharacterDisplayProps) {
+function CharacterDisplay({ character, position, currentHp, isAttacking, isShaking }: CharacterDisplayProps) {
+  const hp = currentHp ?? character.stats?.maxHp ?? 100;
+  const maxHp = character.stats?.maxHp ?? 100;
+  
   return (
     <div className={`bg-slate-800 rounded-lg p-2 border ${
       position === 'front' ? 'border-orange-700/50' : 'border-blue-700/50'
+    } transition-transform duration-300 ${
+      isAttacking ? 'translate-y-[-8px] scale-110' : ''
+    } ${
+      isShaking ? 'animate-shake' : ''
     }`}>
       <div className="flex items-center gap-2">
         <CharacterIcon race={character.race} job={character.job} size={40} />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{character.name}</div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs text-slate-400 mb-1">
             Lv.{character.level || 1} • {position === 'front' ? '前衛' : '後衛'}
           </div>
+          <HPBar current={hp} max={maxHp} size="sm" showText={false} animated />
         </div>
       </div>
     </div>
@@ -118,6 +143,8 @@ interface BattleLogProps {
 }
 
 function BattleLogArea({ logs, characters, monsters }: BattleLogProps) {
+  const logEndRef = useRef<HTMLDivElement>(null);
+  
   // 名前→アイコン情報のマップを構築
   const nameToIcon = useMemo(() => {
     const map = new Map<string, { type: 'character' | 'monster'; data: Character | Monster }>();
@@ -135,17 +162,22 @@ function BattleLogArea({ logs, characters, monsters }: BattleLogProps) {
     return map;
   }, [characters, monsters]);
 
+  // 新しいログが追加されたら自動スクロール
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs.length]);
+
   const renderLogLine = (log: string, index: number) => {
     if (nameToIcon.size === 0) {
       return (
-        <div key={index} className={getLogClassName(log)}>{log}</div>
+        <div key={index} className={`${getLogClassName(log)} animate-fadeIn`}>{log}</div>
       );
     }
 
     const names = Array.from(nameToIcon.keys());
     if (names.length === 0) {
       return (
-        <div key={index} className={getLogClassName(log)}>{log}</div>
+        <div key={index} className={`${getLogClassName(log)} animate-fadeIn`}>{log}</div>
       );
     }
 
@@ -154,7 +186,7 @@ function BattleLogArea({ logs, characters, monsters }: BattleLogProps) {
     const parts = log.split(namePattern);
     
     return (
-      <div key={index} className={`${getLogClassName(log)} flex flex-wrap items-center gap-0.5`}>
+      <div key={index} className={`${getLogClassName(log)} flex flex-wrap items-center gap-0.5 animate-fadeIn`}>
         {parts.map((part, i) => {
           const iconInfo = nameToIcon.get(part);
           if (iconInfo) {
@@ -189,9 +221,53 @@ function BattleLogArea({ logs, characters, monsters }: BattleLogProps) {
     <div className="bg-slate-900 rounded-lg p-3 border border-slate-700 max-h-[400px] overflow-y-auto">
       <div className="space-y-1 text-sm font-mono">
         {logs.map((log, i) => renderLogLine(log, i))}
+        <div ref={logEndRef} />
       </div>
     </div>
   );
+}
+
+// ============================================
+// ログパーサー（攻撃者・被攻撃者・ダメージを抽出）
+// ============================================
+
+interface ParsedLogInfo {
+  attacker?: string;
+  target?: string;
+  damage?: number;
+  isKill?: boolean;
+}
+
+function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
+  const info: ParsedLogInfo = {};
+  
+  // 攻撃ログ: "⚔️ XXXの攻撃！ → ... YYYに💥NNNダメージ"
+  const attackMatch = log.match(/^⚔️ (.+?)の攻撃！/);
+  if (attackMatch) {
+    info.attacker = attackMatch[1];
+  }
+  
+  // スキル攻撃: "XXXのスキル名！"
+  const skillMatch = log.match(/^(.+?)の.+?！.*→/);
+  if (skillMatch && knownNames.includes(skillMatch[1])) {
+    info.attacker = skillMatch[1];
+  }
+  
+  // ダメージターゲット: "YYYに💥NNNダメージ" or "YYYに🔮NNNダメージ"
+  const damageMatch = log.match(/(.+?)に[💥🔮](\d+)ダメージ/);
+  if (damageMatch) {
+    info.target = damageMatch[1];
+    info.damage = parseInt(damageMatch[2], 10);
+  }
+  
+  // 撃破: "XXXを撃破！💀"
+  const killMatch = log.match(/(.+?)を撃破！💀/);
+  if (killMatch) {
+    info.target = killMatch[1];
+    info.isKill = true;
+  }
+  
+  return info;
 }
 
 // ============================================
@@ -206,6 +282,14 @@ function SimulationBattleContent() {
   const [battleStarted, setBattleStarted] = useState(false);
   const [allLogs, setAllLogs] = useState<string[]>([]);
   
+  // アニメーション用state
+  const [displayedLogIndex, setDisplayedLogIndex] = useState(0);
+  const [attackingCharName, setAttackingCharName] = useState<string | null>(null);
+  const [shakingCharName, setShakingCharName] = useState<string | null>(null);
+  const [characterHPs, setCharacterHPs] = useState<Record<string, number>>({});
+  const [bossHp, setBossHp] = useState<number | null>(null);
+  const [battleEnded, setBattleEnded] = useState(false);
+  
   // URLパラメータからダンジョンを取得
   const dungeonId = searchParams.get('dungeon') as DungeonType | null;
   const dungeon = dungeonId ? dungeons[dungeonId] : null;
@@ -217,6 +301,18 @@ function SimulationBattleContent() {
       ...(party.back || []),
     ].filter((c): c is Character => c !== null);
   }, [party]);
+  
+  // 全キャラ/モンスター名のリスト
+  const allNames = useMemo(() => {
+    const names = partyMembers.map(c => c.name);
+    if (dungeon?.boss) names.push(dungeon.boss.name);
+    for (const spawn of dungeon?.monsters || []) {
+      if (!names.includes(spawn.monster.name)) {
+        names.push(spawn.monster.name);
+      }
+    }
+    return names;
+  }, [partyMembers, dungeon]);
   
   // 遭遇するモンスター一覧（ボス + 通常モンスター）
   const monsters = useMemo(() => {
@@ -233,9 +329,23 @@ function SimulationBattleContent() {
     return result;
   }, [dungeon]);
   
+  // 初期HP設定
+  const initializeHPs = useCallback(() => {
+    const hps: Record<string, number> = {};
+    for (const char of partyMembers) {
+      hps[char.name] = char.stats?.maxHp || 100;
+    }
+    setCharacterHPs(hps);
+    if (dungeon?.boss) {
+      setBossHp(dungeon.boss.stats.maxHp);
+    }
+  }, [partyMembers, dungeon]);
+  
   // 戦闘実行
   useEffect(() => {
     if (!battleStarted || !dungeon || partyMembers.length === 0) return;
+    
+    initializeHPs();
     
     // 少し待ってから戦闘開始
     const timer = setTimeout(() => {
@@ -250,10 +360,97 @@ function SimulationBattleContent() {
         }
       }
       setAllLogs(logs);
+      setDisplayedLogIndex(0);
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [battleStarted, dungeon, dungeonId, party, partyMembers.length]);
+  }, [battleStarted, dungeon, dungeonId, party, partyMembers.length, initializeHPs]);
+  
+  // ログを1行ずつアニメーション表示
+  useEffect(() => {
+    if (allLogs.length === 0 || displayedLogIndex >= allLogs.length) {
+      if (allLogs.length > 0 && displayedLogIndex >= allLogs.length) {
+        setBattleEnded(true);
+      }
+      return;
+    }
+    
+    const timer = setInterval(() => {
+      setDisplayedLogIndex(prev => {
+        const nextIndex = prev + 1;
+        
+        // 現在のログを解析してアニメーション
+        if (nextIndex <= allLogs.length) {
+          const currentLog = allLogs[nextIndex - 1];
+          const parsed = parseLogLine(currentLog, allNames);
+          
+          // 攻撃アニメーション
+          if (parsed.attacker) {
+            setAttackingCharName(parsed.attacker);
+            setTimeout(() => setAttackingCharName(null), ANIMATION_DURATION_MS);
+          }
+          
+          // 被ダメージアニメーション
+          if (parsed.target && parsed.damage) {
+            setShakingCharName(parsed.target);
+            setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
+            
+            // HP更新
+            if (parsed.target === dungeon?.boss?.name) {
+              setBossHp(prev => Math.max(0, (prev ?? dungeon.boss!.stats.maxHp) - parsed.damage!));
+            } else {
+              setCharacterHPs(prev => ({
+                ...prev,
+                [parsed.target!]: Math.max(0, (prev[parsed.target!] || 0) - parsed.damage!),
+              }));
+            }
+          }
+          
+          // 撃破時HP0
+          if (parsed.isKill && parsed.target) {
+            if (parsed.target === dungeon?.boss?.name) {
+              setBossHp(0);
+            } else {
+              setCharacterHPs(prev => ({
+                ...prev,
+                [parsed.target!]: 0,
+              }));
+            }
+          }
+        }
+        
+        return nextIndex;
+      });
+    }, LOG_INTERVAL_MS);
+    
+    return () => clearInterval(timer);
+  }, [allLogs, displayedLogIndex, allNames, dungeon]);
+  
+  // 表示するログ
+  const displayedLogs = allLogs.slice(0, displayedLogIndex);
+  
+  // スキップ機能
+  const skipToEnd = () => {
+    setDisplayedLogIndex(allLogs.length);
+    setBattleEnded(true);
+    // 最終HPを反映（battleResultから取得できれば）
+    if (dungeon?.boss) {
+      setBossHp(battleResult?.victory ? 0 : dungeon.boss.stats.maxHp);
+    }
+  };
+  
+  // リセット機能
+  const resetBattle = () => {
+    setBattleStarted(false);
+    setBattleResult(null);
+    setAllLogs([]);
+    setDisplayedLogIndex(0);
+    setAttackingCharName(null);
+    setShakingCharName(null);
+    setCharacterHPs({});
+    setBossHp(null);
+    setBattleEnded(false);
+  };
   
   // ローディング中またはログイン前
   if (!isLoggedIn || isLoading) {
@@ -347,8 +544,50 @@ function SimulationBattleContent() {
       {/* 戦闘中/戦闘後 */}
       {battleStarted && (
         <>
-          {/* 結果表示 */}
-          {battleResult && (
+          {/* ボス表示（HP更新あり） */}
+          {dungeon.boss && (
+            <div className="mb-4">
+              <BossDisplay 
+                boss={dungeon.boss} 
+                currentHp={bossHp ?? dungeon.boss.stats.maxHp}
+                isShaking={shakingCharName === dungeon.boss.name}
+              />
+            </div>
+          )}
+          
+          {/* 味方パーティ（アニメーション対応） */}
+          <div className="mb-4">
+            <h2 className="text-sm font-semibold text-slate-400 mb-2">🛡️ 味方パーティ</h2>
+            <div className="grid grid-cols-3 gap-2">
+              {/* 前列 */}
+              {(party.front || []).map((char) => char && (
+                <CharacterDisplay 
+                  key={char.id} 
+                  character={char} 
+                  position="front"
+                  currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
+                  isAttacking={attackingCharName === char.name}
+                  isShaking={shakingCharName === char.name}
+                />
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2 mt-2">
+              {/* 後列 */}
+              {(party.back || []).map((char) => char && (
+                <CharacterDisplay 
+                  key={char.id} 
+                  character={char} 
+                  position="back"
+                  currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
+                  isAttacking={attackingCharName === char.name}
+                  isShaking={shakingCharName === char.name}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* 結果表示（戦闘終了後） */}
+          {battleEnded && battleResult && (
             <div className={`mb-4 p-4 rounded-lg text-center ${
               battleResult.victory 
                 ? 'bg-green-900/50 border border-green-700' 
@@ -374,10 +613,20 @@ function SimulationBattleContent() {
           
           {/* 戦闘ログ */}
           <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-400 mb-2">📜 戦闘ログ</h2>
-            {allLogs.length > 0 ? (
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-semibold text-slate-400">📜 戦闘ログ</h2>
+              {!battleEnded && allLogs.length > 0 && (
+                <button
+                  onClick={skipToEnd}
+                  className="px-2 py-1 text-xs bg-slate-700 hover:bg-slate-600 rounded"
+                >
+                  ⏩ スキップ
+                </button>
+              )}
+            </div>
+            {displayedLogs.length > 0 ? (
               <BattleLogArea 
-                logs={allLogs} 
+                logs={displayedLogs} 
                 characters={partyMembers} 
                 monsters={monsters} 
               />
@@ -389,14 +638,10 @@ function SimulationBattleContent() {
           </div>
           
           {/* 再戦・戻るボタン */}
-          {battleResult && (
+          {battleEnded && battleResult && (
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setBattleStarted(false);
-                  setBattleResult(null);
-                  setAllLogs([]);
-                }}
+                onClick={resetBattle}
                 className="flex-1 py-3 bg-amber-600 hover:bg-amber-500 rounded-lg font-semibold"
               >
                 🔄 再戦
