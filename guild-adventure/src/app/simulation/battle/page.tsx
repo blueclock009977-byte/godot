@@ -814,11 +814,17 @@ function SimulationBattleContent() {
             } else {
               // 味方へのダメージ - HP直接更新
               setCharacterHPs(prev => {
-                const currentHp = prev[parsed.target!];
-                if (currentHp !== undefined) {
-                  return { ...prev, [parsed.target!]: Math.max(0, currentHp - parsed.damage!) };
+                let currentHp = prev[parsed.target!];
+                // undefinedの場合、partyMembersから初期HP取得
+                if (currentHp === undefined) {
+                  const char = partyMembers.find(c => c.name === parsed.target);
+                  if (char) {
+                    currentHp = char.stats?.maxHp ?? 100;
+                  } else {
+                    return prev; // キャラが見つからない場合はスキップ
+                  }
                 }
-                return prev;
+                return { ...prev, [parsed.target!]: Math.max(0, currentHp - parsed.damage!) };
               });
             }
           }
@@ -833,11 +839,12 @@ function SimulationBattleContent() {
             // HP直接回復
             const maxHp = partyMembers.find(c => c.name === parsed.healTarget)?.stats?.maxHp ?? 100;
             setCharacterHPs(prev => {
-              const currentHp = prev[parsed.healTarget!];
-              if (currentHp !== undefined) {
-                return { ...prev, [parsed.healTarget!]: Math.min(maxHp, currentHp + parsed.heal!) };
+              let currentHp = prev[parsed.healTarget!];
+              // undefinedの場合、maxHpを使用（回復前は満タンと仮定）
+              if (currentHp === undefined) {
+                currentHp = maxHp;
               }
-              return prev;
+              return { ...prev, [parsed.healTarget!]: Math.min(maxHp, currentHp + parsed.heal!) };
             });
           }
         }
