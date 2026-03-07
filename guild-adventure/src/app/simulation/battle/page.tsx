@@ -319,15 +319,18 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   if (skillMatch && knownNames.includes(skillMatch[1])) {
     info.attacker = skillMatch[1];
   }
-  
-  // ダメージターゲット: "YYYに💥NNNダメージ" or "YYYに🔮NNNダメージ" or "YYYにNNNダメージ"
-  const damageMatch = log.match(/(.+?)に[💥🔮]?(\d+)ダメージ/);
+  // ダメージターゲット解析（複数パターン対応）
+  // パターン1: 「→ XXXに💥NNNダメージ」（通常攻撃）
+  let damageMatch = log.match(/→\s*(.+?)に[💥🔮]*(\d+)ダメージ/);
+  if (!damageMatch) {
+    // パターン2: 「！ XXXに💥NNNダメージ」（スキル攻撃）
+    damageMatch = log.match(/[！!]\s+(.+?)に[💥🔮]*(\d+)ダメージ/);
+  }
   if (damageMatch) {
     info.target = stripEmoji(damageMatch[1]);
     info.damage = parseInt(damageMatch[2], 10);
   }
   
-  // 回復ログ: "✨ XXXのヒール！ → YYYのHPが💚NNN回復！"
   const skillHealMatch = log.match(/→ (.+?)のHPが💚(\d+)回復/);
   if (skillHealMatch) {
     info.healTarget = stripEmoji(skillHealMatch[1]);
