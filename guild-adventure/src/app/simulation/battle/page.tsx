@@ -641,6 +641,7 @@ function SimulationBattleContent() {
   
   // アニメーション用state
   const [displayedLogIndex, setDisplayedLogIndex] = useState(0);
+  const displayedLogIndexRef = useRef(0); // useEffect内で最新値を参照するため
   const [attackingCharName, setAttackingCharName] = useState<string | null>(null);
   const [shakingCharName, setShakingCharName] = useState<string | null>(null);
   const [floatingDamages, setFloatingDamages] = useState<Record<string, number | null>>({});
@@ -761,116 +762,95 @@ function SimulationBattleContent() {
     return () => clearTimeout(timer);
   }, [battleStarted, dungeon, dungeonId, party, partyMembers.length, initializeHPs, allNames, initialHPs, maxHPs]);
   
-  // ログを1行ずつアニメーション表示（HP推移は事前計算済み）
+  // ログを1行ずつ表示（インデックスのみ更新）
   useEffect(() => {
-    if (allLogs.length === 0 || displayedLogIndex >= allLogs.length) {
-      if (allLogs.length > 0 && displayedLogIndex >= allLogs.length) {
-        setTimeout(() => setBattleEnded(true), 0);
+    if (allLogs.length === 0) return;
+    
+    // 既に全ログ表示済みならスキップ
+    if (displayedLogIndexRef.current >= allLogs.length) {
+      if (!battleEnded) {
+        setBattleEnded(true);
       }
       return;
     }
     
     const intervalMs = LOG_INTERVAL_BASE_MS / battleSpeed;
     const timer = setInterval(() => {
-      setDisplayedLogIndex(prev => {
-        const nextIndex = prev + 1;
-        
-        // 現在のログを解析してアニメーション
-        if (nextIndex <= allLogs.length) {
-          const currentLog = allLogs[nextIndex - 1];
-          const parsed = parseLogLine(currentLog, allNames);
-          
-          // 攻撃アニメーション
-          if (parsed.attacker) {
-            setAttackingCharName(parsed.attacker);
-            setTimeout(() => setAttackingCharName(null), ANIMATION_DURATION_MS);
-          
-          }
-          // MP消費フローティング
-          if (parsed.mpCost && parsed.mpCaster) {
-            setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: parsed.mpCost! }));
-            setTimeout(() => {
-              setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: null }));
-            }, 800);
-          
-          }
-          // フローティング回復
-          if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
-            setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
-            setTimeout(() => {
-              setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
-            }, 800);
-          }
-          
-          // 被ダメージアニメーション + HP直接更新
-          if (parsed.target && parsed.damage) {
-            console.log('[DAMAGE]', { target: parsed.target, damage: parsed.damage, log: currentLog });
-            setShakingCharName(parsed.target);
-            setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
-            
-            // フローティングダメージ
-            setFloatingDamages(prev => ({ ...prev, [parsed.target!]: parsed.damage! }));
-            setTimeout(() => {
-              setFloatingDamages(prev => ({ ...prev, [parsed.target!]: null }));
-            }, 800);
-            
-            // ボスへのダメージ
-            const bossCleanName = dungeon?.boss?.name ? stripEmoji(dungeon.boss.name) : null;
-            console.log('[BOSS CHECK]', { target: parsed.target, bossCleanName, isMatch: parsed.target === bossCleanName });
-            if (parsed.target === bossCleanName) {
-              setBossFloatingDamage(parsed.damage!);
-              setTimeout(() => setBossFloatingDamage(null), 800);
-              // ボスHP直接更新
-              setBossHp(prev => Math.max(0, (prev ?? dungeon!.boss!.stats.maxHp) - parsed.damage!));
-            } else {
-              // 味方へのダメージ - HP直接更新
-              setCharacterHPs(prev => {
-                let currentHp = prev[parsed.target!];
-                console.log('[CHAR HP UPDATE]', { target: parsed.target, prevHp: currentHp, damage: parsed.damage, prevKeys: Object.keys(prev) });
-                // undefinedの場合、partyMembersから初期HP取得
-                if (currentHp === undefined) {
-                  const char = partyMembers.find(c => stripEmoji(c.name) === parsed.target);
-                  console.log('[CHAR LOOKUP]', { target: parsed.target, charFound: !!char, charName: char?.name });
-                  if (char) {
-                    currentHp = char.stats?.maxHp ?? 100;
-                  } else {
-                    console.log('[CHAR NOT FOUND - SKIPPING]');
-                    return prev; // キャラが見つからない場合はスキップ
-                  }
-                }
-                const newHp = Math.max(0, currentHp - parsed.damage!);
-                console.log('[CHAR HP RESULT]', { target: parsed.target, newHp });
-                return { ...prev, [parsed.target!]: newHp };
-              });
-            }
-          }
-          
-          // フローティング回復 + HP直接更新
-          if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
-            setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
-            setTimeout(() => {
-              setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
-            }, 800);
-            
-            // HP直接回復
-            const maxHp = partyMembers.find(c => stripEmoji(c.name) === parsed.healTarget)?.stats?.maxHp ?? 100;
-            setCharacterHPs(prev => {
-              let currentHp = prev[parsed.healTarget!];
-              // undefinedの場合、maxHpを使用（回復前は満タンと仮定）
-              if (currentHp === undefined) {
-                currentHp = maxHp;
-              }
-              return { ...prev, [parsed.healTarget!]: Math.min(maxHp, currentHp + parsed.heal!) };
-            });
-          }
-        }
-        
-        return nextIndex;
-      });
+      displayedLogIndexRef.current += 1;
+      setDisplayedLogIndex(displayedLogIndexRef.current);
+      
+      // 全ログ表示完了
+      if (displayedLogIndexRef.current >= allLogs.length) {
+        clearInterval(timer);
+      }
     }, intervalMs);
     
     return () => clearInterval(timer);
-  }, [allLogs, displayedLogIndex, allNames, dungeon, hpStates, partyMembers, battleSpeed]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allLogs.length, battleSpeed, battleEnded]);
+  
+  // displayedLogIndexが変わったらログを解析してアニメーション・HP更新
+  useEffect(() => {
+    if (displayedLogIndex === 0 || displayedLogIndex > allLogs.length) return;
+    
+    const currentLog = allLogs[displayedLogIndex - 1];
+    const parsed = parseLogLine(currentLog, allNames);
+    
+    // 攻撃アニメーション
+    if (parsed.attacker) {
+      setAttackingCharName(parsed.attacker);
+      setTimeout(() => setAttackingCharName(null), ANIMATION_DURATION_MS);
+    }
+    
+    // MP消費フローティング
+    if (parsed.mpCost && parsed.mpCaster) {
+      setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: parsed.mpCost! }));
+      setTimeout(() => {
+        setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: null }));
+      }, 800);
+    }
+    
+    // 被ダメージアニメーション + HP直接更新
+    if (parsed.target && parsed.damage) {
+      setShakingCharName(parsed.target);
+      setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
+      
+      // フローティングダメージ
+      setFloatingDamages(prev => ({ ...prev, [parsed.target!]: parsed.damage! }));
+      setTimeout(() => {
+        setFloatingDamages(prev => ({ ...prev, [parsed.target!]: null }));
+      }, 800);
+      
+      // ボスへのダメージ
+      const bossCleanName = dungeon?.boss?.name ? stripEmoji(dungeon.boss.name) : null;
+      if (parsed.target === bossCleanName) {
+        setBossFloatingDamage(parsed.damage!);
+        setTimeout(() => setBossFloatingDamage(null), 800);
+        setBossHp(prev => Math.max(0, (prev ?? dungeon!.boss!.stats.maxHp) - parsed.damage!));
+      } else {
+        // 味方へのダメージ
+        setCharacterHPs(prev => {
+          const currentHp = prev[parsed.target!] ?? maxHPs[parsed.target!] ?? 100;
+          return { ...prev, [parsed.target!]: Math.max(0, currentHp - parsed.damage!) };
+        });
+      }
+    }
+    
+    // フローティング回復 + HP直接更新
+    if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
+      setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
+      setTimeout(() => {
+        setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
+      }, 800);
+      
+      // HP直接回復
+      const maxHp = maxHPs[parsed.healTarget!] ?? 100;
+      setCharacterHPs(prev => {
+        const currentHp = prev[parsed.healTarget!] ?? maxHp;
+        return { ...prev, [parsed.healTarget!]: Math.min(maxHp, currentHp + parsed.heal!) };
+      });
+    }
+  }, [displayedLogIndex, allLogs, allNames, dungeon, maxHPs]);
   
   // 表示するログ
   const displayedLogs = allLogs.slice(0, displayedLogIndex);
