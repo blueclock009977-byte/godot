@@ -864,6 +864,7 @@ function SimulationBattleContent() {
   
   // スキップ機能（事前計算した最終HPを使用）
   const skipToEnd = () => {
+    displayedLogIndexRef.current = allLogs.length; // refも更新
     setDisplayedLogIndex(allLogs.length);
     setTimeout(() => setBattleEnded(true), 0);
     
