@@ -1080,9 +1080,9 @@ export const useGameStore = create<GameStore>()(
         set((state) => ({ coins: state.coins - cost }));
         
         // キャラクター更新（ボーナスはIDを保存、実際のステータス計算はバトル時に行う）
-        set((state) => ({
-          characters: state.characters.map(c => {
-            if (c.id !== characterId) return c;
+        set((state) => {
+          const updateChar = (c: Character | null): Character | null => {
+            if (!c || c.id !== characterId) return c;
             return {
               ...c,
               level: newLevel,
@@ -1091,8 +1091,16 @@ export const useGameStore = create<GameStore>()(
               ...(newLevel === 3 ? { lv3Skill: skill } : {}),
               ...(newLevel === 5 ? { lv5Skill: skill } : {}),
             };
-          }),
-        }));
+          };
+          
+          return {
+            characters: state.characters.map(c => updateChar(c) ?? c),
+            party: {
+              front: (state.party.front || []).map(c => updateChar(c)),
+              back: (state.party.back || []).map(c => updateChar(c)),
+            },
+          };
+        });
         
         await get().syncToServer();
         return { success: true, newLevel, skill, bonus };
