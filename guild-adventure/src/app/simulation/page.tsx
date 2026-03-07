@@ -40,6 +40,14 @@ export default function SimulationPage() {
     router.push(`/simulation/battle?dungeon=${selectedDungeon}`);
   };
   
+  // テストパーティで戦闘開始
+  const handleStartTestBattle = () => {
+    if (!selectedDungeon) return;
+    
+    // テストモードフラグ付きで戦闘開始
+    router.push(`/simulation/battle?dungeon=${selectedDungeon}&test=1`);
+  };
+  
   return (
     <PageLayout>
       <PageHeader title="🎮 シミュレーションモード" backHref="/" />
@@ -174,6 +182,16 @@ export default function SimulationPage() {
           ? 'パーティを編成してください'
           : `⚔️ ${selectedBoss?.name}に挑む！`}
       </button>
+      
+      {/* テストパーティで戦うボタン */}
+      {selectedDungeon && partyCount === 0 && (
+        <button
+          onClick={handleStartTestBattle}
+          className="w-full py-3 mt-3 rounded-lg font-bold text-sm bg-slate-600 hover:bg-slate-500 text-white transition-colors"
+        >
+          🧪 テストパーティで戦う（デバッグ用）
+        </button>
+      )}
     </PageLayout>
   );
 }

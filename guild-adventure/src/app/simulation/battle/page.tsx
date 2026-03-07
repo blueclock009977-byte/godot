@@ -569,9 +569,67 @@ function precomputeHPStates(
 // バトルコンテンツ（useSearchParams使用）
 // ============================================
 
+// テスト用パーティデータ
+const TEST_PARTY: { front: Character[]; back: Character[] } = {
+  front: [
+    {
+      id: 'test-1',
+      name: 'テスト騎士',
+      race: 'human',
+      job: 'knight',
+      level: 10,
+      exp: 0,
+      trait: 'brave',
+      environment: 'grassland',
+      stats: { hp: 150, maxHp: 150, mp: 30, maxMp: 30, atk: 20, def: 15, mag: 5, agi: 8 },
+    } as Character,
+    {
+      id: 'test-2',
+      name: 'テスト戦士',
+      race: 'dwarf',
+      job: 'warrior',
+      level: 10,
+      exp: 0,
+      trait: 'stubborn',
+      environment: 'mountain',
+      stats: { hp: 180, maxHp: 180, mp: 20, maxMp: 20, atk: 25, def: 18, mag: 3, agi: 6 },
+    } as Character,
+  ],
+  back: [
+    {
+      id: 'test-3',
+      name: 'テスト魔法使い',
+      race: 'elf',
+      job: 'mage',
+      level: 10,
+      exp: 0,
+      trait: 'genius',
+      environment: 'forest',
+      stats: { hp: 80, maxHp: 80, mp: 100, maxMp: 100, atk: 5, def: 5, mag: 30, agi: 10 },
+    } as Character,
+    {
+      id: 'test-4',
+      name: 'テストヒーラー',
+      race: 'human',
+      job: 'priest',
+      level: 10,
+      exp: 0,
+      trait: 'cautious',
+      environment: 'city',
+      stats: { hp: 100, maxHp: 100, mp: 80, maxMp: 80, atk: 8, def: 8, mag: 25, agi: 9 },
+    } as Character,
+  ],
+};
+
 function SimulationBattleContent() {
   const searchParams = useSearchParams();
-  const { isLoggedIn, isLoading, party } = useGameStore();
+  const { isLoggedIn, isLoading, party: storeParty } = useGameStore();
+  
+  // テストモードかどうか
+  const isTestMode = searchParams.get('test') === '1';
+  
+  // テストモードならテストパーティを使用
+  const party = isTestMode ? TEST_PARTY : storeParty;
   
   const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
   const [battleStarted, setBattleStarted] = useState(false);
@@ -876,8 +934,8 @@ function SimulationBattleContent() {
     );
   }
   
-  // パーティ未編成
-  if (partyMembers.length === 0) {
+  // パーティ未編成（テストモードでない場合のみ）
+  if (!isTestMode && partyMembers.length === 0) {
     return (
       <PageLayout>
         <div className="text-center py-8">
