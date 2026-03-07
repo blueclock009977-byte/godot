@@ -77,24 +77,26 @@ function BossDisplay({ boss, currentHp, isShaking }: BossDisplayProps) {
   const hp = currentHp ?? boss.stats.maxHp;
   
   return (
-    <div className="bg-gradient-to-b from-red-900/30 to-slate-800 rounded-lg p-4 border border-red-800/50">
-      <div className="text-center">
-        <div className="text-lg font-bold text-red-400 mb-2">👹 {boss.name}</div>
+    <div className="bg-gradient-to-r from-red-900/30 to-slate-800 rounded-lg p-2 border border-red-800/50">
+      <div className="flex items-center gap-3">
+        {/* 左: アイコン */}
         <div 
-          className={`flex justify-center mb-3 transition-transform ${
+          className={`flex-shrink-0 transition-transform ${
             isShaking ? 'animate-shake' : ''
           }`}
         >
-          <MonsterIcon monsterId={boss.id} size={80} isBoss={true} />
+          <MonsterIcon monsterId={boss.id} size={56} isBoss={true} />
         </div>
-        <div className="max-w-[200px] mx-auto">
-          <HPBar current={hp} max={boss.stats.maxHp} size="lg" animated />
-        </div>
-        <div className="mt-2 grid grid-cols-4 gap-1 text-xs">
-          <div className="text-orange-400">ATK {boss.stats.atk}</div>
-          <div className="text-blue-400">DEF {boss.stats.def}</div>
-          <div className="text-green-400">AGI {boss.stats.agi}</div>
-          <div className="text-purple-400">MAG {boss.stats.mag}</div>
+        {/* 右: 情報 */}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-bold text-red-400 mb-1">👹 {boss.name}</div>
+          <HPBar current={hp} max={boss.stats.maxHp} size="sm" animated />
+          <div className="mt-1 flex gap-2 text-xs">
+            <span className="text-orange-400">ATK{boss.stats.atk}</span>
+            <span className="text-blue-400">DEF{boss.stats.def}</span>
+            <span className="text-green-400">AGI{boss.stats.agi}</span>
+            <span className="text-purple-400">MAG{boss.stats.mag}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -118,20 +120,17 @@ function CharacterDisplay({ character, position, currentHp, isAttacking, isShaki
   const maxHp = character.stats?.maxHp ?? 100;
   
   return (
-    <div className={`bg-slate-800 rounded-lg p-2 border ${
-      position === 'front' ? 'border-orange-700/50' : 'border-blue-700/50'
+    <div className={`bg-slate-800 rounded p-1.5 border-2 ${
+      position === 'front' ? 'border-orange-600/70' : 'border-blue-600/70'
     } transition-transform duration-300 ${
-      isAttacking ? 'translate-y-[-8px] scale-110' : ''
+      isAttacking ? 'translate-y-[-4px] scale-105' : ''
     } ${
       isShaking ? 'animate-shake' : ''
     }`}>
-      <div className="flex items-center gap-2">
-        <CharacterIcon race={character.race} job={character.job} size={40} />
+      <div className="flex items-center gap-1.5">
+        <CharacterIcon race={character.race} job={character.job} size={28} />
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold truncate">{character.name}</div>
-          <div className="text-xs text-slate-400 mb-1">
-            Lv.{character.level || 1} • {position === 'front' ? '前衛' : '後衛'}
-          </div>
+          <div className="text-xs font-semibold truncate">{character.name}</div>
           <HPBar current={hp} max={maxHp} size="sm" showText={false} animated />
         </div>
       </div>
@@ -710,23 +709,17 @@ function SimulationBattleContent() {
             </div>
           )}
           
-          {/* 味方パーティ */}
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-400 mb-2">🛡️ 味方パーティ</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {/* 前列 */}
+          {/* 味方パーティ（コンパクト表示） */}
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1.5">
               {(party.front || []).map((char) => char && (
                 <CharacterDisplay key={char.id} character={char} position="front" />
               ))}
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {/* 後列 */}
               {(party.back || []).map((char) => char && (
                 <CharacterDisplay key={char.id} character={char} position="back" />
               ))}
             </div>
           </div>
-          
           {/* 戦闘開始ボタン */}
           <button
             onClick={() => setBattleStarted(true)}
@@ -751,10 +744,9 @@ function SimulationBattleContent() {
             </div>
           )}
           
-          {/* 味方パーティ（アニメーション対応） */}
-          <div className="mb-4">
-            <h2 className="text-sm font-semibold text-slate-400 mb-2">🛡️ 味方パーティ</h2>
-            <div className="grid grid-cols-3 gap-2">
+          {/* 味方パーティ（コンパクト表示） */}
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-1.5">
               {/* 前列 */}
               {(party.front || []).map((char) => char && (
                 <CharacterDisplay 
@@ -766,8 +758,6 @@ function SimulationBattleContent() {
                   isShaking={shakingCharName === char.name}
                 />
               ))}
-            </div>
-            <div className="grid grid-cols-3 gap-2 mt-2">
               {/* 後列 */}
               {(party.back || []).map((char) => char && (
                 <CharacterDisplay 
