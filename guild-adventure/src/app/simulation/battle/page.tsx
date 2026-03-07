@@ -891,10 +891,16 @@ function SimulationBattleContent() {
     setBattleResult(null);
     setAllLogs([]);
     setDisplayedLogIndex(0);
+    displayedLogIndexRef.current = 0; // refもリセット
     setAttackingCharName(null);
     setShakingCharName(null);
     setCharacterHPs({});
+    setCharacterMPs({});
+    setFloatingDamages({});
+    setFloatingHeals({});
+    setFloatingMps({});
     setBossHp(null);
+    setBossFloatingDamage(null);
     setBattleEnded(false);
     setHpStates([]);
     setBattleSpeed(1);
