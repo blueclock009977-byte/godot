@@ -777,6 +777,7 @@ function SimulationBattleContent() {
             setAttackingCharName(parsed.attacker);
             setTimeout(() => setAttackingCharName(null), ANIMATION_DURATION_MS);
           
+          }
           // MP消費フローティング
           if (parsed.mpCost && parsed.mpCaster) {
             setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: parsed.mpCost! }));
@@ -784,14 +785,13 @@ function SimulationBattleContent() {
               setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: null }));
             }, 800);
           
+          }
           // フローティング回復
           if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
             setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
             setTimeout(() => {
               setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
             }, 800);
-          }
-          }
           }
           
           // 被ダメージアニメーション + HP直接更新
