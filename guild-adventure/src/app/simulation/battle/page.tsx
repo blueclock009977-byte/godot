@@ -929,11 +929,25 @@ function SimulationBattleContent() {
   }
   
   // パーティ未編成（テストモードでない場合のみ）
+  // デバッグ: なぜパーティが空になるか確認
+  console.log('[PARTY CHECK]', { 
+    isTestMode, 
+    isLoading,
+    isLoggedIn,
+    partyMembersLength: partyMembers.length,
+    storePartyFront: storeParty.front?.length || 0,
+    storePartyBack: storeParty.back?.length || 0,
+  });
+  
   if (!isTestMode && partyMembers.length === 0) {
+    console.log('[PARTY EMPTY - SHOWING ERROR]');
     return (
       <PageLayout>
         <div className="text-center py-8">
           <p className="text-slate-400 mb-4">パーティが編成されていません</p>
+          <p className="text-xs text-slate-500 mb-4">
+            Debug: isLoading={String(isLoading)}, front={storeParty.front?.length || 0}, back={storeParty.back?.length || 0}
+          </p>
           <Link
             href="/party"
             className="inline-block px-4 py-2 bg-amber-600 hover:bg-amber-500 rounded-lg text-sm font-semibold"
