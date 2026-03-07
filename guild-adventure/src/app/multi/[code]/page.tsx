@@ -12,6 +12,7 @@ import {
   updateRoomReady, 
   leaveRoom,
   deleteRoom,
+  setCurrentMultiRoomOnServer,
   claimMultiDrop,
   clearMultiAdventure,
   updateUserStatus,
@@ -417,6 +418,7 @@ export default function MultiRoomPage({ params }: { params: Promise<{ code: stri
     
     if (room?.hostId === username) {
       await deleteRoom(code);
+      await setCurrentMultiRoomOnServer(username, null);
     } else {
       await leaveRoom(code, username);
     }

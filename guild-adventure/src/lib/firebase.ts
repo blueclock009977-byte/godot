@@ -276,8 +276,15 @@ function generateRoomCode(): string {
   return code;
 }
 
-// ルームを作成
+// ルームを作成（既存の部屋からは自動退出）
 export async function createRoom(hostUsername: string, dungeonId: string, maxPlayers: 2 | 3, isPublic: boolean = false): Promise<string | null> {
+  // 既に別の部屋に参加中なら退出
+  const existingRoom = await getCurrentMultiRoomOnServer(hostUsername);
+  if (existingRoom) {
+    await leaveRoom(existingRoom, hostUsername);
+    await setCurrentMultiRoomOnServer(hostUsername, null);
+  }
+  
   const code = generateRoomCode();
   
   const room: MultiRoom = {
@@ -305,7 +312,12 @@ export async function createRoom(hostUsername: string, dungeonId: string, maxPla
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(room),
     });
-    return res.ok ? code : null;
+    if (res.ok) {
+      // 現在の部屋コードを保存
+      await setCurrentMultiRoomOnServer(hostUsername, code);
+      return code;
+    }
+    return null;
   } catch (e) {
     console.error('Failed to create room:', e);
     return null;
@@ -344,13 +356,25 @@ export async function getPublicRooms(): Promise<MultiRoom[]> {
   }
 }
 
-// ルームに参加
+// ルームに参加（既存の部屋からは自動退出）
 export async function joinRoom(code: string, username: string): Promise<boolean> {
   const room = await getRoom(code);
   if (!room) return false;
   if (room.status !== 'waiting') return false;
   if (Object.keys(room.players).length >= room.maxPlayers) return false;
-  if (room.players[username]) return true; // 既に参加済み
+  
+  // 既に参加済みの場合はcurrentMultiRoomを更新して成功
+  if (room.players[username]) {
+    await setCurrentMultiRoomOnServer(username, code);
+    return true;
+  }
+  
+  // 既に別の部屋に参加中なら退出
+  const existingRoom = await getCurrentMultiRoomOnServer(username);
+  if (existingRoom && existingRoom !== code) {
+    await leaveRoom(existingRoom, username);
+    await setCurrentMultiRoomOnServer(username, null);
+  }
   
   const player: RoomPlayer = {
     username,
@@ -359,7 +383,12 @@ export async function joinRoom(code: string, username: string): Promise<boolean>
     joinedAt: Date.now(),
   };
   
-  return firebaseSet(`guild-adventure/rooms/${code}/players/${username}`, player);
+  const success = await firebaseSet(`guild-adventure/rooms/${code}/players/${username}`, player);
+  if (success) {
+    // 現在の部屋コードを保存
+    await setCurrentMultiRoomOnServer(username, code);
+  }
+  return success;
 }
 
 // キャラ選択を更新
@@ -520,12 +549,16 @@ export async function claimMultiDrop(code: string, username: string): Promise<{ 
     return { success: false };
   }
 }
-// ルームから退出
+// ルームから退出（currentMultiRoomもクリア）
 export async function leaveRoom(code: string, username: string): Promise<boolean> {
   try {
     const res = await fetch(`${FIREBASE_URL}/guild-adventure/rooms/${code}/players/${username}.json`, {
       method: 'DELETE',
     });
+    if (res.ok) {
+      // 現在の部屋コードをクリア
+      await setCurrentMultiRoomOnServer(username, null);
+    }
     return res.ok;
   } catch (e) {
     return false;
