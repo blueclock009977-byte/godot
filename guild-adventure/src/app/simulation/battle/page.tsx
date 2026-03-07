@@ -670,13 +670,14 @@ function SimulationBattleContent() {
     ].filter((c): c is Character => c !== null);
   }, [party]);
   
-  // 全キャラ/モンスター名のリスト
+  // 全キャラ/モンスター名のリスト（stripEmoji済み）
   const allNames = useMemo(() => {
-    const names = partyMembers.map(c => c.name);
-    if (dungeon?.boss) names.push(dungeon.boss.name);
+    const names = partyMembers.map(c => stripEmoji(c.name));
+    if (dungeon?.boss) names.push(stripEmoji(dungeon.boss.name));
     for (const spawn of dungeon?.monsters || []) {
-      if (!names.includes(spawn.monster.name)) {
-        names.push(spawn.monster.name);
+      const cleanName = stripEmoji(spawn.monster.name);
+      if (!names.includes(cleanName)) {
+        names.push(cleanName);
       }
     }
     return names;
@@ -697,29 +698,35 @@ function SimulationBattleContent() {
     return result;
   }, [dungeon]);
   
-  // 初期HP設定
+  // 初期HP設定（キーはstripEmoji済みで統一）
   const initializeHPs = useCallback(() => {
     const hps: Record<string, number> = {};
+    const mps: Record<string, number> = {};
     for (const char of partyMembers) {
-      hps[char.name] = char.stats?.maxHp || 100;
+      const cleanName = stripEmoji(char.name);
+      hps[cleanName] = char.stats?.maxHp || 100;
+      mps[cleanName] = char.stats?.maxMp || 50;
     }
     setCharacterHPs(hps);
+    setCharacterMPs(mps);
     if (dungeon?.boss) {
       setBossHp(dungeon.boss.stats.maxHp);
     }
   }, [partyMembers, dungeon]);
   
-  // 初期HPとmaxHPを計算
+  // 初期HPとmaxHPを計算（キーはstripEmoji済みで統一）
   const { initialHPs, maxHPs } = useMemo(() => {
     const initial: Record<string, number> = {};
     const max: Record<string, number> = {};
     for (const char of partyMembers) {
-      initial[char.name] = char.stats?.maxHp || 100;
-      max[char.name] = char.stats?.maxHp || 100;
+      const cleanName = stripEmoji(char.name);
+      initial[cleanName] = char.stats?.maxHp || 100;
+      max[cleanName] = char.stats?.maxHp || 100;
     }
     if (dungeon?.boss) {
-      initial[dungeon.boss.name] = dungeon.boss.stats.maxHp;
-      max[dungeon.boss.name] = dungeon.boss.stats.maxHp;
+      const bossCleanName = stripEmoji(dungeon.boss.name);
+      initial[bossCleanName] = dungeon.boss.stats.maxHp;
+      max[bossCleanName] = dungeon.boss.stats.maxHp;
     }
     return { initialHPs: initial, maxHPs: max };
   }, [partyMembers, dungeon]);
@@ -807,18 +814,19 @@ function SimulationBattleContent() {
             }, 800);
             
             // ボスへのダメージ
-            if (parsed.target === dungeon?.boss?.name) {
+            const bossCleanName = dungeon?.boss?.name ? stripEmoji(dungeon.boss.name) : null;
+            if (parsed.target === bossCleanName) {
               setBossFloatingDamage(parsed.damage!);
               setTimeout(() => setBossFloatingDamage(null), 800);
               // ボスHP直接更新
-              setBossHp(prev => Math.max(0, (prev ?? dungeon.boss!.stats.maxHp) - parsed.damage!));
+              setBossHp(prev => Math.max(0, (prev ?? dungeon!.boss!.stats.maxHp) - parsed.damage!));
             } else {
               // 味方へのダメージ - HP直接更新
               setCharacterHPs(prev => {
                 let currentHp = prev[parsed.target!];
                 // undefinedの場合、partyMembersから初期HP取得
                 if (currentHp === undefined) {
-                  const char = partyMembers.find(c => c.name === parsed.target);
+                  const char = partyMembers.find(c => stripEmoji(c.name) === parsed.target);
                   if (char) {
                     currentHp = char.stats?.maxHp ?? 100;
                   } else {
@@ -838,7 +846,7 @@ function SimulationBattleContent() {
             }, 800);
             
             // HP直接回復
-            const maxHp = partyMembers.find(c => c.name === parsed.healTarget)?.stats?.maxHp ?? 100;
+            const maxHp = partyMembers.find(c => stripEmoji(c.name) === parsed.healTarget)?.stats?.maxHp ?? 100;
             setCharacterHPs(prev => {
               let currentHp = prev[parsed.healTarget!];
               // undefinedの場合、maxHpを使用（回復前は満タンと仮定）
@@ -895,13 +903,15 @@ function SimulationBattleContent() {
     // 最終HPを反映（事前計算した最終状態を使用）
     if (hpStates.length > 0) {
       const finalState = hpStates[hpStates.length - 1];
-      if (dungeon?.boss?.name && finalState[dungeon.boss.name] !== undefined) {
-        setBossHp(finalState[dungeon.boss.name]);
+      const bossCleanName = dungeon?.boss?.name ? stripEmoji(dungeon.boss.name) : null;
+      if (bossCleanName && finalState[bossCleanName] !== undefined) {
+        setBossHp(finalState[bossCleanName]);
       }
       const newCharHPs: Record<string, number> = {};
       for (const char of partyMembers) {
-        if (finalState[char.name] !== undefined) {
-          newCharHPs[char.name] = finalState[char.name];
+        const cleanName = stripEmoji(char.name);
+        if (finalState[cleanName] !== undefined) {
+          newCharHPs[cleanName] = finalState[cleanName];
         }
       }
       setCharacterHPs(prev => ({ ...prev, ...newCharHPs }));
@@ -1015,7 +1025,7 @@ function SimulationBattleContent() {
               <BossDisplay 
                 boss={dungeon.boss} 
                 currentHp={bossHp ?? dungeon.boss.stats.maxHp}
-                isShaking={shakingCharName === dungeon.boss.name}
+                isShaking={shakingCharName === stripEmoji(dungeon.boss.name)}
                 floatingDamage={bossFloatingDamage}
               />
             </div>
@@ -1025,35 +1035,43 @@ function SimulationBattleContent() {
           <div className="mb-3">
             <div className="flex flex-wrap gap-1.5">
               {/* 前列 */}
-              {(party.front || []).map((char) => char && (
-                <CharacterDisplay 
-                  key={char.id} 
-                  character={char} 
-                  position="front"
-                  currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
-                  currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
-                  isAttacking={attackingCharName === char.name}
-                  isShaking={shakingCharName === char.name}
-                  floatingDamage={floatingDamages[char.name]}
-                  floatingMp={floatingMps[char.name]}
-                  floatingHeal={floatingHeals[char.name]}
-                />
-              ))}
+              {(party.front || []).map((char) => {
+                if (!char) return null;
+                const cleanName = stripEmoji(char.name);
+                return (
+                  <CharacterDisplay 
+                    key={char.id} 
+                    character={char} 
+                    position="front"
+                    currentHp={characterHPs[cleanName] ?? char.stats?.maxHp ?? 100}
+                    currentMp={characterMPs[cleanName] ?? char.stats?.maxMp ?? 50}
+                    isAttacking={attackingCharName === cleanName}
+                    isShaking={shakingCharName === cleanName}
+                    floatingDamage={floatingDamages[cleanName]}
+                    floatingMp={floatingMps[cleanName]}
+                    floatingHeal={floatingHeals[cleanName]}
+                  />
+                );
+              })}
               {/* 後列 */}
-              {(party.back || []).map((char) => char && (
-                <CharacterDisplay 
-                  key={char.id} 
-                  character={char} 
-                  position="back"
-                  currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
-                  currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
-                  isAttacking={attackingCharName === char.name}
-                  isShaking={shakingCharName === char.name}
-                  floatingDamage={floatingDamages[char.name]}
-                  floatingMp={floatingMps[char.name]}
-                  floatingHeal={floatingHeals[char.name]}
-                />
-              ))}
+              {(party.back || []).map((char) => {
+                if (!char) return null;
+                const cleanName = stripEmoji(char.name);
+                return (
+                  <CharacterDisplay 
+                    key={char.id} 
+                    character={char} 
+                    position="back"
+                    currentHp={characterHPs[cleanName] ?? char.stats?.maxHp ?? 100}
+                    currentMp={characterMPs[cleanName] ?? char.stats?.maxMp ?? 50}
+                    isAttacking={attackingCharName === cleanName}
+                    isShaking={shakingCharName === cleanName}
+                    floatingDamage={floatingDamages[cleanName]}
+                    floatingMp={floatingMps[cleanName]}
+                    floatingHeal={floatingHeals[cleanName]}
+                  />
+                );
+              })}
             </div>
           </div>
           
