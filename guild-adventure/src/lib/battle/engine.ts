@@ -1721,6 +1721,94 @@ export function runBattle(party: Party, dungeon: DungeonType): BattleResult {
   };
 }
 
+/**
+ * ボス戦のみを行う（シミュレーションモード用）
+ * 雑魚戦をスキップしてボス戦だけ実行
+ */
+export function runBossBattle(party: Party, dungeon: DungeonType): BattleResult {
+  const dungeonData = dungeons[dungeon];
+  const allLogs: BattleLog[] = [];
+  
+  // ボスがいないダンジョンはエラー
+  if (!dungeonData.boss) {
+    return {
+      victory: false,
+      logs: [{ turn: 0, actions: [], message: 'このダンジョンにはボスがいません' }],
+      encountersCleared: 0,
+      totalEncounters: 1,
+    };
+  }
+  
+  const playerUnits: ExtendedBattleUnit[] = [];
+  (party.front || []).forEach((char) => {
+    if (char) playerUnits.push(characterToUnit(char, 'front'));
+  });
+  (party.back || []).forEach((char) => {
+    if (char) playerUnits.push(characterToUnit(char, 'back'));
+  });
+  
+  // frontlineBonus（前衛3人以上でATK+）
+  const frontCount = playerUnits.filter(u => u.position === "front").length;
+  if (frontCount >= 3) {
+    for (const unit of playerUnits) {
+      if (unit.passiveEffects.frontlineBonus > 0) {
+        const bonus = Math.floor(unit.stats.atk * unit.passiveEffects.frontlineBonus / 100);
+        unit.stats.atk += bonus;
+      }
+    }
+  }
+
+  // allyMagBonus（味方全体のMAG+%）
+  const totalAllyMagBonus = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMagBonus, 0);
+  if (totalAllyMagBonus > 0) {
+    for (const unit of playerUnits) {
+      const bonus = Math.floor(unit.stats.mag * totalAllyMagBonus / 100);
+      unit.stats.mag += bonus;
+    }
+  }
+
+  // allyMpReduction（味方全体のMP消費軽減）
+  const totalAllyMpReduction = playerUnits.reduce((sum, u) => sum + u.passiveEffects.allyMpReduction, 0);
+  if (totalAllyMpReduction > 0) {
+    for (const unit of playerUnits) {
+      unit.passiveEffects.mpReduction += totalAllyMpReduction;
+    }
+  }
+  
+  if (playerUnits.length === 0) {
+    return {
+      victory: false,
+      logs: [{ turn: 0, actions: [], message: 'パーティがいません' }],
+      encountersCleared: 0,
+      totalEncounters: 1,
+    };
+  }
+  
+  // ボス戦のみ実行
+  const { logs, victory } = processEncounter(playerUnits, dungeon, 1, true);
+  
+  allLogs.push({
+    turn: 1,
+    actions: [],
+    message: logs.join('\n'),
+  });
+  
+  if (victory) {
+    allLogs.push({
+      turn: 2,
+      actions: [],
+      message: `\n🎉 ${dungeonData.boss.name}を撃破！`,
+    });
+  }
+  
+  return {
+    victory,
+    logs: allLogs,
+    encountersCleared: victory ? 1 : 0,
+    totalEncounters: 1,
+  };
+}
+
 import { applyDropBonus, getDropRollCount } from '../drop/dropBonus';
 
 // 複数ドロップ対応（成功した数だけドロップ）

@@ -10,7 +10,7 @@ import { CharacterIcon } from '@/components/CharacterIcon';
 import { MonsterIcon } from '@/components/MonsterIcon';
 import { dungeons } from '@/lib/data/dungeons';
 import { DungeonType, BattleResult, Character, Monster } from '@/lib/types';
-import { runBattle } from '@/lib/battle/engine';
+import { runBossBattle } from '@/lib/battle/engine';
 import { getLogClassName } from '@/lib/utils';
 
 // ============================================
@@ -534,7 +534,7 @@ function SimulationBattleContent() {
     // 少し待ってから戦闘開始
     const timer = setTimeout(() => {
       initializeHPs();
-      const result = runBattle(party, dungeonId!);
+      const result = runBossBattle(party, dungeonId!);
       setBattleResult(result);
       
       // ログを展開
