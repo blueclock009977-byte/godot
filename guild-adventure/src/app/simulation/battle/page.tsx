@@ -875,6 +875,41 @@ function SimulationBattleContent() {
   // 表示するログ
   const displayedLogs = allLogs.slice(0, displayedLogIndex);
   
+  // フローティングダメージが設定されたらHPバーを更新
+  useEffect(() => {
+    for (const [name, damage] of Object.entries(floatingDamages)) {
+      if (damage !== null && damage > 0) {
+        setCharacterHPs(prev => {
+          const currentHp = prev[name] ?? maxHPs[name] ?? 100;
+          const newHp = Math.max(0, currentHp - damage);
+          console.log('[HP UPDATE via floatingDamages]', { name, damage, currentHp, newHp });
+          return { ...prev, [name]: newHp };
+        });
+      }
+    }
+  }, [floatingDamages, maxHPs]);
+  
+  // フローティング回復が設定されたらHPバーを更新
+  useEffect(() => {
+    for (const [name, heal] of Object.entries(floatingHeals)) {
+      if (heal !== null && heal > 0) {
+        setCharacterHPs(prev => {
+          const currentHp = prev[name] ?? maxHPs[name] ?? 100;
+          const max = maxHPs[name] ?? 100;
+          const newHp = Math.min(max, currentHp + heal);
+          return { ...prev, [name]: newHp };
+        });
+      }
+    }
+  }, [floatingHeals, maxHPs]);
+  
+  // ボスへのフローティングダメージでボスHP更新
+  useEffect(() => {
+    if (bossFloatingDamage !== null && bossFloatingDamage > 0 && dungeon?.boss) {
+      setBossHp(prev => Math.max(0, (prev ?? dungeon.boss!.stats.maxHp) - bossFloatingDamage));
+    }
+  }, [bossFloatingDamage, dungeon]);
+  
   // 【味方】ログからHP/MPを更新
   useEffect(() => {
     if (displayedLogs.length === 0) return;
