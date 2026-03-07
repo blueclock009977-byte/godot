@@ -268,6 +268,11 @@ interface ParsedLogInfo {
   reviveTarget?: string;
 }
 
+// 名前から絵文字を除去するヘルパー
+function stripEmoji(name: string): string {
+  return name.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+}
+
 function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   const info: ParsedLogInfo = {};
   
@@ -286,56 +291,56 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   // ダメージターゲット: "YYYに💥NNNダメージ" or "YYYに🔮NNNダメージ" or "YYYにNNNダメージ"
   const damageMatch = log.match(/(.+?)に[💥🔮]?(\d+)ダメージ/);
   if (damageMatch) {
-    info.target = damageMatch[1];
+    info.target = stripEmoji(damageMatch[1]);
     info.damage = parseInt(damageMatch[2], 10);
   }
   
   // 回復ログ: "✨ XXXのヒール！ → YYYのHPが💚NNN回復！"
   const skillHealMatch = log.match(/→ (.+?)のHPが💚(\d+)回復/);
   if (skillHealMatch) {
-    info.healTarget = skillHealMatch[1];
+    info.healTarget = stripEmoji(skillHealMatch[1]);
     info.heal = parseInt(skillHealMatch[2], 10);
   }
   
   // 回復ログ（リジェネ等）: "XXXはHPNNN回復（リジェネ）"
   const regenMatch = log.match(/(.+?)はHP(\d+)回復/);
   if (regenMatch) {
-    info.healTarget = regenMatch[1];
+    info.healTarget = stripEmoji(regenMatch[1]);
     info.heal = parseInt(regenMatch[2], 10);
   }
   
   // 回復ログ（聖なる加護等）: "聖なる加護がXXXをHPNNN回復！"
   const blessingMatch = log.match(/加護が(.+?)をHP(\d+)回復/);
   if (blessingMatch) {
-    info.healTarget = blessingMatch[1];
+    info.healTarget = stripEmoji(blessingMatch[1]);
     info.heal = parseInt(blessingMatch[2], 10);
   }
   
   // 回復ログ（命を吸収/魂を吸収）: "XXXは命を吸収しHPNNN回復！"
   const absorbHpMatch = log.match(/(.+?)は[命魂]を吸収しHP(\d+)回復/);
   if (absorbHpMatch) {
-    info.healTarget = absorbHpMatch[1];
+    info.healTarget = stripEmoji(absorbHpMatch[1]);
     info.heal = parseInt(absorbHpMatch[2], 10);
   }
   
   // 回復ログ（祝福）: "XXXは祝福によりHPNNN回復"
   const blessingHealMatch = log.match(/(.+?)は祝福によりHP(\d+)回復/);
   if (blessingHealMatch) {
-    info.healTarget = blessingHealMatch[1];
+    info.healTarget = stripEmoji(blessingHealMatch[1]);
     info.heal = parseInt(blessingHealMatch[2], 10);
   }
   
   // HP吸収: "XXXはHPNNN吸収！"
   const stealMatch = log.match(/(.+?)はHP(\d+)吸収/);
   if (stealMatch) {
-    info.healTarget = stealMatch[1];
+    info.healTarget = stripEmoji(stealMatch[1]);
     info.heal = parseInt(stealMatch[2], 10);
   }
   
   // 再生: "XXXは再生しHPNNN回復！"
   const regenMonsterMatch = log.match(/(.+?)は再生しHP(\d+)回復/);
   if (regenMonsterMatch) {
-    info.healTarget = regenMonsterMatch[1];
+    info.healTarget = stripEmoji(regenMonsterMatch[1]);
     info.heal = parseInt(regenMonsterMatch[2], 10);
   }
   
@@ -352,7 +357,7 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   // 撃破: "XXXを撃破！💀"
   const killMatch = log.match(/(.+?)を撃破！💀/);
   if (killMatch) {
-    info.target = killMatch[1];
+    info.target = stripEmoji(killMatch[1]);
     info.isKill = true;
   }
   
@@ -360,19 +365,19 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   const selfReviveMatch = log.match(/(.+?)は不死の力で蘇った/);
   if (selfReviveMatch) {
     info.isRevive = true;
-    info.reviveTarget = selfReviveMatch[1];
+    info.reviveTarget = stripEmoji(selfReviveMatch[1]);
   }
   const allyReviveMatch = log.match(/の奇跡の力で(.+?)が蘇生/);
   if (allyReviveMatch) {
     info.isRevive = true;
-    info.reviveTarget = allyReviveMatch[1];
+    info.reviveTarget = stripEmoji(allyReviveMatch[1]);
   }
   
   // HP1で耐え: "XXXは不屈の精神でHP1で耐えた！" or "XXXは死に抗いHP1で耐えた！"
   const surviveMatch = log.match(/(.+?)は[不屈の精神で|死に抗い]HP1で耐えた/);
   if (surviveMatch) {
     // HPを1に設定するために healTarget として扱う（特殊処理）
-    info.healTarget = surviveMatch[1];
+    info.healTarget = stripEmoji(surviveMatch[1]);
     info.heal = -999; // 特殊マーカー: HP1にする
   }
   
