@@ -324,7 +324,8 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   let damageMatch = log.match(/→\s*(.+?)に[💥🔮]*(\d+)ダメージ/);
   if (!damageMatch) {
     // パターン2: 「！ XXXに💥NNNダメージ」（スキル攻撃）
-    damageMatch = log.match(/[！!]\s+(.+?)に[💥🔮]*(\d+)ダメージ/);
+    // \s* で空白をオプションに（「！🏠キャラ名に」のようなパターンも対応）
+    damageMatch = log.match(/[！!]\s*(.+?)に[💥🔮]*(\d+)ダメージ/);
   }
   if (damageMatch) {
     info.target = stripEmoji(damageMatch[1]);
@@ -418,7 +419,7 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   
   
   // MP消費: "（MP-18）" or "(MP-18)"
-  const mpMatch = log.match(/[（(]MP-(d+)[）)]/);
+  const mpMatch = log.match(/[（(]MP-(\d+)[）)]/);
   if (mpMatch) {
     info.mpCost = parseInt(mpMatch[1], 10);
     // 技を使った人を特定（"XXXのスキル名！"形式）
