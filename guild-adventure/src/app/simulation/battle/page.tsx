@@ -111,13 +111,16 @@ interface CharacterDisplayProps {
   character: Character;
   position: 'front' | 'back';
   currentHp?: number;
+  currentMp?: number;
   isAttacking?: boolean;
   isShaking?: boolean;
 }
 
-function CharacterDisplay({ character, position, currentHp, isAttacking, isShaking }: CharacterDisplayProps) {
+function CharacterDisplay({ character, position, currentHp, currentMp, isAttacking, isShaking }: CharacterDisplayProps) {
   const hp = currentHp ?? character.stats?.maxHp ?? 100;
   const maxHp = character.stats?.maxHp ?? 100;
+  const mp = currentMp ?? character.stats?.maxMp ?? 50;
+  const maxMp = character.stats?.maxMp ?? 50;
   
   return (
     <div className={`bg-slate-800 rounded p-1.5 border-2 ${
@@ -131,7 +134,22 @@ function CharacterDisplay({ character, position, currentHp, isAttacking, isShaki
         <CharacterIcon race={character.race} job={character.job} size={28} />
         <div className="flex-1 min-w-0">
           <div className="text-xs font-semibold truncate">{character.name}</div>
-          <HPBar current={hp} max={maxHp} size="sm" showText={false} animated />
+          {/* HP バー */}
+          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden mb-0.5">
+            <div 
+              className={`h-full transition-all duration-300 ${
+                (hp / maxHp) > 0.5 ? 'bg-green-500' : (hp / maxHp) > 0.25 ? 'bg-yellow-500' : 'bg-red-500'
+              }`}
+              style={{ width: `${Math.max(0, Math.min(100, (hp / maxHp) * 100))}%` }}
+            />
+          </div>
+          {/* MP バー */}
+          <div className="h-1 bg-slate-700 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-300"
+              style={{ width: `${Math.max(0, Math.min(100, (mp / maxMp) * 100))}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -361,6 +379,73 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
   return info;
 }
 
+// 【味方】ログからHP/MPを解析
+function parseAllyStatusLine(log: string): { name: string; hp: number; mp: number } | null {
+  // 形式: "🐙 ド騎慎山：HP159/205🟢 MP22/40" or "ド騎慎山: HP159/205🟢 MP22/40"
+  // 名前部分（アイコン含む可能性）: HPの前まで
+  const match = log.match(/^[🐙🏠🗡⚔🛡🎭🔮💀👹🐉🦇🐺🐗🦎🐍🦂🕷🦅🐻🦁🐯🦊🐰🐸🦋🌿🔥💧⚡🌙☀❄\s]*(.+?)[：:]\s*HP(\d+)\/\d+.*MP(\d+)\/\d+/);
+  if (!match) return null;
+  
+  return {
+    name: match[1].trim(),
+    hp: parseInt(match[2], 10),
+    mp: parseInt(match[3], 10),
+  };
+}
+
+// ログ配列から最新の【味方】ステータスを抽出
+function extractLatestAllyStatus(logs: string[]): Record<string, { hp: number; mp: number }> {
+  const result: Record<string, { hp: number; mp: number }> = {};
+  let inAllySection = false;
+  
+  for (const log of logs) {
+    if (log.includes('【味方】')) {
+      inAllySection = true;
+      continue;
+    }
+    if (log.includes('【敵】') || log.includes('⚔️') || log.includes('ターン')) {
+      inAllySection = false;
+      continue;
+    }
+    
+    if (inAllySection) {
+      const status = parseAllyStatusLine(log);
+      if (status) {
+        result[status.name] = { hp: status.hp, mp: status.mp };
+      }
+    }
+  }
+  
+  return result;
+}
+
+// 【敵】ログからボスのHPを解析
+function extractBossHpFromLogs(logs: string[], bossName: string): number | null {
+  let inEnemySection = false;
+  let lastHp: number | null = null;
+  
+  for (const log of logs) {
+    if (log.includes('【敵】')) {
+      inEnemySection = true;
+      continue;
+    }
+    if (log.includes('【味方】') || log.includes('⚔️') || log.includes('ターン')) {
+      inEnemySection = false;
+      continue;
+    }
+    
+    if (inEnemySection && log.includes(bossName)) {
+      // 形式: "👹 イフリート: HP850/1000"
+      const match = log.match(/HP(\d+)\/\d+/);
+      if (match) {
+        lastHp = parseInt(match[1], 10);
+      }
+    }
+  }
+  
+  return lastHp;
+}
+
 // ============================================
 // HP推移を事前計算
 // ============================================
@@ -449,6 +534,7 @@ function SimulationBattleContent() {
   const [attackingCharName, setAttackingCharName] = useState<string | null>(null);
   const [shakingCharName, setShakingCharName] = useState<string | null>(null);
   const [characterHPs, setCharacterHPs] = useState<Record<string, number>>({});
+  const [characterMPs, setCharacterMPs] = useState<Record<string, number>>({});
   const [bossHp, setBossHp] = useState<number | null>(null);
   const [battleEnded, setBattleEnded] = useState(false);
   
@@ -611,6 +697,33 @@ function SimulationBattleContent() {
   // 表示するログ
   const displayedLogs = allLogs.slice(0, displayedLogIndex);
   
+  // 【味方】ログからHP/MPを更新
+  useEffect(() => {
+    if (displayedLogs.length === 0) return;
+    
+    const status = extractLatestAllyStatus(displayedLogs);
+    if (Object.keys(status).length > 0) {
+      const newHPs: Record<string, number> = {};
+      const newMPs: Record<string, number> = {};
+      
+      for (const [name, s] of Object.entries(status)) {
+        newHPs[name] = s.hp;
+        newMPs[name] = s.mp;
+      }
+      
+      setCharacterHPs(prev => ({ ...prev, ...newHPs }));
+      setCharacterMPs(prev => ({ ...prev, ...newMPs }));
+    
+    // ボスのHP更新
+    if (dungeon?.boss) {
+      const bossHpFromLog = extractBossHpFromLogs(displayedLogs, dungeon.boss.name);
+      if (bossHpFromLog !== null) {
+        setBossHp(bossHpFromLog);
+      }
+    }
+    }
+  }, [displayedLogs]);
+  
   // スキップ機能（事前計算した最終HPを使用）
   const skipToEnd = () => {
     setDisplayedLogIndex(allLogs.length);
@@ -754,6 +867,7 @@ function SimulationBattleContent() {
                   character={char} 
                   position="front"
                   currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
+                  currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
                   isAttacking={attackingCharName === char.name}
                   isShaking={shakingCharName === char.name}
                 />
@@ -765,6 +879,7 @@ function SimulationBattleContent() {
                   character={char} 
                   position="back"
                   currentHp={characterHPs[char.name] ?? char.stats?.maxHp ?? 100}
+                  currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
                   isAttacking={attackingCharName === char.name}
                   isShaking={shakingCharName === char.name}
                 />
