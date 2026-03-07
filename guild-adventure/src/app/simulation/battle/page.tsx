@@ -804,6 +804,7 @@ function SimulationBattleContent() {
           
           // 被ダメージアニメーション + HP直接更新
           if (parsed.target && parsed.damage) {
+            console.log('[DAMAGE]', { target: parsed.target, damage: parsed.damage, log: currentLog });
             setShakingCharName(parsed.target);
             setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
             
@@ -815,6 +816,7 @@ function SimulationBattleContent() {
             
             // ボスへのダメージ
             const bossCleanName = dungeon?.boss?.name ? stripEmoji(dungeon.boss.name) : null;
+            console.log('[BOSS CHECK]', { target: parsed.target, bossCleanName, isMatch: parsed.target === bossCleanName });
             if (parsed.target === bossCleanName) {
               setBossFloatingDamage(parsed.damage!);
               setTimeout(() => setBossFloatingDamage(null), 800);
@@ -824,16 +826,21 @@ function SimulationBattleContent() {
               // 味方へのダメージ - HP直接更新
               setCharacterHPs(prev => {
                 let currentHp = prev[parsed.target!];
+                console.log('[CHAR HP UPDATE]', { target: parsed.target, prevHp: currentHp, damage: parsed.damage, prevKeys: Object.keys(prev) });
                 // undefinedの場合、partyMembersから初期HP取得
                 if (currentHp === undefined) {
                   const char = partyMembers.find(c => stripEmoji(c.name) === parsed.target);
+                  console.log('[CHAR LOOKUP]', { target: parsed.target, charFound: !!char, charName: char?.name });
                   if (char) {
                     currentHp = char.stats?.maxHp ?? 100;
                   } else {
+                    console.log('[CHAR NOT FOUND - SKIPPING]');
                     return prev; // キャラが見つからない場合はスキップ
                   }
                 }
-                return { ...prev, [parsed.target!]: Math.max(0, currentHp - parsed.damage!) };
+                const newHp = Math.max(0, currentHp - parsed.damage!);
+                console.log('[CHAR HP RESULT]', { target: parsed.target, newHp });
+                return { ...prev, [parsed.target!]: newHp };
               });
             }
           }
