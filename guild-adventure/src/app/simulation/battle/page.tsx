@@ -68,12 +68,13 @@ function HPBar({ current, max, showText = true, size = 'md', animated = false }:
 // ============================================
 
 interface BossDisplayProps {
+  floatingDamage?: number | null;
   boss: Monster;
   currentHp?: number;
   isShaking?: boolean;
 }
 
-function BossDisplay({ boss, currentHp, isShaking }: BossDisplayProps) {
+function BossDisplay({ boss, currentHp, isShaking, floatingDamage }: BossDisplayProps) {
   const hp = currentHp ?? boss.stats.maxHp;
   
   return (
@@ -86,6 +87,11 @@ function BossDisplay({ boss, currentHp, isShaking }: BossDisplayProps) {
           }`}
         >
           <MonsterIcon monsterId={boss.id} size={56} isBoss={true} />
+          {floatingDamage && (
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-red-500 font-bold text-lg animate-float-up pointer-events-none z-10">
+              -{floatingDamage}
+            </div>
+          )}
         </div>
         {/* 右: 情報 */}
         <div className="flex-1 min-w-0">
@@ -114,22 +120,46 @@ interface CharacterDisplayProps {
   currentMp?: number;
   isAttacking?: boolean;
   isShaking?: boolean;
+  floatingDamage?: number | null;
+  floatingMp?: number | null;
+  floatingHeal?: number | null;
 }
 
-function CharacterDisplay({ character, position, currentHp, currentMp, isAttacking, isShaking }: CharacterDisplayProps) {
+function CharacterDisplay({ 
+  character, position, currentHp, currentMp, 
+  isAttacking, isShaking, floatingDamage, floatingMp, floatingHeal 
+}: CharacterDisplayProps) {
   const hp = currentHp ?? character.stats?.maxHp ?? 100;
   const maxHp = character.stats?.maxHp ?? 100;
   const mp = currentMp ?? character.stats?.maxMp ?? 50;
   const maxMp = character.stats?.maxMp ?? 50;
   
   return (
-    <div className={`bg-slate-800 rounded p-1.5 border-2 ${
+    <div className={`relative bg-slate-800 rounded p-1.5 border-2 ${
       position === 'front' ? 'border-orange-600/70' : 'border-blue-600/70'
     } transition-transform duration-300 ${
       isAttacking ? 'translate-y-[-4px] scale-105' : ''
     } ${
       isShaking ? 'animate-shake' : ''
     }`}>
+      {/* フローティングダメージ */}
+      {floatingDamage && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-red-500 font-bold text-sm animate-float-up pointer-events-none z-10">
+          -{floatingDamage}
+        </div>
+      )}
+      {/* フローティング回復 */}
+      {floatingHeal && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 text-green-400 font-bold text-sm animate-float-up pointer-events-none z-10">
+          +{floatingHeal}
+        </div>
+      )}
+      {/* フローティングMP消費 */}
+      {floatingMp && (
+        <div className="absolute -top-4 right-0 text-blue-400 font-bold text-xs animate-float-up pointer-events-none z-10">
+          MP-{floatingMp}
+        </div>
+      )}
       <div className="flex items-center gap-1.5">
         <CharacterIcon race={character.race} job={character.job} size={28} />
         <div className="flex-1 min-w-0">
@@ -266,6 +296,8 @@ interface ParsedLogInfo {
   isDebuff?: boolean;
   isRevive?: boolean;
   reviveTarget?: string;
+  mpCost?: number;
+  mpCaster?: string;
 }
 
 // 名前から絵文字を除去するヘルパー
@@ -381,6 +413,17 @@ function parseLogLine(log: string, knownNames: string[]): ParsedLogInfo {
     info.heal = -999; // 特殊マーカー: HP1にする
   }
   
+  
+  // MP消費: "（MP-18）" or "(MP-18)"
+  const mpMatch = log.match(/[（(]MP-(d+)[）)]/);
+  if (mpMatch) {
+    info.mpCost = parseInt(mpMatch[1], 10);
+    // 技を使った人を特定（"XXXのスキル名！"形式）
+    const casterMatch = log.match(/^[✨📈📉🔮⚔️💫]*\s*(.+?)の.+?！/);
+    if (casterMatch) {
+      info.mpCaster = stripEmoji(casterMatch[1]);
+    }
+  }
   return info;
 }
 
@@ -538,9 +581,13 @@ function SimulationBattleContent() {
   const [displayedLogIndex, setDisplayedLogIndex] = useState(0);
   const [attackingCharName, setAttackingCharName] = useState<string | null>(null);
   const [shakingCharName, setShakingCharName] = useState<string | null>(null);
+  const [floatingDamages, setFloatingDamages] = useState<Record<string, number | null>>({});
+  const [floatingMps, setFloatingMps] = useState<Record<string, number | null>>({});
+  const [floatingHeals, setFloatingHeals] = useState<Record<string, number | null>>({});
   const [characterHPs, setCharacterHPs] = useState<Record<string, number>>({});
   const [characterMPs, setCharacterMPs] = useState<Record<string, number>>({});
   const [bossHp, setBossHp] = useState<number | null>(null);
+  const [bossFloatingDamage, setBossFloatingDamage] = useState<number | null>(null);
   const [battleEnded, setBattleEnded] = useState(false);
   
   // HP推移の事前計算結果
@@ -668,12 +715,46 @@ function SimulationBattleContent() {
           if (parsed.attacker) {
             setAttackingCharName(parsed.attacker);
             setTimeout(() => setAttackingCharName(null), ANIMATION_DURATION_MS);
+          
+          // MP消費フローティング
+          if (parsed.mpCost && parsed.mpCaster) {
+            setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: parsed.mpCost! }));
+            setTimeout(() => {
+              setFloatingMps(prev => ({ ...prev, [parsed.mpCaster!]: null }));
+            }, 800);
+          
+          // フローティング回復
+          if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
+            setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
+            setTimeout(() => {
+              setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
+            }, 800);
+          }
+          }
           }
           
           // 被ダメージアニメーション
           if (parsed.target && parsed.damage) {
             setShakingCharName(parsed.target);
             setTimeout(() => setShakingCharName(null), ANIMATION_DURATION_MS);
+            // フローティングダメージ
+            setFloatingDamages(prev => ({ ...prev, [parsed.target!]: parsed.damage! }));
+            // ボスへのダメージの場合
+            if (parsed.target === dungeon?.boss?.name) {
+              setBossFloatingDamage(parsed.damage!);
+              setTimeout(() => setBossFloatingDamage(null), 800);
+            }
+            setTimeout(() => {
+              setFloatingDamages(prev => ({ ...prev, [parsed.target!]: null }));
+            }, 800);
+          
+          // フローティング回復
+          if (parsed.healTarget && parsed.heal && parsed.heal > 0) {
+            setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: parsed.heal! }));
+            setTimeout(() => {
+              setFloatingHeals(prev => ({ ...prev, [parsed.healTarget!]: null }));
+            }, 800);
+          }
           }
           
           // HP更新（事前計算したHPを使用）
@@ -858,6 +939,7 @@ function SimulationBattleContent() {
                 boss={dungeon.boss} 
                 currentHp={bossHp ?? dungeon.boss.stats.maxHp}
                 isShaking={shakingCharName === dungeon.boss.name}
+                floatingDamage={bossFloatingDamage}
               />
             </div>
           )}
@@ -875,6 +957,9 @@ function SimulationBattleContent() {
                   currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
                   isAttacking={attackingCharName === char.name}
                   isShaking={shakingCharName === char.name}
+                  floatingDamage={floatingDamages[char.name]}
+                  floatingMp={floatingMps[char.name]}
+                  floatingHeal={floatingHeals[char.name]}
                 />
               ))}
               {/* 後列 */}
@@ -887,6 +972,9 @@ function SimulationBattleContent() {
                   currentMp={characterMPs[char.name] ?? char.stats?.maxMp ?? 50}
                   isAttacking={attackingCharName === char.name}
                   isShaking={shakingCharName === char.name}
+                  floatingDamage={floatingDamages[char.name]}
+                  floatingMp={floatingMps[char.name]}
+                  floatingHeal={floatingHeals[char.name]}
                 />
               ))}
             </div>

@@ -44,3 +44,18 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+@keyframes floatUp {
+  0% { 
+    opacity: 1; 
+    transform: translate(-50%, 0);
+  }
+  100% { 
+    opacity: 0; 
+    transform: translate(-50%, -20px);
+  }
+}
+
+.animate-float-up {
+  animation: floatUp 0.8s ease-out forwards;
+}
