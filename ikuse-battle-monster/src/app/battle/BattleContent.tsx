@@ -7,15 +7,52 @@
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { useBattle } from '@/hooks/useBattle';
 import { useUser } from '@/hooks/useUser';
-import { getStarters, ALL_MONSTERS } from '@/lib/data/monsters';
+import { getStarters, ALL_MONSTERS, getMonsterById } from '@/lib/data/monsters';
 import { MonsterInstance, MonsterSpecies } from '@/lib/types';
 import { BattleField } from '@/components/battle/BattleField';
 import { BattleLog } from '@/components/battle/BattleLog';
 import { ActionMenu } from '@/components/battle/ActionMenu';
 import { createMonsterInstance } from '@/lib/monster/create';
+import { UserData, SavedMonster, toMonsterInstance } from '@/lib/save/userData';
 
 // ============================================
-// テスト用パーティ生成（6体）
+// ユーザーの保存パーティからバトル用パーティを生成
+// ============================================
+
+function createUserParty6(userData: UserData): { instance: MonsterInstance; species: MonsterSpecies }[] | null {
+  const { monsters, party } = userData;
+  if (monsters.length < 3) return null; // 最低3体必要
+
+  // partyに登録されたモンスターIDを優先、なければ全モンスターから
+  const partyMonsterIds = party.length > 0 ? party : monsters.slice(0, 6).map(m => m.id);
+  
+  const result: { instance: MonsterInstance; species: MonsterSpecies }[] = [];
+  for (const mId of partyMonsterIds) {
+    const saved = monsters.find(m => m.id === mId);
+    if (!saved) continue;
+    const species = getMonsterById(saved.speciesId);
+    if (!species) continue;
+    const instance = toMonsterInstance(saved, species);
+    result.push({ instance, species });
+  }
+
+  // パーティが6体未満の場合、残りのモンスターから補充
+  if (result.length < 6) {
+    const usedIds = new Set(result.map(r => r.instance.id));
+    for (const saved of monsters) {
+      if (usedIds.has(saved.id)) continue;
+      const species = getMonsterById(saved.speciesId);
+      if (!species) continue;
+      result.push({ instance: toMonsterInstance(saved, species), species });
+      if (result.length >= 6) break;
+    }
+  }
+
+  return result.length >= 3 ? result.slice(0, 6) : null;
+}
+
+// ============================================
+// テスト用パーティ生成（6体）- 未ログイン/モンスター不足時のフォールバック
 // ============================================
 
 function createTestParty6(): { instance: MonsterInstance; species: MonsterSpecies }[] {
@@ -31,11 +68,34 @@ function createTestParty6(): { instance: MonsterInstance; species: MonsterSpecie
   });
 }
 
-function createAIParty6(): { instance: MonsterInstance; species: MonsterSpecies }[] {
-  // AIは6体のランダムパーティ
-  const availableMonsters = ALL_MONSTERS.filter(m => !m.isStarter);
-  const shuffled = [...availableMonsters].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, 6);
+function createAIParty6(userRating?: number): { instance: MonsterInstance; species: MonsterSpecies }[] {
+  // レートに応じてAIのパーティ構成を変える
+  const pool = [...ALL_MONSTERS].filter(m => !m.isStarter);
+  
+  // 高レートなら晩成モンスターを多めに
+  let selected: MonsterSpecies[];
+  if (userRating && userRating >= 2000) {
+    const late = pool.filter(m => m.statTier === 'late');
+    const others = pool.filter(m => m.statTier !== 'late');
+    const shuffledLate = [...late].sort(() => Math.random() - 0.5);
+    const shuffledOthers = [...others].sort(() => Math.random() - 0.5);
+    selected = [...shuffledLate.slice(0, 4), ...shuffledOthers.slice(0, 2)];
+  } else if (userRating && userRating >= 1500) {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    selected = shuffled.slice(0, 6);
+  } else {
+    // 初心者帯: 早熟中心
+    const early = pool.filter(m => m.statTier === 'early');
+    const shuffled = [...early].sort(() => Math.random() - 0.5);
+    selected = shuffled.slice(0, 6);
+  }
+
+  // 6体に足りなければランダム補充
+  if (selected.length < 6) {
+    const usedIds = new Set(selected.map(s => s.id));
+    const rest = pool.filter(m => !usedIds.has(m.id)).sort(() => Math.random() - 0.5);
+    selected = [...selected, ...rest.slice(0, 6 - selected.length)];
+  }
   
   return selected.map((species) => {
     const instance = createMonsterInstance(species);
@@ -59,12 +119,20 @@ interface BattleResultDetails {
 // ============================================
 
 export default function BattleContent() {
-  // 6体パーティを生成
-  const playerParty = useMemo(() => createTestParty6(), []);
-  const aiParty = useMemo(() => createAIParty6(), []);
-  
   // ユーザーデータ
   const { isLoggedIn, userData, reportWin, reportLoss } = useUser();
+  
+  // ユーザーのモンスターがあればそれを使用、なければテストパーティ
+  const playerParty = useMemo(() => {
+    if (isLoggedIn && userData) {
+      const userParty = createUserParty6(userData);
+      if (userParty) return userParty;
+    }
+    return createTestParty6();
+  }, [isLoggedIn, userData]);
+  
+  // AIパーティ（ユーザーレートに応じた強さ）
+  const aiParty = useMemo(() => createAIParty6(userData?.rating), [userData?.rating]);
   
   // 結果詳細（卵獲得、レート変動）
   const [resultDetails, setResultDetails] = useState<BattleResultDetails | null>(null);
@@ -138,6 +206,12 @@ export default function BattleContent() {
         {/* ヘッダー */}
         <header className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">モンスターバトル</h1>
+          {/* パーティ情報 */}
+          {isLoggedIn && userData && userData.monsters.length >= 3 ? (
+            <p className="text-xs text-green-400 mb-1">📦 あなたのパーティで参戦中{userData.rating ? ` | レート: ${userData.rating}` : ''}</p>
+          ) : (
+            <p className="text-xs text-yellow-400 mb-1">⚠️ テストパーティを使用中 — <a href="/starter" className="underline">御三家を選んで</a>自分のパーティを作ろう！</p>
+          )}
           <p className="text-gray-400">
             {battle.status === 'picking' && '6体から3体を選出'}
             {battle.status === 'selecting' && `ターン ${battle.battleState.turn} | 行動を選択`}

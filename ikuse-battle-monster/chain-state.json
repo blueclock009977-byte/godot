@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 96,
+  "currentPhase": 98,
   "phaseAttempt": 1,
   "maxAttempts": 50,
   "log": [
@@ -690,6 +690,24 @@
     "    - マッチ成立演出 → 自動遷移",
     "    - キャンセル機能、ページ離脱時の自動退出",
     "  - src/app/page.tsx 更新 - ホーム画面にランクマッチ/フレンド対戦/テストバトルを分離配置",
+    "npm run build 成功確認",
+    "Phase 97 開始: 2026-03-11 00:54",
+    "ユーザー保存パーティをバトルに統合 - コアループの核心部分",
+    "  - createUserParty6(): SavedMonster→MonsterInstance変換、party配列優先+不足時補充",
+    "  - ログイン済み&モンスター3体以上→ユーザーパーティ使用、それ以外→テストパーティにフォールバック",
+    "  - AIパーティをレート帯連動に変更（初心者:早熟中心、上級者:晩成多め）",
+    "  - ヘッダーにパーティ情報表示（自パーティ or テストパーティの案内）",
+    "npm run build 成功確認",
+    "Phase 98 開始: 2026-03-11 01:00",
+    "ホーム画面UX改善: 新規ユーザー自動リダイレクト + ダッシュボード化",
+    "  - page.tsxをクライアントコンポーネントに変更",
+    "  - 未ログイン時に自動ログイン実行",
+    "  - 御三家未選択時に/starterへ自動リダイレクト",
+    "  - レート・戦績・モンスター数のダッシュボード表示",
+    "  - 卵孵化可能時の通知バナー（プロフィールへリンク）",
+    "  - 卵温め中の状態表示",
+    "  - ランク（ブロンズ/シルバー/ゴールド）カラー表示",
+    "  - 設定ボタンをプロフィールと横並びに配置（スマホ最適化）",
     "npm run build 成功確認"
   ],
   "completed": [
@@ -782,7 +800,9 @@
     "phase93-protect-consecutive-fail-rate",
     "phase94-morning-sun-weather-heal",
     "phase95-online-rating-egg",
-    "phase96-ranked-matchmaking"
+    "phase96-ranked-matchmaking",
+    "phase97-user-party-in-battle",
+    "phase98-home-dashboard-ux"
   ],
   "status": "IN_PROGRESS"
 }
