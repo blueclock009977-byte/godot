@@ -118,8 +118,11 @@ export function resolveActions(
       continue;
     }
     
+    // 相手の行動を取得（ふいうち判定用）
+    const opponentAction = playerIndex === 0 ? action1 : action0;
+    
     // 行動実行
-    const result = executeAction(state, playerIndex, action, skills);
+    const result = executeAction(state, playerIndex, action, skills, opponentAction);
     messages.push(...result.messages);
     
     actionResults.push({

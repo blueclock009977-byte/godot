@@ -146,13 +146,30 @@ export interface ActionResult {
 }
 
 /**
+ * ふいうち判定用: 相手が攻撃技を選んでいるかチェック
+ */
+export function isOpponentUsingAttack(
+  action: BattleAction | undefined,
+  skills: Map<string, Skill>
+): boolean {
+  if (!action) return false;
+  if (action.type !== 'skill' || !action.skillId) return false;
+  const skill = skills.get(action.skillId);
+  if (!skill) return false;
+  // power > 0 の技を攻撃技とみなす
+  return skill.power > 0;
+}
+
+/**
  * 行動を実行
+ * @param opponentAction ふいうち判定用（相手が攻撃技を使うかどうか）
  */
 export function executeAction(
   state: BattleState,
   playerIndex: 0 | 1,
   action: BattleAction,
-  skills: Map<string, Skill>
+  skills: Map<string, Skill>,
+  opponentAction?: BattleAction
 ): ActionResult {
   const player = state.players[playerIndex];
   const monster = getActiveMonster(player);
@@ -171,7 +188,7 @@ export function executeAction(
       return executeWait(monster, messages);
     
     case 'skill':
-      return executeSkill(state, playerIndex, action.skillId!, skills, messages);
+      return executeSkill(state, playerIndex, action.skillId!, skills, messages, opponentAction);
   }
 }
 
@@ -218,13 +235,15 @@ function executeWait(
 
 /**
  * 技を実行
+ * @param opponentAction ふいうち判定用（相手の行動）
  */
 function executeSkill(
   state: BattleState,
   playerIndex: 0 | 1,
   skillId: string,
   skills: Map<string, Skill>,
-  messages: string[]
+  messages: string[],
+  opponentAction?: BattleAction
 ): ActionResult {
   const player = state.players[playerIndex];
   const opponent = state.players[1 - playerIndex as 0 | 1];
@@ -235,6 +254,19 @@ function executeSkill(
   if (!skill) {
     messages.push('技が見つからない！');
     return { success: false, messages };
+  }
+  
+  // === ふいうち特殊処理 ===
+  // 相手が攻撃技を選んでいない場合、失敗する
+  if (skillId === 'sucker_punch') {
+    if (!isOpponentUsingAttack(opponentAction, skills)) {
+      // マナは消費しない（技自体が失敗）
+      messages.push(`${attacker.species.name}のふいうち！`);
+      messages.push(`しかし相手は攻撃してこなかった！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: false, damage: 0, messages };
+    }
+    // 相手が攻撃技を選んでいる場合は通常通り実行
   }
   
   // === マナバースト特殊処理 ===
