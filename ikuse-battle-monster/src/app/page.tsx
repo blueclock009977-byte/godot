@@ -14,6 +14,14 @@ export default function HomePage() {
         </p>
 
         <div className="grid gap-3">
+          {/* 御三家選択（新規プレイヤー向け） */}
+          <Link
+            href="/starter"
+            className="block w-full rounded-xl bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 transition-colors px-5 py-4 text-lg font-bold text-center"
+          >
+            🎮 ゲームスタート（御三家選択）
+          </Link>
+
           <Link
             href="/battle"
             className="block w-full rounded-xl bg-green-600 hover:bg-green-500 transition-colors px-5 py-4 text-lg font-bold text-center"
@@ -29,6 +37,7 @@ export default function HomePage() {
           </Link>
 
           <p className="text-sm text-gray-400 mt-2">
+            ※ 初めての方は「ゲームスタート」から御三家を選んでください。<br />
             ※ バトルに勝って卵をゲット → 孵化して新モンスター獲得！
           </p>
         </div>

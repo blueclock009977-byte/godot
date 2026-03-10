@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { AuthUser, onAuthChange, autoLogin, signOut } from '../lib/firebase/auth';
-import { UserData, SavedMonster, createMonsterInstance, addMonster, updateParty, recordWin, recordLoss, hatchCurrentEgg, isEggReady } from '../lib/save/userData';
+import { UserData, SavedMonster, createMonsterInstance, addMonster, updateParty, recordWin, recordLoss, hatchCurrentEgg, isEggReady, hasSelectedStarter, selectStarter as selectStarterFn } from '../lib/save/userData';
 import { syncUserData, listenUserData, getLocalUserData, SyncStatus } from '../lib/save/sync';
 
 export interface UseUserResult {
@@ -15,9 +15,15 @@ export interface UseUserResult {
   userData: UserData | null;
   syncStatus: SyncStatus;
   
+  // 御三家選択状態
+  needsStarterSelection: boolean;
+  
   // アクション
   login: () => Promise<void>;
   logout: () => Promise<void>;
+  
+  // 御三家選択
+  selectStarter: (starterId: 'flameoo' | 'frosty' | 'gale_wing') => Promise<boolean>;
   
   // モンスター管理
   addNewMonster: (speciesId: string, nickname?: string) => Promise<SavedMonster | null>;
@@ -222,14 +228,38 @@ export function useUser(): UseUserResult {
     }
   }, [user, userData]);
   
+  // ログイン状態の計算
+  const isLoggedIn = !!user;
+  
+  // 御三家選択が必要か
+  const needsStarterSelection = isLoggedIn && userData !== null && !hasSelectedStarter(userData);
+  
+  // 御三家を選択
+  const selectStarter = useCallback(async (
+    starterId: 'flameoo' | 'frosty' | 'gale_wing'
+  ): Promise<boolean> => {
+    if (!user || !userData) return false;
+    
+    try {
+      const newData = await selectStarterFn(user.uid, { ...userData }, starterId);
+      setUserData(newData);
+      return true;
+    } catch (error) {
+      console.error('Failed to select starter:', error);
+      return false;
+    }
+  }, [user, userData]);
+  
   return {
     user,
     isLoading,
-    isLoggedIn: !!user,
+    isLoggedIn,
     userData,
     syncStatus,
+    needsStarterSelection,
     login,
     logout,
+    selectStarter,
     addNewMonster,
     setParty,
     reportWin,

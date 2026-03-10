@@ -362,6 +362,62 @@ export function isEggReady(userData: UserData): boolean {
 }
 
 // ============================================
+// 御三家選択
+// ============================================
+
+/** 御三家が選択済みかどうか */
+export function hasSelectedStarter(userData: UserData): boolean {
+  // モンスターを1体でも持っていれば選択済みとみなす
+  return userData.monsters.length > 0;
+}
+
+/** 御三家を選択して初期モンスターを獲得 */
+export async function selectStarter(
+  userId: string,
+  userData: UserData,
+  starterId: 'flameoo' | 'frosty' | 'gale_wing'
+): Promise<UserData> {
+  // 既に選択済みならエラー
+  if (hasSelectedStarter(userData)) {
+    throw new Error('既に御三家を選択済みです');
+  }
+  
+  // 有効な御三家かチェック
+  if (!STARTER_IDS.includes(starterId)) {
+    throw new Error('無効な御三家IDです');
+  }
+  
+  // 御三家モンスターを生成（固定構成）
+  const starterMonster = createMonsterInstance(starterId);
+  if (!starterMonster) {
+    throw new Error('御三家モンスターの生成に失敗しました');
+  }
+  
+  // 相性補完の早熟モンスター2体を生成
+  const bonusIds = STARTER_BONUS_MONSTERS[starterId];
+  const bonusMonsters: SavedMonster[] = [];
+  
+  for (const bonusId of bonusIds) {
+    const monster = createMonsterInstance(bonusId);
+    if (monster) {
+      bonusMonsters.push(monster);
+    }
+  }
+  
+  // モンスターを追加（御三家 + ボーナス2体）
+  const allMonsters = [starterMonster, ...bonusMonsters];
+  userData.monsters = allMonsters;
+  
+  // パーティに全員を設定（3体でバトル可能）
+  userData.party = allMonsters.map(m => m.id);
+  
+  // 保存
+  await saveUserData(userId, userData);
+  
+  return userData;
+}
+
+// ============================================
 // マイグレーション
 // ============================================
 
