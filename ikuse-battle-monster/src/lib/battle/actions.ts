@@ -24,7 +24,13 @@ import {
   addLog,
   addDamageLog,
 } from './state';
-import { applySkillEffects, processOnEnterAbility } from './effects';
+import {
+  applySkillEffects,
+  processOnEnterAbility,
+  processContactAbility,
+  checkAbsorbAbility,
+  applyStatChange,
+} from './effects';
 
 // ============================================
 // 行動順決定
@@ -251,6 +257,33 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // 吸収系特性チェック（ダメージ計算前）
+  if (skill.power > 0) {
+    const absorbResult = checkAbsorbAbility(defender, skill.type);
+    if (absorbResult.absorbed) {
+      messages.push(`${attacker.species.name}の${skill.name}！`);
+      messages.push(absorbResult.message || '');
+      
+      // HP回復
+      if (absorbResult.healAmount) {
+        const { fainted } = applyHpChange(defender, absorbResult.healAmount);
+      }
+      
+      // 避雷針: MAG+1
+      if (defender.instance.ability === 'lightning_rod') {
+        applyStatChange(defender, 'mag', 1);
+      }
+      
+      // 電気エンジン: SPD+1
+      if (defender.instance.ability === 'motor_drive') {
+        applyStatChange(defender, 'spd', 1);
+      }
+      
+      addLog(state, messages.join(' '), 'ability');
+      return { success: true, damage: 0, messages };
+    }
+  }
+  
   // 命中判定
   if (!checkAccuracy(attacker, defender, skill)) {
     messages.push(`${attacker.species.name}の${skill.name}！`);
@@ -310,6 +343,23 @@ function executeSkill(
   if (!fainted) {
     const effectMessages = applySkillEffects(state, playerIndex, skill, totalDamage);
     messages.push(...effectMessages);
+  }
+  
+  // 接触技時の特性発動（攻撃側/防御側どちらか倒れていなければ）
+  if (skill.makesContact && totalDamage > 0 && attacker.currentHp > 0) {
+    const contactMessages = processContactAbility(
+      state,
+      playerIndex,
+      1 - playerIndex as 0 | 1,
+      totalDamage
+    );
+    messages.push(...contactMessages);
+    
+    // 接触特性で攻撃側が倒れた場合
+    if (attacker.currentHp <= 0) {
+      messages.push(`${attacker.species.name}は倒れた！`);
+      addLog(state, `${attacker.species.name}は倒れた！`, 'ko');
+    }
   }
   
   if (fainted) {

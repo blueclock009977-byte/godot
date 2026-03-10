@@ -453,6 +453,132 @@ export function changeWeather(
 }
 
 // ============================================
+// 接触技時の特性発動
+// ============================================
+
+/**
+ * 接触技を受けた時の防御側特性を処理
+ */
+export function processContactAbility(
+  state: BattleState,
+  attackerIndex: 0 | 1,
+  defenderIndex: 0 | 1,
+  damage: number
+): string[] {
+  const messages: string[] = [];
+  const attacker = getActiveMonster(state.players[attackerIndex]);
+  const defender = getActiveMonster(state.players[defenderIndex]);
+  const defenderAbility = defender.instance.ability;
+  const attackerAbility = attacker.instance.ability;
+  
+  // 防御側が倒れていたら発動しない
+  if (defender.currentHp <= 0) return messages;
+  
+  // === 防御側の接触時特性 ===
+  
+  // 静電気: 接触技を受けると30%で麻痺
+  if (defenderAbility === 'static') {
+    if (Math.random() < 0.3) {
+      messages.push(`${defender.species.name}のせいでんき！`);
+      messages.push(...applyStatusCondition(attacker, 'paralyze'));
+    }
+  }
+  
+  // 炎の体: 接触技を受けると30%で火傷
+  if (defenderAbility === 'flame_body') {
+    if (Math.random() < 0.3) {
+      messages.push(`${defender.species.name}のほのおのからだ！`);
+      messages.push(...applyStatusCondition(attacker, 'burn'));
+    }
+  }
+  
+  // 鮫肌: 接触技で攻撃側に1/8ダメージ
+  if (defenderAbility === 'rough_skin') {
+    const recoilDamage = Math.max(1, Math.floor(attacker.maxHp / 8));
+    applyHpChange(attacker, -recoilDamage);
+    messages.push(`${defender.species.name}のさめはだで${attacker.species.name}は傷ついた！`);
+    addLog(state, messages[messages.length - 1], 'damage');
+  }
+  
+  // 呪われボディ: 技を受けると30%で封印（TODO: 技封印の実装）
+  // if (defenderAbility === 'cursed_body') {
+  //   if (Math.random() < 0.3) {
+  //     messages.push(`${defender.species.name}ののろわれボディ！`);
+  //     // 技封印処理
+  //   }
+  // }
+  
+  // === 攻撃側の接触時特性 ===
+  
+  // 毒手: 接触技で30%毒
+  if (attackerAbility === 'poison_touch') {
+    if (Math.random() < 0.3) {
+      messages.push(`${attacker.species.name}のどくしゅ！`);
+      messages.push(...applyStatusCondition(defender, 'poison'));
+    }
+  }
+  
+  return messages;
+}
+
+/**
+ * 吸収系特性を処理（攻撃を受ける前にチェック）
+ * @returns nullなら通常ダメージ、数値なら吸収してその分回復
+ */
+export function checkAbsorbAbility(
+  defender: BattleMonster,
+  skillType: MonsterType
+): { absorbed: boolean; healAmount?: number; message?: string } {
+  const ability = defender.instance.ability;
+  
+  // 貯水: 水技を受けるとHP回復
+  if (ability === 'water_absorb' && skillType === 'water') {
+    const healAmount = Math.floor(defender.maxHp / 4);
+    return {
+      absorbed: true,
+      healAmount,
+      message: `${defender.species.name}のちょすいでHPが回復した！`,
+    };
+  }
+  
+  // 蓄電: 雷技を受けるとHP回復
+  if (ability === 'volt_absorb' && skillType === 'thunder') {
+    const healAmount = Math.floor(defender.maxHp / 4);
+    return {
+      absorbed: true,
+      healAmount,
+      message: `${defender.species.name}のちくでんでHPが回復した！`,
+    };
+  }
+  
+  // 避雷針: 雷技を吸収しMAG+1
+  if (ability === 'lightning_rod' && skillType === 'thunder') {
+    return {
+      absorbed: true,
+      message: `${defender.species.name}のひらいしん！とくこうが上がった！`,
+    };
+  }
+  
+  // 電気エンジン: 雷技を受けるとSPD上昇
+  if (ability === 'motor_drive' && skillType === 'thunder') {
+    return {
+      absorbed: true,
+      message: `${defender.species.name}のでんきエンジン！すばやさが上がった！`,
+    };
+  }
+  
+  // もらいび: 炎技を受けると無効化し炎技威力1.5倍（フラグ管理が必要なので簡易版）
+  if (ability === 'flash_fire' && skillType === 'fire') {
+    return {
+      absorbed: true,
+      message: `${defender.species.name}のもらいび！ほのお技が強くなった！`,
+    };
+  }
+  
+  return { absorbed: false };
+}
+
+// ============================================
 // 特性効果（プレースホルダー）
 // ============================================
 
