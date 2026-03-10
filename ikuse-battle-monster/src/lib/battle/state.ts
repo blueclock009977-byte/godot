@@ -96,6 +96,7 @@ export function createBattlePlayer(
     activeIndex: 0,
     mana: INITIAL_MANA,
     manaSealed: false,
+    manaBoostTurns: 0,
   };
 }
 
@@ -211,18 +212,28 @@ export function applyManaChange(
 
 /**
  * ターン開始時のマナ回復
- * @returns 回復量（マナシール中は0）
+ * @returns 回復量（マナシール中は0）、マナブースト中は+2追加
  */
-export function regenerateMana(player: BattlePlayer): { recovered: number; wasSealed: boolean } {
+export function regenerateMana(player: BattlePlayer): { recovered: number; wasSealed: boolean; boosted: boolean } {
   // マナシール中は回復しない
   if (player.manaSealed) {
     player.manaSealed = false; // シールは1ターンのみ有効、解除
-    return { recovered: 0, wasSealed: true };
+    return { recovered: 0, wasSealed: true, boosted: false };
   }
   
   const before = player.mana;
-  applyManaChange(player, MANA_PER_TURN);
-  return { recovered: player.mana - before, wasSealed: false };
+  let recovery = MANA_PER_TURN;
+  
+  // マナブースト中は+2追加
+  let boosted = false;
+  if (player.manaBoostTurns > 0) {
+    recovery += 2;
+    player.manaBoostTurns--;
+    boosted = true;
+  }
+  
+  applyManaChange(player, recovery);
+  return { recovered: player.mana - before, wasSealed: false, boosted };
 }
 
 /**

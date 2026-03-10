@@ -372,6 +372,33 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // === マナブースト特殊処理 ===
+  // 3ターンの間、毎ターンマナ回復+2
+  if (skillId === 'mana_boost') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    applyManaChange(player, -skill.manaCost);
+    attacker.lastUsedSkill = skillId;
+    
+    // 3ターンのマナブースト付与
+    player.manaBoostTurns = 3;
+    
+    messages.push(`${attacker.species.name}のマナブースト！`);
+    messages.push(`3ターンの間、マナ回復が+2される！`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
   // === マナシェア特殊処理 ===
   // お互いのマナを合計して半分ずつ
   if (skillId === 'mana_share') {

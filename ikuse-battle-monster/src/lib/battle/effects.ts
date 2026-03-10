@@ -121,7 +121,18 @@ export function applySkillEffects(
         break;
         
       case 'weather':
-        // 天候変化（技のデータに応じて実装）
+        // 技IDから天候タイプを決定
+        const weatherMap: Record<string, Weather> = {
+          sandstorm: 'sandstorm',
+          sunny_day: 'sunny',
+          rain_dance: 'rain',
+          hail: 'snow',
+        };
+        const weatherType = weatherMap[skill.id];
+        if (weatherType) {
+          const turns = effect.turns || 5;
+          messages.push(...changeWeather(state, weatherType, turns));
+        }
         break;
         
       case 'protect':

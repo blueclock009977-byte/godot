@@ -57,7 +57,11 @@ export function processTurnStart(state: BattleState): TurnStartResult {
       messages.push(`${player.name}はマナシールの効果でマナが回復しない！`);
       addLog(state, `${player.name}のマナが封印されている！`, 'info');
     } else if (manaResult.recovered > 0) {
-      messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（${player.mana}）`);
+      if (manaResult.boosted) {
+        messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（マナブースト効果！）（${player.mana}）`);
+      } else {
+        messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（${player.mana}）`);
+      }
     }
   }
   

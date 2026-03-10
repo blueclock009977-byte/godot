@@ -10,7 +10,7 @@ export default function HomePage() {
       <div className="max-w-2xl mx-auto pt-12">
         <h1 className="text-4xl font-bold mb-3">育成モンスターバトル</h1>
         <p className="text-gray-300 mb-8">
-          まずはテストバトルをすぐ遊べる入口を用意したよ。
+          モンスターを集めて育てて、オンラインバトルで競おう！
         </p>
 
         <div className="grid gap-3">
@@ -21,8 +21,15 @@ export default function HomePage() {
             ⚔️ テストバトルをはじめる
           </Link>
 
-          <p className="text-sm text-gray-400">
-            ※ 現在は AI 戦のテストモード（3vs3）
+          <Link
+            href="/profile"
+            className="block w-full rounded-xl bg-blue-600 hover:bg-blue-500 transition-colors px-5 py-4 text-lg font-bold text-center"
+          >
+            👤 プロフィール・パーティ編成
+          </Link>
+
+          <p className="text-sm text-gray-400 mt-2">
+            ※ バトルに勝って卵をゲット → 孵化して新モンスター獲得！
           </p>
         </div>
       </div>

@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 18,
+  "currentPhase": 20,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -164,6 +164,23 @@
     "    - mana_share技の特殊処理を追加（マナ2消費）",
     "    - お互いのマナを合計して半分ずつに分配（端数は自分が取得）",
     "  - 戦略: 相手がマナを溜めている時にリソースを均等化できる",
+    "ビルド成功確認",
+    "Phase 19 開始: 2026-03-10 15:23",
+    "マナ操作技「マナブースト」を実装",
+    "  - src/lib/types/index.ts 更新: BattlePlayerにmanaBoostTurnsフィールド追加",
+    "  - src/lib/battle/state.ts 更新: createBattlePlayerにmanaBoostTurns初期化追加",
+    "  - src/lib/battle/state.ts 更新: regenerateManaでマナブースト中は+2追加回復",
+    "  - src/lib/battle/turn.ts 更新: マナブースト中のメッセージ追加",
+    "  - src/lib/battle/actions.ts 更新: mana_boost技の特殊処理追加（6マナ、3ターン回復+2）",
+    "ビルド成功確認",
+    "Phase 20 開始: 2026-03-10 15:26",
+    "天候技の発動を実装",
+    "  - src/lib/battle/effects.ts 更新: case 'weather'の処理を追加",
+    "    - 技IDから天候タイプをマッピング（sandstorm→砂嵐, sunny_day→晴れ, rain_dance→雨, hail→雪）",
+    "    - changeWeather()を呼び出して天候を発動",
+    "  - 天候発動特性（drought, drizzle, sand_stream, snow_warning）は既に実装済み",
+    "  - ダメージ補正（晴れ:炎1.5倍/水0.5倍、雨:水1.5倍/炎0.5倍）も既に実装済み",
+    "  - 砂嵐ダメージ（岩/土/鋼以外に毎ターン1/16ダメージ）も既に実装済み",
     "ビルド成功確認"
   ],
   "completed": [
@@ -184,7 +201,9 @@
     "phase15-battle-reward",
     "phase16-multi-hit",
     "phase17-mana-seal",
-    "phase18-mana-share"
+    "phase18-mana-share",
+    "phase19-mana-boost",
+    "phase20-weather-skill"
   ],
   "status": "IN_PROGRESS"
 }
