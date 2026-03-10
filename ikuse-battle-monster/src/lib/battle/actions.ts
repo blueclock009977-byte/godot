@@ -456,6 +456,14 @@ function executeSkill(
       const hpResult = applyHpChange(defender, -damageToApply);
       fainted = hpResult.fainted;
       
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (fainted && defender.instance.ability === 'phoenix' && !defender.abilityDisabled) {
+        defender.currentHp = 1;
+        defender.abilityDisabled = true;  // 特性を使用済みにする
+        fainted = false;
+        messages.push(`${defender.species.name}は不死鳥の力で復活した！`);
+      }
+      
       // 相手が倒れたら残りのヒットはスキップ
       if (fainted) break;
     }

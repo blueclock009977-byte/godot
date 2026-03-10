@@ -100,8 +100,15 @@ export function applySkillEffects(
       case 'recoil':
         if (effect.amount && damage > 0) {
           const recoilDamage = Math.floor(damage * effect.amount / 100);
-          applyHpChange(attacker, -recoilDamage);
+          const recoilResult = applyHpChange(attacker, -recoilDamage);
           messages.push(`${attacker.species.name}は反動を受けた！`);
+          
+          // 不死鳥（phoenix）: 1回だけHP1で復活
+          if (recoilResult.fainted && attacker.instance.ability === 'phoenix' && !attacker.abilityDisabled) {
+            attacker.currentHp = 1;
+            attacker.abilityDisabled = true;
+            messages.push(`${attacker.species.name}は不死鳥の力で復活した！`);
+          }
         }
         break;
         
@@ -357,26 +364,50 @@ function processStatusDamage(monster: BattleMonster, state: BattleState): string
   switch (monster.status) {
     case 'burn': {
       const damage = Math.floor(monster.maxHp / 16);
-      applyHpChange(monster, -damage);
+      const result = applyHpChange(monster, -damage);
       messages.push(`${monster.species.name}はやけどのダメージを受けた！`);
       addLog(state, messages[messages.length - 1], 'status');
+      
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+        monster.currentHp = 1;
+        monster.abilityDisabled = true;
+        messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+        addLog(state, messages[messages.length - 1], 'ability');
+      }
       break;
     }
     
     case 'poison': {
       const damage = Math.floor(monster.maxHp / 8);
-      applyHpChange(monster, -damage);
+      const result = applyHpChange(monster, -damage);
       messages.push(`${monster.species.name}は毒のダメージを受けた！`);
       addLog(state, messages[messages.length - 1], 'status');
+      
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+        monster.currentHp = 1;
+        monster.abilityDisabled = true;
+        messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+        addLog(state, messages[messages.length - 1], 'ability');
+      }
       break;
     }
     
     case 'badly_poison': {
       monster.statusTurns++;
       const damage = Math.floor(monster.maxHp * monster.statusTurns / 16);
-      applyHpChange(monster, -damage);
+      const result = applyHpChange(monster, -damage);
       messages.push(`${monster.species.name}は猛毒のダメージを受けた！`);
       addLog(state, messages[messages.length - 1], 'status');
+      
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+        monster.currentHp = 1;
+        monster.abilityDisabled = true;
+        messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+        addLog(state, messages[messages.length - 1], 'ability');
+      }
       break;
     }
   }
@@ -400,8 +431,15 @@ function processWeatherDamage(state: BattleState): string[] {
       if (types.includes('earth')) continue;
       
       const damage = Math.floor(monster.maxHp / 16);
-      applyHpChange(monster, -damage);
+      const result = applyHpChange(monster, -damage);
       messages.push(`${monster.species.name}は砂嵐でダメージを受けた！`);
+      
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+        monster.currentHp = 1;
+        monster.abilityDisabled = true;
+        messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+      }
     }
     
     if (messages.length > 0) {
@@ -495,9 +533,17 @@ export function processContactAbility(
   // 鮫肌: 接触技で攻撃側に1/8ダメージ
   if (defenderAbility === 'rough_skin') {
     const recoilDamage = Math.max(1, Math.floor(attacker.maxHp / 8));
-    applyHpChange(attacker, -recoilDamage);
+    const result = applyHpChange(attacker, -recoilDamage);
     messages.push(`${defender.species.name}のさめはだで${attacker.species.name}は傷ついた！`);
     addLog(state, messages[messages.length - 1], 'damage');
+    
+    // 不死鳥（phoenix）: 1回だけHP1で復活
+    if (result.fainted && attacker.instance.ability === 'phoenix' && !attacker.abilityDisabled) {
+      attacker.currentHp = 1;
+      attacker.abilityDisabled = true;
+      messages.push(`${attacker.species.name}は不死鳥の力で復活した！`);
+      addLog(state, messages[messages.length - 1], 'ability');
+    }
   }
   
   // 呪われボディ: 技を受けると30%で封印（TODO: 技封印の実装）
