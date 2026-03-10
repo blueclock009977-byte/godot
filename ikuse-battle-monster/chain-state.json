@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 17,
+  "currentPhase": 18,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -157,6 +157,13 @@
     "    - mana_seal技の特殊処理を追加（マナ4消費、相手にmanaSealed=true付与）",
     "    - まもる中の相手には効かない",
     "  - 効果: 次ターン、相手のマナ回復が0になる（マナ温存戦略に有効）",
+    "ビルド成功確認",
+    "Phase 18 開始: 2026-03-10 15:06",
+    "マナ操作技「マナシェア」を実装 - マナ均等化戦略",
+    "  - src/lib/battle/actions.ts 更新",
+    "    - mana_share技の特殊処理を追加（マナ2消費）",
+    "    - お互いのマナを合計して半分ずつに分配（端数は自分が取得）",
+    "  - 戦略: 相手がマナを溜めている時にリソースを均等化できる",
     "ビルド成功確認"
   ],
   "completed": [
@@ -176,7 +183,8 @@
     "phase14-egg-ui",
     "phase15-battle-reward",
     "phase16-multi-hit",
-    "phase17-mana-seal"
+    "phase17-mana-seal",
+    "phase18-mana-share"
   ],
   "status": "IN_PROGRESS"
 }

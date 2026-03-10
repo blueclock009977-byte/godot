@@ -300,13 +300,42 @@ function OnlineBattleContent() {
         })}
       </div>
       
+      {/* 交代ボタン */}
+      {availableActions.switches.length > 0 && (
+        <div className="mt-4">
+          <h3 className="text-sm font-bold text-gray-400 mb-2">🔄 交代</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {availableActions.switches.map((switchOpt) => {
+              const hpPercent = Math.round((switchOpt.monster.hp / switchOpt.monster.maxHp) * 100);
+              return (
+                <button
+                  key={switchOpt.index}
+                  onClick={() => handleAction({ type: "switch", switchTo: switchOpt.index })}
+                  disabled={isWaiting}
+                  className={`p-3 rounded-lg text-left ${
+                    !isWaiting
+                      ? "bg-purple-900/50 hover:bg-purple-800/50 border border-purple-700"
+                      : "bg-gray-800 opacity-50 cursor-not-allowed"
+                  }`}
+                >
+                  <div className="font-bold">{switchOpt.monster.name}</div>
+                  <div className="text-sm text-gray-400">
+                    HP: {switchOpt.monster.hp}/{switchOpt.monster.maxHp} ({hpPercent}%)
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      
       {/* 待機 */}
       <button
         onClick={() => handleAction({ type: "wait" })}
         disabled={isWaiting}
         className="w-full mt-2 p-3 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-50"
       >
-        待機（マナ+2）
+        待機（マナ+3）
       </button>
       
       {/* ログ */}

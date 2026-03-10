@@ -372,6 +372,46 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // === マナシェア特殊処理 ===
+  // お互いのマナを合計して半分ずつ
+  if (skillId === 'mana_share') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    applyManaChange(player, -skill.manaCost);
+    attacker.lastUsedSkill = skillId;
+    
+    // お互いのマナを合計して半分ずつ（端数は自分が多く）
+    const totalMana = player.mana + opponent.mana;
+    const halfMana = Math.floor(totalMana / 2);
+    const remainder = totalMana % 2;
+    
+    // 新しいマナ値を設定（直接代入）
+    const playerNewMana = halfMana + remainder;  // 端数は自分がもらう
+    const opponentNewMana = halfMana;
+    
+    // 現在値との差分を計算してapply
+    const playerDiff = playerNewMana - player.mana;
+    const opponentDiff = opponentNewMana - opponent.mana;
+    
+    applyManaChange(player, playerDiff);
+    applyManaChange(opponent, opponentDiff);
+    
+    messages.push(`${attacker.species.name}のマナシェア！`);
+    messages.push(`マナが均等になった！ (${player.name}: ${playerNewMana}, ${opponent.name}: ${opponentNewMana})`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
   // マナチェック
   if (player.mana < skill.manaCost) {
     messages.push(`マナが足りない！`);
