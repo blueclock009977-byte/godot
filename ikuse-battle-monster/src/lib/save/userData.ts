@@ -46,7 +46,7 @@ export interface UserData {
   
   // モンスター
   monsters: SavedMonster[];
-  party: string[];       // monster ids (最大3体)
+  party: string[];       // monster ids (最大6体、バトル時に3体選出)
   
   // 卵システム
   egg: Egg | null;       // 所持中の卵（1個のみ）
@@ -69,7 +69,7 @@ export interface UserData {
 
 export const CURRENT_DATA_VERSION = 2;
 export const MAX_MONSTERS = 50;
-export const MAX_PARTY_SIZE = 3;
+export const MAX_PARTY_SIZE = 6;
 
 // 御三家ID
 export const STARTER_IDS = ['flameoo', 'frosty', 'gale_wing'];

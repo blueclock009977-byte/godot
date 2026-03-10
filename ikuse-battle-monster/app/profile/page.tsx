@@ -87,7 +87,7 @@ export default function ProfilePage() {
       }
     }
 
-    await setParty(partyIds.slice(0, 3));
+    await setParty(partyIds.slice(0, 6));
     setStarterSelectClosed(true);
   };
   
@@ -101,7 +101,7 @@ export default function ProfilePage() {
     if (index >= 0) {
       // パーティから外す
       currentParty.splice(index, 1);
-    } else if (currentParty.length < 3) {
+    } else if (currentParty.length < 6) {
       // パーティに追加
       currentParty.push(monsterId);
     }
@@ -270,10 +270,11 @@ export default function ProfilePage() {
         
         {/* パーティ */}
         <div className="bg-white/10 backdrop-blur rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-4">⚔️ パーティ ({userData?.party.length || 0}/3)</h2>
+          <h2 className="text-xl font-bold text-white mb-4">⚔️ パーティ ({userData?.party.length || 0}/6)</h2>
+          <p className="text-gray-400 text-sm mb-4">バトル時に6体から3体を選出します</p>
           
-          <div className="grid grid-cols-3 gap-4">
-            {[0, 1, 2].map(slot => {
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+            {[0, 1, 2, 3, 4, 5].map(slot => {
               const monsterId = userData?.party[slot];
               const monster = monsterId 
                 ? userData?.monsters.find(m => m.id === monsterId) 
