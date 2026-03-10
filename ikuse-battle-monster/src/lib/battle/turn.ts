@@ -15,6 +15,7 @@ import {
   advancePhase,
   addLog,
   checkWinner,
+  getAvailableSwitches,
 } from './state';
 import {
   resolveActionOrder,
@@ -85,6 +86,8 @@ export interface ActionResolutionResult {
     damage?: number;
     fainted?: boolean;
   }[];
+  // とんぼがえり/ボルトチェンジ後の交代が必要なプレイヤー
+  pendingUTurnSwitch: (0 | 1)[];
 }
 
 /**
@@ -98,6 +101,7 @@ export function resolveActions(
 ): ActionResolutionResult {
   const messages: string[] = [];
   const actionResults: ActionResolutionResult['actionResults'] = [];
+  const pendingUTurnSwitch: (0 | 1)[] = [];
   
   // 行動順を決定
   const orderedActions = resolveActionOrder(state, action0, action1, skills);
@@ -125,6 +129,37 @@ export function resolveActions(
       fainted: result.fainted,
     });
     
+    // とんぼがえり/ボルトチェンジの交代処理
+    if (result.shouldSwitchAfterAttack) {
+      const switchOptions = getAvailableSwitches(player);
+      if (switchOptions.length > 0) {
+        // HPが最も高いモンスターに自動交代（AI用シンプル実装）
+        let bestIndex = switchOptions[0];
+        let bestHpRatio = 0;
+        for (const idx of switchOptions) {
+          const m = player.party[idx];
+          const hpRatio = m.currentHp / m.maxHp;
+          if (hpRatio > bestHpRatio) {
+            bestHpRatio = hpRatio;
+            bestIndex = idx;
+          }
+        }
+        
+        // 交代実行
+        const oldMonster = getActiveMonster(player);
+        player.activeIndex = bestIndex;
+        const newMonster = getActiveMonster(player);
+        
+        messages.push(`${player.name}は${oldMonster.species.name}を引っ込めた！`);
+        messages.push(`ゆけっ！${newMonster.species.name}！`);
+        addLog(state, `${player.name}は${newMonster.species.name}を繰り出した！`, 'switch');
+        
+        // 登場時特性
+        const abilityMessages = processOnEnterAbility(state, playerIndex);
+        messages.push(...abilityMessages);
+      }
+    }
+    
     // 相手が倒れたかチェック
     if (result.fainted) {
       const opponentIndex = 1 - playerIndex as 0 | 1;
@@ -148,6 +183,7 @@ export function resolveActions(
     phase: state.phase,
     winner,
     actionResults,
+    pendingUTurnSwitch,
   };
 }
 

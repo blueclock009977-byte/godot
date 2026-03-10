@@ -141,6 +141,8 @@ export interface ActionResult {
   fainted?: boolean;
   switched?: boolean;
   messages: string[];
+  // とんぼがえり/ボルトチェンジ用: 攻撃後に交代するか
+  shouldSwitchAfterAttack?: boolean;
 }
 
 /**
@@ -718,7 +720,24 @@ function executeSkill(
     addLog(state, `${defender.species.name}は倒れた！`, 'ko');
   }
   
-  return { success: true, damage: totalDamage, fainted, messages };
+  // とんぼがえり/ボルトチェンジ: 攻撃後に交代
+  // 条件: ダメージを与えた && 控えがいる && 自分が生きている
+  const switchEffect = skill.effects.find(e => e.type === 'switch');
+  let shouldSwitchAfterAttack = false;
+  
+  if (switchEffect && totalDamage > 0 && attacker.currentHp > 0) {
+    // 交代可能な控えがいるかチェック
+    const switchOptions = player.party
+      .map((m, i) => ({ monster: m, index: i }))
+      .filter(({ monster, index }) => index !== player.activeIndex && monster.currentHp > 0);
+    
+    if (switchOptions.length > 0) {
+      shouldSwitchAfterAttack = true;
+      messages.push(`${attacker.species.name}は攻撃後に戻ってきた！`);
+    }
+  }
+  
+  return { success: true, damage: totalDamage, fainted, messages, shouldSwitchAfterAttack };
 }
 
 // ============================================
