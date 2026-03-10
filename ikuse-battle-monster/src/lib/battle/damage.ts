@@ -169,10 +169,16 @@ export function getEffectiveSpd(monster: BattleMonster): number {
 export function checkAccuracy(
   attacker: BattleMonster,
   defender: BattleMonster,
-  skill: Skill
+  skill: Skill,
+  weather: Weather = 'none'
 ): boolean {
   // 必中技（accuracy が 0）
   if (skill.accuracy === 0) {
+    return true;
+  }
+
+  // かみなり: 雨の時は必中（BATTLE_SYSTEM仕様）
+  if (skill.id === 'thunder' && weather === 'rain') {
     return true;
   }
   
@@ -269,6 +275,31 @@ function getEffectivePower(
       else power = 20;                            // それ以上
       break;
     }
+    
+    // マグニチュード: ランダムで威力10-150（SKILLS仕様）
+    case 'magnitude': {
+      // マグニチュード4〜10の確率分布
+      // 4: 5%, 5: 10%, 6: 20%, 7: 30%, 8: 20%, 9: 10%, 10: 5%
+      const roll = Math.random() * 100;
+      if (roll < 5) power = 10;          // マグニチュード4
+      else if (roll < 15) power = 30;    // マグニチュード5
+      else if (roll < 35) power = 50;    // マグニチュード6
+      else if (roll < 65) power = 70;    // マグニチュード7
+      else if (roll < 85) power = 90;    // マグニチュード8
+      else if (roll < 95) power = 110;   // マグニチュード9
+      else power = 150;                  // マグニチュード10
+      break;
+    }
+    
+    // 連続切り（fury_cutter）: 連続使用で威力が2倍ずつ上昇（最大160）
+    // 基本威力40 × 2^streak（streak 0: 40, 1: 80, 2: 160）
+    case 'fury_cutter': {
+      const streak = attacker.furyCutterStreak || 0;
+      // 最大で2^2 = 4倍（威力160）まで
+      const multiplier = Math.pow(2, Math.min(streak, 2));
+      power = skill.power * multiplier;
+      break;
+    }
   }
   
   return power;
@@ -303,9 +334,17 @@ export function calculateDamage(
       : getEffectiveMag(attacker, isCritical);
   }
   
-  const defenseStat = isPhysical
+  let defenseStat = isPhysical
     ? getEffectiveDef(defender, isCritical)
     : getEffectiveRes(defender, isCritical);
+
+  // 雪状態では氷タイプのDEFが1.5倍（物理技のみ）
+  if (isPhysical && weather === 'snow') {
+    const defenderTypes = defender.species.types as MonsterType[];
+    if (defenderTypes.includes('ice')) {
+      defenseStat = Math.floor(defenseStat * 1.5);
+    }
+  }
   
   // 特殊な技の威力計算（条件付き威力変動）
   const effectivePower = getEffectivePower(skill, attacker, defender);

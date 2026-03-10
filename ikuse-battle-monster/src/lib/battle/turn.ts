@@ -16,6 +16,7 @@ import {
   addLog,
   checkWinner,
   getAvailableSwitches,
+  applyManaChange,
 } from './state';
 import {
   resolveActionOrder,
@@ -50,16 +51,24 @@ export function processTurnStart(state: BattleState): TurnStartResult {
     const player = state.players[i as 0 | 1];
     const activeMonster = getActiveMonster(player);
     activeMonster.flinched = false; // ひるみはターン持ち越ししない
+    activeMonster.enduring = false; // こらえるはターン持ち越ししない
+    activeMonster.physicalDamageTakenThisTurn = 0; // カウンター用
+    activeMonster.specialDamageTakenThisTurn = 0;  // ミラーコート用
+    player.manaSpentThisTurn = 0;
+    player.manaReflectActive = false;
 
-    const beforeMana = player.mana;
     const manaResult = regenerateMana(player);
     
     if (manaResult.wasSealed) {
       messages.push(`${player.name}はマナシールの効果でマナが回復しない！`);
       addLog(state, `${player.name}のマナが封印されている！`, 'info');
     } else if (manaResult.recovered > 0) {
-      if (manaResult.boosted) {
-        messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（マナブースト効果！）（${player.mana}）`);
+      const tags: string[] = [];
+      if (manaResult.boosted) tags.push('マナブースト効果');
+      if (manaResult.charged) tags.push('マナチャージ効果');
+
+      if (tags.length > 0) {
+        messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（${tags.join('・')}！）（${player.mana}）`);
       } else {
         messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（${player.mana}）`);
       }
@@ -257,6 +266,31 @@ export interface TurnEndResult {
 export function processTurnEnd(state: BattleState): TurnEndResult {
   const messages: string[] = [];
   const faintedPlayers: (0 | 1)[] = [];
+
+  // マナリフレクト処理（このターン相手が使ったマナ分を回復）
+  for (let i = 0; i < 2; i++) {
+    const playerIndex = i as 0 | 1;
+    const player = state.players[playerIndex];
+    if (!player.manaReflectActive) continue;
+
+    const opponent = state.players[(1 - i) as 0 | 1];
+    const reflectedMana = opponent.manaSpentThisTurn;
+
+    if (reflectedMana > 0) {
+      const before = player.mana;
+      applyManaChange(player, reflectedMana);
+      const recovered = player.mana - before;
+      if (recovered > 0) {
+        messages.push(`${player.name}はマナリフレクトでマナを${recovered}回復した！`);
+        addLog(state, `${player.name}のマナリフレクトが発動！（+${recovered}）`, 'info');
+      }
+    } else {
+      messages.push(`${player.name}のマナリフレクトは不発だった...`);
+      addLog(state, `${player.name}のマナリフレクトは不発`, 'info');
+    }
+
+    player.manaReflectActive = false;
+  }
   
   // ターン終了効果を処理
   const effectMessages = processTurnEndEffects(state);

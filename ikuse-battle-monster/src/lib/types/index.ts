@@ -205,7 +205,7 @@ export interface BattleMonster {
   statusTurns: number;      // 状態異常の経過ターン
   statStages: StatStages;
   isConfused: boolean;      // 混乱（主要状態異常と併存可能）
-  confusionTurns: number;
+  confusionTurns: number;   // 混乱の残りターン
   flinched: boolean;        // ひるみ（同ターン内のみ有効）
   // フラグ
   protected: boolean;       // まもる中
@@ -218,6 +218,34 @@ export interface BattleMonster {
   lastUsedSkill?: string;   // 最後に使った技
   // 能力変化用
   abilityDisabled: boolean;
+  // 連続切り用
+  furyCutterStreak: number; // 連続使用回数（威力倍増用）
+  // カウンター/ミラーコート用（このターンに受けたダメージ）
+  physicalDamageTakenThisTurn: number;
+  specialDamageTakenThisTurn: number;
+  // こらえる用
+  enduring: boolean;  // このターン、HP1で耐える
+  // あくび用
+  yawning: boolean;   // 次ターン終了時に眠り
+  // ねがいごと用
+  wishPending: boolean; // 次ターン終了時にHP50%回復
+  // ちょうはつ用
+  tauntTurns: number;   // ちょうはつ残りターン（0=なし、変化技使用不可）
+  // みがわり用
+  substituteHp: number; // みがわりのHP（0=なし）
+  // アンコール用
+  encoreTurns: number;    // アンコール残りターン（0=なし）
+  encoredSkillId?: string; // 強制的に使わされる技ID
+  // 金縛り用
+  disableTurns: number;    // 金縛り残りターン（0=なし）
+  disabledSkillId?: string; // 封じられている技ID
+}
+
+/** 設置技（ハザード）状態 */
+export interface FieldHazards {
+  stealthRock: boolean;    // ステルスロック（岩ダメージ、タイプ相性依存）
+  spikesLayers: number;    // まきびし層数（0-3、飛行無効）
+  toxicSpikesLayers: number; // どくびし層数（0-2、飛行・毒無効、毒タイプが踏むと解除）
 }
 
 /** プレイヤー情報 */
@@ -229,6 +257,15 @@ export interface BattlePlayer {
   mana: number;             // 共有マナ
   manaSealed: boolean;      // マナシール状態（次ターンのマナ回復が0）
   manaBoostTurns: number;   // マナブースト残りターン数（毎ターン回復+2）
+  manaChargePending: boolean; // マナチャージ待機状態（次ターン回復量を+2して合計+5にする）
+  manaReflectActive: boolean; // マナリフレクト待機状態（ターン終了時に相手が使ったマナ分回復）
+  manaSpentThisTurn: number;  // このターンに実際に消費したマナ量
+  hazards: FieldHazards;     // フィールドの設置技
+  healingWishPending: boolean; // いやしのねがい待機（次の交代先を全回復）
+  lunarDancePending: boolean;  // みかづきのまい待機（次の交代先を全回復+状態異常回復）
+  // 壁技
+  reflectTurns: number;      // リフレクター残りターン（物理ダメージ半減）
+  lightScreenTurns: number;  // 光の壁残りターン（特殊ダメージ半減）
 }
 
 /** 天候 */

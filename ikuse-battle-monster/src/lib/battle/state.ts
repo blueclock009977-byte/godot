@@ -66,6 +66,18 @@ export function createBattleMonster(
     mustRecharge: false,
     lastUsedSkill: undefined,
     abilityDisabled: false,
+    furyCutterStreak: 0,
+    physicalDamageTakenThisTurn: 0,
+    specialDamageTakenThisTurn: 0,
+    enduring: false,
+    yawning: false,
+    wishPending: false,
+    tauntTurns: 0,
+    substituteHp: 0,
+    encoreTurns: 0,
+    encoredSkillId: undefined,
+    disableTurns: 0,
+    disabledSkillId: undefined,
   };
 }
 
@@ -98,6 +110,18 @@ export function createBattlePlayer(
     mana: INITIAL_MANA,
     manaSealed: false,
     manaBoostTurns: 0,
+    manaChargePending: false,
+    manaReflectActive: false,
+    manaSpentThisTurn: 0,
+    hazards: {
+      stealthRock: false,
+      spikesLayers: 0,
+      toxicSpikesLayers: 0,
+    },
+    healingWishPending: false,
+    lunarDancePending: false,
+    reflectTurns: 0,
+    lightScreenTurns: 0,
   };
 }
 
@@ -213,13 +237,14 @@ export function applyManaChange(
 
 /**
  * ターン開始時のマナ回復
- * @returns 回復量（マナシール中は0）、マナブースト中は+2追加
+ * @returns 回復量（マナシール中は0）、マナブースト中は+2追加、マナチャージ待機中は+2追加（合計+5）
  */
-export function regenerateMana(player: BattlePlayer): { recovered: number; wasSealed: boolean; boosted: boolean } {
+export function regenerateMana(player: BattlePlayer): { recovered: number; wasSealed: boolean; boosted: boolean; charged: boolean } {
   // マナシール中は回復しない
   if (player.manaSealed) {
     player.manaSealed = false; // シールは1ターンのみ有効、解除
-    return { recovered: 0, wasSealed: true, boosted: false };
+    player.manaChargePending = false; // シール優先: チャージ効果は不発
+    return { recovered: 0, wasSealed: true, boosted: false, charged: false };
   }
   
   const before = player.mana;
@@ -232,9 +257,17 @@ export function regenerateMana(player: BattlePlayer): { recovered: number; wasSe
     player.manaBoostTurns--;
     boosted = true;
   }
+
+  // マナチャージ待機中は次ターンのみ+2追加（通常+3と合わせて+5）
+  let charged = false;
+  if (player.manaChargePending) {
+    recovery += 2;
+    player.manaChargePending = false;
+    charged = true;
+  }
   
   applyManaChange(player, recovery);
-  return { recovered: player.mana - before, wasSealed: false, boosted };
+  return { recovered: player.mana - before, wasSealed: false, boosted, charged };
 }
 
 /**
@@ -267,14 +300,51 @@ export function resetStatStages(monster: BattleMonster): void {
   monster.charging = false;
   monster.mustRecharge = false;  // 交代でリチャージ解除
   monster.lastUsedSkill = undefined;
+
+  // 猛毒は交代でダメージカウントをリセット（1/16からやり直し）
+  if (monster.status === 'badly_poison') {
+    monster.statusTurns = 0;
+  }
+  
+  // 連続切りストリークもリセット
+  monster.furyCutterStreak = 0;
+  
+  // あくび状態もリセット（交代で解除）
+  monster.yawning = false;
+  
+  // ちょうはつ状態もリセット（交代で解除）
+  monster.tauntTurns = 0;
+  
+  // みがわりもリセット（交代で消える）
+  monster.substituteHp = 0;
+  
+  // アンコール状態もリセット（交代で解除）
+  monster.encoreTurns = 0;
+  monster.encoredSkillId = undefined;
+  
+  // 金縛り状態もリセット（交代で解除）
+  monster.disableTurns = 0;
+  monster.disabledSkillId = undefined;
+}
+
+/**
+ * 能力変化をコピー（バトンタッチ用）
+ */
+export function copyStatStages(source: BattleMonster, target: BattleMonster): void {
+  target.statStages = { ...source.statStages };
+  // 混乱も引き継ぐ（ポケモン仕様）
+  target.isConfused = source.isConfused;
+  target.confusionTurns = source.confusionTurns;
 }
 
 /**
  * 交代処理
+ * @param batonPass true の場合、能力変化を引き継ぐ（バトンタッチ）
  */
 export function switchMonster(
   player: BattlePlayer,
-  newIndex: number
+  newIndex: number,
+  batonPass: boolean = false
 ): BattleMonster {
   if (newIndex < 0 || newIndex >= player.party.length) {
     throw new Error(`Invalid switch index: ${newIndex}`);
@@ -285,8 +355,15 @@ export function switchMonster(
     throw new Error('Cannot switch to fainted monster');
   }
   
-  // 現在のモンスターのステージをリセット
+  // 現在のモンスター
   const currentMonster = getActiveMonster(player);
+  
+  // バトンタッチ: 能力変化を交代先に引き継ぐ
+  if (batonPass) {
+    copyStatStages(currentMonster, newMonster);
+  }
+  
+  // 現在のモンスターのステージをリセット
   resetStatStages(currentMonster);
   
   // 交代

@@ -4,6 +4,7 @@
 
 import {
   BattleState,
+  BattlePlayer,
   BattleMonster,
   Skill,
   StatusCondition,
@@ -19,7 +20,9 @@ import {
   setWeather,
   tickWeather,
   addLog,
+  switchMonster,
 } from './state';
+import { getTypeEffectiveness } from '../data/types';
 
 // ============================================
 // 技の追加効果
@@ -139,6 +142,15 @@ export function applySkillEffects(
         attacker.protected = true;
         messages.push(`${attacker.species.name}は身を守っている！`);
         break;
+
+      case 'trap': {
+        if (!target.trapped) {
+          target.trapped = true;
+          target.trappedTurns = effect.turns ?? 4;
+          messages.push(`${target.species.name}は拘束された！`);
+        }
+        break;
+      }
         
       case 'mana':
         if (effect.amount) {
@@ -157,6 +169,29 @@ export function applySkillEffects(
         attacker.mustRecharge = true;
         messages.push(`${attacker.species.name}は攻撃の反動で動けない！`);
         break;
+        
+      case 'switch': {
+        // とんぼがえり/ボルトチェンジ: 攻撃後に交代
+        // 控えモンスターがいるか確認
+        const switchOptions = player.party
+          .map((m, i) => ({ monster: m, index: i }))
+          .filter(({ monster, index }) => index !== player.activeIndex && monster.currentHp > 0);
+        
+        if (switchOptions.length > 0) {
+          // 最初の生存控えに交代
+          const targetIndex = switchOptions[0].index;
+          const newMonster = switchMonster(player, targetIndex);
+          messages.push(`${attacker.species.name}は戻っていった！`);
+          messages.push(`ゆけっ！${newMonster.species.name}！`);
+          
+          // 設置技ダメージを適用
+          messages.push(...applyEntryHazards(state, playerIndex));
+          
+          // 登場時特性を発動
+          messages.push(...processOnEnterAbility(state, playerIndex));
+        }
+        break;
+      }
     }
   }
   
@@ -216,7 +251,14 @@ export function applyStatusCondition(
   // TODO: 毒タイプは毒にならない、など
   
   monster.status = status;
-  monster.statusTurns = 0;
+
+  // ねむりは1〜3ターン継続（BATTLE_SYSTEM仕様）
+  if (status === 'sleep') {
+    monster.statusTurns = Math.floor(Math.random() * 3) + 1;
+  } else {
+    monster.statusTurns = 0;
+  }
+
   messages.push(`${monster.species.name}は${STATUS_NAMES[status]}状態になった！`);
   
   return messages;
@@ -234,7 +276,8 @@ export function applyConfusion(monster: BattleMonster): string[] {
   }
   
   monster.isConfused = true;
-  monster.confusionTurns = 0;
+  // 混乱は1〜4ターン継続（BATTLE_SYSTEM仕様）
+  monster.confusionTurns = Math.floor(Math.random() * 4) + 1;
   messages.push(`${monster.species.name}は混乱した！`);
   
   return messages;
@@ -355,9 +398,62 @@ export function processTurnEndEffects(state: BattleState): string[] {
     
     // 状態異常ダメージ
     messages.push(...processStatusDamage(monster, state));
+
+    // 拘束ダメージ
+    messages.push(...processTrapDamage(monster, state));
     
     // まもる解除
     monster.protected = false;
+    
+    // あくび: 眠りになる（次ターン終了時効果）
+    if (monster.yawning && monster.status === 'none') {
+      monster.yawning = false;
+      messages.push(...applyStatusCondition(monster, 'sleep'));
+      addLog(state, `${monster.species.name}は眠りについた！`, 'status');
+    } else if (monster.yawning) {
+      // すでに状態異常がある場合はあくび効果を消す
+      monster.yawning = false;
+    }
+    
+    // ねがいごと: HP50%回復（次ターン終了時効果）
+    if (monster.wishPending) {
+      monster.wishPending = false;
+      const healAmount = Math.floor(monster.maxHp * 50 / 100);
+      applyHpChange(monster, healAmount);
+      messages.push(`ねがいごとが叶った！`);
+      messages.push(`${monster.species.name}のHPが回復した！`);
+      addLog(state, `${monster.species.name}のHPが回復した！`, 'heal');
+    }
+    
+    // ちょうはつ: ターン経過
+    if (monster.tauntTurns > 0) {
+      monster.tauntTurns--;
+      if (monster.tauntTurns === 0) {
+        messages.push(`${monster.species.name}のちょうはつが解けた！`);
+        addLog(state, `${monster.species.name}のちょうはつが解けた！`, 'info');
+      }
+    }
+    
+    // アンコール: ターン経過
+    if (monster.encoreTurns > 0) {
+      monster.encoreTurns--;
+      if (monster.encoreTurns === 0) {
+        monster.encoredSkillId = undefined;
+        messages.push(`${monster.species.name}のアンコールが解けた！`);
+        addLog(state, `${monster.species.name}のアンコールが解けた！`, 'info');
+      }
+    }
+    
+    // 金縛り: ターン経過
+    if (monster.disableTurns > 0) {
+      monster.disableTurns--;
+      if (monster.disableTurns === 0) {
+        const oldSkillId = monster.disabledSkillId;
+        monster.disabledSkillId = undefined;
+        messages.push(`${monster.species.name}の金縛りが解けた！`);
+        addLog(state, `${monster.species.name}の金縛りが解けた！`, 'info');
+      }
+    }
   }
   
   // 天候ダメージ
@@ -367,6 +463,29 @@ export function processTurnEndEffects(state: BattleState): string[] {
   if (tickWeather(state)) {
     messages.push('天候が元に戻った！');
     addLog(state, '天候が元に戻った！', 'weather');
+  }
+  
+  // 壁技のターン経過
+  for (let i = 0; i < 2; i++) {
+    const player = state.players[i as 0 | 1];
+    
+    // リフレクター
+    if (player.reflectTurns > 0) {
+      player.reflectTurns--;
+      if (player.reflectTurns === 0) {
+        messages.push(`${player.name}のリフレクターが消えた！`);
+        addLog(state, `${player.name}のリフレクターが消えた！`, 'info');
+      }
+    }
+    
+    // 光の壁
+    if (player.lightScreenTurns > 0) {
+      player.lightScreenTurns--;
+      if (player.lightScreenTurns === 0) {
+        messages.push(`${player.name}の光の壁が消えた！`);
+        addLog(state, `${player.name}の光の壁が消えた！`, 'info');
+      }
+    }
   }
   
   return messages;
@@ -429,6 +548,36 @@ function processStatusDamage(monster: BattleMonster, state: BattleState): string
     }
   }
   
+  return messages;
+}
+
+function processTrapDamage(monster: BattleMonster, state: BattleState): string[] {
+  const messages: string[] = [];
+
+  if (!monster.trapped || monster.currentHp <= 0) {
+    return messages;
+  }
+
+  const damage = Math.max(1, Math.floor(monster.maxHp / 8));
+  const result = applyHpChange(monster, -damage);
+  messages.push(`${monster.species.name}は拘束ダメージを受けた！`);
+  addLog(state, messages[messages.length - 1], 'status');
+
+  monster.trappedTurns = Math.max(0, monster.trappedTurns - 1);
+  if (monster.trappedTurns === 0) {
+    monster.trapped = false;
+    messages.push(`${monster.species.name}は拘束から解放された！`);
+    addLog(state, messages[messages.length - 1], 'status');
+  }
+
+  // 不死鳥（phoenix）: 1回だけHP1で復活
+  if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+    monster.currentHp = 1;
+    monster.abilityDisabled = true;
+    messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+    addLog(state, messages[messages.length - 1], 'ability');
+  }
+
   return messages;
 }
 
@@ -683,6 +832,134 @@ export function processOnEnterAbility(
       messages.push(`${monster.species.name}のいかく！`);
       messages.push(...applyStatChange(defender, 'atk', -1));
       break;
+  }
+  
+  return messages;
+}
+
+// ============================================
+// 設置技（ハザード）
+// ============================================
+
+/**
+ * 設置技を設置
+ */
+export function setHazard(
+  state: BattleState,
+  playerIndex: 0 | 1,
+  hazardType: 'stealth_rock' | 'spikes' | 'toxic_spikes'
+): string[] {
+  const messages: string[] = [];
+  const opponentIndex = (1 - playerIndex) as 0 | 1;
+  const opponent = state.players[opponentIndex];
+  
+  switch (hazardType) {
+    case 'stealth_rock':
+      if (opponent.hazards.stealthRock) {
+        messages.push('すでにステルスロックが設置されている！');
+      } else {
+        opponent.hazards.stealthRock = true;
+        messages.push('相手のフィールドにステルスロックが設置された！');
+        addLog(state, messages[messages.length - 1], 'info');
+      }
+      break;
+      
+    case 'spikes':
+      if (opponent.hazards.spikesLayers >= 3) {
+        messages.push('まきびしはこれ以上設置できない！');
+      } else {
+        opponent.hazards.spikesLayers++;
+        messages.push(`相手のフィールドにまきびしが設置された！（${opponent.hazards.spikesLayers}層）`);
+        addLog(state, messages[messages.length - 1], 'info');
+      }
+      break;
+      
+    case 'toxic_spikes':
+      if (opponent.hazards.toxicSpikesLayers >= 2) {
+        messages.push('どくびしはこれ以上設置できない！');
+      } else {
+        opponent.hazards.toxicSpikesLayers++;
+        messages.push(`相手のフィールドにどくびしが設置された！（${opponent.hazards.toxicSpikesLayers}層）`);
+        addLog(state, messages[messages.length - 1], 'info');
+      }
+      break;
+  }
+  
+  return messages;
+}
+
+/**
+ * 交代時に設置技ダメージを適用
+ */
+export function applyEntryHazards(
+  state: BattleState,
+  playerIndex: 0 | 1
+): string[] {
+  const messages: string[] = [];
+  const player = state.players[playerIndex];
+  const monster = getActiveMonster(player);
+  const hazards = player.hazards;
+  const types = monster.species.types as MonsterType[];
+  
+  // 飛行タイプはまきびし・どくびしを踏まない（風タイプで代用）
+  const isFlying = types.includes('wind');
+  // 毒タイプはどくびしを吸収
+  const isPoisonType = types.includes('dark'); // ゲームには毒タイプがないので闇で代用しない
+  // 実際にはこのゲームに毒タイプはないので、どくびしは飛行以外全員に効く
+  
+  // ステルスロック: 岩タイプ相性に応じたダメージ（最大HP × 相性 / 8）
+  if (hazards.stealthRock && monster.currentHp > 0) {
+    // 岩（土で代用）タイプに対する相性を計算
+    const effectiveness = getTypeEffectiveness('earth', types);
+    // 等倍: 1/8、2倍: 1/4、0.5倍: 1/16、4倍: 1/2、0.25倍: 1/32
+    const damageRatio = effectiveness / 8;
+    const damage = Math.max(1, Math.floor(monster.maxHp * damageRatio));
+    const result = applyHpChange(monster, -damage);
+    messages.push(`${monster.species.name}はステルスロックでダメージを受けた！`);
+    addLog(state, messages[messages.length - 1], 'damage');
+    
+    // 不死鳥（phoenix）: 1回だけHP1で復活
+    if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+      monster.currentHp = 1;
+      monster.abilityDisabled = true;
+      messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+      addLog(state, messages[messages.length - 1], 'ability');
+    }
+  }
+  
+  // まきびし: 層数に応じたダメージ（飛行は無効）
+  if (hazards.spikesLayers > 0 && !isFlying && monster.currentHp > 0) {
+    // 1層: 1/8、2層: 1/6、3層: 1/4
+    let damageRatio: number;
+    switch (hazards.spikesLayers) {
+      case 1: damageRatio = 1 / 8; break;
+      case 2: damageRatio = 1 / 6; break;
+      default: damageRatio = 1 / 4; break;
+    }
+    const damage = Math.max(1, Math.floor(monster.maxHp * damageRatio));
+    const result = applyHpChange(monster, -damage);
+    messages.push(`${monster.species.name}はまきびしのダメージを受けた！`);
+    addLog(state, messages[messages.length - 1], 'damage');
+    
+    // 不死鳥（phoenix）: 1回だけHP1で復活
+    if (result.fainted && monster.instance.ability === 'phoenix' && !monster.abilityDisabled) {
+      monster.currentHp = 1;
+      monster.abilityDisabled = true;
+      messages.push(`${monster.species.name}は不死鳥の力で復活した！`);
+      addLog(state, messages[messages.length - 1], 'ability');
+    }
+  }
+  
+  // どくびし: 毒/猛毒を付与（飛行は無効、毒タイプは吸収して解除）
+  // ※このゲームには毒タイプがないので、吸収は実装しない
+  if (hazards.toxicSpikesLayers > 0 && !isFlying && monster.currentHp > 0) {
+    if (monster.status === 'none') {
+      if (hazards.toxicSpikesLayers >= 2) {
+        messages.push(...applyStatusCondition(monster, 'badly_poison'));
+      } else {
+        messages.push(...applyStatusCondition(monster, 'poison'));
+      }
+    }
   }
   
   return messages;
