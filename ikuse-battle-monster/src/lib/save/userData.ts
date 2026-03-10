@@ -2,6 +2,8 @@
 import { MonsterInstance, MonsterSpecies } from "../types";
 import { ALL_MONSTERS } from "../data/monsters";
 import { dbGet, dbSet, dbUpdate } from "../firebase/database";
+import { Egg, INITIAL_RATING, obtainEgg, hatchEgg, canHatch } from "../egg";
+import { createMonsterInstance as createInstance } from "../monster/create";
 
 // ============================================
 // 型定義
@@ -46,6 +48,10 @@ export interface UserData {
   monsters: SavedMonster[];
   party: string[];       // monster ids (最大3体)
   
+  // 卵システム
+  egg: Egg | null;       // 所持中の卵（1個のみ）
+  rating: number;        // レート（初期1000）
+  
   // 戦績
   record: BattleRecord;
   
@@ -61,7 +67,7 @@ export interface UserData {
 // 定数
 // ============================================
 
-export const CURRENT_DATA_VERSION = 1;
+export const CURRENT_DATA_VERSION = 2;
 export const MAX_MONSTERS = 50;
 export const MAX_PARTY_SIZE = 3;
 
@@ -87,6 +93,8 @@ export function createDefaultUserData(userId: string): UserData {
     version: CURRENT_DATA_VERSION,
     monsters: [],
     party: [],
+    egg: null,
+    rating: INITIAL_RATING,
     record: {
       wins: 0,
       losses: 0,
@@ -255,27 +263,45 @@ export async function updateParty(
 // 戦績管理
 // ============================================
 
-/** 勝利を記録 */
+/** レート変動（勝利+25、敗北-20） */
+const RATING_WIN = 25;
+const RATING_LOSS = 20;
+
+/** 勝利を記録（卵獲得 + レート上昇） */
 export async function recordWin(
   userId: string,
   userData: UserData
-): Promise<UserData> {
+): Promise<{ userData: UserData; eggResult: 'new' | 'shortened' | 'replaced' }> {
+  // 戦績更新
   userData.record.wins++;
   userData.record.streak++;
   if (userData.record.streak > userData.record.maxStreak) {
     userData.record.maxStreak = userData.record.streak;
   }
+  
+  // レート上昇
+  userData.rating += RATING_WIN;
+  
+  // 卵獲得
+  const hadEgg = userData.egg !== null && !userData.egg.isHatched;
+  userData.egg = obtainEgg(userData.rating, userData.egg);
+  const eggResult = hadEgg ? 'shortened' : 'new';
+  
   await saveUserData(userId, userData);
-  return userData;
+  return { userData, eggResult };
 }
 
-/** 敗北を記録 */
+/** 敗北を記録（レート減少） */
 export async function recordLoss(
   userId: string,
   userData: UserData
 ): Promise<UserData> {
   userData.record.losses++;
   userData.record.streak = 0;
+  
+  // レート減少（最低100）
+  userData.rating = Math.max(100, userData.rating - RATING_LOSS);
+  
   await saveUserData(userId, userData);
   return userData;
 }
@@ -292,14 +318,60 @@ export async function recordDraw(
 }
 
 // ============================================
+// 卵管理
+// ============================================
+
+/** 卵を孵化してモンスターを獲得 */
+export async function hatchCurrentEgg(
+  userId: string,
+  userData: UserData
+): Promise<{ userData: UserData; newMonster: SavedMonster | null }> {
+  if (!userData.egg || !canHatch(userData.egg)) {
+    return { userData, newMonster: null };
+  }
+  
+  // 卵を孵化
+  const instance = hatchEgg(userData.egg);
+  if (!instance) {
+    return { userData, newMonster: null };
+  }
+  
+  // SavedMonsterに変換
+  const newMonster: SavedMonster = {
+    id: instance.id,
+    speciesId: instance.speciesId,
+    ability: instance.ability,
+    skills: instance.skills,
+  };
+  
+  // モンスターを追加
+  if (userData.monsters.length < MAX_MONSTERS) {
+    userData.monsters.push(newMonster);
+  }
+  
+  // 卵をクリア
+  userData.egg = null;
+  
+  await saveUserData(userId, userData);
+  return { userData, newMonster };
+}
+
+/** 卵が孵化可能かチェック */
+export function isEggReady(userData: UserData): boolean {
+  return userData.egg !== null && canHatch(userData.egg);
+}
+
+// ============================================
 // マイグレーション
 // ============================================
 
 function migrateUserData(data: UserData): UserData {
-  // バージョン1が最新なので今は何もしない
-  // 将来のバージョンアップ時にここにマイグレーション処理を追加
-  if (!data.version) {
-    data.version = CURRENT_DATA_VERSION;
+  // バージョン1 → 2: 卵・レートシステム追加
+  if (!data.version || data.version < 2) {
+    data.egg = data.egg ?? null;
+    data.rating = data.rating ?? INITIAL_RATING;
+    data.version = 2;
   }
+  
   return data;
 }

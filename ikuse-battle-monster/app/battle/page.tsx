@@ -8,37 +8,24 @@ import { useMemo, useEffect, useRef } from 'react';
 import { useBattle } from '@/hooks/useBattle';
 import { getMonsterById, getStarters, ALL_MONSTERS } from '@/lib/data/monsters';
 import { MonsterInstance, MonsterSpecies } from '@/lib/types';
+import { createMonsterInstance } from '@/lib/monster/create';
 import { BattleField } from '@/components/battle/BattleField';
 import { BattleLog } from '@/components/battle/BattleLog';
 import { ActionMenu } from '@/components/battle/ActionMenu';
 
 // ============================================
-// テスト用パーティ生成
+// パーティ生成（createMonsterInstanceを使用）
 // ============================================
 
 function createTestParty(monsterIds: string[]): { instance: MonsterInstance; species: MonsterSpecies }[] {
-  return monsterIds.map((id, index) => {
+  return monsterIds.map((id) => {
     const species = getMonsterById(id);
     if (!species) {
       throw new Error(`Monster not found: ${id}`);
     }
     
-    const maxHp = species.baseStats.hp + 60; // calculateMaxHpと同じ
-    
-    // 技を選択（固定技があればそれ、なければスキルプールから4つ）
-    const skills = species.fixedSkills || species.skillPool.slice(0, 4);
-    
-    // 特性を選択（固定特性があればそれ、なければ最初の特性）
-    const ability = species.fixedAbility || species.abilities[0];
-    
-    const instance: MonsterInstance = {
-      id: `player-${index}`,
-      speciesId: species.id,
-      ability,
-      skills,
-      currentHp: maxHp,
-      maxHp,
-    };
+    // createMonsterInstanceで生成（御三家は固定、その他はランダム）
+    const instance = createMonsterInstance(species);
     
     return { instance, species };
   });
@@ -50,20 +37,9 @@ function createAIParty(): { instance: MonsterInstance; species: MonsterSpecies }
   const shuffled = [...availableMonsters].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, 3);
   
-  return selected.map((species, index) => {
-    const maxHp = species.baseStats.hp + 60;
-    const skills = species.skillPool.slice(0, 4);
-    const ability = species.abilities[0];
-    
-    const instance: MonsterInstance = {
-      id: `ai-${index}`,
-      speciesId: species.id,
-      ability,
-      skills,
-      currentHp: maxHp,
-      maxHp,
-    };
-    
+  // 企画書通り: 8技から4技ランダム、2特性から1特性ランダム
+  return selected.map((species) => {
+    const instance = createMonsterInstance(species);
     return { instance, species };
   });
 }

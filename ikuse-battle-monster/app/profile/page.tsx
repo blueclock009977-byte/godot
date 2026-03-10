@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/useUser';
 import { ALL_MONSTERS } from '@/lib/data/monsters';
 import { STARTER_BONUS_MONSTERS, STARTER_IDS } from '@/lib/save/userData';
+import { getEggTypeName, formatTimeUntilHatch, getRatingTier, getTimeUntilHatch } from '@/lib/egg';
 
 export default function ProfilePage() {
   const { 
@@ -15,12 +16,53 @@ export default function ProfilePage() {
     login, 
     addNewMonster,
     setParty,
-    syncStatus 
+    syncStatus,
+    canHatchEgg,
+    hatchEgg,
   } = useUser();
   
   // 新規ユーザーで御三家未選択なら選択画面を表示
   const showStarterSelect = userData && userData.monsters.length === 0;
   const [starterSelectClosed, setStarterSelectClosed] = useState(false);
+  
+  // 卵タイマー更新用
+  const [eggTimeLeft, setEggTimeLeft] = useState<string>('');
+  const [isHatching, setIsHatching] = useState(false);
+  const [hatchedMonster, setHatchedMonster] = useState<string | null>(null);
+  
+  // 卵の残り時間を1秒ごとに更新
+  useEffect(() => {
+    if (!userData?.egg || userData.egg.isHatched) {
+      setEggTimeLeft('');
+      return;
+    }
+    
+    const updateTime = () => {
+      if (userData.egg) {
+        setEggTimeLeft(formatTimeUntilHatch(userData.egg));
+      }
+    };
+    updateTime();
+    
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [userData?.egg]);
+  
+  // 孵化処理
+  const handleHatch = useCallback(async () => {
+    if (!canHatchEgg) return;
+    
+    setIsHatching(true);
+    const newMonster = await hatchEgg();
+    setIsHatching(false);
+    
+    if (newMonster) {
+      const species = ALL_MONSTERS.find(m => m.id === newMonster.speciesId);
+      setHatchedMonster(species?.name || '新しいモンスター');
+      // 3秒後にメッセージを消す
+      setTimeout(() => setHatchedMonster(null), 3000);
+    }
+  }, [canHatchEgg, hatchEgg]);
   
   // 初回ログイン
   useEffect(() => {
@@ -163,6 +205,67 @@ export default function ProfilePage() {
           <div className="mt-4 text-gray-400 text-sm">
             ユーザーID: {user?.uid.slice(0, 8)}...
           </div>
+        </div>
+        
+        {/* 卵セクション */}
+        <div className="bg-white/10 backdrop-blur rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">🥚 卵</h2>
+            {userData && (
+              <div className="text-sm text-gray-400">
+                レート: <span className="text-yellow-400 font-bold">{userData.rating}</span>
+                <span className="ml-2 text-xs">
+                  ({getRatingTier(userData.rating) === 'beginner' && '初心者帯'}
+                  {getRatingTier(userData.rating) === 'intermediate' && '中級者帯'}
+                  {getRatingTier(userData.rating) === 'advanced' && '上級者帯'})
+                </span>
+              </div>
+            )}
+          </div>
+          
+          {/* 孵化完了メッセージ */}
+          {hatchedMonster && (
+            <div className="bg-green-500/20 border-2 border-green-500 rounded-lg p-4 mb-4 text-center animate-pulse">
+              <div className="text-2xl mb-2">🎉</div>
+              <div className="text-white font-bold">
+                <span className="text-yellow-400">{hatchedMonster}</span> が生まれた！
+              </div>
+            </div>
+          )}
+          
+          {userData?.egg && !userData.egg.isHatched ? (
+            <div className="bg-white/5 rounded-lg p-6 text-center">
+              <div className="text-6xl mb-4 animate-bounce">🥚</div>
+              <div className="text-lg font-bold text-white mb-2">
+                {getEggTypeName(userData.egg.type)}
+              </div>
+              <div className={`text-xl mb-4 ${canHatchEgg ? 'text-green-400 animate-pulse' : 'text-gray-300'}`}>
+                {eggTimeLeft}
+              </div>
+              
+              {canHatchEgg ? (
+                <button
+                  onClick={handleHatch}
+                  disabled={isHatching}
+                  className="px-8 py-3 bg-yellow-500 text-black font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                >
+                  {isHatching ? '孵化中...' : '🐣 孵化する！'}
+                </button>
+              ) : (
+                <div className="text-gray-400 text-sm">
+                  バトルに勝利すると孵化時間が25%短縮されます
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white/5 rounded-lg p-6 text-center text-gray-400">
+              <div className="text-4xl mb-4 opacity-50">🥚</div>
+              <div className="mb-2">卵を持っていません</div>
+              <div className="text-sm">
+                オンラインバトルで勝利すると卵がもらえます！
+              </div>
+            </div>
+          )}
         </div>
         
         {/* パーティ */}

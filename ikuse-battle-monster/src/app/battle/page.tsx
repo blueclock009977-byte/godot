@@ -2,6 +2,7 @@
 
 /**
  * バトルページ - AIとのテストバトル
+ * 6体見せ合い → 3体選出 → バトル
  */
 
 import { useMemo, useEffect, useRef } from 'react';
@@ -11,59 +12,33 @@ import { MonsterInstance, MonsterSpecies } from '@/lib/types';
 import { BattleField } from '@/components/battle/BattleField';
 import { BattleLog } from '@/components/battle/BattleLog';
 import { ActionMenu } from '@/components/battle/ActionMenu';
+import { createMonsterInstance } from '@/lib/monster/create';
 
 // ============================================
-// テスト用パーティ生成
+// テスト用パーティ生成（6体）
 // ============================================
 
-function createTestParty(monsterIds: string[]): { instance: MonsterInstance; species: MonsterSpecies }[] {
-  return monsterIds.map((id, index) => {
-    const species = getMonsterById(id);
-    if (!species) {
-      throw new Error(`Monster not found: ${id}`);
-    }
-    
-    const maxHp = species.baseStats.hp + 60; // calculateMaxHpと同じ
-    
-    // 技を選択（固定技があればそれ、なければスキルプールから4つ）
-    const skills = species.fixedSkills || species.skillPool.slice(0, 4);
-    
-    // 特性を選択（固定特性があればそれ、なければ最初の特性）
-    const ability = species.fixedAbility || species.abilities[0];
-    
-    const instance: MonsterInstance = {
-      id: `player-${index}`,
-      speciesId: species.id,
-      ability,
-      skills,
-      currentHp: maxHp,
-      maxHp,
-    };
-    
+function createTestParty6(): { instance: MonsterInstance; species: MonsterSpecies }[] {
+  // 御三家 + 早熟モンスター3体で合計6体
+  const starters = getStarters();
+  const earlyMonsters = ALL_MONSTERS.filter(m => !m.isStarter && m.statTier === 'early');
+  const shuffled = [...earlyMonsters].sort(() => Math.random() - 0.5);
+  const selected = [...starters, ...shuffled.slice(0, 3)];
+  
+  return selected.map((species) => {
+    const instance = createMonsterInstance(species);
     return { instance, species };
   });
 }
 
-function createAIParty(): { instance: MonsterInstance; species: MonsterSpecies }[] {
-  // AIはランダムなモンスターを選ぶ
+function createAIParty6(): { instance: MonsterInstance; species: MonsterSpecies }[] {
+  // AIは6体のランダムパーティ
   const availableMonsters = ALL_MONSTERS.filter(m => !m.isStarter);
   const shuffled = [...availableMonsters].sort(() => Math.random() - 0.5);
-  const selected = shuffled.slice(0, 3);
+  const selected = shuffled.slice(0, 6);
   
-  return selected.map((species, index) => {
-    const maxHp = species.baseStats.hp + 60;
-    const skills = species.skillPool.slice(0, 4);
-    const ability = species.abilities[0];
-    
-    const instance: MonsterInstance = {
-      id: `ai-${index}`,
-      speciesId: species.id,
-      ability,
-      skills,
-      currentHp: maxHp,
-      maxHp,
-    };
-    
+  return selected.map((species) => {
+    const instance = createMonsterInstance(species);
     return { instance, species };
   });
 }
@@ -73,14 +48,9 @@ function createAIParty(): { instance: MonsterInstance; species: MonsterSpecies }
 // ============================================
 
 export default function BattlePage() {
-  // 御三家の最初の3体をプレイヤーパーティに
-  const playerParty = useMemo(() => {
-    const starters = getStarters();
-    return createTestParty(starters.map(s => s.id));
-  }, []);
-  
-  // AIパーティをランダム生成
-  const aiParty = useMemo(() => createAIParty(), []);
+  // 6体パーティを生成
+  const playerParty = useMemo(() => createTestParty6(), []);
+  const aiParty = useMemo(() => createAIParty6(), []);
   
   // バトルフック
   const battle = useBattle({
@@ -120,26 +90,118 @@ export default function BattlePage() {
         <header className="text-center mb-6">
           <h1 className="text-3xl font-bold mb-2">モンスターバトル</h1>
           <p className="text-gray-400">
-            ターン {battle.battleState.turn} | 
-            {battle.status === 'selecting' && ' 行動を選択'}
-            {battle.status === 'resolving' && ' 行動解決中...'}
-            {battle.status === 'forced_switch' && ' モンスターを選んでください'}
+            {battle.status === 'picking' && '6体から3体を選出'}
+            {battle.status === 'selecting' && `ターン ${battle.battleState.turn} | 行動を選択`}
+            {battle.status === 'resolving' && `ターン ${battle.battleState.turn} | 行動解決中...`}
+            {battle.status === 'forced_switch' && `ターン ${battle.battleState.turn} | モンスターを選んでください`}
             {battle.status === 'ended' && (
               battle.winner === 0 ? ' 🎉 勝利！' : ' 💀 敗北...'
             )}
           </p>
         </header>
         
-        {/* バトルフィールド */}
-        <BattleField
-          playerMonster={battle.playerMonster}
-          opponentMonster={battle.opponentMonster}
-          playerMana={battle.playerMana}
-          opponentMana={battle.opponentMana}
-          playerName="プレイヤー"
-          opponentName="AI"
-          weather={battle.battleState.weather}
-        />
+        {/* 選出フェーズ */}
+        {battle.status === 'picking' && (
+          <div className="bg-gray-800 rounded-lg p-4 mb-4">
+            <h2 className="text-xl font-bold mb-4 text-center">
+              🎯 パーティ選出 ({battle.selectedIndices.length}/3)
+            </h2>
+            <p className="text-gray-400 text-center mb-4">
+              相手のパーティを確認して、バトルに出す3体を選んでください
+            </p>
+            
+            {/* 相手のパーティ（見せ合い） */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-red-400">👁️ 相手のパーティ</h3>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                {battle.gameState.fullParty[1].map((m, i) => (
+                  <div key={i} className="bg-gray-700 rounded p-2 text-center">
+                    <div className="text-2xl mb-1">
+                      {m.species.types.map(t => {
+                        const icons: Record<string, string> = {
+                          fire: '🔥', water: '💧', earth: '🪨', wind: '🌪️',
+                          light: '✨', dark: '🌑', thunder: '⚡', ice: '❄️'
+                        };
+                        return icons[t] || '';
+                      }).join('')}
+                    </div>
+                    <div className="text-sm font-medium truncate">{m.species.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* 自分のパーティ（選出可能） */}
+            <div>
+              <h3 className="text-lg font-semibold mb-2 text-blue-400">⚔️ あなたのパーティ</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {battle.fullParty.map((m, i) => {
+                  const isSelected = battle.selectedIndices.includes(i);
+                  const order = battle.selectedIndices.indexOf(i) + 1;
+                  
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => battle.togglePick(i)}
+                      className={`p-3 rounded-lg transition-all ${
+                        isSelected 
+                          ? 'bg-blue-600 ring-2 ring-blue-400' 
+                          : 'bg-gray-700 hover:bg-gray-600'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-2xl">
+                          {m.species.types.map(t => {
+                            const icons: Record<string, string> = {
+                              fire: '🔥', water: '💧', earth: '🪨', wind: '🌪️',
+                              light: '✨', dark: '🌑', thunder: '⚡', ice: '❄️'
+                            };
+                            return icons[t] || '';
+                          }).join('')}
+                        </span>
+                        {isSelected && (
+                          <span className="bg-blue-500 text-white px-2 py-0.5 rounded-full text-sm font-bold">
+                            {order}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <div className="font-bold">{m.species.name}</div>
+                        <div className="text-xs text-gray-400">
+                          HP:{m.species.baseStats.hp} ATK:{m.species.baseStats.atk} SPD:{m.species.baseStats.spd}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* 選出確定ボタン */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={battle.confirmPicks}
+                disabled={battle.selectedIndices.length !== 3 || battle.isLoading}
+                className="px-8 py-3 bg-green-600 hover:bg-green-500 disabled:bg-gray-600 disabled:opacity-50 rounded-lg font-bold text-lg transition-colors"
+              >
+                {battle.selectedIndices.length === 3 ? '選出確定 → バトル開始！' : `あと${3 - battle.selectedIndices.length}体選んでください`}
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* バトルフィールド（選出フェーズ以外） */}
+        {battle.status !== 'picking' && (
+          <BattleField
+            playerMonster={battle.playerMonster}
+            opponentMonster={battle.opponentMonster}
+            playerMana={battle.playerMana}
+            opponentMana={battle.opponentMana}
+            playerName="プレイヤー"
+            opponentName="AI"
+            weather={battle.battleState.weather}
+          />
+        )}
         
         {/* 行動選択メニュー */}
         {battle.status === 'selecting' && (

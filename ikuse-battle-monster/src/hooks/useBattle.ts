@@ -24,6 +24,10 @@ import {
   selectAIAction,
   selectAIForcedSwitch,
   getBattleResult,
+  pickPartyMember,
+  confirmPicking,
+  transitionToBattle,
+  autoPickForAI,
   BattleResult,
   AvailableActions,
 } from '@/lib/battle/gameLoop';
@@ -65,6 +69,10 @@ export interface UseBattleReturn {
   playerMana: number;
   opponentMana: number;
   
+  // 選出フェーズ
+  fullParty: { instance: MonsterInstance; species: MonsterSpecies }[];
+  selectedIndices: number[];
+  
   // 行動選択
   availableActions: AvailableActions;
   selectedAction: BattleAction | null;
@@ -76,6 +84,10 @@ export interface UseBattleReturn {
   selectWait: () => void;
   confirmAction: () => void;
   submitForcedSwitch: (index: number) => void;
+  
+  // 選出アクション
+  togglePick: (index: number) => void;
+  confirmPicks: () => void;
   
   // ユーティリティ
   getSkill: (skillId: string) => Skill | undefined;
@@ -104,12 +116,21 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
   const battleState = gameState.battle;
   const status = gameState.status;
   const winner = gameState.winner;
-  const isPlayerTurn = status === 'selecting' || status === 'forced_switch';
+  const isPlayerTurn = status === 'selecting' || status === 'forced_switch' || status === 'picking';
   
-  const playerMonster = getActiveMonster(battleState.players[0]);
-  const opponentMonster = getActiveMonster(battleState.players[1]);
-  const playerMana = battleState.players[0].mana;
-  const opponentMana = battleState.players[1].mana;
+  // 選出フェーズ用
+  const fullParty = gameState.fullParty[0];
+  const selectedIndices = gameState.selectedIndices[0];
+  
+  // バトル中の状態（選出フェーズ中はダミー）
+  const playerMonster = status !== 'picking' 
+    ? getActiveMonster(battleState.players[0])
+    : null as unknown as ReturnType<typeof getActiveMonster>;
+  const opponentMonster = status !== 'picking'
+    ? getActiveMonster(battleState.players[1])
+    : null as unknown as ReturnType<typeof getActiveMonster>;
+  const playerMana = status !== 'picking' ? battleState.players[0].mana : 0;
+  const opponentMana = status !== 'picking' ? battleState.players[1].mana : 0;
   
   const availableActions = useMemo(
     () => getAvailableActions(gameState, 0, skills),
@@ -127,11 +148,71 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
   
   const startGame = useCallback(() => {
     const newState = createGameState(player1, player2);
-    const { messages: startMessages, state } = startBattle(newState);
+    
+    // 選出フェーズの場合はAIの選出を自動で行う
+    if (newState.status === 'picking' && isPlayer2AI) {
+      autoPickForAI(newState, 1);
+    }
+    
+    // 3体以下のパーティなら直接バトル開始
+    if (newState.status !== 'picking') {
+      const { messages: startMessages, state } = startBattle(newState);
+      setGameState(state);
+      setMessages(startMessages);
+    } else {
+      setGameState(newState);
+      setMessages(['6体の中から3体を選出してください']);
+    }
+    
+    setSelectedAction(null);
+  }, [player1, player2, isPlayer2AI]);
+  
+  // ============================================
+  // 選出フェーズ
+  // ============================================
+  
+  const togglePick = useCallback((index: number) => {
+    if (gameState.status !== 'picking') return;
+    
+    const result = pickPartyMember(gameState, 0, index);
+    if (result.success) {
+      setGameState({ ...gameState });
+      setMessages([result.message]);
+    } else {
+      setMessages([result.message]);
+    }
+  }, [gameState]);
+  
+  const confirmPicks = useCallback(() => {
+    if (gameState.status !== 'picking' || isLoading) return;
+    
+    const result = confirmPicking(gameState, 0);
+    if (!result.success) {
+      setMessages([result.message]);
+      return;
+    }
+    
+    if (!result.bothReady) {
+      setMessages(['選出を確定しました。相手の選出を待っています...']);
+      return;
+    }
+    
+    // 両者選出完了 → バトル開始
+    setIsLoading(true);
+    
+    const transResult = transitionToBattle(gameState, player1.name, player2.name);
+    if (!transResult.success) {
+      setMessages([transResult.message]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // バトル開始
+    const { messages: startMessages, state } = startBattle(gameState);
     setGameState(state);
     setMessages(startMessages);
-    setSelectedAction(null);
-  }, [player1, player2]);
+    setIsLoading(false);
+  }, [gameState, isLoading, player1.name, player2.name]);
   
   // ============================================
   // 行動選択
@@ -263,6 +344,10 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
     playerMana,
     opponentMana,
     
+    // 選出フェーズ
+    fullParty,
+    selectedIndices,
+    
     // 行動選択
     availableActions,
     selectedAction,
@@ -274,6 +359,10 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
     selectWait,
     confirmAction,
     submitForcedSwitch: handleForcedSwitch,
+    
+    // 選出アクション
+    togglePick,
+    confirmPicks,
     
     // ユーティリティ
     getSkill,

@@ -34,7 +34,7 @@ import { getForcedSwitchOptions } from './actions';
 
 export interface GameState {
   battle: BattleState;
-  status: 'waiting' | 'selecting' | 'resolving' | 'forced_switch' | 'ended';
+  status: 'picking' | 'waiting' | 'selecting' | 'resolving' | 'forced_switch' | 'ended';
   winner: 0 | 1 | null;
   pendingActions: {
     0: BattleAction | null;
@@ -42,35 +42,182 @@ export interface GameState {
   };
   forcedSwitchPending: (0 | 1)[];
   turnMessages: string[];
+  // 選出用
+  fullParty: {
+    0: { instance: MonsterInstance; species: MonsterSpecies }[];
+    1: { instance: MonsterInstance; species: MonsterSpecies }[];
+  };
+  selectedIndices: {
+    0: number[];
+    1: number[];
+  };
+}
+
+export interface PlayerData {
+  id: string;
+  name: string;
+  party: { instance: MonsterInstance; species: MonsterSpecies }[];
 }
 
 /**
- * ゲーム状態を初期化
+ * ゲーム状態を初期化（選出フェーズから開始）
  */
 export function createGameState(
-  player1Data: {
-    id: string;
-    name: string;
-    party: { instance: MonsterInstance; species: MonsterSpecies }[];
-  },
-  player2Data: {
-    id: string;
-    name: string;
-    party: { instance: MonsterInstance; species: MonsterSpecies }[];
-  }
+  player1Data: PlayerData,
+  player2Data: PlayerData,
+  skipPicking: boolean = false
 ): GameState {
-  const player1 = createBattlePlayer(player1Data.id, player1Data.name, player1Data.party);
-  const player2 = createBattlePlayer(player2Data.id, player2Data.name, player2Data.party);
-  const battle = createBattleState(player1, player2);
+  // 選出をスキップする場合（3体パーティの場合）
+  if (skipPicking || (player1Data.party.length <= 3 && player2Data.party.length <= 3)) {
+    const player1 = createBattlePlayer(player1Data.id, player1Data.name, player1Data.party);
+    const player2 = createBattlePlayer(player2Data.id, player2Data.name, player2Data.party);
+    const battle = createBattleState(player1, player2);
+    
+    return {
+      battle,
+      status: 'selecting',
+      winner: null,
+      pendingActions: { 0: null, 1: null },
+      forcedSwitchPending: [],
+      turnMessages: [],
+      fullParty: {
+        0: player1Data.party,
+        1: player2Data.party,
+      },
+      selectedIndices: {
+        0: player1Data.party.map((_, i) => i),
+        1: player2Data.party.map((_, i) => i),
+      },
+    };
+  }
+  
+  // 6体以上なら選出フェーズへ
+  // バトル状態は空のプレースホルダー（選出完了後に作成）
+  const emptyPlayer = createBattlePlayer('', '', []);
+  const placeholder = createBattleState(emptyPlayer, emptyPlayer);
   
   return {
-    battle,
-    status: 'selecting',
+    battle: placeholder,
+    status: 'picking',
     winner: null,
     pendingActions: { 0: null, 1: null },
     forcedSwitchPending: [],
     turnMessages: [],
+    fullParty: {
+      0: player1Data.party,
+      1: player2Data.party,
+    },
+    selectedIndices: {
+      0: [],
+      1: [],
+    },
   };
+}
+
+/**
+ * パーティメンバーを選出
+ */
+export function pickPartyMember(
+  state: GameState,
+  playerIndex: 0 | 1,
+  monsterIndex: number
+): { success: boolean; message: string } {
+  if (state.status !== 'picking') {
+    return { success: false, message: '選出フェーズではありません' };
+  }
+  
+  const indices = state.selectedIndices[playerIndex];
+  const fullParty = state.fullParty[playerIndex];
+  
+  // 範囲チェック
+  if (monsterIndex < 0 || monsterIndex >= fullParty.length) {
+    return { success: false, message: '無効なモンスターです' };
+  }
+  
+  // 既に選択済みなら解除
+  const existingIndex = indices.indexOf(monsterIndex);
+  if (existingIndex !== -1) {
+    indices.splice(existingIndex, 1);
+    return { success: true, message: '選出を解除しました' };
+  }
+  
+  // 3体まで
+  if (indices.length >= 3) {
+    return { success: false, message: '3体まで選出できます' };
+  }
+  
+  indices.push(monsterIndex);
+  return { success: true, message: '選出しました' };
+}
+
+/**
+ * 選出を確定してバトル開始準備
+ */
+export function confirmPicking(
+  state: GameState,
+  playerIndex: 0 | 1
+): { success: boolean; message: string; bothReady: boolean } {
+  if (state.status !== 'picking') {
+    return { success: false, message: '選出フェーズではありません', bothReady: false };
+  }
+  
+  const indices = state.selectedIndices[playerIndex];
+  
+  if (indices.length !== 3) {
+    return { success: false, message: '3体選出してください', bothReady: false };
+  }
+  
+  // 選出順を記録（後から変更されないようにコピー）
+  state.selectedIndices[playerIndex] = [...indices];
+  
+  // 両方3体選んだ？
+  const bothReady = state.selectedIndices[0].length === 3 && state.selectedIndices[1].length === 3;
+  
+  return { success: true, message: '選出を確定しました', bothReady };
+}
+
+/**
+ * 選出フェーズからバトル開始へ移行
+ */
+export function transitionToBattle(
+  state: GameState,
+  player1Name: string,
+  player2Name: string
+): { success: boolean; message: string } {
+  if (state.status !== 'picking') {
+    return { success: false, message: '選出フェーズではありません' };
+  }
+  
+  if (state.selectedIndices[0].length !== 3 || state.selectedIndices[1].length !== 3) {
+    return { success: false, message: '両プレイヤーが3体選出していません' };
+  }
+  
+  // 選出されたモンスターでパーティを構築
+  const selectedParty0 = state.selectedIndices[0].map(i => state.fullParty[0][i]);
+  const selectedParty1 = state.selectedIndices[1].map(i => state.fullParty[1][i]);
+  
+  // バトル状態を作成
+  const player1 = createBattlePlayer('player1', player1Name, selectedParty0);
+  const player2 = createBattlePlayer('player2', player2Name, selectedParty1);
+  state.battle = createBattleState(player1, player2);
+  state.status = 'waiting';
+  
+  return { success: true, message: 'バトル準備完了' };
+}
+
+/**
+ * AI用: 自動で3体選出
+ */
+export function autoPickForAI(
+  state: GameState,
+  playerIndex: 0 | 1
+): void {
+  const fullParty = state.fullParty[playerIndex];
+  
+  // ランダムに3体選ぶ
+  const indices = [...Array(fullParty.length).keys()];
+  const shuffled = indices.sort(() => Math.random() - 0.5);
+  state.selectedIndices[playerIndex] = shuffled.slice(0, 3);
 }
 
 // ============================================
@@ -87,6 +234,11 @@ export interface BattleStartResult {
  */
 export function startBattle(state: GameState): BattleStartResult {
   const messages: string[] = [];
+  
+  // 選出フェーズからの場合は'waiting'、直接開始の場合は'selecting'
+  if (state.status !== 'waiting' && state.status !== 'selecting') {
+    return { messages: ['バトルを開始できません'], state };
+  }
   
   messages.push('バトル開始！');
   addLog(state.battle, 'バトル開始！', 'info');

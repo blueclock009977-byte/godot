@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { AuthUser, onAuthChange, autoLogin, signOut } from '../lib/firebase/auth';
-import { UserData, SavedMonster, createMonsterInstance, addMonster, updateParty, recordWin, recordLoss } from '../lib/save/userData';
+import { UserData, SavedMonster, createMonsterInstance, addMonster, updateParty, recordWin, recordLoss, hatchCurrentEgg, isEggReady } from '../lib/save/userData';
 import { syncUserData, listenUserData, getLocalUserData, SyncStatus } from '../lib/save/sync';
 
 export interface UseUserResult {
@@ -26,6 +26,10 @@ export interface UseUserResult {
   // 戦績
   reportWin: () => Promise<void>;
   reportLoss: () => Promise<void>;
+  
+  // 卵
+  canHatchEgg: boolean;
+  hatchEgg: () => Promise<SavedMonster | null>;
   
   // データ更新
   refreshData: () => Promise<void>;
@@ -140,8 +144,9 @@ export function useUser(): UseUserResult {
     if (!user || !userData) return;
     
     try {
-      const newData = await recordWin(user.uid, { ...userData });
+      const { userData: newData, eggResult } = await recordWin(user.uid, { ...userData });
       setUserData(newData);
+      console.log(`勝利記録完了。卵: ${eggResult}`);
     } catch (error) {
       console.error('Failed to record win:', error);
     }
@@ -174,6 +179,23 @@ export function useUser(): UseUserResult {
     }
   }, [user]);
   
+  // 卵孵化可能か
+  const canHatchEgg = userData ? isEggReady(userData) : false;
+  
+  // 卵を孵化
+  const hatchEgg = useCallback(async (): Promise<SavedMonster | null> => {
+    if (!user || !userData) return null;
+    
+    try {
+      const { userData: newData, newMonster } = await hatchCurrentEgg(user.uid, { ...userData });
+      setUserData(newData);
+      return newMonster;
+    } catch (error) {
+      console.error('Failed to hatch egg:', error);
+      return null;
+    }
+  }, [user, userData]);
+  
   return {
     user,
     isLoading,
@@ -186,6 +208,8 @@ export function useUser(): UseUserResult {
     setParty,
     reportWin,
     reportLoss,
+    canHatchEgg,
+    hatchEgg,
     refreshData,
   };
 }

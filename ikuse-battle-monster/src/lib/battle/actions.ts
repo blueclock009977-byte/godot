@@ -219,6 +219,108 @@ function executeSkill(
     return { success: false, messages };
   }
   
+  // === マナバースト特殊処理 ===
+  // 残りマナを全消費して マナ×20 の固定ダメージ
+  if (skillId === 'mana_burst') {
+    const manaToConsume = player.mana;
+    if (manaToConsume === 0) {
+      messages.push(`マナがない！`);
+      return { success: false, messages };
+    }
+    
+    // 行動不能チェック
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ全消費
+    applyManaChange(player, -manaToConsume);
+    attacker.lastUsedSkill = skillId;
+    
+    // まもる中の相手には効かない
+    if (defender.protected) {
+      messages.push(`${attacker.species.name}のマナバースト！`);
+      messages.push(`しかし${defender.species.name}は身を守っている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 固定ダメージ = マナ × 20
+    const fixedDamage = manaToConsume * 20;
+    const { fainted } = applyHpChange(defender, -fixedDamage);
+    
+    messages.push(`${attacker.species.name}のマナバースト！`);
+    messages.push(`マナ${manaToConsume}を全消費！`);
+    messages.push(`${defender.species.name}に${fixedDamage}の固定ダメージ！`);
+    addLog(state, messages.join(' '), 'damage');
+    
+    if (fainted) {
+      messages.push(`${defender.species.name}は倒れた！`);
+      addLog(state, `${defender.species.name}は倒れた！`, 'ko');
+    }
+    
+    return { success: true, damage: fixedDamage, fainted, messages };
+  }
+  
+  // === マナドレイン特殊処理 ===
+  // 相手のマナを3奪う（自分+3、相手-3）
+  if (skillId === 'mana_drain') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    applyManaChange(player, -skill.manaCost);
+    attacker.lastUsedSkill = skillId;
+    
+    // まもる中の相手には効かない
+    if (defender.protected) {
+      messages.push(`${attacker.species.name}のマナドレイン！`);
+      messages.push(`しかし${defender.species.name}は身を守っている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 相手から3奪う
+    const stolenMana = Math.min(3, opponent.mana);
+    applyManaChange(opponent, -stolenMana);
+    applyManaChange(player, stolenMana);
+    
+    messages.push(`${attacker.species.name}のマナドレイン！`);
+    messages.push(`${defender.species.name}からマナを${stolenMana}奪った！`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
+  // === マナチャージ特殊処理 ===
+  // 次ターンマナ+5（待機技扱い）
+  if (skillId === 'mana_charge') {
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    attacker.lastUsedSkill = skillId;
+    
+    // このターンは待機、次ターン開始時に+5回復（regenerateManaで+3なので実質+2追加）
+    // 簡易実装: 即座に+5
+    applyManaChange(player, 5);
+    
+    messages.push(`${attacker.species.name}のマナチャージ！`);
+    messages.push(`${player.name}のマナが5増えた！`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
   // マナチェック
   if (player.mana < skill.manaCost) {
     messages.push(`マナが足りない！`);
