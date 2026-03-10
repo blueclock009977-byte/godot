@@ -671,6 +671,13 @@ interface CanActResult {
  * 行動可能かチェック
  */
 function checkCanAct(monster: BattleMonster, messages: string[]): CanActResult {
+  // リチャージ中（ギガインパクト等の反動）
+  if (monster.mustRecharge) {
+    monster.mustRecharge = false;  // リチャージ完了、フラグリセット
+    messages.push(`${monster.species.name}は攻撃の反動で動けない！`);
+    return { canAct: false, selfDamage: false };
+  }
+  
   // ひるみ（同ターン内のみ）
   if (monster.flinched) {
     monster.flinched = false;

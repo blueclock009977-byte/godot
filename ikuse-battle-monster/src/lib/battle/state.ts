@@ -63,6 +63,7 @@ export function createBattleMonster(
     flying: false,
     trapped: false,
     trappedTurns: 0,
+    mustRecharge: false,
     lastUsedSkill: undefined,
     abilityDisabled: false,
   };
@@ -264,6 +265,7 @@ export function resetStatStages(monster: BattleMonster): void {
   monster.flinched = false;
   monster.protected = false;
   monster.charging = false;
+  monster.mustRecharge = false;  // 交代でリチャージ解除
   monster.lastUsedSkill = undefined;
 }
 

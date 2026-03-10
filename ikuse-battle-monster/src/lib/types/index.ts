@@ -72,6 +72,7 @@ export type EffectType =
   | 'stat_down'      // ステータス下降
   | 'heal'           // 回復
   | 'recoil'         // 反動
+  | 'recharge'       // 次ターン行動不可（ギガインパクト等）
   | 'charge'         // 溜め技
   | 'multi_hit'      // 連続攻撃
   | 'priority'       // 先制技
@@ -213,6 +214,7 @@ export interface BattleMonster {
   flying: boolean;          // 飛び中
   trapped: boolean;         // 拘束中
   trappedTurns: number;
+  mustRecharge: boolean;    // 次ターン行動不可（ギガインパクト等の反動）
   lastUsedSkill?: string;   // 最後に使った技
   // 能力変化用
   abilityDisabled: boolean;

@@ -151,6 +151,12 @@ export function applySkillEffects(
           }
         }
         break;
+      
+      case 'recharge':
+        // 次ターン行動不可（ギガインパクト、はかいこうせん等）
+        attacker.mustRecharge = true;
+        messages.push(`${attacker.species.name}は攻撃の反動で動けない！`);
+        break;
     }
   }
   

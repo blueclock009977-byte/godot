@@ -1457,7 +1457,7 @@ const normalSkills: Skill[] = [
     manaCost: 8,
     priority: 0,
     critBonus: 0,
-    effects: [],
+    effects: [{ type: 'recharge', chance: 100, target: 'self' }],
     description: '全力の攻撃。次ターン行動不可。',
     makesContact: true,
   },
@@ -1554,7 +1554,7 @@ const normalSkills: Skill[] = [
     manaCost: 8,
     priority: 0,
     critBonus: 0,
-    effects: [],
+    effects: [{ type: 'recharge', chance: 100, target: 'self' }],
     description: '全力のビーム。次ターン行動不可。',
   },
   {
