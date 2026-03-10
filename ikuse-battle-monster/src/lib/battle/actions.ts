@@ -33,6 +33,22 @@ import {
 } from './effects';
 
 // ============================================
+// ヘルパー関数
+// ============================================
+
+/**
+ * 連続技のヒット回数を決定（2-5回）
+ * ポケモン式: 2回35%, 3回35%, 4回15%, 5回15%
+ */
+function rollMultiHitCount(): number {
+  const roll = Math.random() * 100;
+  if (roll < 35) return 2;      // 35%
+  if (roll < 70) return 3;      // 35%
+  if (roll < 85) return 4;      // 15%
+  return 5;                     // 15%
+}
+
+// ============================================
 // 行動順決定
 // ============================================
 
@@ -386,57 +402,91 @@ function executeSkill(
     }
   }
   
-  // 命中判定
-  if (!checkAccuracy(attacker, defender, skill)) {
-    messages.push(`${attacker.species.name}の${skill.name}！`);
-    messages.push(`しかし攻撃は外れた！`);
-    addLog(state, messages.join(' '), 'info');
-    return { success: true, damage: 0, messages };
-  }
+  // 連続技かどうか判定
+  const multiHitEffect = skill.effects.find(e => e.type === 'multi_hit');
+  const isMultiHit = multiHitEffect !== undefined;
   
   // ダメージ技の処理
   let totalDamage = 0;
   let fainted = false;
+  let hitCount = 0;
+  let criticalCount = 0;
+  let lastEffectiveness = 1;
   
   if (skill.power > 0) {
-    const isCritical = checkCritical(attacker, defender, skill);
-    const damageResult = calculateDamage(attacker, defender, skill, state.weather, isCritical);
+    messages.push(`${attacker.species.name}の${skill.name}！`);
+    
+    // 連続技のヒット回数を決定（2-5回: 2回35%, 3回35%, 4回15%, 5回15%）
+    const maxHits = isMultiHit ? rollMultiHitCount() : 1;
+    
+    for (let i = 0; i < maxHits; i++) {
+      // 各ヒットで命中判定（最初のヒットで外れたら終了）
+      if (!checkAccuracy(attacker, defender, skill)) {
+        if (hitCount === 0) {
+          messages.push(`しかし攻撃は外れた！`);
+          addLog(state, messages.join(' '), 'info');
+          return { success: true, damage: 0, messages };
+        }
+        // 2回目以降で外れたらその時点で終了
+        break;
+      }
+      
+      const isCritical = checkCritical(attacker, defender, skill);
+      const damageResult = calculateDamage(attacker, defender, skill, state.weather, isCritical);
 
-    // 頑丈: HP満タン時、一撃では倒れずHP1で耐える
-    let damageToApply = damageResult.damage;
-    const wasFullHp = defender.currentHp === defender.maxHp;
-    const wouldFaint = damageToApply >= defender.currentHp;
-    const sturdyTriggered =
-      defender.instance.ability === 'sturdy' &&
-      wasFullHp &&
-      wouldFaint;
+      // 頑丈: HP満タン時、一撃では倒れずHP1で耐える
+      let damageToApply = damageResult.damage;
+      const wasFullHp = defender.currentHp === defender.maxHp;
+      const wouldFaint = damageToApply >= defender.currentHp;
+      const sturdyTriggered =
+        defender.instance.ability === 'sturdy' &&
+        wasFullHp &&
+        wouldFaint;
 
-    if (sturdyTriggered) {
-      damageToApply = defender.currentHp - 1;
+      if (sturdyTriggered) {
+        damageToApply = defender.currentHp - 1;
+        messages.push(`${defender.species.name}は頑丈で耐えた！`);
+      }
+
+      totalDamage += damageToApply;
+      hitCount++;
+      if (isCritical) criticalCount++;
+      lastEffectiveness = damageResult.effectiveness;
+
+      const hpResult = applyHpChange(defender, -damageToApply);
+      fainted = hpResult.fainted;
+      
+      // 相手が倒れたら残りのヒットはスキップ
+      if (fainted) break;
     }
-
-    totalDamage = damageToApply;
-
-    const hpResult = applyHpChange(defender, -damageToApply);
-    fainted = hpResult.fainted;
-
+    
+    // ログ出力
     addDamageLog(
       state,
       attacker.species.name,
       defender.species.name,
       skill.name,
       totalDamage,
-      damageResult.isCritical,
-      damageResult.effectiveness
+      criticalCount > 0,
+      lastEffectiveness
     );
 
-    messages.push(`${attacker.species.name}の${skill.name}！`);
-    if (damageResult.isCritical) messages.push('急所に当たった！');
+    // メッセージ組み立て
+    if (criticalCount > 0) messages.push('急所に当たった！');
+    if (isMultiHit) {
+      messages.push(`${hitCount}回ヒット！`);
+    }
     messages.push(`${defender.species.name}に${totalDamage}ダメージ！`);
-    if (damageResult.effectiveness > 1) messages.push('効果は抜群だ！');
-    if (damageResult.effectiveness < 1) messages.push('効果はいまひとつ...');
-    if (sturdyTriggered) messages.push(`${defender.species.name}は頑丈で耐えた！`);
+    if (lastEffectiveness > 1) messages.push('効果は抜群だ！');
+    if (lastEffectiveness < 1) messages.push('効果はいまひとつ...');
   } else {
+    // 命中判定（変化技）
+    if (!checkAccuracy(attacker, defender, skill)) {
+      messages.push(`${attacker.species.name}の${skill.name}！`);
+      messages.push(`しかし攻撃は外れた！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
     messages.push(`${attacker.species.name}の${skill.name}！`);
     addLog(state, messages.join(' '), 'info');
   }

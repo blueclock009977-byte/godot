@@ -24,8 +24,15 @@ export interface UseUserResult {
   setParty: (monsterIds: string[]) => Promise<void>;
   
   // 戦績
-  reportWin: () => Promise<void>;
-  reportLoss: () => Promise<void>;
+  reportWin: () => Promise<{
+    eggResult: 'new' | 'shortened' | 'replaced';
+    newRating: number;
+    ratingChange: number;
+  } | null>;
+  reportLoss: () => Promise<{
+    newRating: number;
+    ratingChange: number;
+  } | null>;
   
   // 卵
   canHatchEgg: boolean;
@@ -140,27 +147,46 @@ export function useUser(): UseUserResult {
   }, [user, userData]);
   
   // 勝利記録
-  const reportWin = useCallback(async () => {
-    if (!user || !userData) return;
+  const reportWin = useCallback(async (): Promise<{
+    eggResult: 'new' | 'shortened' | 'replaced';
+    newRating: number;
+    ratingChange: number;
+  } | null> => {
+    if (!user || !userData) return null;
     
+    const oldRating = userData.rating;
     try {
       const { userData: newData, eggResult } = await recordWin(user.uid, { ...userData });
       setUserData(newData);
-      console.log(`勝利記録完了。卵: ${eggResult}`);
+      return {
+        eggResult,
+        newRating: newData.rating,
+        ratingChange: newData.rating - oldRating,
+      };
     } catch (error) {
       console.error('Failed to record win:', error);
+      return null;
     }
   }, [user, userData]);
   
   // 敗北記録
-  const reportLoss = useCallback(async () => {
-    if (!user || !userData) return;
+  const reportLoss = useCallback(async (): Promise<{
+    newRating: number;
+    ratingChange: number;
+  } | null> => {
+    if (!user || !userData) return null;
     
+    const oldRating = userData.rating;
     try {
       const newData = await recordLoss(user.uid, { ...userData });
       setUserData(newData);
+      return {
+        newRating: newData.rating,
+        ratingChange: newData.rating - oldRating,
+      };
     } catch (error) {
       console.error('Failed to record loss:', error);
+      return null;
     }
   }, [user, userData]);
   

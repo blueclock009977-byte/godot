@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 14,
+  "currentPhase": 16,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -118,6 +118,31 @@
     "    - 孵化ボタン（孵化可能時のみアクティブ）",
     "    - 孵化完了アニメーション＆メッセージ",
     "    - 卵がない場合の説明文",
+    "ビルド成功確認",
+    "Phase 15 開始: 2026-03-10 14:41",
+    "コアループ完成: バトル勝利時の卵獲得フロー実装",
+    "  - src/hooks/useUser.ts 更新",
+    "    - reportWin(): 卵結果とレート変動を返すように変更",
+    "    - reportLoss(): レート変動を返すように変更",
+    "    - UseUserResult型定義を更新",
+    "  - app/battle/page.tsx 更新",
+    "    - useUserを使用してログイン状態を取得",
+    "    - バトル終了時に自動でreportWin/reportLossを呼び出し",
+    "    - 結果画面に卵獲得・レート変動を表示",
+    "      - 勝利時: 卵獲得メッセージ（新規/短縮/置換）",
+    "      - レート変動の表示（+25/-20）",
+    "      - プロフィールへのリンク",
+    "    - 未ログイン時の案内表示",
+    "ビルド成功確認",
+    "Phase 16 開始: 2026-03-10 14:44",
+    "連続技（2-5回攻撃）を実装",
+    "  - src/lib/battle/actions.ts 更新",
+    "    - rollMultiHitCount(): 2-5回のヒット回数決定（ポケモン式: 2回35%, 3回35%, 4回15%, 5回15%）",
+    "    - multi_hit効果があるスキルは複数回攻撃を行う",
+    "    - 各ヒットで命中判定・急所判定・ダメージ計算を個別に実行",
+    "    - 相手が倒れたら残りのヒットはスキップ",
+    "    - 合計ダメージとヒット回数をメッセージ表示",
+    "  - 対象技: 水流連打、ロックブラスト、アイスニードル、アイススピア等",
     "ビルド成功確認"
   ],
   "completed": [
@@ -134,7 +159,9 @@
     "phase11-random-skills",
     "phase12-party-picking",
     "phase13-egg-system",
-    "phase14-egg-ui"
+    "phase14-egg-ui",
+    "phase15-battle-reward",
+    "phase16-multi-hit"
   ],
   "status": "IN_PROGRESS"
 }

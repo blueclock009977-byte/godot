@@ -3,10 +3,12 @@
 /**
  * バトルページ - AIとのテストバトル
  * 6体見せ合い → 3体選出 → バトル
+ * 勝利時は卵獲得、レート変動
  */
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { useBattle } from '@/hooks/useBattle';
+import { useUser } from '@/hooks/useUser';
 import { getMonsterById, getStarters, ALL_MONSTERS } from '@/lib/data/monsters';
 import { MonsterInstance, MonsterSpecies } from '@/lib/types';
 import { BattleField } from '@/components/battle/BattleField';
@@ -47,10 +49,25 @@ function createAIParty6(): { instance: MonsterInstance; species: MonsterSpecies 
 // バトルページコンポーネント
 // ============================================
 
+// バトル結果の詳細
+interface BattleResultDetails {
+  isWin: boolean;
+  eggResult?: 'new' | 'shortened' | 'replaced';
+  newRating: number;
+  ratingChange: number;
+}
+
 export default function BattlePage() {
   // 6体パーティを生成
   const playerParty = useMemo(() => createTestParty6(), []);
   const aiParty = useMemo(() => createAIParty6(), []);
+  
+  // ユーザーデータ
+  const { isLoggedIn, userData, reportWin, reportLoss } = useUser();
+  
+  // 結果詳細（卵獲得、レート変動）
+  const [resultDetails, setResultDetails] = useState<BattleResultDetails | null>(null);
+  const hasRecordedResult = useRef(false);
   
   // バトルフック
   const battle = useBattle({
@@ -76,6 +93,37 @@ export default function BattlePage() {
       battle.startGame();
     }
   }, [battle]);
+  
+  // バトル終了時に勝敗を記録
+  useEffect(() => {
+    if (battle.status === 'ended' && !hasRecordedResult.current && isLoggedIn && userData) {
+      hasRecordedResult.current = true;
+      const isWin = battle.winner === 0;
+      
+      if (isWin) {
+        reportWin().then(result => {
+          if (result) {
+            setResultDetails({
+              isWin: true,
+              eggResult: result.eggResult,
+              newRating: result.newRating,
+              ratingChange: result.ratingChange,
+            });
+          }
+        });
+      } else {
+        reportLoss().then(result => {
+          if (result) {
+            setResultDetails({
+              isWin: false,
+              newRating: result.newRating,
+              ratingChange: result.ratingChange,
+            });
+          }
+        });
+      }
+    }
+  }, [battle.status, battle.winner, isLoggedIn, userData, reportWin, reportLoss]);
   
   // 強制交代が必要な場合のオプション
   const forcedSwitchOptions = useMemo(() => {
@@ -251,12 +299,57 @@ export default function BattlePage() {
             <p className="text-gray-300 mb-4">
               {battle.result.turns}ターンで決着
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition-colors"
-            >
-              もう一度バトル
-            </button>
+            
+            {/* 報酬・レート変動表示 */}
+            {resultDetails && (
+              <div className="bg-gray-700/50 rounded-lg p-4 mb-4 space-y-3">
+                {/* レート変動 */}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-gray-400">レート:</span>
+                  <span className="font-bold">{resultDetails.newRating}</span>
+                  <span className={`text-sm ${resultDetails.ratingChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    ({resultDetails.ratingChange >= 0 ? '+' : ''}{resultDetails.ratingChange})
+                  </span>
+                </div>
+                
+                {/* 卵獲得（勝利時のみ） */}
+                {resultDetails.isWin && resultDetails.eggResult && (
+                  <div className="bg-yellow-900/30 rounded-lg p-3 border border-yellow-700/50">
+                    <div className="text-2xl mb-1">🥚</div>
+                    <div className="text-yellow-300 font-bold">
+                      {resultDetails.eggResult === 'new' && '卵を手に入れた！'}
+                      {resultDetails.eggResult === 'shortened' && '卵の孵化時間が短縮された！'}
+                      {resultDetails.eggResult === 'replaced' && '新しい卵を手に入れた！'}
+                    </div>
+                    <div className="text-sm text-gray-400 mt-1">
+                      プロフィールで確認できます
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* ログインしていない場合の案内 */}
+            {!isLoggedIn && (
+              <div className="bg-gray-700/30 rounded-lg p-3 mb-4 text-sm text-gray-400">
+                ログインすると戦績が記録され、卵がもらえます
+              </div>
+            )}
+            
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition-colors"
+              >
+                もう一度バトル
+              </button>
+              <a
+                href="/profile"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-colors"
+              >
+                プロフィールへ
+              </a>
+            </div>
           </div>
         )}
         
