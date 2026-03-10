@@ -439,6 +439,69 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // === がむしゃら特殊処理 ===
+  // 相手のHPを自分と同じにする（自分より相手のHPが高い場合のみダメージ）
+  if (skillId === 'endeavor') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    applyManaChange(player, -skill.manaCost);
+    attacker.lastUsedSkill = skillId;
+    
+    // まもる中の相手には効かない
+    if (defender.protected) {
+      messages.push(`${attacker.species.name}のがむしゃら！`);
+      messages.push(`しかし${defender.species.name}は身を守っている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 命中判定
+    if (!checkAccuracy(attacker, defender, skill)) {
+      messages.push(`${attacker.species.name}のがむしゃら！`);
+      messages.push(`しかし攻撃は外れた！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    messages.push(`${attacker.species.name}のがむしゃら！`);
+    
+    // 自分より相手のHPが高い場合のみダメージ
+    if (defender.currentHp > attacker.currentHp) {
+      const damage = defender.currentHp - attacker.currentHp;
+      const { fainted } = applyHpChange(defender, -damage);
+      
+      messages.push(`${defender.species.name}のHPが${attacker.currentHp}になった！（${damage}ダメージ）`);
+      addLog(state, messages.join(' '), 'damage');
+      
+      // 不死鳥（phoenix）: 1回だけHP1で復活
+      if (fainted && defender.instance.ability === 'phoenix' && !defender.abilityDisabled) {
+        defender.currentHp = 1;
+        defender.abilityDisabled = true;
+        messages.push(`${defender.species.name}は不死鳥の力で復活した！`);
+      }
+      
+      if (fainted && defender.currentHp === 0) {
+        messages.push(`${defender.species.name}は倒れた！`);
+        addLog(state, `${defender.species.name}は倒れた！`, 'ko');
+      }
+      
+      return { success: true, damage, fainted: defender.currentHp === 0, messages };
+    } else {
+      messages.push(`しかし効果がなかった！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+  }
+  
   // マナチェック
   if (player.mana < skill.manaCost) {
     messages.push(`マナが足りない！`);

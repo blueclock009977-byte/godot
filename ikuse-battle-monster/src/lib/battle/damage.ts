@@ -232,6 +232,49 @@ export interface DamageResult {
 }
 
 /**
+ * 特殊な技の威力を計算（条件付き威力変動）
+ */
+function getEffectivePower(
+  skill: Skill,
+  attacker: BattleMonster,
+  defender: BattleMonster
+): number {
+  let power = skill.power;
+  
+  switch (skill.id) {
+    // からげんき: 状態異常時に威力2倍（70→140）
+    case 'facade':
+      if (attacker.status !== 'none') {
+        power *= 2;
+      }
+      break;
+    
+    // ライジングボルト: 麻痺相手に威力2倍（70→140）
+    case 'rising_volt':
+      if (defender.status === 'paralyze') {
+        power *= 2;
+      }
+      break;
+    
+    // フリーズドライの水タイプ特効は相性計算で処理（後述）
+    
+    // じたばた: HP残量で威力が変動（20-200）
+    case 'flail': {
+      const hpPercent = attacker.currentHp / attacker.maxHp;
+      if (hpPercent <= 0.0417) power = 200;       // HP 4.17%以下
+      else if (hpPercent <= 0.1042) power = 150;  // HP 10.42%以下
+      else if (hpPercent <= 0.2083) power = 100;  // HP 20.83%以下
+      else if (hpPercent <= 0.3542) power = 80;   // HP 35.42%以下
+      else if (hpPercent <= 0.6875) power = 40;   // HP 68.75%以下
+      else power = 20;                            // それ以上
+      break;
+    }
+  }
+  
+  return power;
+}
+
+/**
  * ダメージを計算
  */
 export function calculateDamage(
@@ -248,16 +291,28 @@ export function calculateDamage(
   
   // 攻撃/防御ステータス選択
   const isPhysical = skill.category === 'physical';
-  const attackStat = isPhysical 
-    ? getEffectiveAtk(attacker, isCritical)
-    : getEffectiveMag(attacker, isCritical);
+  
+  // イカサマ: 相手の攻撃力でダメージ計算
+  let attackStat: number;
+  if (skill.id === 'foul_play') {
+    // イカサマは相手のATKを使用（ただし急所時は相手のマイナス補正を無視しない）
+    attackStat = getEffectiveAtk(defender, false);
+  } else {
+    attackStat = isPhysical 
+      ? getEffectiveAtk(attacker, isCritical)
+      : getEffectiveMag(attacker, isCritical);
+  }
+  
   const defenseStat = isPhysical
     ? getEffectiveDef(defender, isCritical)
     : getEffectiveRes(defender, isCritical);
   
+  // 特殊な技の威力計算（条件付き威力変動）
+  const effectivePower = getEffectivePower(skill, attacker, defender);
+  
   // 基本ダメージ（レベル50固定）
   // (22 × 技威力 × A / D / 50 + 2)
-  let baseDamage = Math.floor(22 * skill.power * attackStat / defenseStat / 50) + 2;
+  let baseDamage = Math.floor(22 * effectivePower * attackStat / defenseStat / 50) + 2;
   
   // タイプ一致ボーナス（STAB）
   const attackerTypes = attacker.species.types as MonsterType[];
@@ -268,7 +323,18 @@ export function calculateDamage(
   
   // タイプ相性
   const defenderTypes = defender.species.types as MonsterType[];
-  const effectiveness = getTypeEffectiveness(skill.type, defenderTypes);
+  let effectiveness = getTypeEffectiveness(skill.type, defenderTypes);
+  
+  // フリーズドライ: 水タイプにも2倍ダメージ（通常の氷→水は2倍だが、水耐性があっても抜群になる）
+  if (skill.id === 'freeze_dry' && defenderTypes.includes('water')) {
+    // 水タイプ分の相性を上書き（2倍に）
+    const waterEffectiveness = getTypeEffectiveness('ice', ['water']);
+    if (waterEffectiveness < 2) {
+      // 通常の相性が2倍未満なら、2倍に補正
+      effectiveness = effectiveness / waterEffectiveness * 2;
+    }
+  }
+  
   baseDamage = Math.floor(baseDamage * effectiveness);
   
   // 急所ダメージ（スナイパーは2.25倍）
