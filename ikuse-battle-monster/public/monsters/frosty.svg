@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- フロスティ - 氷の妖精 ❄️ -->
+  
+  <!-- 体（水色） -->
+  <rect x="5" y="6" width="6" height="6" fill="#87CEEB"/>
+  
+  <!-- 頭 -->
+  <rect x="4" y="2" width="8" height="5" fill="#B0E0E6"/>
+  
+  <!-- 氷の結晶（頭飾り） -->
+  <rect x="7" y="0" width="2" height="2" fill="#E0FFFF"/>
+  <rect x="6" y="1" width="1" height="1" fill="#E0FFFF"/>
+  <rect x="9" y="1" width="1" height="1" fill="#E0FFFF"/>
+  
+  <!-- 目（大きめキラキラ） -->
+  <rect x="5" y="3" width="2" height="2" fill="#FFFFFF"/>
+  <rect x="9" y="3" width="2" height="2" fill="#FFFFFF"/>
+  <rect x="5" y="4" width="1" height="1" fill="#4169E1"/>
+  <rect x="9" y="4" width="1" height="1" fill="#4169E1"/>
+  
+  <!-- 口 -->
+  <rect x="7" y="5" width="2" height="1" fill="#FF69B4"/>
+  
+  <!-- 羽（透明感） -->
+  <rect x="2" y="5" width="3" height="4" fill="#E0FFFF" fill-opacity="0.7"/>
+  <rect x="11" y="5" width="3" height="4" fill="#E0FFFF" fill-opacity="0.7"/>
+  
+  <!-- 足（小さい） -->
+  <rect x="6" y="12" width="2" height="2" fill="#87CEEB"/>
+  <rect x="8" y="12" width="2" height="2" fill="#87CEEB"/>
+  
+  <!-- キラキラ -->
+  <rect x="3" y="3" width="1" height="1" fill="#FFFFFF"/>
+  <rect x="12" y="4" width="1" height="1" fill="#FFFFFF"/>
+</svg>

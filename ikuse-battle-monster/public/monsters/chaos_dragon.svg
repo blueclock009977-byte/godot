@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- カオスドラゴン - 混沌の竜 🔥❄️ -->
+  <rect x="4" y="5" width="8" height="7" fill="#8B008B"/>
+  <rect x="3" y="3" width="7" height="4" fill="#9932CC"/>
+  <!-- 角（炎と氷） -->
+  <rect x="3" y="1" width="2" height="3" fill="#FF4500"/>
+  <rect x="7" y="1" width="2" height="3" fill="#87CEEB"/>
+  <!-- 目（左炎、右氷） -->
+  <rect x="4" y="4" width="2" height="2" fill="#FF4500"/>
+  <rect x="7" y="4" width="2" height="2" fill="#87CEEB"/>
+  <rect x="5" y="4" width="1" height="1" fill="#1A1A2E"/>
+  <rect x="7" y="4" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 翼 -->
+  <rect x="0" y="4" width="4" height="5" fill="#FF6347"/>
+  <rect x="12" y="4" width="4" height="5" fill="#4682B4"/>
+  <!-- 体の模様 -->
+  <rect x="5" y="7" width="2" height="2" fill="#FF4500"/>
+  <rect x="9" y="8" width="2" height="2" fill="#87CEEB"/>
+  <!-- 尻尾 -->
+  <rect x="11" y="9" width="3" height="2" fill="#8B008B"/>
+  <rect x="13" y="8" width="2" height="2" fill="#DA70D6"/>
+  <!-- 足 -->
+  <rect x="4" y="12" width="2" height="3" fill="#9932CC"/>
+  <rect x="10" y="12" width="2" height="3" fill="#9932CC"/>
+</svg>

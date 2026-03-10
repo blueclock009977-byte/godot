@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- インフェルノドラゴン - 地獄の竜 🔥🌑 -->
+  <rect x="4" y="5" width="8" height="7" fill="#8B0000"/>
+  <rect x="3" y="3" width="7" height="4" fill="#A52A2A"/>
+  <!-- 角 -->
+  <rect x="3" y="1" width="2" height="3" fill="#2D1B4E"/>
+  <rect x="7" y="1" width="2" height="3" fill="#2D1B4E"/>
+  <!-- 目 -->
+  <rect x="4" y="4" width="2" height="2" fill="#FF4500"/>
+  <rect x="7" y="4" width="2" height="2" fill="#FF4500"/>
+  <rect x="5" y="4" width="1" height="1" fill="#1A1A2E"/>
+  <rect x="7" y="4" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 口 -->
+  <rect x="4" y="6" width="5" height="1" fill="#1A1A2E"/>
+  <rect x="5" y="7" width="1" height="1" fill="#FF4500"/>
+  <rect x="7" y="7" width="1" height="1" fill="#FF4500"/>
+  <!-- 翼 -->
+  <rect x="0" y="4" width="4" height="5" fill="#4B0082"/>
+  <rect x="12" y="4" width="4" height="5" fill="#4B0082"/>
+  <!-- 尻尾 -->
+  <rect x="11" y="9" width="3" height="2" fill="#8B0000"/>
+  <rect x="13" y="8" width="2" height="2" fill="#FF4500"/>
+  <!-- 足 -->
+  <rect x="4" y="12" width="2" height="3" fill="#8B0000"/>
+  <rect x="10" y="12" width="2" height="3" fill="#8B0000"/>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- ブリザードマンモス - 氷河の巨獣 ❄️🪨 -->
+  <rect x="3" y="5" width="10" height="8" fill="#8B7355"/>
+  <rect x="2" y="6" width="2" height="6" fill="#A0522D"/>
+  <rect x="12" y="6" width="2" height="6" fill="#A0522D"/>
+  <!-- 頭 -->
+  <rect x="0" y="4" width="5" height="6" fill="#8B7355"/>
+  <!-- 牙 -->
+  <rect x="0" y="8" width="1" height="4" fill="#FFFAFA"/>
+  <rect x="1" y="10" width="1" height="3" fill="#FFFAFA"/>
+  <!-- 鼻 -->
+  <rect x="0" y="6" width="2" height="5" fill="#A0522D"/>
+  <!-- 目 -->
+  <rect x="2" y="5" width="2" height="2" fill="#1A1A2E"/>
+  <rect x="2" y="5" width="1" height="1" fill="#FFFFFF"/>
+  <!-- 氷の結晶 -->
+  <rect x="5" y="3" width="2" height="3" fill="#87CEEB"/>
+  <rect x="6" y="2" width="1" height="2" fill="#E0FFFF"/>
+  <rect x="9" y="4" width="2" height="2" fill="#87CEEB"/>
+  <!-- 毛 -->
+  <rect x="4" y="12" width="2" height="2" fill="#A0522D"/>
+  <rect x="10" y="12" width="2" height="2" fill="#A0522D"/>
+  <!-- 足 -->
+  <rect x="4" y="13" width="2" height="2" fill="#696969"/>
+  <rect x="10" y="13" width="2" height="2" fill="#696969"/>
+</svg>

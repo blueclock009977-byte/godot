@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- マグマサーペント - 溶岩蛇 🔥🪨 -->
+  <rect x="2" y="8" width="12" height="3" fill="#8B0000"/>
+  <rect x="0" y="9" width="3" height="2" fill="#A52A2A"/>
+  <rect x="13" y="7" width="2" height="3" fill="#8B0000"/>
+  <!-- 頭 -->
+  <rect x="11" y="4" width="4" height="5" fill="#A52A2A"/>
+  <!-- 目 -->
+  <rect x="12" y="5" width="2" height="2" fill="#FFD700"/>
+  <rect x="13" y="5" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 溶岩模様 -->
+  <rect x="3" y="8" width="1" height="1" fill="#FF4500"/>
+  <rect x="5" y="9" width="1" height="1" fill="#FF4500"/>
+  <rect x="7" y="8" width="1" height="1" fill="#FFD700"/>
+  <rect x="9" y="9" width="1" height="1" fill="#FF4500"/>
+  <rect x="11" y="8" width="1" height="1" fill="#FFD700"/>
+  <!-- 尻尾 -->
+  <rect x="0" y="7" width="2" height="2" fill="#A52A2A"/>
+  <rect x="0" y="6" width="1" height="2" fill="#FF4500"/>
+  <!-- 岩模様 -->
+  <rect x="4" y="10" width="2" height="1" fill="#696969"/>
+  <rect x="8" y="10" width="2" height="1" fill="#696969"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- フレイムー - 炎の子犬 🔥 -->
+  <!-- 背景透明 -->
+  
+  <!-- 体（オレンジ） -->
+  <rect x="5" y="8" width="6" height="5" fill="#FF6B35"/>
+  
+  <!-- 頭 -->
+  <rect x="4" y="4" width="8" height="5" fill="#FF6B35"/>
+  
+  <!-- 耳 -->
+  <rect x="4" y="2" width="2" height="3" fill="#FF6B35"/>
+  <rect x="10" y="2" width="2" height="3" fill="#FF6B35"/>
+  
+  <!-- 耳の内側 -->
+  <rect x="5" y="3" width="1" height="1" fill="#FF8C5A"/>
+  <rect x="10" y="3" width="1" height="1" fill="#FF8C5A"/>
+  
+  <!-- 目 -->
+  <rect x="5" y="5" width="2" height="2" fill="#FFFFFF"/>
+  <rect x="9" y="5" width="2" height="2" fill="#FFFFFF"/>
+  <rect x="6" y="6" width="1" height="1" fill="#1A1A2E"/>
+  <rect x="9" y="6" width="1" height="1" fill="#1A1A2E"/>
+  
+  <!-- 鼻 -->
+  <rect x="7" y="7" width="2" height="1" fill="#1A1A2E"/>
+  
+  <!-- 足 -->
+  <rect x="5" y="13" width="2" height="2" fill="#FF6B35"/>
+  <rect x="9" y="13" width="2" height="2" fill="#FF6B35"/>
+  
+  <!-- 尻尾（炎） -->
+  <rect x="11" y="9" width="2" height="2" fill="#FF4500"/>
+  <rect x="12" y="7" width="2" height="3" fill="#FFD700"/>
+  <rect x="13" y="6" width="1" height="2" fill="#FF4500"/>
+  
+  <!-- 炎のハイライト -->
+  <rect x="6" y="4" width="4" height="1" fill="#FF8C5A"/>
+</svg>

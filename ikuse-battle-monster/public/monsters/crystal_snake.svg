@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- クリスタルスネーク - 氷の結晶蛇 ❄️⚡ -->
+  <rect x="3" y="8" width="10" height="3" fill="#87CEEB"/>
+  <rect x="1" y="9" width="3" height="2" fill="#ADD8E6"/>
+  <rect x="12" y="7" width="3" height="3" fill="#B0E0E6"/>
+  <!-- 頭 -->
+  <rect x="11" y="4" width="4" height="4" fill="#87CEEB"/>
+  <rect x="12" y="3" width="2" height="2" fill="#E0FFFF"/>
+  <!-- 目 -->
+  <rect x="12" y="5" width="2" height="2" fill="#FFFF00"/>
+  <rect x="13" y="5" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 結晶模様 -->
+  <rect x="4" y="8" width="1" height="1" fill="#E0FFFF"/>
+  <rect x="6" y="9" width="1" height="1" fill="#E0FFFF"/>
+  <rect x="8" y="8" width="1" height="1" fill="#E0FFFF"/>
+  <rect x="10" y="9" width="1" height="1" fill="#E0FFFF"/>
+  <!-- 電気エフェクト -->
+  <rect x="5" y="7" width="1" height="1" fill="#FFD700"/>
+  <rect x="9" y="10" width="1" height="1" fill="#FFD700"/>
+  <!-- 尻尾 -->
+  <rect x="0" y="10" width="2" height="2" fill="#ADD8E6"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- ソーラーフラワー - 太陽の花 ✨🪨 -->
+  <!-- 花びら -->
+  <rect x="6" y="1" width="4" height="3" fill="#FFD700"/>
+  <rect x="2" y="4" width="3" height="4" fill="#FFD700"/>
+  <rect x="11" y="4" width="3" height="4" fill="#FFD700"/>
+  <rect x="6" y="10" width="4" height="3" fill="#FFD700"/>
+  <rect x="3" y="2" width="2" height="2" fill="#FFA500"/>
+  <rect x="11" y="2" width="2" height="2" fill="#FFA500"/>
+  <rect x="3" y="10" width="2" height="2" fill="#FFA500"/>
+  <rect x="11" y="10" width="2" height="2" fill="#FFA500"/>
+  <!-- 中心 -->
+  <rect x="5" y="4" width="6" height="6" fill="#8B4513"/>
+  <rect x="6" y="5" width="4" height="4" fill="#A0522D"/>
+  <!-- 目 -->
+  <rect x="6" y="6" width="1" height="1" fill="#1A1A2E"/>
+  <rect x="9" y="6" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 口 -->
+  <rect x="7" y="8" width="2" height="1" fill="#1A1A2E"/>
+  <!-- 茎 -->
+  <rect x="7" y="13" width="2" height="3" fill="#228B22"/>
+</svg>

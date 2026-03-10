@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- ストームイーグル - 嵐の鷲 🌪️⚡ -->
+  <rect x="5" y="5" width="6" height="5" fill="#708090"/>
+  <rect x="4" y="3" width="8" height="4" fill="#778899"/>
+  <!-- くちばし -->
+  <rect x="11" y="4" width="3" height="2" fill="#FFD700"/>
+  <rect x="13" y="5" width="1" height="1" fill="#FFA500"/>
+  <!-- 目 -->
+  <rect x="8" y="4" width="2" height="2" fill="#FFFF00"/>
+  <rect x="9" y="4" width="1" height="1" fill="#1A1A2E"/>
+  <!-- 冠羽 -->
+  <rect x="5" y="1" width="2" height="3" fill="#4682B4"/>
+  <rect x="6" y="0" width="1" height="2" fill="#5F9EA0"/>
+  <!-- 翼 -->
+  <rect x="0" y="3" width="5" height="5" fill="#778899"/>
+  <rect x="11" y="4" width="5" height="4" fill="#778899"/>
+  <!-- 電気エフェクト -->
+  <rect x="1" y="4" width="1" height="1" fill="#FFD700"/>
+  <rect x="3" y="6" width="1" height="1" fill="#FFD700"/>
+  <rect x="14" y="5" width="1" height="1" fill="#FFD700"/>
+  <!-- 尻尾 -->
+  <rect x="3" y="9" width="3" height="3" fill="#708090"/>
+  <!-- 足 -->
+  <rect x="6" y="10" width="1" height="3" fill="#FFD700"/>
+  <rect x="9" y="10" width="1" height="3" fill="#FFD700"/>
+</svg>

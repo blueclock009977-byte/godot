@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="64" height="64" style="image-rendering: pixelated;">
+  <!-- ゲイルウィング - 風の小鳥 🌪️ -->
+  
+  <!-- 体（緑） -->
+  <rect x="6" y="6" width="4" height="5" fill="#90EE90"/>
+  
+  <!-- 頭 -->
+  <rect x="5" y="3" width="6" height="4" fill="#98FB98"/>
+  
+  <!-- くちばし -->
+  <rect x="10" y="4" width="3" height="2" fill="#FFD700"/>
+  <rect x="11" y="5" width="2" height="1" fill="#FFA500"/>
+  
+  <!-- 目 -->
+  <rect x="7" y="4" width="2" height="2" fill="#FFFFFF"/>
+  <rect x="8" y="4" width="1" height="1" fill="#1A1A2E"/>
+  
+  <!-- 冠羽 -->
+  <rect x="6" y="1" width="2" height="3" fill="#32CD32"/>
+  <rect x="7" y="0" width="1" height="2" fill="#228B22"/>
+  
+  <!-- 翼（左） -->
+  <rect x="2" y="5" width="4" height="3" fill="#3CB371"/>
+  <rect x="1" y="6" width="2" height="2" fill="#2E8B57"/>
+  
+  <!-- 翼（右） -->
+  <rect x="10" y="7" width="4" height="2" fill="#3CB371"/>
+  <rect x="13" y="7" width="2" height="2" fill="#2E8B57"/>
+  
+  <!-- 尻尾 -->
+  <rect x="4" y="10" width="3" height="3" fill="#32CD32"/>
+  <rect x="3" y="12" width="2" height="2" fill="#228B22"/>
+  
+  <!-- 足 -->
+  <rect x="6" y="11" width="1" height="3" fill="#FFD700"/>
+  <rect x="9" y="11" width="1" height="3" fill="#FFD700"/>
+  
+  <!-- 風エフェクト -->
+  <rect x="0" y="4" width="1" height="1" fill="#E0FFFF" fill-opacity="0.5"/>
+  <rect x="14" y="5" width="1" height="1" fill="#E0FFFF" fill-opacity="0.5"/>
+</svg>
