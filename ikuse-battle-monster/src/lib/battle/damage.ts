@@ -283,6 +283,9 @@ export function calculateDamage(
   // HP50%以下特性補正（猛火・激流など）
   baseDamage = applyLowHpAbilityModifier(baseDamage, attacker, skill.type);
   
+  // 防御側特性補正（厚い脂肪・耐熱など）
+  baseDamage = applyDefenderAbilityModifier(baseDamage, defender, skill.type);
+  
   // やけど補正（物理技 + 攻撃側がやけど）
   if (isPhysical && attacker.status === 'burn') {
     baseDamage = Math.floor(baseDamage * 0.5);
@@ -350,6 +353,29 @@ function applyLowHpAbilityModifier(
   // if (ability === 'overgrow' && skillType === 'grass') {
   //   return Math.floor(damage * LOW_HP_ABILITY_MULTIPLIER);
   // }
+  
+  return damage;
+}
+
+/**
+ * 防御側特性補正を適用（厚い脂肪・耐熱など）
+ */
+function applyDefenderAbilityModifier(
+  damage: number,
+  defender: BattleMonster,
+  skillType: MonsterType
+): number {
+  const ability = defender.instance.ability;
+  
+  // 厚い脂肪(thick_fat): 炎・氷技ダメージ半減
+  if (ability === 'thick_fat' && (skillType === 'fire' || skillType === 'ice')) {
+    return Math.floor(damage * 0.5);
+  }
+  
+  // 耐熱(heatproof): 炎技ダメージ半減
+  if (ability === 'heatproof' && skillType === 'fire') {
+    return Math.floor(damage * 0.5);
+  }
   
   return damage;
 }

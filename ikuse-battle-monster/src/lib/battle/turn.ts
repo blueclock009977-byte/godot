@@ -51,10 +51,13 @@ export function processTurnStart(state: BattleState): TurnStartResult {
     activeMonster.flinched = false; // ひるみはターン持ち越ししない
 
     const beforeMana = player.mana;
-    regenerateMana(player);
+    const manaResult = regenerateMana(player);
     
-    if (player.mana > beforeMana) {
-      messages.push(`${player.name}のマナが${player.mana - beforeMana}回復した！（${player.mana}）`);
+    if (manaResult.wasSealed) {
+      messages.push(`${player.name}はマナシールの効果でマナが回復しない！`);
+      addLog(state, `${player.name}のマナが封印されている！`, 'info');
+    } else if (manaResult.recovered > 0) {
+      messages.push(`${player.name}のマナが${manaResult.recovered}回復した！（${player.mana}）`);
     }
   }
   

@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 16,
+  "currentPhase": 17,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -143,6 +143,20 @@
     "    - 相手が倒れたら残りのヒットはスキップ",
     "    - 合計ダメージとヒット回数をメッセージ表示",
     "  - 対象技: 水流連打、ロックブラスト、アイスニードル、アイススピア等",
+    "ビルド成功確認",
+    "Phase 17 開始: 2026-03-10 14:58",
+    "マナ操作技「マナシール」を実装 - 共有マナ制の戦略性向上",
+    "  - src/lib/types/index.ts 更新",
+    "    - BattlePlayerにmanaSealed: booleanフラグを追加",
+    "  - src/lib/battle/state.ts 更新",
+    "    - createBattlePlayer(): manaSealed: false初期化",
+    "    - regenerateMana(): マナシール状態チェック、シールド中は回復0、1ターン後自動解除",
+    "  - src/lib/battle/turn.ts 更新",
+    "    - processTurnStart(): マナシール発動時のメッセージ表示",
+    "  - src/lib/battle/actions.ts 更新",
+    "    - mana_seal技の特殊処理を追加（マナ4消費、相手にmanaSealed=true付与）",
+    "    - まもる中の相手には効かない",
+    "  - 効果: 次ターン、相手のマナ回復が0になる（マナ温存戦略に有効）",
     "ビルド成功確認"
   ],
   "completed": [
@@ -161,7 +175,8 @@
     "phase13-egg-system",
     "phase14-egg-ui",
     "phase15-battle-reward",
-    "phase16-multi-hit"
+    "phase16-multi-hit",
+    "phase17-mana-seal"
   ],
   "status": "IN_PROGRESS"
 }

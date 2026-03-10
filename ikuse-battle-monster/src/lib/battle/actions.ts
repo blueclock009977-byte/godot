@@ -337,6 +337,41 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // === マナシール特殊処理 ===
+  // 次ターン、相手のマナ回復を0に
+  if (skillId === 'mana_seal') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    applyManaChange(player, -skill.manaCost);
+    attacker.lastUsedSkill = skillId;
+    
+    // まもる中の相手には効かない
+    if (defender.protected) {
+      messages.push(`${attacker.species.name}のマナシール！`);
+      messages.push(`しかし${defender.species.name}は身を守っている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 相手にマナシール状態を付与
+    opponent.manaSealed = true;
+    
+    messages.push(`${attacker.species.name}のマナシール！`);
+    messages.push(`${opponent.name}のマナ回復が封印された！`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
   // マナチェック
   if (player.mana < skill.manaCost) {
     messages.push(`マナが足りない！`);

@@ -225,6 +225,7 @@ export interface BattlePlayer {
   party: BattleMonster[];   // 3体
   activeIndex: number;      // 現在出ているモンスターのindex
   mana: number;             // 共有マナ
+  manaSealed: boolean;      // マナシール状態（次ターンのマナ回復が0）
 }
 
 /** 天候 */

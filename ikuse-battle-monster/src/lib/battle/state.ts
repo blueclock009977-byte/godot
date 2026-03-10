@@ -95,6 +95,7 @@ export function createBattlePlayer(
     party: party.map(p => createBattleMonster(p.instance, p.species)),
     activeIndex: 0,
     mana: INITIAL_MANA,
+    manaSealed: false,
   };
 }
 
@@ -210,9 +211,18 @@ export function applyManaChange(
 
 /**
  * ターン開始時のマナ回復
+ * @returns 回復量（マナシール中は0）
  */
-export function regenerateMana(player: BattlePlayer): number {
-  return applyManaChange(player, MANA_PER_TURN);
+export function regenerateMana(player: BattlePlayer): { recovered: number; wasSealed: boolean } {
+  // マナシール中は回復しない
+  if (player.manaSealed) {
+    player.manaSealed = false; // シールは1ターンのみ有効、解除
+    return { recovered: 0, wasSealed: true };
+  }
+  
+  const before = player.mana;
+  applyManaChange(player, MANA_PER_TURN);
+  return { recovered: player.mana - before, wasSealed: false };
 }
 
 /**
