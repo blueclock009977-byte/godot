@@ -27,6 +27,7 @@ import {
 } from './turn';
 import { processOnEnterAbility } from './effects';
 import { getForcedSwitchOptions } from './actions';
+import { getTypeEffectiveness, hasSTAB } from '../data/types';
 
 // ============================================
 // ゲーム状態
@@ -543,7 +544,9 @@ export function getAvailableActions(
 // ============================================
 
 /**
- * AIの行動を決定（シンプルなランダム選択）
+ * AIの行動を決定（簡易スコアリング）
+ * - 有利相性・STAB・威力効率を優先
+ * - 不利対面かつHP低下時は交代を優先
  */
 export function selectAIAction(
   state: GameState,
@@ -551,20 +554,93 @@ export function selectAIAction(
   skills: Map<string, Skill>
 ): BattleAction {
   const available = getAvailableActions(state, playerIndex, skills);
-  
-  // 使える技があればランダムに選ぶ
-  if (available.skills.length > 0) {
-    const randomSkill = available.skills[Math.floor(Math.random() * available.skills.length)];
-    return { type: 'skill', skillId: randomSkill.skillId };
+  const player = state.battle.players[playerIndex];
+  const opponent = state.battle.players[1 - playerIndex as 0 | 1];
+  const attacker = player.party[player.activeIndex];
+  const defender = opponent.party[opponent.activeIndex];
+
+  const attackerHpRatio = attacker.currentHp / Math.max(1, attacker.maxHp);
+
+  // 使える技をスコアリング
+  let bestSkill: { skillId: string; score: number } | null = null;
+  for (const { skillId, skill } of available.skills) {
+    const effectiveness = getTypeEffectiveness(skill.type, defender.species.types);
+    const stab = hasSTAB(skill.type, attacker.species.types) ? 1.5 : 1;
+    const power = skill.power ?? 0;
+    const accuracy = (skill.accuracy ?? 100) / 100;
+
+    // 威力期待値 + 相性 + 一致 + 低コストボーナス
+    let score = power * effectiveness * stab * accuracy;
+
+    // 相手HPが低いときは命中安定を優先
+    const defenderHpRatio = defender.currentHp / Math.max(1, defender.maxHp);
+    if (defenderHpRatio <= 0.3 && (skill.accuracy ?? 100) >= 95) {
+      score += 20;
+    }
+
+    // 低コスト技を少し優遇（マナ管理）
+    score += Math.max(0, 6 - skill.manaCost) * 3;
+
+    // 変化技は基本控えめ（ただしマナ操作系は少し優遇）
+    if (skill.category === 'status') {
+      score *= 0.7;
+      if (['mana_drain', 'mana_seal', 'mana_boost', 'mana_reflect'].includes(skill.id)) {
+        score += 25;
+      }
+    }
+
+    if (!bestSkill || score > bestSkill.score) {
+      bestSkill = { skillId, score };
+    }
   }
-  
-  // 技がなければ交代
+
+  // 交代判断：低HPかつ有効打が薄いとき
+  const bestSkillScore = bestSkill?.score ?? 0;
+  const hasBadMatchup = available.skills.every(({ skill }) =>
+    getTypeEffectiveness(skill.type, defender.species.types) <= 1
+  );
+
+  if (
+    available.switches.length > 0 &&
+    ((attackerHpRatio < 0.35 && hasBadMatchup) || bestSkillScore < 40)
+  ) {
+    let bestSwitch = available.switches[0];
+    let bestSwitchScore = -Infinity;
+
+    for (const sw of available.switches) {
+      const candidate = player.party[sw.index];
+      const hpRatio = candidate.currentHp / Math.max(1, candidate.maxHp);
+
+      // 候補モンスターが相手に有利なタイプの技を持っているか簡易評価
+      const candidateSkillIds = candidate.instance.skills ?? [];
+      let offensiveScore = 1;
+      for (const sid of candidateSkillIds) {
+        const s = skills.get(sid);
+        if (!s) continue;
+        offensiveScore = Math.max(
+          offensiveScore,
+          getTypeEffectiveness(s.type, defender.species.types) * (hasSTAB(s.type, candidate.species.types) ? 1.2 : 1)
+        );
+      }
+
+      const score = hpRatio * 100 + offensiveScore * 50;
+      if (score > bestSwitchScore) {
+        bestSwitchScore = score;
+        bestSwitch = sw;
+      }
+    }
+
+    return { type: 'switch', switchTo: bestSwitch.index };
+  }
+
+  if (bestSkill) {
+    return { type: 'skill', skillId: bestSkill.skillId };
+  }
+
   if (available.switches.length > 0) {
-    const randomSwitch = available.switches[Math.floor(Math.random() * available.switches.length)];
-    return { type: 'switch', switchTo: randomSwitch.index };
+    return { type: 'switch', switchTo: available.switches[0].index };
   }
-  
-  // 何もできなければ待機
+
   return { type: 'wait' };
 }
 
@@ -613,6 +689,24 @@ export interface BattleResult {
 /**
  * バトル結果を取得
  */
+/**
+ * 降参処理
+ * 即座に敗北扱いにする
+ */
+export function surrender(state: GameState, playerIndex: 0 | 1): { state: GameState; messages: string[] } {
+  const loser = state.battle.players[playerIndex];
+  const winner = state.battle.players[1 - playerIndex as 0 | 1];
+  const messages = [`${loser.name}は降参した！`, `${winner.name}の勝利！`];
+  
+  addLog(state.battle, `${loser.name}は降参した！`);
+  addLog(state.battle, `${winner.name}の勝利！`);
+  
+  state.status = 'ended';
+  state.winner = (1 - playerIndex) as 0 | 1;
+  
+  return { state: { ...state }, messages };
+}
+
 export function getBattleResult(state: GameState): BattleResult | null {
   if (state.status !== 'ended' || state.winner === null) {
     return null;

@@ -23,10 +23,24 @@ export default function HomePage() {
           </Link>
 
           <Link
+            href="/ranked"
+            className="block w-full rounded-xl bg-red-600 hover:bg-red-500 transition-colors px-5 py-4 text-lg font-bold text-center"
+          >
+            ⚔️ ランクマッチ
+          </Link>
+
+          <Link
             href="/battle"
             className="block w-full rounded-xl bg-green-600 hover:bg-green-500 transition-colors px-5 py-4 text-lg font-bold text-center"
           >
-            ⚔️ テストバトルをはじめる
+            🎮 テストバトル（CPU対戦）
+          </Link>
+
+          <Link
+            href="/online"
+            className="block w-full rounded-xl bg-purple-600 hover:bg-purple-500 transition-colors px-5 py-4 text-lg font-bold text-center"
+          >
+            🤝 フレンド対戦（ルームコード）
           </Link>
 
           <Link

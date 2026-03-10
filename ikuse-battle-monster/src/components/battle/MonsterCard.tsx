@@ -64,6 +64,8 @@ function StatChangesDisplay({ stages }: { stages: StatStages }) {
  */
 export function MonsterCard({ monster, isEnemy = false, isActive = true, showDetails = true }: MonsterCardProps) {
   const { instance, species, currentHp, maxHp, status, isConfused, statStages } = monster;
+  const displayName = monster.illusionName ?? instance.nickname ?? species.name;
+  const displayTypes = monster.illusionTypes ?? species.types;
   const hpPercentage = Math.max(0, (currentHp / maxHp) * 100);
   
   // HP量に応じて色を変える
@@ -77,7 +79,7 @@ export function MonsterCard({ monster, isEnemy = false, isActive = true, showDet
   const isFainted = currentHp <= 0;
 
   // タイプ情報取得
-  const typeInfos = species.types.map(t => getTypeInfo(t));
+  const typeInfos = displayTypes.map(t => getTypeInfo(t));
 
   return (
     <div
@@ -93,7 +95,7 @@ export function MonsterCard({ monster, isEnemy = false, isActive = true, showDet
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white">
-            {instance.nickname || species.name}
+            {displayName}
           </span>
           <div className="flex gap-1">
             {typeInfos.map(type => (

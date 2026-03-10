@@ -254,17 +254,31 @@ export default function BattleContent() {
         
         {/* 行動選択メニュー */}
         {battle.status === 'selecting' && (
-          <ActionMenu
-            availableActions={battle.availableActions}
-            selectedAction={battle.selectedAction}
-            onSelectSkill={battle.selectSkill}
-            onSelectSwitch={battle.selectSwitch}
-            onSelectWait={battle.selectWait}
-            onConfirm={battle.confirmAction}
-            isLoading={battle.isLoading}
-            getSkill={battle.getSkill}
-            playerMana={battle.playerMana}
-          />
+          <>
+            <ActionMenu
+              availableActions={battle.availableActions}
+              selectedAction={battle.selectedAction}
+              onSelectSkill={battle.selectSkill}
+              onSelectSwitch={battle.selectSwitch}
+              onSelectWait={battle.selectWait}
+              onConfirm={battle.confirmAction}
+              isLoading={battle.isLoading}
+              getSkill={battle.getSkill}
+              playerMana={battle.playerMana}
+            />
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={() => {
+                  if (window.confirm('本当に降参しますか？')) {
+                    battle.surrender();
+                  }
+                }}
+                className="px-4 py-1.5 text-sm bg-red-900/50 hover:bg-red-800 text-red-300 rounded-lg transition-colors border border-red-800/50"
+              >
+                🏳️ 降参
+              </button>
+            </div>
+          </>
         )}
         
         {/* 強制交代UI */}

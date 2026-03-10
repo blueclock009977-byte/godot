@@ -17,6 +17,7 @@ import { getActiveMonster } from "@/lib/battle/state";
 import { BattleSync, SyncedAction } from "@/lib/online/sync";
 import { listenRoom, RoomData } from "@/lib/firebase/database";
 import { generateUserId } from "@/lib/online/room";
+import { useUser } from "@/hooks/useUser";
 import Link from "next/link";
 
 // モンスターインスタンス生成
@@ -71,6 +72,14 @@ function OnlineBattleContent() {
   const [syncRef, setSyncRef] = useState<BattleSync | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [messages, setMessages] = useState<string[]>([]);
+  const [battleResult, setBattleResult] = useState<{
+    eggResult?: 'new' | 'shortened' | 'replaced';
+    newRating?: number;
+    ratingChange?: number;
+  } | null>(null);
+  const resultReported = useRef(false);
+  
+  const { isLoggedIn, reportWin, reportLoss } = useUser();
   
   const playerIndex = isHost ? 0 : 1;
   
@@ -202,9 +211,29 @@ function OnlineBattleContent() {
     );
   }
   
+  // レート・卵報酬を記録
+  useEffect(() => {
+    if (gameState?.status !== "ended" || resultReported.current || !isLoggedIn) return;
+    resultReported.current = true;
+    const isWinner = gameState.winner === playerIndex;
+    (async () => {
+      if (isWinner) {
+        const result = await reportWin();
+        if (result) setBattleResult({ eggResult: result.eggResult, newRating: result.newRating, ratingChange: result.ratingChange });
+      } else {
+        const result = await reportLoss();
+        if (result) setBattleResult({ newRating: result.newRating, ratingChange: result.ratingChange });
+      }
+    })();
+  }, [gameState?.status, gameState?.winner, playerIndex, isLoggedIn, reportWin, reportLoss]);
+
   // 結果画面
   if (gameState.status === "ended") {
     const isWinner = gameState.winner === playerIndex;
+    const eggMsg = battleResult?.eggResult === 'new' ? '🥚 新しい卵を獲得！'
+      : battleResult?.eggResult === 'shortened' ? '🥚 卵の孵化時間が短縮！'
+      : battleResult?.eggResult === 'replaced' ? '🥚 新しい卵に入れ替え！'
+      : null;
     return (
       <div className="min-h-screen bg-gray-900 text-white p-4 flex items-center justify-center">
         <div className="text-center">
@@ -212,12 +241,34 @@ function OnlineBattleContent() {
           <h1 className="text-3xl font-bold mb-4">
             {isWinner ? "勝利！" : "敗北..."}
           </h1>
-          <Link
-            href="/online"
-            className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg inline-block"
-          >
-            ロビーに戻る
-          </Link>
+          {battleResult && (
+            <div className="mb-4 space-y-2">
+              <p className={`text-lg ${battleResult.ratingChange! >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                レート: {battleResult.newRating} ({battleResult.ratingChange! >= 0 ? '+' : ''}{battleResult.ratingChange})
+              </p>
+              {eggMsg && <p className="text-yellow-300 text-lg">{eggMsg}</p>}
+            </div>
+          )}
+          {isLoggedIn && !battleResult && (
+            <p className="text-gray-400 mb-4">結果を記録中...</p>
+          )}
+          {!isLoggedIn && (
+            <p className="text-gray-500 mb-4 text-sm">ログインするとレート・卵が記録されます</p>
+          )}
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/online"
+              className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg inline-block"
+            >
+              ロビーに戻る
+            </Link>
+            <Link
+              href="/profile"
+              className="bg-gray-600 hover:bg-gray-500 px-6 py-3 rounded-lg inline-block"
+            >
+              プロフィール
+            </Link>
+          </div>
         </div>
       </div>
     );

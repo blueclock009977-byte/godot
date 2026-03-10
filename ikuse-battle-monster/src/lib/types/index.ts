@@ -170,11 +170,14 @@ export interface MonsterSpecies {
 }
 
 /** 個体データ（プレイヤーが所持するモンスター） */
+export type MonsterGender = 'male' | 'female';
+
 export interface MonsterInstance {
   id: string;           // ユニークID
   speciesId: string;    // 種族ID
   nickname?: string;    // ニックネーム
   ability: string;      // 選ばれた特性
+  gender?: MonsterGender; // 性別（闘争心などの判定用）
   skills: string[];     // 習得した技（4個）
   // バトル用
   currentHp: number;
@@ -209,6 +212,7 @@ export interface BattleMonster {
   flinched: boolean;        // ひるみ（同ターン内のみ有効）
   // フラグ
   protected: boolean;       // まもる中
+  protectConsecutive: number; // まもる系連続使用回数（失敗率上昇用）
   charging: boolean;        // 溜め中
   diving: boolean;          // 潜り中
   flying: boolean;          // 飛び中
@@ -218,6 +222,8 @@ export interface BattleMonster {
   lastUsedSkill?: string;   // 最後に使った技
   // 能力変化用
   abilityDisabled: boolean;
+  // もらいび用
+  flashFireBoosted: boolean; // 炎技を受けて発動後、炎技ダメージ1.5倍
   // 連続切り用
   furyCutterStreak: number; // 連続使用回数（威力倍増用）
   // カウンター/ミラーコート用（このターンに受けたダメージ）
@@ -227,6 +233,7 @@ export interface BattleMonster {
   enduring: boolean;  // このターン、HP1で耐える
   // あくび用
   yawning: boolean;   // 次ターン終了時に眠り
+  nightmared: boolean; // ナイトメア状態（眠り中に毎ターンHP1/4ダメージ）
   // ねがいごと用
   wishPending: boolean; // 次ターン終了時にHP50%回復
   // ちょうはつ用
@@ -239,6 +246,9 @@ export interface BattleMonster {
   // 金縛り用
   disableTurns: number;    // 金縛り残りターン（0=なし）
   disabledSkillId?: string; // 封じられている技ID
+  // イリュージョン用（見た目のみ変化）
+  illusionName?: string;
+  illusionTypes?: MonsterType[];
 }
 
 /** 設置技（ハザード）状態 */

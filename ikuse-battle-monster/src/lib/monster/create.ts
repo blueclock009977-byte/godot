@@ -4,7 +4,7 @@
  * 御三家は固定構成
  */
 
-import { MonsterInstance, MonsterSpecies, SKILL_SLOT_SIZE } from '../types';
+import { MonsterGender, MonsterInstance, MonsterSpecies, SKILL_SLOT_SIZE } from '../types';
 
 /**
  * 配列からランダムにn個を選択（重複なし）
@@ -34,6 +34,10 @@ function generateId(): string {
   return `mon_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
+function rollGender(): MonsterGender {
+  return Math.random() < 0.5 ? 'male' : 'female';
+}
+
 /**
  * モンスター種族からランダムに個体を生成
  * 
@@ -46,9 +50,10 @@ export function createMonsterInstance(
     nickname?: string;
     forceAbility?: string;   // 特性を指定（テスト用）
     forceSkills?: string[];  // 技を指定（テスト用）
+    forceGender?: MonsterGender; // 性別を指定（テスト用）
   }
 ): MonsterInstance {
-  const { nickname, forceAbility, forceSkills } = options ?? {};
+  const { nickname, forceAbility, forceSkills, forceGender } = options ?? {};
   
   // 特性の決定
   let ability: string;
@@ -84,6 +89,7 @@ export function createMonsterInstance(
     speciesId: species.id,
     nickname,
     ability,
+    gender: forceGender ?? rollGender(),
     skills,
     currentHp: maxHp,
     maxHp,
@@ -118,12 +124,14 @@ export function createTestMonsterInstance(
   options?: {
     nickname?: string;
     ability?: string;
+    gender?: MonsterGender;
     skills?: string[];
   }
 ): MonsterInstance {
   return createMonsterInstance(species, {
     nickname: options?.nickname,
     forceAbility: options?.ability,
+    forceGender: options?.gender,
     forceSkills: options?.skills,
   });
 }

@@ -42,12 +42,28 @@ export function applySkillEffects(
   const opponent = state.players[1 - playerIndex as 0 | 1];
   const attacker = getActiveMonster(player);
   const defender = getActiveMonster(opponent);
+
+  // マジックミラー: 相手に向けた変化技を反射
+  // （ダメージ技は対象外、反射は1回の技で1度だけ通知）
+  const canMagicMirrorReflect =
+    skill.category === 'status' &&
+    defender.instance.ability === 'magic_mirror' &&
+    !defender.abilityDisabled;
+  let magicMirrorTriggered = false;
   
   for (const effect of skill.effects) {
     // 確率チェック
     if (Math.random() * 100 >= effect.chance) continue;
-    
-    const target = effect.target === 'self' ? attacker : defender;
+
+    let target = effect.target === 'self' ? attacker : defender;
+    if (canMagicMirrorReflect && effect.target !== 'self') {
+      target = attacker;
+      if (!magicMirrorTriggered) {
+        messages.push(`${defender.species.name}のマジックミラー！`);
+        messages.push(`${skill.name}を跳ね返した！`);
+        magicMirrorTriggered = true;
+      }
+    }
     
     switch (effect.type) {
       case 'burn':
@@ -80,8 +96,19 @@ export function applySkillEffects(
         
       case 'flinch':
         // ひるみ付与（後続の行動時にactions.tsで行動不能判定）
-        target.flinched = true;
-        messages.push(`${target.species.name}はひるんだ！`);
+        // inner_focus（精神力）: ひるまない
+        if (target.instance.ability === 'inner_focus') {
+          messages.push(`${target.species.name}は精神力でひるまない！`);
+        } else {
+          target.flinched = true;
+          messages.push(`${target.species.name}はひるんだ！`);
+          
+          // steadfast（不屈の心）: ひるむとSPD+1
+          if (target.instance.ability === 'steadfast') {
+            messages.push(...applyStatChange(target, 'spd', 1));
+            messages.push(`${target.species.name}は不屈の心でひるみを力に変えた！`);
+          }
+        }
         break;
         
       case 'stat_up':
@@ -94,7 +121,18 @@ export function applySkillEffects(
         
       case 'heal':
         if (effect.amount) {
-          const healAmount = Math.floor(target.maxHp * effect.amount / 100);
+          // 朝の日差し / 光合成: 天候で回復量が変動
+          let healPercent = effect.amount;
+          if (skill.id === 'morning_sun' || skill.id === 'synthesis') {
+            if (state.weather === 'sunny') {
+              healPercent = 66; // 晴れ: 2/3回復
+            } else if (state.weather === 'none') {
+              healPercent = 50; // 通常: 1/2回復
+            } else {
+              healPercent = 25; // 雨/砂嵐/雪: 1/4回復
+            }
+          }
+          const healAmount = Math.floor(target.maxHp * healPercent / 100);
           applyHpChange(target, healAmount);
           messages.push(`${target.species.name}は体力を回復した！`);
         }
@@ -129,6 +167,7 @@ export function applySkillEffects(
           sandstorm: 'sandstorm',
           sunny_day: 'sunny',
           rain_dance: 'rain',
+          drizzle: 'rain',
           hail: 'snow',
         };
         const weatherType = weatherMap[skill.id];
@@ -249,6 +288,12 @@ export function applyStatusCondition(
   }
   
   // TODO: 毒タイプは毒にならない、など
+
+  // 光の加護（light_ward）: 状態異常にかかりにくい（50%で無効化）
+  if (monster.instance.ability === 'light_ward' && Math.random() < 0.5) {
+    messages.push(`${monster.species.name}は光の加護で状態異常を防いだ！`);
+    return messages;
+  }
   
   monster.status = status;
 
@@ -349,6 +394,16 @@ export function applyStatChange(
     }
   } else {
     messages.push(getStatChangeMessage(monster, statKey, result.actualChange));
+    
+    // まけんき（defiant）: 能力が下げられるとATK+2
+    // ※contraryで反転した後の実際の変化を見る
+    if (result.actualChange < 0 && monster.instance.ability === 'defiant') {
+      messages.push(`${monster.species.name}のまけんき！`);
+      const defiantResult = applyStatStageChange(monster, 'atk', 2);
+      if (defiantResult.actualChange > 0) {
+        messages.push(getStatChangeMessage(monster, 'atk', defiantResult.actualChange));
+      }
+    }
   }
   
   return messages;
@@ -402,6 +457,53 @@ export function processTurnEndEffects(state: BattleState): string[] {
     // 拘束ダメージ
     messages.push(...processTrapDamage(monster, state));
     
+    // === ターン終了時の特性発動 ===
+    
+    // 加速（speed_boost）: 毎ターン終了時にSPD+1
+    if (monster.instance.ability === 'speed_boost' && monster.currentHp > 0) {
+      messages.push(`${monster.species.name}のかそく！`);
+      messages.push(...applyStatChange(monster, 'spd', 1));
+    }
+    
+    // アイスボディ（ice_body）: 雪時にHP1/16回復
+    if (monster.instance.ability === 'ice_body' && state.weather === 'snow' && monster.currentHp > 0) {
+      const healAmount = Math.max(1, Math.floor(monster.maxHp / 16));
+      applyHpChange(monster, healAmount);
+      messages.push(`${monster.species.name}のアイスボディ！`);
+      messages.push(`${monster.species.name}のHPが回復した！`);
+      addLog(state, `${monster.species.name}のHPが回復した！`, 'heal');
+    }
+    
+    // うるおいボディ（hydration）: 雨時に状態異常回復
+    if (monster.instance.ability === 'hydration' && state.weather === 'rain' && monster.currentHp > 0) {
+      if (monster.status !== 'none') {
+        messages.push(`${monster.species.name}のうるおいボディ！`);
+        messages.push(...cureStatus(monster));
+        addLog(state, `${monster.species.name}の状態異常が治った！`, 'status');
+      }
+    }
+
+    // 発光（illuminate）: 毎ターン終了時に相手の命中率-1
+    if (monster.instance.ability === 'illuminate' && monster.currentHp > 0) {
+      const opponent = getActiveMonster(state.players[(1 - i) as 0 | 1]);
+      if (opponent.currentHp > 0) {
+        messages.push(`${monster.species.name}のはっこう！`);
+        messages.push(...applyStatChange(opponent, 'accuracy', -1));
+      }
+    }
+
+    // 癒しの心（healer）: ターン終了時に自分のHPを5%回復
+    if (monster.instance.ability === 'healer' && monster.currentHp > 0) {
+      const healAmount = Math.max(1, Math.floor(monster.maxHp * 5 / 100));
+      const beforeHp = monster.currentHp;
+      applyHpChange(monster, healAmount);
+      if (monster.currentHp > beforeHp) {
+        messages.push(`${monster.species.name}のいやしのこころ！`);
+        messages.push(`${monster.species.name}のHPが少し回復した！`);
+        addLog(state, `${monster.species.name}のHPが少し回復した！`, 'heal');
+      }
+    }
+    
     // まもる解除
     monster.protected = false;
     
@@ -413,6 +515,22 @@ export function processTurnEndEffects(state: BattleState): string[] {
     } else if (monster.yawning) {
       // すでに状態異常がある場合はあくび効果を消す
       monster.yawning = false;
+    }
+    
+    // ナイトメア: 眠り中に毎ターンHP1/4ダメージ
+    if (monster.nightmared) {
+      if (monster.status === 'sleep') {
+        // マジックガードなら無効
+        if (monster.instance.ability !== 'magic_guard') {
+          const nightmareDamage = Math.max(1, Math.floor(monster.maxHp / 4));
+          applyHpChange(monster, -nightmareDamage);
+          messages.push(`${monster.species.name}は悪夢に苦しんでいる！`);
+          addLog(state, `${monster.species.name}は悪夢で${nightmareDamage}ダメージ！`, 'damage');
+        }
+      } else {
+        // 眠りが解けたらナイトメアも解除
+        monster.nightmared = false;
+      }
     }
     
     // ねがいごと: HP50%回復（次ターン終了時効果）
@@ -497,6 +615,11 @@ export function processTurnEndEffects(state: BattleState): string[] {
 function processStatusDamage(monster: BattleMonster, state: BattleState): string[] {
   const messages: string[] = [];
   
+  // マジックガード: 直接攻撃以外のダメージを受けない
+  if (monster.instance.ability === 'magic_guard') {
+    return messages;
+  }
+  
   switch (monster.status) {
     case 'burn': {
       const damage = Math.floor(monster.maxHp / 16);
@@ -558,6 +681,18 @@ function processTrapDamage(monster: BattleMonster, state: BattleState): string[]
     return messages;
   }
 
+  // マジックガード: 直接攻撃以外のダメージを受けない
+  // ただし、拘束ターンは経過する
+  if (monster.instance.ability === 'magic_guard') {
+    monster.trappedTurns = Math.max(0, monster.trappedTurns - 1);
+    if (monster.trappedTurns === 0) {
+      monster.trapped = false;
+      messages.push(`${monster.species.name}は拘束から解放された！`);
+      addLog(state, messages[messages.length - 1], 'status');
+    }
+    return messages;
+  }
+
   const damage = Math.max(1, Math.floor(monster.maxHp / 8));
   const result = applyHpChange(monster, -damage);
   messages.push(`${monster.species.name}は拘束ダメージを受けた！`);
@@ -591,6 +726,9 @@ function processWeatherDamage(state: BattleState): string[] {
     for (let i = 0; i < 2; i++) {
       const monster = getActiveMonster(state.players[i as 0 | 1]);
       if (monster.currentHp <= 0) continue;
+      
+      // マジックガード: 直接攻撃以外のダメージを受けない
+      if (monster.instance.ability === 'magic_guard') continue;
       
       const types = monster.species.types as MonsterType[];
       // 岩、土、鋼（鋼はないので土で代用）タイプはダメージを受けない
@@ -734,6 +872,57 @@ export function processContactAbility(
 }
 
 /**
+ * ダメージを受けた後の防御側特性を処理
+ * 雪隠れなど、特定タイプの技を受けた時に発動する特性
+ */
+export function processDefenderAbilityAfterHit(
+  state: BattleState,
+  defenderIndex: 0 | 1,
+  skillType: MonsterType,
+  skillId: string,
+  damage: number,
+  skillCategory: 'physical' | 'special' | 'status' = 'physical'
+): string[] {
+  const messages: string[] = [];
+  const defender = getActiveMonster(state.players[defenderIndex]);
+  const attacker = getActiveMonster(state.players[(1 - defenderIndex) as 0 | 1]);
+  const ability = defender.instance.ability;
+  
+  // ダメージを受けていない場合は何もしない
+  if (damage <= 0) return messages;
+  
+  // 防御側が倒れていたら発動しない
+  if (defender.currentHp <= 0) return messages;
+  
+  // 雪隠れ（snow_cloak）: 氷技を受けると回避率+1段階
+  if (ability === 'snow_cloak' && skillType === 'ice') {
+    messages.push(`${defender.species.name}のゆきがくれ！`);
+    messages.push(...applyStatChange(defender, 'evasion', 1));
+  }
+  
+  // 砕ける鎧（weak_armor）: 物理技被弾でDEF-1、SPD+2
+  if (ability === 'weak_armor' && skillCategory === 'physical') {
+    messages.push(`${defender.species.name}のくだけるよろい！`);
+    messages.push(...applyStatChange(defender, 'def', -1));
+    messages.push(...applyStatChange(defender, 'spd', 2));
+  }
+
+  // 呪われボディ（cursed_body）: 技を受けると30%で相手の直前技を封じる（4ターン）
+  if (ability === 'cursed_body' && !attacker.abilityDisabled && skillId) {
+    const canDisable = attacker.lastUsedSkill === skillId;
+    const alreadyDisabled = attacker.disableTurns > 0 && attacker.disabledSkillId === skillId;
+    if (canDisable && !alreadyDisabled && Math.random() < 0.3) {
+      attacker.disableTurns = 4;
+      attacker.disabledSkillId = skillId;
+      messages.push(`${defender.species.name}ののろわれボディ！`);
+      messages.push(`${attacker.species.name}の${skillId}は封じられた！`);
+    }
+  }
+  
+  return messages;
+}
+
+/**
  * 吸収系特性を処理（攻撃を受ける前にチェック）
  * @returns nullなら通常ダメージ、数値なら吸収してその分回復
  */
@@ -826,12 +1015,41 @@ export function processOnEnterAbility(
       messages.push(`${monster.species.name}のゆきふらし！`);
       messages.push(...changeWeather(state, 'snow'));
       break;
-    case 'intimidate':
+    case 'intimidate': {
       const opponent = state.players[1 - playerIndex as 0 | 1];
       const defender = getActiveMonster(opponent);
       messages.push(`${monster.species.name}のいかく！`);
       messages.push(...applyStatChange(defender, 'atk', -1));
       break;
+    }
+    case 'web_trap': {
+      const opponent = state.players[(1 - playerIndex) as 0 | 1];
+      const target = getActiveMonster(opponent);
+      if (target.currentHp > 0) {
+        target.trapped = true;
+        target.trappedTurns = Math.max(target.trappedTurns, 4);
+        messages.push(`${monster.species.name}のくものす！`);
+        messages.push(`${target.species.name}は4ターンの間、逃げられない！`);
+      }
+      break;
+    }
+    case 'illusion': {
+      const owner = state.players[playerIndex];
+      const disguiseTarget = [...owner.party]
+        .map((m, index) => ({ m, index }))
+        .reverse()
+        .find(({ m, index }) => index !== owner.activeIndex && m.currentHp > 0);
+
+      if (disguiseTarget) {
+        monster.illusionName = disguiseTarget.m.species.name;
+        monster.illusionTypes = [...disguiseTarget.m.species.types];
+        messages.push(`${monster.species.name}はイリュージョンで${monster.illusionName}に化けた！`);
+      } else {
+        monster.illusionName = undefined;
+        monster.illusionTypes = undefined;
+      }
+      break;
+    }
   }
   
   return messages;
@@ -903,12 +1121,15 @@ export function applyEntryHazards(
   
   // 飛行タイプはまきびし・どくびしを踏まない（風タイプで代用）
   const isFlying = types.includes('wind');
+  // マジックガード: 直接攻撃以外のダメージを受けない
+  const hasMagicGuard = monster.instance.ability === 'magic_guard';
   // 毒タイプはどくびしを吸収
   const isPoisonType = types.includes('dark'); // ゲームには毒タイプがないので闇で代用しない
   // 実際にはこのゲームに毒タイプはないので、どくびしは飛行以外全員に効く
   
   // ステルスロック: 岩タイプ相性に応じたダメージ（最大HP × 相性 / 8）
-  if (hazards.stealthRock && monster.currentHp > 0) {
+  // マジックガード持ちはダメージを受けない
+  if (hazards.stealthRock && monster.currentHp > 0 && !hasMagicGuard) {
     // 岩（土で代用）タイプに対する相性を計算
     const effectiveness = getTypeEffectiveness('earth', types);
     // 等倍: 1/8、2倍: 1/4、0.5倍: 1/16、4倍: 1/2、0.25倍: 1/32
@@ -927,8 +1148,8 @@ export function applyEntryHazards(
     }
   }
   
-  // まきびし: 層数に応じたダメージ（飛行は無効）
-  if (hazards.spikesLayers > 0 && !isFlying && monster.currentHp > 0) {
+  // まきびし: 層数に応じたダメージ（飛行は無効、マジックガードも無効）
+  if (hazards.spikesLayers > 0 && !isFlying && monster.currentHp > 0 && !hasMagicGuard) {
     // 1層: 1/8、2層: 1/6、3層: 1/4
     let damageRatio: number;
     switch (hazards.spikesLayers) {

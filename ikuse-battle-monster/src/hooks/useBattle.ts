@@ -24,6 +24,7 @@ import {
   selectAIAction,
   selectAIForcedSwitch,
   getBattleResult,
+  surrender as surrenderAction,
   pickPartyMember,
   confirmPicking,
   transitionToBattle,
@@ -84,6 +85,7 @@ export interface UseBattleReturn {
   selectWait: () => void;
   confirmAction: () => void;
   submitForcedSwitch: (index: number) => void;
+  surrender: () => void;
   
   // 選出アクション
   togglePick: (index: number) => void;
@@ -320,6 +322,13 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
   // ユーティリティ
   // ============================================
   
+  const handleSurrender = useCallback(() => {
+    if (status === 'ended' || status === 'picking') return;
+    const result = surrenderAction(gameState, 0);
+    setGameState(result.state);
+    setMessages(result.messages);
+  }, [gameState, status]);
+
   const getSkill = useCallback((skillId: string) => {
     return skills.get(skillId);
   }, [skills]);
@@ -359,6 +368,7 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
     selectWait,
     confirmAction,
     submitForcedSwitch: handleForcedSwitch,
+    surrender: handleSurrender,
     
     // 選出アクション
     togglePick,

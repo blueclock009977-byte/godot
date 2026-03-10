@@ -88,6 +88,12 @@ export const ABILITIES: Record<string, Ability> = {
     description: '相手の壁を無視',
     trigger: 'on_attack',
   },
+  steadfast: {
+    id: 'steadfast',
+    name: '不屈の心',
+    description: 'ひるむとSPD+1',
+    trigger: 'passive',
+  },
   intimidate: {
     id: 'intimidate',
     name: '威嚇',
@@ -332,8 +338,8 @@ export const ABILITIES: Record<string, Ability> = {
     description: '物理被弾でDEF-1、SPD+2',
     trigger: 'on_hit',
   },
-  heat_proof: {
-    id: 'heat_proof',
+  heatproof: {
+    id: 'heatproof',
     name: '耐熱',
     description: '炎技ダメージ半減',
     trigger: 'on_hit',
@@ -477,7 +483,7 @@ const earlyMonsters: MonsterSpecies[] = [
     types: ['fire', 'earth'],
     baseStats: { hp: 80, atk: 90, def: 85, spd: 35, mag: 60, res: 100 },
     statTier: 'early',
-    abilities: ['flame_body', 'heat_proof'],
+    abilities: ['flame_body', 'heatproof'],
     skillPool: ['fireball', 'earthquake', 'rock_tomb', 'flare_drive', 'bulk_up', 'nitro_charge', 'earth_power', 'protect'],
     description: '溶岩カブト虫。高耐久の物理アタッカー。',
   },
@@ -741,7 +747,7 @@ const lateMonsters: MonsterSpecies[] = [
     types: ['dark', 'thunder'],
     baseStats: { hp: 90, atk: 110, def: 85, spd: 85, mag: 85, res: 75 },
     statTier: 'late',
-    abilities: ['defiant', 'intimidate'],
+    abilities: ['steadfast', 'intimidate'],
     skillPool: ['dark_pulse', 'wild_bolt', 'swords_dance', 'sucker_punch', 'crunch', 'thunderbolt', 'protect', 'nasty_plot'],
     description: '暗黒騎士。バランス型強者。',
   },

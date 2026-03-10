@@ -28,6 +28,7 @@ import {
   applySkillEffects,
   processOnEnterAbility,
   processContactAbility,
+  processDefenderAbilityAfterHit,
   checkAbsorbAbility,
   applyStatChange,
   setHazard,
@@ -63,12 +64,19 @@ function consumeMana(player: BattlePlayer, amount: number): void {
  * 壁補正を適用（リフレクター/光の壁）
  * 物理技: リフレクターで0.5倍
  * 特殊技: 光の壁で0.5倍
+ * ※すり抜け（infiltrator）持ちは壁を無視
  */
 function applyScreenModifier(
   damage: number,
   skillCategory: 'physical' | 'special' | 'status',
-  defenderPlayer: BattlePlayer
+  defenderPlayer: BattlePlayer,
+  attacker: BattleMonster
 ): number {
+  // すり抜け（infiltrator）: 壁を無視
+  if (attacker.instance.ability === 'infiltrator') {
+    return damage;
+  }
+  
   // 物理技: リフレクター
   if (skillCategory === 'physical' && defenderPlayer.reflectTurns > 0) {
     return Math.floor(damage * 0.5);
@@ -105,13 +113,13 @@ export function resolveActionOrder(
   // Player 0の行動
   const monster0 = getActiveMonster(state.players[0]);
   const priority0 = getActionPriority(action0, skills, monster0);
-  const speed0 = getEffectiveSpd(monster0);
+  const speed0 = getActionSpeed(monster0, state.weather);
   actions.push({ playerIndex: 0, action: action0, priority: priority0, speed: speed0 });
   
   // Player 1の行動
   const monster1 = getActiveMonster(state.players[1]);
   const priority1 = getActionPriority(action1, skills, monster1);
-  const speed1 = getEffectiveSpd(monster1);
+  const speed1 = getActionSpeed(monster1, state.weather);
   actions.push({ playerIndex: 1, action: action1, priority: priority1, speed: speed1 });
   
   // ソート: 交代 > 優先度 > 速度 > ランダム
@@ -136,6 +144,17 @@ export function resolveActionOrder(
 /**
  * 行動の優先度を取得（特性による補正込み）
  */
+function getActionSpeed(monster: BattleMonster, weather: BattleState['weather']): number {
+  let speed = getEffectiveSpd(monster);
+
+  // 葉緑素（chlorophyll）: 晴れの時に素早さ2倍
+  if (monster.instance.ability === 'chlorophyll' && weather === 'sunny') {
+    speed *= 2;
+  }
+
+  return speed;
+}
+
 function getActionPriority(
   action: BattleAction,
   skills: Map<string, Skill>,
@@ -161,6 +180,15 @@ function getActionPriority(
   }
   
   return priority;
+}
+
+/**
+ * 湿り気（damp）で自爆系行動が阻止されるか
+ */
+function isSelfSacrificeBlockedByDamp(state: BattleState, attackerIndex: 0 | 1): boolean {
+  const defenderPlayer = state.players[attackerIndex === 0 ? 1 : 0];
+  const defender = getActiveMonster(defenderPlayer);
+  return defender.currentHp > 0 && defender.instance.ability === 'damp' && !defender.abilityDisabled;
 }
 
 // ============================================
@@ -214,13 +242,35 @@ export function executeAction(
   
   switch (action.type) {
     case 'switch':
+      monster.protectConsecutive = 0;
       return executeSwitch(state, playerIndex, player, action.switchTo!, messages);
     
     case 'wait':
+      monster.protectConsecutive = 0;
       return executeWait(monster, messages);
     
-    case 'skill':
-      return executeSkill(state, playerIndex, action.skillId!, skills, messages, opponentAction);
+    case 'skill': {
+      const manaSpentBefore = player.manaSpentThisTurn;
+      const result = executeSkill(state, playerIndex, action.skillId!, skills, messages, opponentAction);
+
+      // プレッシャー（pressure）: 相手の技マナ消費+1
+      // 実際にマナを消費した技にのみ追加コストを適用する（溜め技2ターン目などは対象外）
+      if (result.success && player.manaSpentThisTurn > manaSpentBefore) {
+        const opponent = state.players[playerIndex === 0 ? 1 : 0];
+        const opponentActive = getActiveMonster(opponent);
+        if (opponentActive.instance.ability === 'pressure') {
+          const beforeMana = player.mana;
+          applyManaChange(player, -1);
+          const actualDrain = beforeMana - player.mana;
+          if (actualDrain > 0) {
+            player.manaSpentThisTurn += actualDrain;
+            result.messages.push(`${opponentActive.species.name}のプレッシャーで追加でマナを${actualDrain}消費した！`);
+          }
+        }
+      }
+
+      return result;
+    }
   }
 }
 
@@ -239,6 +289,23 @@ function executeSwitch(
   if (oldMonster.trapped) {
     messages.push(`${oldMonster.species.name}は拘束されていて交代できない！`);
     return { success: false, messages };
+  }
+  
+  // 再生力（regenerator）: 交代時にHP1/3回復
+  if (oldMonster.instance.ability === 'regenerator' && oldMonster.currentHp > 0) {
+    const healAmount = Math.floor(oldMonster.maxHp / 3);
+    applyHpChange(oldMonster, healAmount);
+    messages.push(`${oldMonster.species.name}のさいせいりょく！`);
+    messages.push(`${oldMonster.species.name}のHPが回復した！`);
+  }
+  
+  // 自然回復（natural_cure）: 交代時に状態異常回復
+  if (oldMonster.instance.ability === 'natural_cure' && oldMonster.status !== 'none') {
+    const oldStatus = oldMonster.status;
+    oldMonster.status = 'none';
+    oldMonster.statusTurns = 0;
+    messages.push(`${oldMonster.species.name}のしぜんかいふく！`);
+    messages.push(`${oldMonster.species.name}の状態異常が回復した！`);
   }
   
   try {
@@ -354,6 +421,14 @@ function executeSkill(
   const isPursuitOnSwitch = actualSkillId === 'pursuit' && opponentAction?.type === 'switch';
   if (isPursuitOnSwitch) {
     skill = { ...skill, power: skill.power * 2 };
+  }
+
+  // 混沌の力（chaos_power）: 攻撃技タイプを炎/氷にランダム変化
+  if (attacker.instance.ability === 'chaos_power' && skill.category !== 'status') {
+    const randomizedType: Skill['type'] = Math.random() < 0.5 ? 'fire' : 'ice';
+    skill = { ...skill, type: randomizedType };
+    const typeName = randomizedType === 'fire' ? '炎' : '氷';
+    messages.push(`${attacker.species.name}の混沌の力！ 技タイプが${typeName}に変化した！`);
   }
   
   // === ふいうち特殊処理 ===
@@ -569,7 +644,7 @@ function executeSkill(
   }
   
   // === こらえる特殊処理 ===
-  // このターン、HP1で耐える
+  // このターン、HP1で耐える（連続使用で成功率低下）
   if (actualSkillId === 'endure') {
     if (player.mana < skill.manaCost) {
       messages.push(`マナが足りない！`);
@@ -584,9 +659,19 @@ function executeSkill(
     // マナ消費
     consumeMana(player, skill.manaCost);
     attacker.lastUsedSkill = actualSkillId;
-    
+
+    // 連続使用時は成功率が 1/3^n に低下（n: これまでの連続成功回数）
+    const successRate = 1 / Math.pow(3, attacker.protectConsecutive);
+    if (Math.random() >= successRate) {
+      attacker.protectConsecutive = 0;
+      messages.push(`${attacker.species.name}のこらえるは失敗した！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+
     // こらえる状態をセット
     attacker.enduring = true;
+    attacker.protectConsecutive++;
 
     messages.push(`${attacker.species.name}はこらえる態勢に入った！`);
     addLog(state, messages.join(' '), 'info');
@@ -619,8 +704,8 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
-  // === 壁技特殊処理（リフレクター/光の壁） ===
-  if (actualSkillId === 'reflect' || actualSkillId === 'light_screen') {
+  // === 壁技特殊処理（リフレクター/光の壁/オーロラベール） ===
+  if (actualSkillId === 'reflect' || actualSkillId === 'light_screen' || actualSkillId === 'aurora_veil') {
     if (player.mana < skill.manaCost) {
       messages.push(`マナが足りない！`);
       return { success: false, messages };
@@ -644,12 +729,21 @@ function executeSkill(
         player.reflectTurns = 5;
         messages.push(`リフレクターを展開した！物理ダメージが半減する！`);
       }
-    } else {
+    } else if (actualSkillId === 'light_screen') {
       if (player.lightScreenTurns > 0) {
         messages.push(`光の壁は既に展開されている！`);
       } else {
         player.lightScreenTurns = 5;
         messages.push(`光の壁を展開した！特殊ダメージが半減する！`);
+      }
+    } else {
+      const alreadyActive = player.reflectTurns > 0 && player.lightScreenTurns > 0;
+      if (alreadyActive) {
+        messages.push(`オーロラベールは既に展開されている！`);
+      } else {
+        player.reflectTurns = 5;
+        player.lightScreenTurns = 5;
+        messages.push(`オーロラベールを展開した！物理・特殊ダメージが半減する！`);
       }
     }
     
@@ -667,6 +761,13 @@ function executeSkill(
     
     const canActResult = checkCanAct(attacker, messages);
     if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+
+    // 湿り気（damp）: 自爆系技を無効化
+    if (isSelfSacrificeBlockedByDamp(state, playerIndex)) {
+      messages.push(`しかし相手の湿り気で不発に終わった！`);
+      addLog(state, messages.join(' '), 'info');
       return { success: false, messages };
     }
     
@@ -718,6 +819,13 @@ function executeSkill(
       addLog(state, messages.join(' '), 'info');
       return { success: false, messages };
     }
+
+    // 湿り気（damp）: 自爆系技を無効化
+    if (isSelfSacrificeBlockedByDamp(state, playerIndex)) {
+      messages.push(`しかし相手の湿り気で不発に終わった！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: false, messages };
+    }
     
     // マナ消費
     consumeMana(player, skill.manaCost);
@@ -756,6 +864,13 @@ function executeSkill(
     const hasReserve = player.party.some((m, i) => i !== player.activeIndex && m.currentHp > 0);
     if (!hasReserve) {
       messages.push(`しかし控えがいないため失敗した！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: false, messages };
+    }
+
+    // 湿り気（damp）: 自爆系技を無効化
+    if (isSelfSacrificeBlockedByDamp(state, playerIndex)) {
+      messages.push(`しかし相手の湿り気で不発に終わった！`);
       addLog(state, messages.join(' '), 'info');
       return { success: false, messages };
     }
@@ -823,6 +938,54 @@ function executeSkill(
     // あくび状態を付与（次ターン終了時に眠り）
     defender.yawning = true;
     messages.push(`${defender.species.name}は眠気を誘われた！`);
+    addLog(state, messages.join(' '), 'info');
+    
+    return { success: true, damage: 0, messages };
+  }
+  
+  // === ナイトメア特殊処理 ===
+  // 眠っている相手に悪夢状態を付与（毎ターンHP1/4ダメージ）
+  if (actualSkillId === 'nightmare') {
+    if (player.mana < skill.manaCost) {
+      messages.push(`マナが足りない！`);
+      return { success: false, messages };
+    }
+    
+    const canActResult = checkCanAct(attacker, messages);
+    if (!canActResult.canAct) {
+      return { success: false, messages };
+    }
+    
+    // マナ消費
+    consumeMana(player, skill.manaCost);
+    attacker.lastUsedSkill = actualSkillId;
+    
+    messages.push(`${attacker.species.name}のナイトメア！`);
+    
+    // まもる中の相手には効かない
+    if (defender.protected) {
+      messages.push(`しかし${defender.species.name}は身を守っている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 眠っていない相手には効かない
+    if (defender.status !== 'sleep') {
+      messages.push(`しかし${defender.species.name}は眠っていない！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 既にナイトメア状態なら効かない
+    if (defender.nightmared) {
+      messages.push(`しかし${defender.species.name}はすでに悪夢を見ている！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // ナイトメア付与
+    defender.nightmared = true;
+    messages.push(`${defender.species.name}は悪夢にうなされ始めた！`);
     addLog(state, messages.join(' '), 'info');
     
     return { success: true, damage: 0, messages };
@@ -1385,6 +1548,23 @@ function executeSkill(
       if (absorbResult.healAmount) {
         applyHpChange(defender, absorbResult.healAmount);
       }
+
+      // 避雷針: MAG+1
+      if (defender.instance.ability === 'lightning_rod') {
+        const statMessages = applyStatChange(defender, 'mag', 1);
+        messages.push(...statMessages);
+      }
+
+      // 電気エンジン: SPD+1
+      if (defender.instance.ability === 'motor_drive') {
+        const statMessages = applyStatChange(defender, 'spd', 1);
+        messages.push(...statMessages);
+      }
+
+      // もらいび: 以降の炎技威力を強化
+      if (defender.instance.ability === 'flash_fire') {
+        defender.flashFireBoosted = true;
+      }
       addLog(state, messages.join(' '), 'ability');
       return { success: true, damage: 0, messages };
     }
@@ -1393,37 +1573,25 @@ function executeSkill(
     const isCritical = checkCritical(attacker, defender, skill);
     const damageResult = calculateDamage(attacker, defender, skill, state.weather, isCritical);
     
-    // 壁補正（リフレクター/光の壁）
-    const damageAfterScreen = applyScreenModifier(damageResult.damage, skill.category, opponent);
+    // 壁補正（リフレクター/光の壁）※すり抜け持ちは無視
+    const damageAfterScreen = applyScreenModifier(damageResult.damage, skill.category, opponent, attacker);
+    const damageToApply = damageAfterScreen;
     
-    // 頑丈チェック
-    let damageToApply = damageAfterScreen;
-    const wasFullHp = defender.currentHp === defender.maxHp;
-    const wouldFaint = damageToApply >= defender.currentHp;
-    const sturdyTriggered =
-      defender.instance.ability === 'sturdy' &&
-      wasFullHp &&
-      wouldFaint;
+    // ダメージ適用（sturdy は applyHpChange 内で自動処理）
+    const hpResult = applyHpChange(defender, -damageToApply);
+    let fainted = hpResult.fainted;
     
-    if (sturdyTriggered) {
-      damageToApply = defender.currentHp - 1;
+    // 頑丈で耐えた場合のメッセージ
+    if (hpResult.sturdyActivated) {
       messages.push(`${defender.species.name}は頑丈で耐えた！`);
     }
     
-    // こらえる: HP1で耐える
-    const endureTriggeredEnergy =
-      defender.enduring &&
-      !sturdyTriggered &&
-      damageToApply >= defender.currentHp;
-
-    if (endureTriggeredEnergy) {
-      damageToApply = defender.currentHp - 1;
+    // こらえる: sturdyが発動しなかった場合のみ
+    if (!hpResult.sturdyActivated && defender.enduring && fainted) {
+      defender.currentHp = 1;
+      fainted = false;
       messages.push(`${defender.species.name}はこらえた！`);
     }
-    
-    // ダメージ適用
-    const hpResult = applyHpChange(defender, -damageToApply);
-    let fainted = hpResult.fainted;
     
     // 不死鳥復活チェック
     if (fainted && defender.instance.ability === 'phoenix' && !defender.abilityDisabled) {
@@ -1599,6 +1767,22 @@ function executeSkill(
     consumeMana(player, skill.manaCost);
   }
   attacker.lastUsedSkill = actualSkillId;
+
+  const isProtectLikeSkill = skill.effects.some(e => e.type === 'protect');
+
+  // まもる/みきりの連続使用成功率低下
+  if (isProtectLikeSkill) {
+    const successRate = 1 / Math.pow(3, attacker.protectConsecutive);
+    if (Math.random() >= successRate) {
+      attacker.protectConsecutive = 0;
+      messages.push(`${attacker.species.name}の${skill.name}は失敗した！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    attacker.protectConsecutive++;
+  } else {
+    attacker.protectConsecutive = 0;
+  }
   
   // まもる中の相手には効かない（一部技を除く）
   if (defender.protected && !skill.ignoresProtect) {
@@ -1648,12 +1832,19 @@ function executeSkill(
       
       // 避雷針: MAG+1
       if (defender.instance.ability === 'lightning_rod') {
-        applyStatChange(defender, 'mag', 1);
+        const statMessages = applyStatChange(defender, 'mag', 1);
+        messages.push(...statMessages);
       }
       
       // 電気エンジン: SPD+1
       if (defender.instance.ability === 'motor_drive') {
-        applyStatChange(defender, 'spd', 1);
+        const statMessages = applyStatChange(defender, 'spd', 1);
+        messages.push(...statMessages);
+      }
+
+      // もらいび: 以降の炎技威力を強化
+      if (defender.instance.ability === 'flash_fire') {
+        defender.flashFireBoosted = true;
       }
       
       addLog(state, messages.join(' '), 'ability');
@@ -1697,33 +1888,9 @@ function executeSkill(
       const isCritical = checkCritical(attacker, defender, skill);
       const damageResult = calculateDamage(attacker, defender, skill, state.weather, isCritical);
 
-      // 壁補正（リフレクター/光の壁）
-      const damageAfterScreen = applyScreenModifier(damageResult.damage, skill.category, opponent);
-
-      // 頑丈: HP満タン時、一撃では倒れずHP1で耐える
-      let damageToApply = damageAfterScreen;
-      const wasFullHp = defender.currentHp === defender.maxHp;
-      const wouldFaint = damageToApply >= defender.currentHp;
-      const sturdyTriggered =
-        defender.instance.ability === 'sturdy' &&
-        wasFullHp &&
-        wouldFaint;
-
-      if (sturdyTriggered) {
-        damageToApply = defender.currentHp - 1;
-        messages.push(`${defender.species.name}は頑丈で耐えた！`);
-      }
-
-      // こらえる: HP1で耐える
-      const endureTriggered =
-        defender.enduring &&
-        !sturdyTriggered &&
-        damageToApply >= defender.currentHp;
-
-      if (endureTriggered) {
-        damageToApply = defender.currentHp - 1;
-        messages.push(`${defender.species.name}はこらえた！`);
-      }
+      // 壁補正（リフレクター/光の壁）※すり抜け持ちは無視
+      const damageAfterScreen = applyScreenModifier(damageResult.damage, skill.category, opponent, attacker);
+      const damageToApply = damageAfterScreen;
 
       hitCount++;
       if (isCritical) criticalCount++;
@@ -1745,8 +1912,21 @@ function executeSkill(
       
       totalDamage += damageToApply;
 
+      // ダメージ適用（sturdy は applyHpChange 内で自動処理）
       const hpResult = applyHpChange(defender, -damageToApply);
       fainted = hpResult.fainted;
+      
+      // 頑丈で耐えた場合のメッセージ
+      if (hpResult.sturdyActivated) {
+        messages.push(`${defender.species.name}は頑丈で耐えた！`);
+      }
+      
+      // こらえる: sturdyが発動しなかった場合のみ
+      if (!hpResult.sturdyActivated && defender.enduring && fainted) {
+        defender.currentHp = 1;
+        fainted = false;
+        messages.push(`${defender.species.name}はこらえた！`);
+      }
 
       // 炎技を受けた凍り状態は解除（BATTLE_SYSTEM仕様）
       if (!fainted && defender.status === 'freeze' && skill.type === 'fire' && damageToApply > 0 && !thawedByFire) {
@@ -1808,6 +1988,19 @@ function executeSkill(
     addLog(state, messages.join(' '), 'info');
   }
   
+  // 被ダメージ後の防御側特性発動（雪隠れ、砕ける鎧など）
+  if (!fainted && totalDamage > 0) {
+    const defenderAbilityMessages = processDefenderAbilityAfterHit(
+      state,
+      1 - playerIndex as 0 | 1,
+      skill.type,
+      actualSkillId,
+      totalDamage,
+      skill.category
+    );
+    messages.push(...defenderAbilityMessages);
+  }
+  
   // 追加効果
   if (!fainted) {
     const effectMessages = applySkillEffects(state, playerIndex, skill, totalDamage);
@@ -1834,6 +2027,12 @@ function executeSkill(
   if (fainted) {
     messages.push(`${defender.species.name}は倒れた！`);
     addLog(state, `${defender.species.name}は倒れた！`, 'ko');
+    
+    // 自信過剰（moxie）: 敵を倒すとATK+1
+    if (attacker.instance.ability === 'moxie' && attacker.currentHp > 0) {
+      messages.push(`${attacker.species.name}のじしんかじょう！`);
+      messages.push(...applyStatChange(attacker, 'atk', 1));
+    }
   }
   
   // とんぼがえり/ボルトチェンジ: 攻撃後に交代
@@ -1909,6 +2108,7 @@ function checkCanAct(monster: BattleMonster, messages: string[]): CanActResult {
 
     monster.status = 'none';
     monster.statusTurns = 0;
+    monster.nightmared = false; // 眠りが解けたらナイトメアも解除
     messages.push(`${monster.species.name}は目を覚ました！`);
   }
   

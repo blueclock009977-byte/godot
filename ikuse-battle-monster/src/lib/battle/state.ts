@@ -58,6 +58,7 @@ export function createBattleMonster(
     confusionTurns: 0,
     flinched: false,
     protected: false,
+    protectConsecutive: 0,
     charging: false,
     diving: false,
     flying: false,
@@ -66,11 +67,13 @@ export function createBattleMonster(
     mustRecharge: false,
     lastUsedSkill: undefined,
     abilityDisabled: false,
+    flashFireBoosted: false,
     furyCutterStreak: 0,
     physicalDamageTakenThisTurn: 0,
     specialDamageTakenThisTurn: 0,
     enduring: false,
     yawning: false,
+    nightmared: false,
     wishPending: false,
     tauntTurns: 0,
     substituteHp: 0,
@@ -78,6 +81,8 @@ export function createBattleMonster(
     encoredSkillId: undefined,
     disableTurns: 0,
     disabledSkillId: undefined,
+    illusionName: undefined,
+    illusionTypes: undefined,
   };
 }
 
@@ -210,17 +215,40 @@ export function checkWinner(state: BattleState): 0 | 1 | null {
 
 /**
  * HPを変更（ダメージ/回復）
+ * sturdy（頑丈）: HP満タン時に致死ダメージでHP1で耐える
  */
 export function applyHpChange(
   monster: BattleMonster,
   amount: number
-): { newHp: number; fainted: boolean } {
+): { newHp: number; fainted: boolean; sturdyActivated: boolean } {
   const oldHp = monster.currentHp;
+  let sturdyActivated = false;
+  
+  // ダメージの場合のみsturdy（頑丈）チェック
+  if (amount < 0) {
+    const potentialHp = monster.currentHp + amount;
+    // HP満タンから致死ダメージを受けた場合、sturdyが発動
+    if (
+      monster.instance.ability === 'sturdy' &&
+      monster.currentHp === monster.maxHp &&
+      potentialHp <= 0
+    ) {
+      monster.currentHp = 1;
+      sturdyActivated = true;
+      return {
+        newHp: 1,
+        fainted: false,
+        sturdyActivated: true,
+      };
+    }
+  }
+  
   monster.currentHp = Math.max(0, Math.min(monster.maxHp, monster.currentHp + amount));
   
   return {
     newHp: monster.currentHp,
     fainted: oldHp > 0 && monster.currentHp === 0,
+    sturdyActivated,
   };
 }
 
@@ -278,8 +306,14 @@ export function applyStatStageChange(
   stat: keyof StatStages,
   change: number
 ): { newStage: number; actualChange: number } {
+  // 天邪鬼（contrary）: 能力変化が逆転
+  let effectiveChange = change;
+  if (monster.instance.ability === 'contrary') {
+    effectiveChange = -change;
+  }
+  
   const oldStage = monster.statStages[stat];
-  const newStage = Math.max(-6, Math.min(6, oldStage + change));
+  const newStage = Math.max(-6, Math.min(6, oldStage + effectiveChange));
   monster.statStages[stat] = newStage;
   
   return {
@@ -297,6 +331,7 @@ export function resetStatStages(monster: BattleMonster): void {
   monster.confusionTurns = 0;
   monster.flinched = false;
   monster.protected = false;
+  monster.protectConsecutive = 0;
   monster.charging = false;
   monster.mustRecharge = false;  // 交代でリチャージ解除
   monster.lastUsedSkill = undefined;
@@ -311,6 +346,7 @@ export function resetStatStages(monster: BattleMonster): void {
   
   // あくび状態もリセット（交代で解除）
   monster.yawning = false;
+  monster.nightmared = false;
   
   // ちょうはつ状態もリセット（交代で解除）
   monster.tauntTurns = 0;
@@ -325,6 +361,10 @@ export function resetStatStages(monster: BattleMonster): void {
   // 金縛り状態もリセット（交代で解除）
   monster.disableTurns = 0;
   monster.disabledSkillId = undefined;
+
+  // イリュージョンは交代で解除
+  monster.illusionName = undefined;
+  monster.illusionTypes = undefined;
 }
 
 /**

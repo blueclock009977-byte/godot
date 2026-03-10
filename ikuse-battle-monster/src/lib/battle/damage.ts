@@ -8,6 +8,7 @@
 import {
   BattleMonster,
   Skill,
+  SkillCategory,
   Weather,
   MonsterType,
   STAB_MULTIPLIER,
@@ -183,7 +184,12 @@ export function checkAccuracy(
   }
   
   const accuracyStage = attacker.statStages.accuracy;
-  const evasionStage = defender.statStages.evasion;
+  let evasionStage = defender.statStages.evasion;
+
+  // 砂隠れ: 砂嵐時に回避率+1段階
+  if (defender.instance.ability === 'sand_veil' && weather === 'sandstorm') {
+    evasionStage = Math.min(6, evasionStage + 1);
+  }
   
   const accuracyMod = getAccuracyMultiplier(accuracyStage);
   const evasionMod = getAccuracyMultiplier(evasionStage);
@@ -387,6 +393,9 @@ export function calculateDamage(
   
   // HP50%以下特性補正（猛火・激流など）
   baseDamage = applyLowHpAbilityModifier(baseDamage, attacker, skill.type);
+
+  // 攻撃側特性補正（バッテリーなど）
+  baseDamage = applyAttackerAbilityModifier(baseDamage, attacker, defender, skill.category, skill.type);
   
   // 防御側特性補正（厚い脂肪・耐熱など）
   baseDamage = applyDefenderAbilityModifier(baseDamage, defender, skill.type);
@@ -460,6 +469,50 @@ function applyLowHpAbilityModifier(
   // }
   
   return damage;
+}
+
+/**
+ * 防御側特性補正を適用（厚い脂肪・耐熱など）
+ */
+/**
+ * 攻撃側特性補正を適用（バッテリーなど）
+ * NOTE: 本作はシングルバトルのため、battery は「自分の特殊技強化」として扱う。
+ */
+function applyAttackerAbilityModifier(
+  damage: number,
+  attacker: BattleMonster,
+  defender: BattleMonster,
+  category: SkillCategory,
+  skillType: MonsterType
+): number {
+  let adjustedDamage = damage;
+
+  // バッテリー（battery）: 特殊技威力1.3倍
+  if (attacker.instance.ability === 'battery' && category === 'special') {
+    adjustedDamage = Math.floor(adjustedDamage * 1.3);
+  }
+
+  // もらいび（flash_fire）: 発動後、炎技威力1.5倍
+  if (attacker.instance.ability === 'flash_fire' && attacker.flashFireBoosted && skillType === 'fire') {
+    adjustedDamage = Math.floor(adjustedDamage * 1.5);
+  }
+
+  // 闘争心（rivalry）: 同性相手に1.25倍、異性相手に0.75倍
+  const attackerGender = attacker.instance.gender;
+  const defenderGender = defender.instance.gender;
+  if (
+    attacker.instance.ability === 'rivalry' &&
+    attackerGender !== undefined &&
+    defenderGender !== undefined
+  ) {
+    if (attackerGender === defenderGender) {
+      adjustedDamage = Math.floor(adjustedDamage * 1.25);
+    } else {
+      adjustedDamage = Math.floor(adjustedDamage * 0.75);
+    }
+  }
+
+  return adjustedDamage;
 }
 
 /**
