@@ -197,16 +197,25 @@ export function checkAccuracy(
  */
 export function checkCritical(
   attacker: BattleMonster,
+  defender: BattleMonster,
   skill: Skill
 ): boolean {
+  // シェルアーマー持ちは急所無効
+  if (defender.instance.ability === 'shell_armor') {
+    return false;
+  }
+
   // 急所ランクを計算
   let critRank = skill.critBonus;
-  
-  // 特性「きょううん」など（TODO: 特性システム実装後に追加）
-  
+
+  // きょううん: 急所ランク+1
+  if (attacker.instance.ability === 'super_luck') {
+    critRank += 1;
+  }
+
   // ランクを0-3にクランプ
   critRank = Math.min(3, Math.max(0, critRank));
-  
+
   const critChance = CRIT_RATE[critRank] ?? CRIT_RATE[0];
   return Math.random() < critChance;
 }
@@ -262,13 +271,17 @@ export function calculateDamage(
   const effectiveness = getTypeEffectiveness(skill.type, defenderTypes);
   baseDamage = Math.floor(baseDamage * effectiveness);
   
-  // 急所ダメージ
+  // 急所ダメージ（スナイパーは2.25倍）
   if (isCritical) {
-    baseDamage = Math.floor(baseDamage * CRIT_DAMAGE_MULTIPLIER);
+    const critMultiplier = attacker.instance.ability === 'sniper' ? 2.25 : CRIT_DAMAGE_MULTIPLIER;
+    baseDamage = Math.floor(baseDamage * critMultiplier);
   }
   
   // 天候補正
   baseDamage = applyWeatherModifier(baseDamage, skill.type, weather);
+  
+  // HP50%以下特性補正（猛火・激流など）
+  baseDamage = applyLowHpAbilityModifier(baseDamage, attacker, skill.type);
   
   // やけど補正（物理技 + 攻撃側がやけど）
   if (isPhysical && attacker.status === 'burn') {
@@ -305,6 +318,39 @@ function applyWeatherModifier(damage: number, skillType: MonsterType, weather: W
       break;
     // 砂嵐と雪は直接ダメージには影響しない（ターン終了時ダメージ）
   }
+  return damage;
+}
+
+/**
+ * HP50%以下特性補正を適用（猛火・激流など）
+ */
+function applyLowHpAbilityModifier(
+  damage: number,
+  attacker: BattleMonster,
+  skillType: MonsterType
+): number {
+  const LOW_HP_ABILITY_MULTIPLIER = 1.3;
+  const isLowHp = attacker.currentHp <= attacker.maxHp / 2;
+  
+  if (!isLowHp) return damage;
+  
+  const ability = attacker.instance.ability;
+  
+  // 猛火: HP50%以下で炎技威力1.3倍
+  if (ability === 'blaze' && skillType === 'fire') {
+    return Math.floor(damage * LOW_HP_ABILITY_MULTIPLIER);
+  }
+  
+  // 激流: HP50%以下で水技威力1.3倍
+  if (ability === 'torrent' && skillType === 'water') {
+    return Math.floor(damage * LOW_HP_ABILITY_MULTIPLIER);
+  }
+  
+  // 新緑: HP50%以下で草技威力1.3倍（草タイプは無いが将来のため）
+  // if (ability === 'overgrow' && skillType === 'grass') {
+  //   return Math.floor(damage * LOW_HP_ABILITY_MULTIPLIER);
+  // }
+  
   return damage;
 }
 

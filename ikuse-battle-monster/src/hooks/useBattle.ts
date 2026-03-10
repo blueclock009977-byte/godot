@@ -130,7 +130,6 @@ export function useBattle(options: UseBattleOptions): UseBattleReturn {
     const { messages: startMessages, state } = startBattle(newState);
     setGameState(state);
     setMessages(startMessages);
-    setGameStarted(true);
     setSelectedAction(null);
   }, [player1, player2]);
   

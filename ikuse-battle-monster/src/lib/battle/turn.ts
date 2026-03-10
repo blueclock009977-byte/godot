@@ -47,6 +47,9 @@ export function processTurnStart(state: BattleState): TurnStartResult {
   // 両プレイヤーのマナを回復
   for (let i = 0; i < 2; i++) {
     const player = state.players[i as 0 | 1];
+    const activeMonster = getActiveMonster(player);
+    activeMonster.flinched = false; // ひるみはターン持ち越ししない
+
     const beforeMana = player.mana;
     regenerateMana(player);
     
@@ -91,6 +94,7 @@ export function resolveActions(
   
   // 行動順を決定
   const orderedActions = resolveActionOrder(state, action0, action1, skills);
+  state.actionOrder = [orderedActions[0].playerIndex, orderedActions[1].playerIndex];
   
   // 行動を順番に実行
   for (const resolvedAction of orderedActions) {

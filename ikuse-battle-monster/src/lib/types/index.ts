@@ -205,6 +205,7 @@ export interface BattleMonster {
   statStages: StatStages;
   isConfused: boolean;      // 混乱（主要状態異常と併存可能）
   confusionTurns: number;
+  flinched: boolean;        // ひるみ（同ターン内のみ有効）
   // フラグ
   protected: boolean;       // まもる中
   charging: boolean;        // 溜め中
@@ -236,6 +237,8 @@ export interface BattleState {
   weatherTurns: number;
   turn: number;
   phase: BattlePhase;
+  /** このターンの行動順（後攻判定に使用） */
+  actionOrder: [0 | 1, 0 | 1];
   // ログ
   log: BattleLogEntry[];
 }

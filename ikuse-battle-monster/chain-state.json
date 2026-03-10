@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 9,
+  "currentPhase": 10,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -63,8 +63,22 @@
     "src/lib/save/transfer.ts 作成 - データ引き継ぎフロー",
     "app/settings/page.tsx 作成 - 設定画面（パスワード設定、データ引き継ぎ）",
     "app/page.tsx 更新 - 設定へのリンク追加",
-    "ビルド成功確認"
+    "ビルド成功確認",
+    "Phase 10 開始: 2026-03-10 14:05",
+    "ひるみ状態を実装（同ターン行動不能 + ターン開始時リセット）",
+    "build成功確認"
   ],
-  "completed": ["phase1-setup", "phase2-data", "phase3-battle", "phase4-ui", "phase5-gameloop", "phase6-polish", "phase7-online", "phase8-save", "phase9-password"],
-  "status": "COMPLETED"
+  "completed": [
+    "phase1-setup",
+    "phase2-data",
+    "phase3-battle",
+    "phase4-ui",
+    "phase5-gameloop",
+    "phase6-polish",
+    "phase7-online",
+    "phase8-save",
+    "phase9-password",
+    "phase10-flinch"
+  ],
+  "status": "IN_PROGRESS"
 }

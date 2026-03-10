@@ -24,7 +24,7 @@ import {
   addLog,
   addDamageLog,
 } from './state';
-import { applySkillEffects } from './effects';
+import { applySkillEffects, processOnEnterAbility } from './effects';
 
 // ============================================
 // 行動順決定
@@ -50,13 +50,13 @@ export function resolveActionOrder(
   
   // Player 0の行動
   const monster0 = getActiveMonster(state.players[0]);
-  const priority0 = getActionPriority(action0, skills);
+  const priority0 = getActionPriority(action0, skills, monster0);
   const speed0 = getEffectiveSpd(monster0);
   actions.push({ playerIndex: 0, action: action0, priority: priority0, speed: speed0 });
   
   // Player 1の行動
   const monster1 = getActiveMonster(state.players[1]);
-  const priority1 = getActionPriority(action1, skills);
+  const priority1 = getActionPriority(action1, skills, monster1);
   const speed1 = getEffectiveSpd(monster1);
   actions.push({ playerIndex: 1, action: action1, priority: priority1, speed: speed1 });
   
@@ -80,12 +80,33 @@ export function resolveActionOrder(
 }
 
 /**
- * 行動の優先度を取得
+ * 行動の優先度を取得（特性による補正込み）
  */
-function getActionPriority(action: BattleAction, skills: Map<string, Skill>): number {
+function getActionPriority(
+  action: BattleAction,
+  skills: Map<string, Skill>,
+  monster: BattleMonster
+): number {
   if (action.type !== 'skill' || !action.skillId) return 0;
   const skill = skills.get(action.skillId);
-  return skill?.priority ?? 0;
+  if (!skill) return 0;
+  
+  let priority = skill.priority;
+  const ability = monster.instance.ability;
+  
+  // 疾風（gale_wings）: 先制技の優先度+1
+  // ※本家は「HP満タン時に飛行技の優先度+1」だが、
+  //   企画書では「先制技の優先度+1」なのでそちらに従う
+  if (ability === 'gale_wings' && priority > 0) {
+    priority += 1;
+  }
+  
+  // 悪戯心（prankster）: 変化技の優先度+1
+  if (ability === 'prankster' && skill.category === 'status') {
+    priority += 1;
+  }
+  
+  return priority;
 }
 
 // ============================================
@@ -120,7 +141,7 @@ export function executeAction(
   
   switch (action.type) {
     case 'switch':
-      return executeSwitch(state, player, action.switchTo!, messages);
+      return executeSwitch(state, playerIndex, player, action.switchTo!, messages);
     
     case 'wait':
       return executeWait(monster, messages);
@@ -135,6 +156,7 @@ export function executeAction(
  */
 function executeSwitch(
   state: BattleState,
+  playerIndex: 0 | 1,
   player: BattlePlayer,
   switchTo: number,
   messages: string[]
@@ -145,6 +167,11 @@ function executeSwitch(
     const newMonster = switchMonster(player, switchTo);
     messages.push(`${player.name}は${oldMonster.species.name}を引っ込めた！`);
     messages.push(`ゆけっ！${newMonster.species.name}！`);
+
+    // 交代先の登場時特性を発動
+    const abilityMessages = processOnEnterAbility(state, playerIndex);
+    messages.push(...abilityMessages);
+
     addLog(state, messages.join(' '), 'switch');
     
     return { success: true, switched: true, messages };
@@ -237,13 +264,27 @@ function executeSkill(
   let fainted = false;
   
   if (skill.power > 0) {
-    const isCritical = checkCritical(attacker, skill);
+    const isCritical = checkCritical(attacker, defender, skill);
     const damageResult = calculateDamage(attacker, defender, skill, state.weather, isCritical);
-    totalDamage = damageResult.damage;
-    
-    const hpResult = applyHpChange(defender, -totalDamage);
+
+    // 頑丈: HP満タン時、一撃では倒れずHP1で耐える
+    let damageToApply = damageResult.damage;
+    const wasFullHp = defender.currentHp === defender.maxHp;
+    const wouldFaint = damageToApply >= defender.currentHp;
+    const sturdyTriggered =
+      defender.instance.ability === 'sturdy' &&
+      wasFullHp &&
+      wouldFaint;
+
+    if (sturdyTriggered) {
+      damageToApply = defender.currentHp - 1;
+    }
+
+    totalDamage = damageToApply;
+
+    const hpResult = applyHpChange(defender, -damageToApply);
     fainted = hpResult.fainted;
-    
+
     addDamageLog(
       state,
       attacker.species.name,
@@ -253,12 +294,13 @@ function executeSkill(
       damageResult.isCritical,
       damageResult.effectiveness
     );
-    
+
     messages.push(`${attacker.species.name}の${skill.name}！`);
     if (damageResult.isCritical) messages.push('急所に当たった！');
     messages.push(`${defender.species.name}に${totalDamage}ダメージ！`);
     if (damageResult.effectiveness > 1) messages.push('効果は抜群だ！');
     if (damageResult.effectiveness < 1) messages.push('効果はいまひとつ...');
+    if (sturdyTriggered) messages.push(`${defender.species.name}は頑丈で耐えた！`);
   } else {
     messages.push(`${attacker.species.name}の${skill.name}！`);
     addLog(state, messages.join(' '), 'info');
@@ -291,6 +333,13 @@ interface CanActResult {
  * 行動可能かチェック
  */
 function checkCanAct(monster: BattleMonster, messages: string[]): CanActResult {
+  // ひるみ（同ターン内のみ）
+  if (monster.flinched) {
+    monster.flinched = false;
+    messages.push(`${monster.species.name}はひるんで動けない！`);
+    return { canAct: false, selfDamage: false };
+  }
+
   // 眠り
   if (monster.status === 'sleep') {
     monster.statusTurns++;

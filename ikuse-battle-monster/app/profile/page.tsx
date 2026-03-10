@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/hooks/useUser';
 import { ALL_MONSTERS } from '@/lib/data/monsters';
-import { STARTER_IDS } from '@/lib/save/userData';
+import { STARTER_BONUS_MONSTERS, STARTER_IDS } from '@/lib/save/userData';
 
 export default function ProfilePage() {
   const { 
@@ -31,11 +31,22 @@ export default function ProfilePage() {
   
   // 御三家選択
   const handleSelectStarter = async (speciesId: string) => {
-    const monster = await addNewMonster(speciesId);
-    if (monster) {
-      await setParty([monster.id]);
-      setStarterSelectClosed(true);
+    const partyIds: string[] = [];
+
+    const starter = await addNewMonster(speciesId);
+    if (!starter) return;
+    partyIds.push(starter.id);
+
+    const bonusSpecies = STARTER_BONUS_MONSTERS[speciesId] || [];
+    for (const bonusSpeciesId of bonusSpecies) {
+      const bonus = await addNewMonster(bonusSpeciesId);
+      if (bonus) {
+        partyIds.push(bonus.id);
+      }
     }
+
+    await setParty(partyIds.slice(0, 3));
+    setStarterSelectClosed(true);
   };
   
   // パーティ編集
@@ -78,8 +89,7 @@ export default function ProfilePage() {
               const species = ALL_MONSTERS.find(m => m.id === id);
               if (!species) return null;
               
-              const typeEmoji = species.types[0] === 'fire' ? '🔥' :
-                               species.types[0] === 'water' ? '💧' : '🪨';
+              const typeEmoji = getTypeEmoji(species.types[0]);
               
               return (
                 <div 

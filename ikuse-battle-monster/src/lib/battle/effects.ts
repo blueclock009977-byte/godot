@@ -76,8 +76,9 @@ export function applySkillEffects(
         break;
         
       case 'flinch':
-        // ひるみは速度で先行した場合のみ有効（要実装）
-        messages.push(`${target.species.name}はひるんで動けない！`);
+        // ひるみ付与（後続の行動時にactions.tsで行動不能判定）
+        target.flinched = true;
+        messages.push(`${target.species.name}はひるんだ！`);
         break;
         
       case 'stat_up':

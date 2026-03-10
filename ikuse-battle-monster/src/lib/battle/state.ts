@@ -56,6 +56,7 @@ export function createBattleMonster(
     statStages: createInitialStatStages(),
     isConfused: false,
     confusionTurns: 0,
+    flinched: false,
     protected: false,
     charging: false,
     diving: false,
@@ -110,6 +111,7 @@ export function createBattleState(
     weatherTurns: 0,
     turn: 1,
     phase: 'selection',
+    actionOrder: [0, 1],
     log: [],
   };
 }
@@ -167,9 +169,8 @@ export function checkWinner(state: BattleState): 0 | 1 | null {
   const alive1 = getAliveCount(state.players[1]);
   
   if (alive0 === 0 && alive1 === 0) {
-    // 両者全滅 → 後攻の勝利（要実装: 行動順トラッキング）
-    // 暫定: player1の勝利
-    return 1;
+    // 両者全滅 → 後攻側（このターンで後に動いた側）の勝利
+    return state.actionOrder[1];
   }
   if (alive0 === 0) return 1;
   if (alive1 === 0) return 0;
@@ -239,6 +240,7 @@ export function resetStatStages(monster: BattleMonster): void {
   monster.statStages = createInitialStatStages();
   monster.isConfused = false;
   monster.confusionTurns = 0;
+  monster.flinched = false;
   monster.protected = false;
   monster.charging = false;
   monster.lastUsedSkill = undefined;

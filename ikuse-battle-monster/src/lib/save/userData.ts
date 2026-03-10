@@ -66,7 +66,14 @@ export const MAX_MONSTERS = 50;
 export const MAX_PARTY_SIZE = 3;
 
 // 御三家ID
-export const STARTER_IDS = ['flamerion', 'aquarion', 'terraron'];
+export const STARTER_IDS = ['flameoo', 'frosty', 'gale_wing'];
+
+// 御三家選択時に付与する相性補完の早熟モンスター2体
+export const STARTER_BONUS_MONSTERS: Record<string, [string, string]> = {
+  flameoo: ['sparky', 'rocky'],
+  frosty: ['aquan', 'ember_cat'],
+  gale_wing: ['rocky', 'blizzap'],
+};
 
 // ============================================
 // デフォルト値
