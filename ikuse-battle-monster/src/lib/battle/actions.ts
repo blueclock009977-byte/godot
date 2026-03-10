@@ -477,6 +477,32 @@ function executeSkill(
     return { success: true, damage: 0, messages };
   }
   
+  // === 一撃必殺技（OHKO）の処理 ===
+  // 地割れ（fissure）、絶対零度（sheer_cold）など
+  const ohkoEffect = skill.effects.find(e => e.type === 'ohko');
+  if (ohkoEffect) {
+    messages.push(`${attacker.species.name}の${skill.name}！`);
+    
+    // 命中判定（通常30%）
+    if (!checkAccuracy(attacker, defender, skill)) {
+      messages.push(`しかし攻撃は外れた！`);
+      addLog(state, messages.join(' '), 'info');
+      return { success: true, damage: 0, messages };
+    }
+    
+    // 頑丈（sturdy）は一撃必殺を防げない（ポケモン準拠）
+    // 不死鳥（phoenix）も一撃必殺では復活しない
+    const damage = defender.currentHp;
+    applyHpChange(defender, -damage);
+    
+    messages.push(`一撃必殺！`);
+    messages.push(`${defender.species.name}は倒れた！`);
+    addLog(state, messages.join(' '), 'damage');
+    addLog(state, `${defender.species.name}は倒れた！`, 'ko');
+    
+    return { success: true, damage, fainted: true, messages };
+  }
+  
   // 吸収系特性チェック（ダメージ計算前）
   if (skill.power > 0) {
     const absorbResult = checkAbsorbAbility(defender, skill.type);

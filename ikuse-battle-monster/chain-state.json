@@ -1,7 +1,7 @@
 {
   "taskId": "ikuse-battle-2026-03-10",
   "goal": "育成モンスターバトルをNext.jsで作成",
-  "currentPhase": 20,
+  "currentPhase": 21,
   "phaseAttempt": 1,
   "maxAttempts": 30,
   "log": [
@@ -181,7 +181,15 @@
     "  - 天候発動特性（drought, drizzle, sand_stream, snow_warning）は既に実装済み",
     "  - ダメージ補正（晴れ:炎1.5倍/水0.5倍、雨:水1.5倍/炎0.5倍）も既に実装済み",
     "  - 砂嵐ダメージ（岩/土/鋼以外に毎ターン1/16ダメージ）も既に実装済み",
-    "ビルド成功確認"
+    "ビルド成功確認",
+    "Phase 21 開始: 2026-03-10 15:44",
+    "/starter 404問題を解決",
+    "  - 原因: app/とsrc/app/の両方が存在してNext.jsが混乱",
+    "  - 解決: app/を削除しsrc/app/に統合",
+    "  - next.config.tsにturbopack.root設定を追加（複数lockfile警告解消）",
+    "  - /battleページをdynamic importに変更（SSRエラー回避）",
+    "  - 全ルート正常: /, /battle, /online, /online/battle, /profile, /settings, /starter",
+    "ビルド成功確認、dev server動作確認"
   ],
   "completed": [
     "phase1-setup",
@@ -203,7 +211,8 @@
     "phase17-mana-seal",
     "phase18-mana-share",
     "phase19-mana-boost",
-    "phase20-weather-skill"
+    "phase20-weather-skill",
+    "phase21-starter-fix"
   ],
   "status": "IN_PROGRESS"
 }
