@@ -1,0 +1,372 @@
+/**
+ * バトル状態管理モジュール
+ */
+
+import {
+  BattleState,
+  BattlePlayer,
+  BattleMonster,
+  BattleLogEntry,
+  BattlePhase,
+  MonsterInstance,
+  MonsterSpecies,
+  Weather,
+  StatStages,
+  INITIAL_MANA,
+  MAX_MANA,
+  MANA_PER_TURN,
+  PARTY_SIZE,
+} from '../types';
+
+// ============================================
+// 初期化
+// ============================================
+
+/**
+ * 初期ステータスステージを作成
+ */
+export function createInitialStatStages(): StatStages {
+  return {
+    atk: 0,
+    def: 0,
+    spd: 0,
+    mag: 0,
+    res: 0,
+    accuracy: 0,
+    evasion: 0,
+  };
+}
+
+/**
+ * バトルモンスターを作成
+ */
+export function createBattleMonster(
+  instance: MonsterInstance,
+  species: MonsterSpecies
+): BattleMonster {
+  const maxHp = calculateMaxHp(species.baseStats.hp);
+  
+  return {
+    instance,
+    species,
+    currentHp: instance.currentHp ?? maxHp,
+    maxHp,
+    status: 'none',
+    statusTurns: 0,
+    statStages: createInitialStatStages(),
+    isConfused: false,
+    confusionTurns: 0,
+    protected: false,
+    charging: false,
+    diving: false,
+    flying: false,
+    trapped: false,
+    trappedTurns: 0,
+    lastUsedSkill: undefined,
+    abilityDisabled: false,
+  };
+}
+
+/**
+ * 最大HPを計算（レベル50固定）
+ * HP = (種族値 × 2 × レベル / 100) + レベル + 10
+ * レベル50: HP = 種族値 + 60
+ */
+export function calculateMaxHp(baseHp: number): number {
+  return baseHp + 60;
+}
+
+/**
+ * バトルプレイヤーを作成
+ */
+export function createBattlePlayer(
+  id: string,
+  name: string,
+  party: { instance: MonsterInstance; species: MonsterSpecies }[]
+): BattlePlayer {
+  if (party.length !== PARTY_SIZE) {
+    throw new Error(`Party must have exactly ${PARTY_SIZE} monsters`);
+  }
+  
+  return {
+    id,
+    name,
+    party: party.map(p => createBattleMonster(p.instance, p.species)),
+    activeIndex: 0,
+    mana: INITIAL_MANA,
+  };
+}
+
+/**
+ * バトル状態を初期化
+ */
+export function createBattleState(
+  player1: BattlePlayer,
+  player2: BattlePlayer
+): BattleState {
+  return {
+    players: [player1, player2],
+    weather: 'none',
+    weatherTurns: 0,
+    turn: 1,
+    phase: 'selection',
+    log: [],
+  };
+}
+
+// ============================================
+// 状態取得
+// ============================================
+
+/**
+ * アクティブモンスターを取得
+ */
+export function getActiveMonster(player: BattlePlayer): BattleMonster {
+  return player.party[player.activeIndex];
+}
+
+/**
+ * 生存モンスター数を取得
+ */
+export function getAliveCount(player: BattlePlayer): number {
+  return player.party.filter(m => m.currentHp > 0).length;
+}
+
+/**
+ * 交代可能なモンスターを取得
+ */
+export function getAvailableSwitches(player: BattlePlayer): number[] {
+  const indices: number[] = [];
+  player.party.forEach((monster, index) => {
+    if (index !== player.activeIndex && monster.currentHp > 0) {
+      indices.push(index);
+    }
+  });
+  return indices;
+}
+
+/**
+ * 使用可能な技を取得（マナチェック含む）
+ */
+export function getUsableSkills(
+  player: BattlePlayer,
+  skills: Map<string, { manaCost: number }>
+): string[] {
+  const monster = getActiveMonster(player);
+  return monster.instance.skills.filter(skillId => {
+    const skill = skills.get(skillId);
+    return skill && player.mana >= skill.manaCost;
+  });
+}
+
+/**
+ * 勝敗判定
+ */
+export function checkWinner(state: BattleState): 0 | 1 | null {
+  const alive0 = getAliveCount(state.players[0]);
+  const alive1 = getAliveCount(state.players[1]);
+  
+  if (alive0 === 0 && alive1 === 0) {
+    // 両者全滅 → 後攻の勝利（要実装: 行動順トラッキング）
+    // 暫定: player1の勝利
+    return 1;
+  }
+  if (alive0 === 0) return 1;
+  if (alive1 === 0) return 0;
+  return null;
+}
+
+// ============================================
+// 状態変更
+// ============================================
+
+/**
+ * HPを変更（ダメージ/回復）
+ */
+export function applyHpChange(
+  monster: BattleMonster,
+  amount: number
+): { newHp: number; fainted: boolean } {
+  const oldHp = monster.currentHp;
+  monster.currentHp = Math.max(0, Math.min(monster.maxHp, monster.currentHp + amount));
+  
+  return {
+    newHp: monster.currentHp,
+    fainted: oldHp > 0 && monster.currentHp === 0,
+  };
+}
+
+/**
+ * マナを変更
+ */
+export function applyManaChange(
+  player: BattlePlayer,
+  amount: number
+): number {
+  player.mana = Math.max(0, Math.min(MAX_MANA, player.mana + amount));
+  return player.mana;
+}
+
+/**
+ * ターン開始時のマナ回復
+ */
+export function regenerateMana(player: BattlePlayer): number {
+  return applyManaChange(player, MANA_PER_TURN);
+}
+
+/**
+ * ステータスステージを変更
+ */
+export function applyStatStageChange(
+  monster: BattleMonster,
+  stat: keyof StatStages,
+  change: number
+): { newStage: number; actualChange: number } {
+  const oldStage = monster.statStages[stat];
+  const newStage = Math.max(-6, Math.min(6, oldStage + change));
+  monster.statStages[stat] = newStage;
+  
+  return {
+    newStage,
+    actualChange: newStage - oldStage,
+  };
+}
+
+/**
+ * ステータスステージをリセット（交代時）
+ */
+export function resetStatStages(monster: BattleMonster): void {
+  monster.statStages = createInitialStatStages();
+  monster.isConfused = false;
+  monster.confusionTurns = 0;
+  monster.protected = false;
+  monster.charging = false;
+  monster.lastUsedSkill = undefined;
+}
+
+/**
+ * 交代処理
+ */
+export function switchMonster(
+  player: BattlePlayer,
+  newIndex: number
+): BattleMonster {
+  if (newIndex < 0 || newIndex >= player.party.length) {
+    throw new Error(`Invalid switch index: ${newIndex}`);
+  }
+  
+  const newMonster = player.party[newIndex];
+  if (newMonster.currentHp <= 0) {
+    throw new Error('Cannot switch to fainted monster');
+  }
+  
+  // 現在のモンスターのステージをリセット
+  const currentMonster = getActiveMonster(player);
+  resetStatStages(currentMonster);
+  
+  // 交代
+  player.activeIndex = newIndex;
+  
+  return newMonster;
+}
+
+/**
+ * 天候を設定
+ */
+export function setWeather(
+  state: BattleState,
+  weather: Weather,
+  turns: number = 5
+): void {
+  state.weather = weather;
+  state.weatherTurns = turns;
+}
+
+/**
+ * 天候ターン経過
+ */
+export function tickWeather(state: BattleState): boolean {
+  if (state.weather === 'none') return false;
+  
+  state.weatherTurns--;
+  if (state.weatherTurns <= 0) {
+    state.weather = 'none';
+    return true; // 天候が終了した
+  }
+  return false;
+}
+
+// ============================================
+// フェーズ管理
+// ============================================
+
+/**
+ * フェーズを進める
+ */
+export function advancePhase(state: BattleState): BattlePhase {
+  switch (state.phase) {
+    case 'selection':
+      state.phase = 'resolution';
+      break;
+    case 'resolution':
+      state.phase = 'turn_end';
+      break;
+    case 'turn_end':
+      // 勝敗チェック
+      const winner = checkWinner(state);
+      if (winner !== null) {
+        state.phase = 'ended';
+      } else {
+        state.turn++;
+        state.phase = 'selection';
+      }
+      break;
+  }
+  return state.phase;
+}
+
+// ============================================
+// ログ
+// ============================================
+
+/**
+ * ログを追加
+ */
+export function addLog(
+  state: BattleState,
+  message: string,
+  type: BattleLogEntry['type'] = 'info'
+): void {
+  state.log.push({
+    turn: state.turn,
+    message,
+    type,
+  });
+}
+
+/**
+ * ダメージログを追加
+ */
+export function addDamageLog(
+  state: BattleState,
+  attackerName: string,
+  defenderName: string,
+  skillName: string,
+  damage: number,
+  isCritical: boolean,
+  effectiveness: number
+): void {
+  let message = `${attackerName}の${skillName}！ ${defenderName}に${damage}ダメージ！`;
+  
+  if (isCritical) {
+    message = `急所に当たった！ ` + message;
+  }
+  
+  if (effectiveness > 1) {
+    message += ' 効果は抜群だ！';
+  } else if (effectiveness < 1) {
+    message += ' 効果はいまひとつ...';
+  }
+  
+  addLog(state, message, 'damage');
+}

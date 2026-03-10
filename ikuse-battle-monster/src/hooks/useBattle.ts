@@ -1,0 +1,283 @@
+'use client';
+
+/**
+ * バトル用React Hook
+ * ゲームループとUIの橋渡し
+ */
+
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import {
+  BattleState,
+  BattleAction,
+  Skill,
+  MonsterSpecies,
+  MonsterInstance,
+} from '@/lib/types';
+import {
+  GameState,
+  createGameState,
+  startBattle,
+  submitAction,
+  executeTurn,
+  submitForcedSwitch,
+  getAvailableActions,
+  selectAIAction,
+  selectAIForcedSwitch,
+  getBattleResult,
+  BattleResult,
+  AvailableActions,
+} from '@/lib/battle/gameLoop';
+import { skillMap } from '@/lib/data/skills';
+import { getActiveMonster } from '@/lib/battle/state';
+
+// ============================================
+// 型定義
+// ============================================
+
+export interface UseBattleOptions {
+  player1: {
+    id: string;
+    name: string;
+    party: { instance: MonsterInstance; species: MonsterSpecies }[];
+  };
+  player2: {
+    id: string;
+    name: string;
+    party: { instance: MonsterInstance; species: MonsterSpecies }[];
+  };
+  isPlayer2AI?: boolean;
+  aiDelay?: number; // AI行動の遅延（ms）
+}
+
+export interface UseBattleReturn {
+  // 状態
+  gameState: GameState;
+  battleState: BattleState;
+  isPlayerTurn: boolean;
+  status: GameState['status'];
+  winner: 0 | 1 | null;
+  result: BattleResult | null;
+  messages: string[];
+  
+  // プレイヤー情報
+  playerMonster: ReturnType<typeof getActiveMonster>;
+  opponentMonster: ReturnType<typeof getActiveMonster>;
+  playerMana: number;
+  opponentMana: number;
+  
+  // 行動選択
+  availableActions: AvailableActions;
+  selectedAction: BattleAction | null;
+  
+  // アクション
+  startGame: () => void;
+  selectSkill: (skillId: string) => void;
+  selectSwitch: (index: number) => void;
+  selectWait: () => void;
+  confirmAction: () => void;
+  submitForcedSwitch: (index: number) => void;
+  
+  // ユーティリティ
+  getSkill: (skillId: string) => Skill | undefined;
+  isLoading: boolean;
+}
+
+// ============================================
+// Hook本体
+// ============================================
+
+export function useBattle(options: UseBattleOptions): UseBattleReturn {
+  const { player1, player2, isPlayer2AI = true, aiDelay = 800 } = options;
+  
+  // ゲーム状態
+  const [gameState, setGameState] = useState<GameState>(() =>
+    createGameState(player1, player2)
+  );
+  const [selectedAction, setSelectedAction] = useState<BattleAction | null>(null);
+  const [messages, setMessages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // スキルマップ
+  const skills = useMemo(() => skillMap, []);
+  
+  // 派生状態
+  const battleState = gameState.battle;
+  const status = gameState.status;
+  const winner = gameState.winner;
+  const isPlayerTurn = status === 'selecting' || status === 'forced_switch';
+  
+  const playerMonster = getActiveMonster(battleState.players[0]);
+  const opponentMonster = getActiveMonster(battleState.players[1]);
+  const playerMana = battleState.players[0].mana;
+  const opponentMana = battleState.players[1].mana;
+  
+  const availableActions = useMemo(
+    () => getAvailableActions(gameState, 0, skills),
+    [gameState, skills]
+  );
+  
+  const result = useMemo(
+    () => getBattleResult(gameState),
+    [gameState]
+  );
+  
+  // ============================================
+  // ゲーム開始
+  // ============================================
+  
+  const startGame = useCallback(() => {
+    const newState = createGameState(player1, player2);
+    const { messages: startMessages, state } = startBattle(newState);
+    setGameState(state);
+    setMessages(startMessages);
+    setGameStarted(true);
+    setSelectedAction(null);
+  }, [player1, player2]);
+  
+  // ============================================
+  // 行動選択
+  // ============================================
+  
+  const selectSkill = useCallback((skillId: string) => {
+    setSelectedAction({ type: 'skill', skillId });
+  }, []);
+  
+  const selectSwitch = useCallback((index: number) => {
+    setSelectedAction({ type: 'switch', switchTo: index });
+  }, []);
+  
+  const selectWait = useCallback(() => {
+    setSelectedAction({ type: 'wait' });
+  }, []);
+  
+  // ============================================
+  // 行動確定
+  // ============================================
+  
+  const confirmAction = useCallback(() => {
+    if (!selectedAction || isLoading) return;
+    
+    setIsLoading(true);
+    
+    // プレイヤーの行動を送信
+    const result = submitAction(gameState, 0, selectedAction, skills);
+    
+    if (!result.success) {
+      setMessages(prev => [...prev, result.message]);
+      setIsLoading(false);
+      return;
+    }
+    
+    // AI戦の場合、AIの行動も決定
+    if (isPlayer2AI) {
+      const aiAction = selectAIAction(gameState, 1, skills);
+      submitAction(gameState, 1, aiAction, skills);
+    }
+    
+    // 両方揃ったらターン実行
+    setTimeout(() => {
+      const turnResult = executeTurn(gameState, skills);
+      setGameState({ ...turnResult.state });
+      setMessages(turnResult.messages);
+      setSelectedAction(null);
+      setIsLoading(false);
+    }, aiDelay);
+  }, [selectedAction, gameState, skills, isPlayer2AI, aiDelay, isLoading]);
+  
+  // ============================================
+  // 強制交代
+  // ============================================
+  
+  const handleForcedSwitch = useCallback((index: number) => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    // プレイヤーの強制交代
+    const result = submitForcedSwitch(gameState, 0, index);
+    
+    if (!result.success) {
+      setMessages(prev => [...prev, ...result.messages]);
+      setIsLoading(false);
+      return;
+    }
+    
+    setMessages(prev => [...prev, ...result.messages]);
+    setGameState({ ...result.state });
+    setIsLoading(false);
+  }, [gameState, isLoading]);
+  
+  // ============================================
+  // AI強制交代の自動処理
+  // ============================================
+  
+  useEffect(() => {
+    if (
+      status === 'forced_switch' &&
+      isPlayer2AI &&
+      gameState.forcedSwitchPending.includes(1) &&
+      !isLoading
+    ) {
+      // 次のレンダリングサイクルで処理を行う
+      const timeoutId = setTimeout(() => {
+        setIsLoading(true);
+        
+        setTimeout(() => {
+          const switchTo = selectAIForcedSwitch(gameState, 1);
+          const result = submitForcedSwitch(gameState, 1, switchTo);
+          
+          setMessages(prev => [...prev, ...result.messages]);
+          setGameState({ ...result.state });
+          setIsLoading(false);
+        }, aiDelay);
+      }, 0);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [status, isPlayer2AI, gameState, aiDelay, isLoading]);
+  
+  // ============================================
+  // ユーティリティ
+  // ============================================
+  
+  const getSkill = useCallback((skillId: string) => {
+    return skills.get(skillId);
+  }, [skills]);
+  
+  // ============================================
+  // 返り値
+  // ============================================
+  
+  return {
+    // 状態
+    gameState,
+    battleState,
+    isPlayerTurn,
+    status,
+    winner,
+    result,
+    messages,
+    
+    // プレイヤー情報
+    playerMonster,
+    opponentMonster,
+    playerMana,
+    opponentMana,
+    
+    // 行動選択
+    availableActions,
+    selectedAction,
+    
+    // アクション
+    startGame,
+    selectSkill,
+    selectSwitch,
+    selectWait,
+    confirmAction,
+    submitForcedSwitch: handleForcedSwitch,
+    
+    // ユーティリティ
+    getSkill,
+    isLoading,
+  };
+}
