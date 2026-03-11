@@ -143,6 +143,12 @@ export default function HomePage() {
               👤 プロフィール
             </Link>
             <Link
+              href="/monsters"
+              className="block rounded-xl bg-emerald-700 hover:bg-emerald-600 transition-colors px-4 py-3 text-center font-bold"
+            >
+              📖 図鑑
+            </Link>
+            <Link
               href="/settings"
               className="block rounded-xl bg-gray-600 hover:bg-gray-500 transition-colors px-4 py-3 text-center font-bold"
             >

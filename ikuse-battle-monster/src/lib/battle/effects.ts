@@ -287,7 +287,17 @@ export function applyStatusCondition(
     return messages;
   }
   
-  // TODO: 毒タイプは毒にならない、など
+  // NOTE: このゲームには毒タイプが存在しないため、毒免疫のタイプ判定は不要
+  // 炎タイプはやけどにならない
+  if (status === 'burn' && types.includes('fire')) {
+    messages.push(`${monster.species.name}はやけどにならない！`);
+    return messages;
+  }
+  // 氷タイプは凍りにならない
+  if (status === 'freeze' && types.includes('ice')) {
+    messages.push(`${monster.species.name}はこおりにならない！`);
+    return messages;
+  }
 
   // 光の加護（light_ward）: 状態異常にかかりにくい（50%で無効化）
   if (monster.instance.ability === 'light_ward' && Math.random() < 0.5) {
@@ -850,13 +860,7 @@ export function processContactAbility(
     }
   }
   
-  // 呪われボディ: 技を受けると30%で封印（TODO: 技封印の実装）
-  // if (defenderAbility === 'cursed_body') {
-  //   if (Math.random() < 0.3) {
-  //     messages.push(`${defender.species.name}ののろわれボディ！`);
-  //     // 技封印処理
-  //   }
-  // }
+  // 呪われボディ: processDefenderAbilityAfterHit で実装済み
   
   // === 攻撃側の接触時特性 ===
   
@@ -993,10 +997,6 @@ export function processOnEnterAbility(
   const messages: string[] = [];
   const monster = getActiveMonster(state.players[playerIndex]);
   const abilityId = monster.instance.ability;
-  
-  // TODO: 特性ごとの処理を実装
-  // 例: ひでり → 天候を晴れにする
-  // 例: いかく → 相手のATKを1段階下げる
   
   switch (abilityId) {
     case 'drought':
