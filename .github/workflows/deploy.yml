@@ -29,11 +29,9 @@ jobs:
           mkdir -p "$TEMPLATE_DIR"
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
-          echo "=== zip contents ==="
-          ls /tmp/templates/
           cp /tmp/templates/* "$TEMPLATE_DIR/"
-          echo "=== installed at $TEMPLATE_DIR ==="
-          ls -la "$TEMPLATE_DIR/" | grep -i web
+          echo "=== web templates ==="
+          ls "$TEMPLATE_DIR/" | grep -i web
           rm -rf /tmp/templates /tmp/templates.tpz
 
       - name: Import project
@@ -42,22 +40,21 @@ jobs:
           timeout 30 godot --headless --import 2>&1 || true
           sleep 2
 
-      - name: List presets
-        run: |
-          cd tsum-game-godogen
-          echo "=== export_presets.cfg ==="
-          cat export_presets.cfg
-          echo "=== trying list presets ==="
-          godot --headless --list-presets 2>&1 || echo "list-presets not supported"
-
       - name: Export Web build
         run: |
           mkdir -p tsum-game-godogen/build/web
           cd tsum-game-godogen
-          godot --headless -v --export-release "Web" build/web/index.html 2>&1
+          timeout 120 godot --headless --export-release "Web" build/web/index.html 2>&1 || true
+          echo "=== build output ==="
+          ls -la build/web/ 2>/dev/null || echo "no build output"
+
+          if [ ! -f build/web/index.html ]; then
+            echo "Export failed, trying with debug mode..."
+            timeout 120 godot --headless --export-debug "Web" build/web/index.html 2>&1 || true
+            ls -la build/web/ 2>/dev/null || echo "still no output"
+          fi
 
           cd build/web
-          ls -la
           TIMESTAMP=$(date +%s)
 
           sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
