@@ -1,3 +1,6 @@
 [gd_scene format=3]
 
-[node name="GameField" type="Node2D" unique_id=388599780]
+[ext_resource type="Script" path="res://scripts/game_field.gd" id="1_kqygk"]
+
+[node name="GameField" type="Node2D" unique_id=42199599]
+script = ExtResource("1_kqygk")

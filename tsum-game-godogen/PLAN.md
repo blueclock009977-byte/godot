@@ -16,6 +16,8 @@
 - 10キャラクター（各色2体ずつ、固有スキル付き）
 
 ## 1. Core Puzzle Mechanics
+- **Status:** done
+- **Targets:** scripts/game_manager.gd, scripts/game_field.gd, scripts/tsum.gd, scripts/ui_manager.gd, scripts/main.gd, scripts/title.gd, scenes/main.tscn, scenes/title.tscn, scenes/tsum.tscn, scenes/game_field.tscn
 - **Depends on:** (none)
 - **Goal:** ツムの物理配置、チェーン検出、消去、補充、スコアリング、タイマー、コンボ、フィーバーを含む完全なゲームプレイループを実装する。
 - **Requirements:**
@@ -34,6 +36,8 @@
 - **Verify:** ツムが物理演算で積み重なり、同色をドラッグで繋げて消せる。消えた後に補充される。HUDにスコア・タイマー・コンボ・フィーバーゲージが表示され、時間経過でゲームオーバー画面が出る。
 
 ## 2. Party System & Character Skills
+- **Status:** pending
+- **Targets:** scripts/data/characters.gd, scripts/party_manager.gd, scripts/party_edit.gd, scripts/skills/skill_executor.gd, scripts/game_manager.gd, scripts/ui_manager.gd, scenes/party_edit.tscn, scenes/main.tscn
 - **Depends on:** 1
 - **Goal:** パーティ編成画面とキャラクタースキルシステムを実装し、ゲームプレイに組み込む。
 - **Requirements:**
@@ -47,6 +51,8 @@
 - **Verify:** パーティ編成画面でキャラを選択でき、ゲーム内でリーダースキル効果が反映され、スキルボタンをタップしてアクティブスキルが発動する。パッシブ効果もスコアやゲージに反映されている。
 
 ## 3. Presentation Video
+- **Status:** pending
+- **Targets:** test/presentation.gd, screenshots/presentation/gameplay.mp4
 - **Depends on:** 1, 2
 - **Goal:** Create a ~30-second cinematic video showcasing the completed game.
 - **Requirements:**

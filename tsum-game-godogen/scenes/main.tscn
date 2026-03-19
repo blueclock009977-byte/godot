@@ -1,17 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://scripts/main.gd" id="1_sugp2"]
-[ext_resource type="PackedScene" path="res://scenes/game_field.tscn" id="2_jyhfs"]
-[ext_resource type="Script" path="res://scripts/ui_manager.gd" id="3_tbgi4"]
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_jyhfs"]
+[ext_resource type="PackedScene" path="res://scenes/game_field.tscn" id="2_tbgi4"]
+[ext_resource type="Script" path="res://scripts/game_field.gd" id="3_tefeu"]
+[ext_resource type="Script" path="res://scripts/ui_manager.gd" id="4_o6xl0"]
 
-[node name="Main" type="Node2D" unique_id=1535677785]
-script = ExtResource("1_sugp2")
+[node name="Main" type="Node2D" unique_id=1388692698]
+script = ExtResource("1_jyhfs")
 
-[node name="GameField" type="Node2D" parent="." unique_id=388599780 instance=ExtResource("2_jyhfs")]
+[node name="GameField" type="Node2D" parent="." unique_id=42199599 instance=ExtResource("2_tbgi4")]
+script = ExtResource("3_tefeu")
 
-[node name="UILayer" type="CanvasLayer" parent="." unique_id=1485652542]
+[node name="UILayer" type="CanvasLayer" parent="." unique_id=1282708419]
 
-[node name="UI" type="Control" parent="UILayer" unique_id=2079939283]
+[node name="UI" type="Control" parent="UILayer" unique_id=1168237350]
 layout_mode = 3
 anchors_preset = 0
-script = ExtResource("3_tbgi4")
+script = ExtResource("4_o6xl0")
