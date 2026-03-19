@@ -51,7 +51,7 @@
 - **Verify:** パーティ編成画面でキャラを選択でき、ゲーム内でリーダースキル効果が反映され、スキルボタンをタップしてアクティブスキルが発動する。パッシブ効果もスコアやゲージに反映されている。
 
 ## 3. Presentation Video
-- **Status:** pending
+- **Status:** done
 - **Targets:** test/presentation.gd, screenshots/presentation/gameplay.mp4
 - **Depends on:** 1, 2
 - **Goal:** Create a ~30-second cinematic video showcasing the completed game.
