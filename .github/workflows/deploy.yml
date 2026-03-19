@@ -29,8 +29,11 @@ jobs:
           mkdir -p "$TEMPLATE_DIR"
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
+          echo "=== template zip contents ==="
+          ls /tmp/templates/ | head -10
           cp /tmp/templates/* "$TEMPLATE_DIR/"
-          ls -la "$TEMPLATE_DIR/" | head -5
+          echo "=== installed templates ==="
+          ls "$TEMPLATE_DIR/" | grep -i web
           rm -rf /tmp/templates /tmp/templates.tpz
 
       - name: Import project
@@ -38,19 +41,11 @@ jobs:
           cd tsum-game-godogen
           timeout 30 godot --headless --import 2>&1 || true
           sleep 2
-          echo "=== .godot dir ==="
-          ls -la .godot/ 2>/dev/null || echo "no .godot dir"
-          echo "=== import done ==="
 
       - name: Export Web build
         run: |
           mkdir -p tsum-game-godogen/build/web
           cd tsum-game-godogen
-          echo "=== export_presets.cfg ==="
-          cat export_presets.cfg
-          echo "=== project.godot ==="
-          cat project.godot
-          echo "=== starting export ==="
           godot --headless --export-release "Web" build/web/index.html 2>&1
 
           cd build/web
