@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/party_edit.gd" id="1_48mob"]
 
-[node name="PartyEdit" type="Control" unique_id=1928132879]
+[node name="PartyEdit" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_48mob")

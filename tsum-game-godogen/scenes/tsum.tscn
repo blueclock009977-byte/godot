@@ -9,11 +9,11 @@ bounce = 0.3
 [sub_resource type="CircleShape2D" id="CircleShape2D_hg1jq"]
 radius = 30.0
 
-[node name="Tsum" type="RigidBody2D" unique_id=1442881435]
+[node name="Tsum" type="RigidBody2D"]
 physics_material_override = SubResource("PhysicsMaterial_8fh85")
 script = ExtResource("1_uswjn")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1551573693]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_hg1jq")
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=2002901987]
+[node name="Sprite2D" type="Sprite2D" parent="."]
