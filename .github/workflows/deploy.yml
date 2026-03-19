@@ -1,4 +1,4 @@
-name: Deploy Dice Deck Random to GitHub Pages
+name: Deploy Tsum Puzzle to GitHub Pages
 
 on:
   push:
@@ -15,42 +15,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test-shell:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run syntax check
-        run: bash dice-deck-random/tools/check_syntax.sh
-
-      - name: Run test suite
-        run: bash dice-deck-random/tools/run_tests.sh
-
-  test-gut:
-    runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.4.1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Import project
-        run: |
-          cd dice-deck-random
-          godot --headless --import 2>&1 || true
-          sleep 2
-
-      - name: Run GUT unit tests
-        run: |
-          cd dice-deck-random
-          timeout 60 godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://test/unit/ -gexit 2>&1 | tee /tmp/gut_output.txt || true
-          cat /tmp/gut_output.txt
-          if grep -qE "[1-9][0-9]* failing" /tmp/gut_output.txt; then
-            echo "::error::GUT tests have failures!"
-            exit 1
-          fi
-
   export-web:
     runs-on: ubuntu-latest
     container:
@@ -58,19 +22,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Auto-update version in title screen
-        run: |
-          git config --global --add safe.directory $(pwd)
-          VERSION=$(git log -1 --format=%s | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)
-          echo "Commit message: $(git log -1 --format=%s)"
-          echo "Extracted version: $VERSION"
-          if [ -n "$VERSION" ]; then
-            sed -i "s/v[0-9]*\.[0-9]*\.[0-9]*/$VERSION/" dice-deck-random/scenes/title/title_screen.gd
-            echo "Updated title version to $VERSION"
-          else
-            echo "No version in commit message, keeping current"
-          fi
 
       - name: Setup export templates
         run: |
@@ -83,23 +34,23 @@ jobs:
 
       - name: Import project
         run: |
-          cd dice-deck-random
+          cd tsum-game-godogen
           godot --headless --import 2>&1 || true
           sleep 2
 
       - name: Export Web build
         run: |
-          mkdir -p dice-deck-random/build/web
-          cd dice-deck-random
+          mkdir -p tsum-game-godogen/build/web
+          cd tsum-game-godogen
           godot --headless --export-release "Web" build/web/index.html
 
           cd build/web
           TIMESTAMP=$(date +%s)
 
+          # Disable service worker & cache busting
           sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
 
           sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' index.html
-
           rm -f *.worker.js *.service.worker.js sw.js service-worker.js
 
           for f in *.js; do
@@ -117,7 +68,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dice-deck-random/build/web
+          path: tsum-game-godogen/build/web
 
   deploy:
     environment:
