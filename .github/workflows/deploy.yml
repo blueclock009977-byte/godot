@@ -38,30 +38,12 @@ jobs:
         run: |
           cd tsum-game-godogen
           rm -rf .godot
-
-          # Save real project.godot
           cp project.godot project.godot.real
 
-          # Use dice-deck's project.godot as base (known to export)
-          # but patch ALL settings for tsum-game
-          cp ../dice-deck-random/project.godot project.godot
+          # Key fix: use "4.6" in config/features (same as dice-deck which works)
+          sed -i 's/PackedStringArray("4.4"/PackedStringArray("4.6"/' project.godot
 
-          # Patch for tsum-game
-          sed -i 's|run/main_scene=.*|run/main_scene="res://scenes/title.tscn"|' project.godot
-          sed -i 's|config/name=.*|config/name="TsumPuzzle"|' project.godot
-          sed -i 's|window/size/viewport_width=.*|window/size/viewport_width=540|' project.godot
-          sed -i 's|window/size/viewport_height=.*|window/size/viewport_height=960|' project.godot
-          sed -i 's|window/stretch/aspect=.*|window/stretch/aspect="keep"|' project.godot
-
-          # Remove dice-deck autoloads and add tsum ones
-          sed -i '/^\[autoload\]/,/^\[/{//!d}' project.godot
-          sed -i '/^\[autoload\]/a GameManager="*res://scripts/game_manager.gd"\nPartyManager="*res://scripts/party_manager.gd"\nCharacterData="*res://scripts/data/characters.gd"' project.godot
-
-          # Remove physics section (tsum doesn't need Jolt)
-          sed -i '/^\[physics\]/,/^\[/{//!d}' project.godot
-          sed -i '/^\[physics\]$/d' project.godot
-
-          echo "=== Export project.godot ==="
+          echo "=== project.godot ==="
           cat project.godot
 
           timeout 60 godot --headless --import 2>&1 || true
@@ -70,7 +52,6 @@ jobs:
           mkdir -p build/web
           timeout 120 godot --headless --export-release "Web" build/web/index.html 2>&1 || true
 
-          # Restore
           mv project.godot.real project.godot
 
           ls -la build/web/
