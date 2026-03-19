@@ -25,40 +25,34 @@ jobs:
 
       - name: Setup export templates
         run: |
-          echo "HOME=$HOME"
-          echo "=== checking existing templates ==="
-          find / -name "web_*" -o -name "*web*template*" 2>/dev/null | head -20 || true
-          find / -path "*/export_templates/*" 2>/dev/null | head -20 || true
-
-          echo "=== downloading templates ==="
+          # HOME=/github/home but Godot looks at $HOME, so install there
           TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/4.4.1.stable"
           mkdir -p "$TEMPLATE_DIR"
+          # Also ensure /root/ has them
+          mkdir -p "/root/.local/share/godot/export_templates/4.4.1.stable"
+
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
           cp /tmp/templates/* "$TEMPLATE_DIR/"
-          echo "=== installed templates ==="
+          cp /tmp/templates/* "/root/.local/share/godot/export_templates/4.4.1.stable/"
+          echo "=== templates at HOME ==="
           ls "$TEMPLATE_DIR/" | grep -i web
-          echo "=== full template list ==="
-          ls "$TEMPLATE_DIR/"
           rm -rf /tmp/templates /tmp/templates.tpz
 
       - name: Import and export
         run: |
           cd tsum-game-godogen
 
-          echo "=== Step 1: Import ==="
           timeout 60 godot --headless --import 2>&1 || true
           sleep 2
 
-          echo "=== Step 2: Export ==="
           mkdir -p build/web
           timeout 120 godot --headless --export-release "Web" build/web/index.html 2>&1 || true
 
-          echo "=== build output ==="
           ls -la build/web/
 
           if [ ! -f build/web/index.html ]; then
-            echo "=== EXPORT FAILED ==="
+            echo "EXPORT FAILED"
             exit 1
           fi
 
