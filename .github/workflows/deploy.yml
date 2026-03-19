@@ -29,11 +29,11 @@ jobs:
           mkdir -p "$TEMPLATE_DIR"
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
-          echo "=== template zip contents ==="
-          ls /tmp/templates/ | head -10
+          echo "=== zip contents ==="
+          ls /tmp/templates/
           cp /tmp/templates/* "$TEMPLATE_DIR/"
-          echo "=== installed templates ==="
-          ls "$TEMPLATE_DIR/" | grep -i web
+          echo "=== installed at $TEMPLATE_DIR ==="
+          ls -la "$TEMPLATE_DIR/" | grep -i web
           rm -rf /tmp/templates /tmp/templates.tpz
 
       - name: Import project
@@ -42,13 +42,22 @@ jobs:
           timeout 30 godot --headless --import 2>&1 || true
           sleep 2
 
+      - name: List presets
+        run: |
+          cd tsum-game-godogen
+          echo "=== export_presets.cfg ==="
+          cat export_presets.cfg
+          echo "=== trying list presets ==="
+          godot --headless --list-presets 2>&1 || echo "list-presets not supported"
+
       - name: Export Web build
         run: |
           mkdir -p tsum-game-godogen/build/web
           cd tsum-game-godogen
-          godot --headless --export-release "Web" build/web/index.html 2>&1
+          godot --headless -v --export-release "Web" build/web/index.html 2>&1
 
           cd build/web
+          ls -la
           TIMESTAMP=$(date +%s)
 
           sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
