@@ -36,7 +36,7 @@
 - **Verify:** ツムが物理演算で積み重なり、同色をドラッグで繋げて消せる。消えた後に補充される。HUDにスコア・タイマー・コンボ・フィーバーゲージが表示され、時間経過でゲームオーバー画面が出る。
 
 ## 2. Party System & Character Skills
-- **Status:** pending
+- **Status:** done
 - **Targets:** scripts/data/characters.gd, scripts/party_manager.gd, scripts/party_edit.gd, scripts/skills/skill_executor.gd, scripts/game_manager.gd, scripts/ui_manager.gd, scenes/party_edit.tscn, scenes/main.tscn
 - **Depends on:** 1
 - **Goal:** パーティ編成画面とキャラクタースキルシステムを実装し、ゲームプレイに組み込む。

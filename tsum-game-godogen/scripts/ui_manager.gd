@@ -1,5 +1,5 @@
 extends Control
-## res://scripts/ui_manager.gd: HUD displaying score, timer, combo, fever gauge, and game over overlay
+## res://scripts/ui_manager.gd: HUD displaying score, timer, combo, fever gauge, skill buttons, and game over overlay
 
 var _score_label: Label
 var _time_label: Label
@@ -9,10 +9,15 @@ var _fever_label: Label
 var _game_over_panel: PanelContainer
 var _final_score_label: Label
 var _retry_button: Button
+var _skill_buttons: Array[Button] = []
+var _skill_bars: Array[ProgressBar] = []
+var _skill_labels: Array[Label] = []
+var _leader_label: Label
 
 func _ready() -> void:
 	_build_ui()
 	_connect_signals()
+	_update_leader_label()
 
 func _build_ui() -> void:
 	# Full rect
@@ -58,12 +63,26 @@ func _build_ui() -> void:
 	_combo_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3))
 	top_bar.add_child(_combo_label)
 
+	# Leader skill label
+	_leader_label = Label.new()
+	_leader_label.name = "LeaderLabel"
+	_leader_label.text = ""
+	_leader_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_leader_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_leader_label.offset_top = 58.0
+	_leader_label.offset_bottom = 78.0
+	_leader_label.offset_left = 10.0
+	_leader_label.offset_right = -10.0
+	_leader_label.add_theme_font_size_override("font_size", 14)
+	_leader_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.4))
+	add_child(_leader_label)
+
 	# Fever bar
 	var fever_container := VBoxContainer.new()
 	fever_container.name = "FeverContainer"
 	fever_container.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	fever_container.offset_top = 65.0
-	fever_container.offset_bottom = 100.0
+	fever_container.offset_top = 80.0
+	fever_container.offset_bottom = 115.0
 	fever_container.offset_left = 30.0
 	fever_container.offset_right = -30.0
 	add_child(fever_container)
@@ -84,6 +103,9 @@ func _build_ui() -> void:
 	_fever_bar.custom_minimum_size = Vector2(0, 16)
 	_fever_bar.show_percentage = false
 	fever_container.add_child(_fever_bar)
+
+	# Skill buttons at bottom
+	_build_skill_buttons()
 
 	# Game Over Panel (hidden initially)
 	_game_over_panel = PanelContainer.new()
@@ -134,6 +156,112 @@ func _build_ui() -> void:
 	title_button.pressed.connect(_on_title_pressed)
 	go_vbox.add_child(title_button)
 
+func _build_skill_buttons() -> void:
+	var skill_container := HBoxContainer.new()
+	skill_container.name = "SkillContainer"
+	skill_container.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	skill_container.offset_top = -120.0
+	skill_container.offset_left = 20.0
+	skill_container.offset_right = -20.0
+	skill_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	skill_container.add_theme_constant_override("separation", 20)
+	add_child(skill_container)
+
+	var pm = _find_autoload("PartyManager")
+
+	for i in range(2):
+		var skill_vbox := VBoxContainer.new()
+		skill_vbox.name = "Skill%d" % i
+		skill_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		skill_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		skill_container.add_child(skill_vbox)
+
+		# Skill name label
+		var name_label := Label.new()
+		name_label.name = "SkillName%d" % i
+		name_label.text = "Skill %d" % (i + 1)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.add_theme_font_size_override("font_size", 14)
+		name_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+		skill_vbox.add_child(name_label)
+		_skill_labels.append(name_label)
+
+		# Update label with character name
+		if pm:
+			var ch = pm.get_active_character(i)
+			if not ch.is_empty():
+				name_label.text = ch["name"]
+
+		# Gauge bar
+		var gauge_bar := ProgressBar.new()
+		gauge_bar.name = "SkillGauge%d" % i
+		gauge_bar.min_value = 0.0
+		gauge_bar.max_value = 100.0
+		gauge_bar.value = 0.0
+		gauge_bar.custom_minimum_size = Vector2(0, 12)
+		gauge_bar.show_percentage = false
+		skill_vbox.add_child(gauge_bar)
+		_skill_bars.append(gauge_bar)
+
+		# Update gauge max from character data
+		if pm:
+			gauge_bar.max_value = pm.get_gauge_max(i)
+
+		# Skill button
+		var btn := Button.new()
+		btn.name = "SkillButton%d" % i
+		btn.text = "SKILL"
+		btn.custom_minimum_size = Vector2(100, 50)
+		btn.disabled = true
+		btn.pressed.connect(_on_skill_pressed.bind(i))
+		# Style the button
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.3, 0.2, 0.5)
+		style.corner_radius_top_left = 8
+		style.corner_radius_top_right = 8
+		style.corner_radius_bottom_left = 8
+		style.corner_radius_bottom_right = 8
+		btn.add_theme_stylebox_override("normal", style)
+		var hover_style := StyleBoxFlat.new()
+		hover_style.bg_color = Color(0.4, 0.3, 0.6)
+		hover_style.corner_radius_top_left = 8
+		hover_style.corner_radius_top_right = 8
+		hover_style.corner_radius_bottom_left = 8
+		hover_style.corner_radius_bottom_right = 8
+		btn.add_theme_stylebox_override("hover", hover_style)
+		var disabled_style := StyleBoxFlat.new()
+		disabled_style.bg_color = Color(0.2, 0.15, 0.25)
+		disabled_style.corner_radius_top_left = 8
+		disabled_style.corner_radius_top_right = 8
+		disabled_style.corner_radius_bottom_left = 8
+		disabled_style.corner_radius_bottom_right = 8
+		btn.add_theme_stylebox_override("disabled", disabled_style)
+		skill_vbox.add_child(btn)
+		_skill_buttons.append(btn)
+
+func _update_leader_label() -> void:
+	var pm = _find_autoload("PartyManager")
+	if not pm or not _leader_label:
+		return
+	var leader = pm.get_leader()
+	if leader.is_empty():
+		_leader_label.text = ""
+		return
+	var effect_text: String = ""
+	var lt = leader["leader_type"]
+	match lt:
+		CharacterData.LeaderType.SCORE_BOOST:
+			effect_text = "Score +%d%%" % int(leader["leader_value"] * 100)
+		CharacterData.LeaderType.TIME_EXTEND:
+			effect_text = "Time +%ds" % int(leader["leader_value"])
+		CharacterData.LeaderType.FEVER_BOOST:
+			effect_text = "Fever x%.1f" % (1.0 + leader["leader_value"])
+		CharacterData.LeaderType.COMBO_BOOST:
+			effect_text = "Combo +%.1fs" % leader["leader_value"]
+		CharacterData.LeaderType.GAUGE_BOOST:
+			effect_text = "Gauge +%d%%" % int(leader["leader_value"] * 100)
+	_leader_label.text = "Leader: %s [%s]" % [leader["name"], effect_text]
+
 func _connect_signals() -> void:
 	# Find GameManager autoload
 	var gm = _find_autoload("GameManager")
@@ -183,10 +311,35 @@ func _on_game_over(final_score: int) -> void:
 		_game_over_panel.visible = true
 	if _final_score_label:
 		_final_score_label.text = "Score: %d" % final_score
+	# Disable skill buttons
+	for btn in _skill_buttons:
+		btn.disabled = true
 
-func _on_skill_gauge_updated(_slot: int, _current: float, _max_val: float) -> void:
-	# Placeholder for Phase 2
-	pass
+func _on_skill_gauge_updated(slot: int, current: float, max_val: float) -> void:
+	if slot < 0 or slot > 1:
+		return
+	if slot < _skill_bars.size():
+		_skill_bars[slot].max_value = max_val
+		_skill_bars[slot].value = current
+	if slot < _skill_buttons.size():
+		_skill_buttons[slot].disabled = current < max_val
+		if current >= max_val:
+			_skill_buttons[slot].text = "READY!"
+			_skill_buttons[slot].add_theme_color_override("font_color", Color(1.0, 1.0, 0.3))
+		else:
+			_skill_buttons[slot].text = "SKILL"
+			_skill_buttons[slot].remove_theme_color_override("font_color")
+
+func _on_skill_pressed(slot: int) -> void:
+	var gm = _find_autoload("GameManager")
+	if gm:
+		var result = gm.use_skill(slot)
+		if result.get("success", false):
+			# Flash effect on button
+			if slot < _skill_buttons.size():
+				var tween = create_tween()
+				tween.tween_property(_skill_buttons[slot], ^"modulate", Color(2, 2, 2), 0.1)
+				tween.tween_property(_skill_buttons[slot], ^"modulate", Color.WHITE, 0.2)
 
 func _on_retry_pressed() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")

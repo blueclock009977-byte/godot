@@ -22,6 +22,8 @@ var _initial_spawn_count: int = 40
 var _spawned_count: int = 0
 var _game_active: bool = false
 var _chain_line: Line2D
+var _chain_distance_bonus: float = 0.0
+var _chain_bonus_timer: float = 0.0
 
 # Wall bodies
 var _walls: Array = []
@@ -34,6 +36,8 @@ func _ready() -> void:
 func start_field() -> void:
 	_game_active = true
 	_spawned_count = 0
+	_chain_distance_bonus = 0.0
+	_chain_bonus_timer = 0.0
 	_clear_all_tsums()
 
 func _create_chain_line() -> void:
@@ -70,6 +74,12 @@ func _process(delta: float) -> void:
 	if not _game_active:
 		return
 
+	# Chain distance bonus timer
+	if _chain_distance_bonus > 0.0:
+		_chain_bonus_timer -= delta
+		if _chain_bonus_timer <= 0.0:
+			_chain_distance_bonus = 0.0
+
 	# Spawn tsums gradually
 	if _active_tsums.size() < max_tsums:
 		_spawn_timer += delta
@@ -101,12 +111,28 @@ func _input(event: InputEvent) -> void:
 			if _is_chaining:
 				_end_chain()
 
+func _get_effective_chain_distance() -> float:
+	return chain_distance + _chain_distance_bonus
+
+func set_chain_distance_bonus(bonus: float) -> void:
+	_chain_distance_bonus = bonus
+	_chain_bonus_timer = 10.0  # Lasts 10 seconds
+
 func _spawn_tsum(tsum_type: int = -1) -> void:
 	if _active_tsums.size() >= max_tsums:
 		return
 	var tsum = _tsum_scene.instantiate()
 	if tsum_type < 0:
-		tsum_type = randi_range(0, 4)
+		# Check drop luck for biased spawning
+		var pm = _find_autoload("PartyManager")
+		if pm and pm.get_drop_luck() > 0.0:
+			var leader = pm.get_leader()
+			if not leader.is_empty() and randf() < pm.get_drop_luck():
+				tsum_type = leader["color"]
+			else:
+				tsum_type = randi_range(0, 4)
+		else:
+			tsum_type = randi_range(0, 4)
 	tsum.setup(tsum_type)
 	# Spawn above field, random x
 	var spawn_x: float = randf_range(field_offset_x + tsum_radius + 5, field_offset_x + field_width - tsum_radius - 5)
@@ -159,7 +185,7 @@ func _add_to_chain(tsum: Node) -> void:
 	if not is_instance_valid(last_tsum):
 		return
 	var dist: float = tsum.global_position.distance_to(last_tsum.global_position)
-	if dist > chain_distance:
+	if dist > _get_effective_chain_distance():
 		return
 
 	_chain.append(tsum)
@@ -197,6 +223,7 @@ func _find_connectable(from_tsum: Node) -> Array:
 	if not is_instance_valid(from_tsum):
 		return result
 
+	var effective_dist: float = _get_effective_chain_distance()
 	var visited: Array = []
 	var queue: Array = [from_tsum]
 	visited.append(from_tsum)
@@ -212,7 +239,7 @@ func _find_connectable(from_tsum: Node) -> Array:
 				continue
 			if tsum.tsum_type != _chain_type:
 				continue
-			if tsum.global_position.distance_to(current.global_position) <= chain_distance:
+			if tsum.global_position.distance_to(current.global_position) <= effective_dist:
 				visited.append(tsum)
 				queue.append(tsum)
 				result.append(tsum)
@@ -224,3 +251,10 @@ func _clear_all_tsums() -> void:
 		if is_instance_valid(tsum):
 			tsum.queue_free()
 	_active_tsums.clear()
+
+func _find_autoload(autoload_name: String) -> Node:
+	var root = get_tree().root
+	for child in root.get_children():
+		if child.name == autoload_name:
+			return child
+	return null
