@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/tsum.gd" id="1_uswjn"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_8fh85"]
+friction = 0.5
+bounce = 0.3
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hg1jq"]
+radius = 30.0
+
+[node name="Tsum" type="RigidBody2D" unique_id=5858357]
+physics_material_override = SubResource("PhysicsMaterial_8fh85")
+script = ExtResource("1_uswjn")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=403201983]
+shape = SubResource("CircleShape2D_hg1jq")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=968488468]
