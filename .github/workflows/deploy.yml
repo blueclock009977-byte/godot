@@ -27,34 +27,39 @@ jobs:
 
       - name: Setup export templates
         run: |
-          echo "HOME=$HOME"
           TEMPLATE_DIR="/root/.local/share/godot/export_templates/4.4.1.stable"
           mkdir -p "$TEMPLATE_DIR"
           wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz -O /tmp/templates.tpz
           cd /tmp && unzip -o templates.tpz
           cp /tmp/templates/* "$TEMPLATE_DIR/"
-          echo "Web templates:"
-          ls "$TEMPLATE_DIR/" | grep web
           rm -rf /tmp/templates /tmp/templates.tpz
 
-      - name: Import project
+      - name: Test dice-deck-random export first
+        run: |
+          echo "=== Testing dice-deck-random (known working) ==="
+          cd dice-deck-random
+          timeout 60 godot --headless --import 2>&1 || true
+          sleep 2
+          mkdir -p /tmp/test-build
+          timeout 120 godot --headless --export-release "Web" /tmp/test-build/index.html 2>&1 || true
+          echo "=== dice-deck result ==="
+          ls -la /tmp/test-build/
+          if [ -f /tmp/test-build/index.html ]; then
+            echo "SUCCESS: dice-deck-random can export!"
+          else
+            echo "FAIL: dice-deck-random also cannot export!"
+          fi
+          rm -rf /tmp/test-build
+
+      - name: Export tsum-game-godogen
         run: |
           cd tsum-game-godogen
           timeout 60 godot --headless --import 2>&1 || true
           sleep 2
-
-      - name: Export Web build
-        run: |
-          mkdir -p tsum-game-godogen/build/web
-          cd tsum-game-godogen
-          godot --headless --export-release "Web" build/web/index.html 2>&1 || true
+          mkdir -p build/web
+          timeout 120 godot --headless --export-release "Web" build/web/index.html 2>&1 || true
+          echo "=== tsum result ==="
           ls -la build/web/
-          if [ ! -f build/web/index.html ]; then
-            echo "=== FAILED WITH HOME=/root ==="
-            echo "=== Trying with editor-data-dir flag ==="
-            godot --headless --editor-data-dir /root/.local/share/godot --export-release "Web" build/web/index.html 2>&1 || true
-            ls -la build/web/
-          fi
           if [ ! -f build/web/index.html ]; then
             echo "EXPORT FAILED"
             exit 1
