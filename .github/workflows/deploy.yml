@@ -40,10 +40,19 @@ jobs:
           rm -rf .godot
           cp project.godot project.godot.real
 
-          # Key fix: use "4.6" in config/features (same as dice-deck which works)
-          sed -i 's/PackedStringArray("4.4"/PackedStringArray("4.6"/' project.godot
+          # Use dice-deck's project.godot EXACTLY, only change main_scene and viewport
+          cp ../dice-deck-random/project.godot project.godot
+          sed -i 's|run/main_scene=.*|run/main_scene="res://scenes/title.tscn"|' project.godot
+          sed -i 's|config/name=.*|config/name="TsumPuzzle"|' project.godot
+          sed -i 's|window/size/viewport_width=.*|window/size/viewport_width=540|' project.godot
+          sed -i 's|window/size/viewport_height=.*|window/size/viewport_height=960|' project.godot
+          sed -i 's|window/stretch/aspect=.*|window/stretch/aspect="keep"|' project.godot
 
-          echo "=== project.godot ==="
+          # Add tsum-specific input (append before [rendering])
+          sed -i '/^\[input\]/,/^\[rendering\]/{ /^\[rendering\]/!d }' project.godot
+          sed -i 's/^\[input\]/[input]\n\ntouch={\n"deadzone": 0.2,\n"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)\n]\n}/' project.godot
+
+          echo "=== final project.godot ==="
           cat project.godot
 
           timeout 60 godot --headless --import 2>&1 || true
