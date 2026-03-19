@@ -36,7 +36,7 @@ enum PassiveType {
 # Character data: id, name, color (0-4), leader_type, leader_value,
 #   active_skill_type, active_skill_power, skill_gauge_max,
 #   passive_type, passive_value, description
-var _characters: Array[Dictionary] = []
+var _characters: Array = []
 
 func _ready() -> void:
 	_init_characters()

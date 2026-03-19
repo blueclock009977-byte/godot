@@ -1,8 +1,8 @@
 extends Control
 ## res://scripts/party_edit.gd: Party editing screen — select 5 characters for the party
 
-const SLOT_NAMES: Array[String] = ["Leader", "Active 1", "Active 2", "Passive 1", "Passive 2"]
-const SLOT_COLORS: Array[Color] = [
+const SLOT_NAMES: Array = ["Leader", "Active 1", "Active 2", "Passive 1", "Passive 2"]
+const SLOT_COLORS: Array = [
 	Color(1.0, 0.85, 0.3),   # Leader - gold
 	Color(0.4, 0.7, 1.0),    # Active 1 - blue
 	Color(0.4, 0.7, 1.0),    # Active 2 - blue
@@ -11,9 +11,9 @@ const SLOT_COLORS: Array[Color] = [
 ]
 
 var _selected_slot: int = 0
-var _party: Array[int] = [-1, -1, -1, -1, -1]
-var _slot_buttons: Array[Button] = []
-var _char_buttons: Array[Button] = []
+var _party: Array = [-1, -1, -1, -1, -1]
+var _slot_buttons: Array = []
+var _char_buttons: Array = []
 var _info_label: Label
 var _desc_label: Label
 
@@ -136,7 +136,7 @@ func _build_ui() -> void:
 			char_btn.pressed.connect(_on_char_pressed.bind(ch["id"]))
 
 			# Style with character color
-			var tsum_colors: Array[Color] = [
+			var tsum_colors: Array = [
 				Color(0.95, 0.25, 0.25),
 				Color(0.25, 0.55, 0.95),
 				Color(0.30, 0.85, 0.35),

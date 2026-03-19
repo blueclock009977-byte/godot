@@ -91,7 +91,7 @@ func _color_convert(count: int, context: Dictionary) -> Dictionary:
 	if tsums.is_empty():
 		return {"success": false, "cleared": 0, "effect": "color_convert"}
 	# Pick the most common color
-	var color_counts: Array[int] = [0, 0, 0, 0, 0]
+	var color_counts: Array = [0, 0, 0, 0, 0]
 	for t in tsums:
 		if is_instance_valid(t):
 			color_counts[t.tsum_type % 5] += 1

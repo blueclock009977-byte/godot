@@ -14,7 +14,7 @@ var _is_connectable: bool = false
 var _base_color: Color = Color.WHITE
 var _is_dragging_over: bool = false
 
-const TSUM_COLORS: Array[Color] = [
+const TSUM_COLORS: Array = [
 	Color(0.95, 0.25, 0.25),  # Red
 	Color(0.25, 0.55, 0.95),  # Blue
 	Color(0.30, 0.85, 0.35),  # Green
@@ -22,7 +22,7 @@ const TSUM_COLORS: Array[Color] = [
 	Color(0.70, 0.30, 0.90),  # Purple
 ]
 
-const TSUM_FACE_COLORS: Array[Color] = [
+const TSUM_FACE_COLORS: Array = [
 	Color(1.0, 0.5, 0.5),   # Red lighter
 	Color(0.5, 0.7, 1.0),   # Blue lighter
 	Color(0.5, 1.0, 0.55),  # Green lighter

@@ -6,11 +6,11 @@ signal skill_ready(slot: int)
 
 # Party slots: [leader, active1, active2, passive1, passive2]
 # Each stores character_id (-1 = empty)
-var _party: Array[int] = [-1, -1, -1, -1, -1]
+var _party: Array = [-1, -1, -1, -1, -1]
 
 # Skill gauges for active skill slots (index 1 and 2)
-var _skill_gauges: Array[float] = [0.0, 0.0]
-var _skill_ready: Array[bool] = [false, false]
+var _skill_gauges: Array = [0.0, 0.0]
+var _skill_ready: Array = [false, false]
 
 # Cached leader/passive values
 var _score_multiplier: float = 1.0
@@ -44,7 +44,7 @@ func set_party_member(slot: int, character_id: int) -> void:
 	_recalculate_effects()
 	party_changed.emit()
 
-func get_party() -> Array[int]:
+func get_party() -> Array:
 	return _party.duplicate()
 
 func get_leader() -> Dictionary:

@@ -9,9 +9,9 @@ var _fever_label: Label
 var _game_over_panel: PanelContainer
 var _final_score_label: Label
 var _retry_button: Button
-var _skill_buttons: Array[Button] = []
-var _skill_bars: Array[ProgressBar] = []
-var _skill_labels: Array[Label] = []
+var _skill_buttons: Array = []
+var _skill_bars: Array = []
+var _skill_labels: Array = []
 var _leader_label: Label
 
 func _ready() -> void:
