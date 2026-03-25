@@ -39,80 +39,26 @@ jobs:
           cd tsum-game-godogen
           rm -rf .godot
           cp project.godot project.godot.real
-
-          # Build export-ready project.godot from dice-deck base + tsum patches
           cp ../dice-deck-random/project.godot project.godot
 
-          # Patch application settings
           sed -i 's|run/main_scene=.*|run/main_scene="res://scenes/title.tscn"|' project.godot
           sed -i 's|config/name=.*|config/name="TsumPuzzle"|' project.godot
-
-          # Patch display settings
           sed -i 's|window/size/viewport_width=.*|window/size/viewport_width=540|' project.godot
           sed -i 's|window/size/viewport_height=.*|window/size/viewport_height=960|' project.godot
           sed -i 's|window/stretch/aspect=.*|window/stretch/aspect="keep"|' project.godot
 
-          # Replace autoloads: remove dice-deck's, add tsum's
-          python3 -c "
-import re
-with open('project.godot', 'r') as f:
-    content = f.read()
-# Replace autoload section
-content = re.sub(
-    r'\[autoload\].*?(?=\n\[)',
-    '''[autoload]
+          perl -0777 -i -pe 's/\[autoload\]\n.*?(?=\n\[)/[autoload]\n\nGameManager="*res:\/\/scripts\/game_manager.gd"\nPartyManager="*res:\/\/scripts\/party_manager.gd"\nCharacterData="*res:\/\/scripts\/data\/characters.gd"/s' project.godot
 
-GameManager=\"*res://scripts/game_manager.gd\"
-PartyManager=\"*res://scripts/party_manager.gd\"
-CharacterData=\"*res://scripts/data/characters.gd\"
+          perl -0777 -i -pe 's/\[input\]\n.*?(?=\n\[)/[input]\n\ntouch={\n"deadzone": 0.2,\n"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)\n]\n}/s' project.godot
 
-''',
-    content,
-    flags=re.DOTALL
-)
-with open('project.godot', 'w') as f:
-    f.write(content)
-" 2>/dev/null || {
-            # Fallback if python3 not available: use perl
-            perl -0777 -i -pe 's/\[autoload\].*?(?=\n\[)/[autoload]\n\nGameManager="*res:\/\/scripts\/game_manager.gd"\nPartyManager="*res:\/\/scripts\/party_manager.gd"\nCharacterData="*res:\/\/scripts\/data\/characters.gd"\n/s' project.godot
-          }
-
-          # Replace input section with tsum's touch input
-          python3 -c "
-import re
-with open('project.godot', 'r') as f:
-    content = f.read()
-content = re.sub(
-    r'\[input\].*?(?=\n\[)',
-    '''[input]
-
-touch={
-\"deadzone\": 0.2,
-\"events\": [Object(InputEventMouseButton,\"resource_local_to_scene\":false,\"resource_name\":\"\",\"device\":-1,\"window_id\":0,\"alt_pressed\":false,\"shift_pressed\":false,\"ctrl_pressed\":false,\"meta_pressed\":false,\"button_mask\":1,\"position\":Vector2(0, 0),\"global_position\":Vector2(0, 0),\"factor\":1.0,\"button_index\":1,\"canceled\":false,\"pressed\":true,\"double_click\":false,\"script\":null)
-]
-}
-
-''',
-    content,
-    flags=re.DOTALL
-)
-with open('project.godot', 'w') as f:
-    f.write(content)
-" 2>/dev/null || {
-            perl -0777 -i -pe 's/\[input\].*?(?=\n\[)/[input]\n\ntouch={\n"deadzone": 0.2,\n"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)\n]\n}\n/s' project.godot
-          }
-
-          echo "=== Export project.godot ==="
           cat project.godot
 
           timeout 60 godot --headless --import 2>&1 || true
           sleep 2
-
           mkdir -p build/web
           timeout 120 godot --headless --export-release "Web" build/web/index.html 2>&1 || true
 
           mv project.godot.real project.godot
-
           ls -la build/web/
           if [ ! -f build/web/index.html ]; then
             echo "EXPORT FAILED"
@@ -124,13 +70,11 @@ with open('project.godot', 'w') as f:
           sed -i "s|<head>|<head>\n<script>if(navigator.serviceWorker){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})});caches.keys().then(function(c){c.forEach(function(n){caches.delete(n)})})}</script>\n<meta http-equiv=\"Cache-Control\" content=\"no-cache, no-store, must-revalidate\">\n<meta http-equiv=\"Pragma\" content=\"no-cache\">\n<meta http-equiv=\"Expires\" content=\"0\">|" index.html
           sed -i 's/navigator\.serviceWorker\.register/\/\/navigator.serviceWorker.register/g' index.html
           rm -f *.worker.js *.service.worker.js sw.js service-worker.js
-
           for f in *.js; do
             if [ -f "$f" ]; then
               sed -i "s/serviceWorker/____disabled____/g" "$f"
             fi
           done
-
           for f in *.js *.wasm *.pck; do
             if [ -f "$f" ]; then
               sed -i "s|${f}|${f}?v=${TIMESTAMP}|g" index.html
