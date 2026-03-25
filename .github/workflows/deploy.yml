@@ -41,15 +41,15 @@ jobs:
           cp project.godot project.godot.real
           cp ../dice-deck-random/project.godot project.godot
 
+          # Patch display/app settings only
           sed -i 's|run/main_scene=.*|run/main_scene="res://scenes/title.tscn"|' project.godot
           sed -i 's|config/name=.*|config/name="TsumPuzzle"|' project.godot
           sed -i 's|window/size/viewport_width=.*|window/size/viewport_width=540|' project.godot
           sed -i 's|window/size/viewport_height=.*|window/size/viewport_height=960|' project.godot
           sed -i 's|window/stretch/aspect=.*|window/stretch/aspect="keep"|' project.godot
 
+          # Patch autoloads only (keep input section as-is from dice-deck)
           perl -0777 -i -pe 's/\[autoload\]\n.*?(?=\n\[)/[autoload]\n\nGameManager="*res:\/\/scripts\/game_manager.gd"\nPartyManager="*res:\/\/scripts\/party_manager.gd"\nCharacterData="*res:\/\/scripts\/data\/characters.gd"/s' project.godot
-
-          perl -0777 -i -pe 's/\[input\]\n.*?(?=\n\[)/[input]\n\ntouch={\n"deadzone": 0.2,\n"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":1,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":true,"double_click":false,"script":null)\n]\n}/s' project.godot
 
           cat project.godot
 
