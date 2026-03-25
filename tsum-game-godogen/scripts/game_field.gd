@@ -24,6 +24,7 @@ var _game_active: bool = false
 var _chain_line: Line2D
 var _chain_distance_bonus: float = 0.0
 var _chain_bonus_timer: float = 0.0
+var _last_input_position: Vector2 = Vector2.ZERO
 
 # Wall bodies
 var _walls: Array = []
@@ -93,8 +94,8 @@ func _process(delta: float) -> void:
 		for tsum in _chain:
 			if is_instance_valid(tsum):
 				_chain_line.add_point(tsum.global_position)
-		# Add mouse position as endpoint
-		_chain_line.add_point(get_global_mouse_position())
+		# Add current input position as endpoint (works for both mouse and touch)
+		_chain_line.add_point(_last_input_position)
 
 	# Update connectable highlights
 	if _is_chaining and _chain.size() > 0:
@@ -107,9 +108,20 @@ func _input(event: InputEvent) -> void:
 	if not _game_active:
 		return
 	if event is InputEventMouseButton:
+		_last_input_position = event.position
 		if not event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			if _is_chaining:
 				_end_chain()
+	elif event is InputEventMouseMotion:
+		_last_input_position = event.position
+	# Touch support for Web/mobile
+	elif event is InputEventScreenTouch:
+		_last_input_position = event.position
+		if not event.pressed:
+			if _is_chaining:
+				_end_chain()
+	elif event is InputEventScreenDrag:
+		_last_input_position = event.position
 
 func _get_effective_chain_distance() -> float:
 	return chain_distance + _chain_distance_bonus

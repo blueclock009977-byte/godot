@@ -117,6 +117,12 @@ func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> vo
 	elif event is InputEventMouseMotion:
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
 			entered.emit(self)
+	# Touch support for Web/mobile
+	elif event is InputEventScreenTouch:
+		if event.pressed:
+			clicked.emit(self)
+	elif event is InputEventScreenDrag:
+		entered.emit(self)
 
 func pop_animation() -> void:
 	var tween = create_tween()
