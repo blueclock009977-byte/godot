@@ -18,10 +18,14 @@ func _ready() -> void:
 	_build_ui()
 	_connect_signals()
 	_update_leader_label()
+	# Make all non-button UI pass-through for touch/mouse events
+	_set_mouse_filter_recursive(self, Control.MOUSE_FILTER_IGNORE)
 
 func _build_ui() -> void:
 	# Full rect
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# CRITICAL: Let touch/mouse events pass through to game field
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Top HUD bar
 	var top_bar := HBoxContainer.new()
@@ -31,6 +35,7 @@ func _build_ui() -> void:
 	top_bar.offset_left = 10.0
 	top_bar.offset_right = -10.0
 	top_bar.offset_top = 10.0
+	top_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(top_bar)
 
 	# Timer
@@ -155,6 +160,16 @@ func _build_ui() -> void:
 	title_button.custom_minimum_size = Vector2(200, 50)
 	title_button.pressed.connect(_on_title_pressed)
 	go_vbox.add_child(title_button)
+
+func _set_mouse_filter_recursive(node: Control, filter: int) -> void:
+	node.mouse_filter = filter
+	for child in node.get_children():
+		if child is Control:
+			# Keep buttons clickable
+			if child is Button:
+				child.mouse_filter = Control.MOUSE_FILTER_STOP
+			else:
+				_set_mouse_filter_recursive(child, filter)
 
 func _build_skill_buttons() -> void:
 	var skill_container := HBoxContainer.new()
@@ -309,6 +324,7 @@ func _on_fever_updated(gauge: float, active: bool) -> void:
 func _on_game_over(final_score: int) -> void:
 	if _game_over_panel:
 		_game_over_panel.visible = true
+		_game_over_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	if _final_score_label:
 		_final_score_label.text = "Score: %d" % final_score
 	# Disable skill buttons
