@@ -40,9 +40,23 @@ jobs:
           rm -rf .godot
           cp project.godot project.godot.real
 
-          # Use tsum's own project.godot but patch features version for 4.4.1 CI
-          sed -i 's|"4.4"|"4.6"|' project.godot
-          sed -i 's|"4.5"|"4.6"|' project.godot
+          # Use dice-deck's project.godot (known to work with 4.4.1 CI)
+          cp ../dice-deck-random/project.godot project.godot
+
+          # Patch for tsum-game
+          sed -i 's|run/main_scene=.*|run/main_scene="res://scenes/title.tscn"|' project.godot
+          sed -i 's|config/name=.*|config/name="TsumPuzzle"|' project.godot
+          sed -i 's|window/size/viewport_width=.*|window/size/viewport_width=540|' project.godot
+          sed -i 's|window/size/viewport_height=.*|window/size/viewport_height=960|' project.godot
+          sed -i 's|window/stretch/aspect=.*|window/stretch/aspect="keep"|' project.godot
+
+          # Patch autoloads for tsum
+          perl -0777 -i -pe 's/\[autoload\]\n.*?(?=\n\[)/[autoload]\n\nGameManager="*res:\/\/scripts\/game_manager.gd"\nPartyManager="*res:\/\/scripts\/party_manager.gd"\nCharacterData="*res:\/\/scripts\/data\/characters.gd"/s' project.godot
+
+          # Add touch emulation settings
+          if ! grep -q 'input_devices' project.godot; then
+            sed -i '/^\[rendering\]/i [input_devices]\n\npointing\/emulate_mouse_from_touch=true\npointing\/emulate_touch_from_mouse=true\n' project.godot
+          fi
 
           cat project.godot
 
